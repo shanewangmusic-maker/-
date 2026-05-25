@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新客戶追蹤與管理系統</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <div id="app" class="pb-16">
+        <!-- 導覽列 -->
+        <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white text-indigo-600 p-2 rounded-lg shadow-inner">
+                        <i class="fa-solid fa-users-rectangle text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-wider">新客戶追蹤與管理系統</h1>
+                        <p class="text-xs text-indigo-200">高效分類、精準跟進，不漏接任何商機</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openModal('addCustomerModal')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center gap-2 shadow">
+                        <i class="fa-solid fa-user-plus"></i> 新增客戶
+                    </button>
+                    <button onclick="exportData()" class="bg-indigo-700 hover:bg-indigo-800 text-white p-2 rounded-lg transition duration-200" title="匯出資料">
+                        <i class="fa-solid fa-file-export"></i>
+                    </button>
+                    <button onclick="triggerImport()" class="bg-indigo-700 hover:bg-indigo-800 text-white p-2 rounded-lg transition duration-200" title="匯入資料">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+                </div>
+            </div>
+        </header>
+
+        <!-- 主體內容 -->
+        <main class="max-w-7xl mx-auto px-4 py-6">
+            <!-- 數據概覽區 -->
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6" id="statsContainer">
+                <!-- 數據卡片將由 JS 動態生成 -->
+            </div>
+
+            <!-- 工具列 (搜尋、篩選) -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- 搜尋與類別篩選 -->
+                <div class="w-full md:w-2/3 flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="renderApp()" placeholder="搜尋客戶姓名、電話、備註..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+                    <div class="sm:w-48">
+                        <select id="filterCategory" onchange="renderApp()" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="ALL">所有分類 (全部)</option>
+                            <option value="A">A 類 (高意願 / 即將成交)</option>
+                            <option value="B">B 類 (中意願 / 持續跟進)</option>
+                            <option value="C">C 類 (低意願 / 需長期經營)</option>
+                            <option value="D">D 類 (無意願 / 暫時存檔)</option>
+                            <option value="PENDING">★ 待定區 (尚未分類)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 排序方式 -->
+                <div class="w-full md:w-auto flex justify-end gap-2 text-sm text-slate-500">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-sort"></i> 排序：</span>
+                    <select id="sortBy" onchange="renderApp()" class="border-none bg-transparent font-medium text-slate-700 focus:outline-none cursor-pointer">
+                        <option value="newest">最新新增</option>
+                        <option value="oldest">最早新增</option>
+                        <option value="lastFollowUp">最後跟進日期</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 客戶列表區 -->
+            <div id="customerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 客戶卡片將由 JS 動態生成 -->
+            </div>
+
+            <!-- 無資料提示 -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-slate-400">
+                <i class="fa-solid fa-folder-open text-6xl mb-4 text-slate-300"></i>
+                <p class="text-lg font-medium">找不到符合條件的客戶資料</p>
+                <p class="text-sm">點擊右上角「新增客戶」開始建立您的名單吧！</p>
+            </div>
+        </main>
+
+        <!-- 側邊或浮動提示 (自訂 Message Box，不使用 Alert) -->
+        <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+            <span id="toastIcon"></span>
+            <span id="toastMessage" class="text-sm font-medium"></span>
+        </div>
+
+        <!-- ==================== MODALS 彈出視窗 ==================== -->
+        
+        <!-- 1. 新增客戶 Modal -->
+        <div id="addCustomerModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+            <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> 新增客戶資料
+                    </h3>
+                    <button onclick="closeModal('addCustomerModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <form id="addCustomerForm" onsubmit="handleAddCustomer(event)" class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">客戶姓名 <span class="text-rose-500">*</span></label>
+                            <input type="text" id="addName" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">分類等級 <span class="text-rose-500">*</span></label>
+                            <select id="addCategory" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                <option value="PENDING" selected>★ 待定區 (尚未分類)</option>
+                                <option value="A">A 類 (高意願 / 即將成交)</option>
+                                <option value="B">B 類 (中意願 / 持續跟進)</option>
+                                <option value="C">C 類 (低意願 / 需長期經營)</option>
+                                <option value="D">D 類 (無意願 / 暫時存檔)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">聯絡電話</label>
+                            <input type="tel" id="addPhone" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">電子郵件</label>
+                            <input type="email" id="addEmail" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">公司名稱 / 職稱</label>
+                        <input type="text" id="addCompany" placeholder="例如：甲乙有限公司 - 採購經理" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">客戶備註 / 背景說明</label>
+                        <textarea id="addNotes" rows="3" placeholder="簡述客戶背景、來源或特殊需求..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('addCustomerModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition">取消</button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition">儲存客戶</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. 編輯客戶 Modal -->
+        <div id="editCustomerModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+            <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div class="bg-amber-600 text-white px-6 py-4 flex justify-between items-center">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear"></i> 編輯客戶資料
+                    </h3>
+                    <button onclick="closeModal('editCustomerModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <form id="editCustomerForm" onsubmit="handleEditCustomer(event)" class="p-6 space-y-4">
+                    <input type="hidden" id="editId">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">客戶姓名 <span class="text-rose-500">*</span></label>
+                            <input type="text" id="editName" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">分類等級 <span class="text-rose-500">*</span></label>
+                            <select id="editCategory" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                <option value="PENDING">★ 待定區 (尚未分類)</option>
+                                <option value="A">A 類 (高意願 / 即將成交)</option>
+                                <option value="B">B 類 (中意願 / 持續跟進)</option>
+                                <option value="C">C 類 (低意願 / 需長期經營)</option>
+                                <option value="D">D 類 (無意願 / 暫時存檔)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">聯絡電話</label>
+                            <input type="tel" id="editPhone" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">電子郵件</label>
+                            <input type="email" id="editEmail" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">公司名稱 / 職稱</label>
+                        <input type="text" id="editCompany" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">客戶備註 / 背景說明</label>
+                        <textarea id="editNotes" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                        <button type="button" onclick="confirmDeleteCustomer()" class="px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-lg text-sm font-medium transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> 刪除客戶
+                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="closeModal('editCustomerModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition">取消</button>
+                            <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition">儲存修改</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. 客戶追蹤詳細歷程 Modal (包含新增追蹤進度) -->
+        <div id="followUpModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+            <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+                <!-- 標頭 -->
+                <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+                    <div>
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left"></i> 追蹤進度歷程
+                        </h3>
+                        <p id="followUpCustomerName" class="text-xs text-slate-400 mt-1"></p>
+                    </div>
+                    <button onclick="closeModal('followUpModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <!-- 內容滾動區 -->
+                <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                    <!-- 新增進度區 -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1">
+                            <i class="fa-solid fa-plus-circle text-emerald-500"></i> 新增本次跟進紀錄
+                        </h4>
+                        <form id="addHistoryForm" onsubmit="handleAddHistory(event)" class="space-y-3">
+                            <input type="hidden" id="historyCustomerId">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="col-span-3 sm:col-span-1">
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">跟進日期 <span class="text-rose-500">*</span></label>
+                                    <input type="date" id="historyDate" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                </div>
+                                <div class="col-span-3 sm:col-span-2">
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">變更分類等級</label>
+                                    <select id="historyCategory" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                        <option value="KEEP">維持原分類</option>
+                                        <option value="PENDING">變更為：★ 待定區</option>
+                                        <option value="A">變更為：A 類 (高意願)</option>
+                                        <option value="B">變更為：B 類 (中意願)</option>
+                                        <option value="C">變更為：C 類 (低意願)</option>
+                                        <option value="D">變更為：D 類 (無意願)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">洽談內容 / 追蹤進度備註 <span class="text-rose-500">*</span></label>
+                                <textarea id="historyContent" required rows="2" placeholder="例：今日電訪，客戶表示下週可以開會討論，對方案A很有興趣。" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                                    <i class="fa-solid fa-check"></i> 送出紀錄
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 歷史時間軸區 -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-1">
+                            <i class="fa-solid fa-list-ul"></i> 歷程紀錄時間軸
+                        </h4>
+                        <div id="timelineContainer" class="relative border-l-2 border-slate-200 ml-4 pl-6 space-y-6">
+                            <!-- 時間軸內容由 JS 生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 確認刪除彈窗 (自訂 Modal，取代傳統 Confirm) -->
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl w-full max-w-sm shadow-xl p-6 animate-in fade-in zoom-in duration-150">
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900">確認刪除此客戶嗎？</h3>
+                    <p class="text-sm text-slate-500 mt-2">此動作無法復原，該客戶的所有基本資料及跟進歷程都將被永久刪除！</p>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button onclick="closeModal('deleteConfirmModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition">取消</button>
+                    <button id="confirmDeleteBtn" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition">確認刪除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JavaScript 核心邏輯 ==================== -->
+    <script>
+        // 初始測試資料 (若 LocalStorage 內無資料時載入)
+        const initialCustomers = [
+            {
+                id: "cust-1",
+                name: "陳明賢",
+                company: "鼎創科技股份有限公司 - 資訊處長",
+                phone: "0912-345-678",
+                email: "chen.mh@dingchuang.com",
+                category: "A",
+                notes: "對雲端備份方案非常有興趣，預算充裕。需要下週五前提供正式報價單。",
+                createdAt: "2026-05-10T10:30:00.000Z",
+                history: [
+                    { id: "h-1", date: "2026-05-12", content: "撥打電話追蹤，客戶表示本週會向總經理呈報，請我先準備好報價草案。", category: "A" },
+                    { id: "h-2", date: "2026-05-18", content: "親自前往對方公司拜訪簡報，產品展示一切順利，處長非常滿意。", category: "A" }
+                ]
+            },
+            {
+                id: "cust-2",
+                name: "王巧涵",
+                company: "樂活行銷工作室 - 創辦人",
+                phone: "0928-111-222",
+                email: "joyce.wang@lohas.io",
+                category: "B",
+                notes: "詢問過社群代營運方案。目前公司剛成立，預算有限，還在觀望。",
+                createdAt: "2026-05-15T14:20:00.000Z",
+                history: [
+                    { id: "h-3", date: "2026-05-15", content: "透過 LINE 詢問方案細節，已回覆最新優惠方案並約定下月聯絡。", category: "B" }
+                ]
+            },
+            {
+                id: "cust-3",
+                name: "張建國",
+                company: "大成傳統起重行 - 老闆",
+                phone: "0933-777-888",
+                email: "",
+                category: "PENDING",
+                notes: "路過發放名片認識。提及對數位轉型可能有一點點興趣，暫無具體需求，待開發。",
+                createdAt: "2026-05-20T08:15:00.000Z",
+                history: []
+            },
+            {
+                id: "cust-4",
+                name: "林佳玲",
+                company: "欣欣百貨 - 採購專員",
+                phone: "02-2543-1234 #567",
+                email: "jialing@xinxin.com.tw",
+                category: "C",
+                notes: "想要比價用。聯絡語氣普通，回信較慢。",
+                createdAt: "2026-05-21T11:00:00.000Z",
+                history: [
+                    { id: "h-4", date: "2026-05-22", content: "寄出第一版產品目錄，並寄送電子郵件確認是否有收到。目前無回覆。", category: "C" }
+                ]
+            }
+        ];
+
+        // 系統變數
+        let customers = [];
+        let activeDeleteId = null;
+
+        // 分類資訊設定
+        const categoryConfig = {
+            'A': { label: 'A 類', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', badge: 'bg-rose-500', desc: '高意願 / 即將成交' },
+            'B': { label: 'B 類', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-500', desc: '中意願 / 持續跟進' },
+            'C': { label: 'C 類', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-500', desc: '低意願 / 需長期經營' },
+            'D': { label: 'D 類', bg: 'bg-slate-100', border: 'border-slate-300', text: 'text-slate-700', badge: 'bg-slate-500', desc: '無意願 / 暫時存檔' },
+            'PENDING': { label: '待定區', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-500', desc: '剛接觸 / 尚未分類' }
+        };
+
+        // 頁面初始化
+        window.onload = function() {
+            // 從 LocalStorage 載入資料
+            const stored = localStorage.getItem('customer_tracker_data');
+            if (stored) {
+                try {
+                    customers = JSON.parse(stored);
+                } catch (e) {
+                    customers = initialCustomers;
+                }
+            } else {
+                customers = initialCustomers;
+                saveToLocalStorage();
+            }
+
+            // 設定預設日期為今天
+            document.getElementById('historyDate').valueAsDate = new Date();
+            
+            renderApp();
+        };
+
+        // 儲存至 LocalStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('customer_tracker_data', JSON.stringify(customers));
+        }
+
+        // 自訂 Toast 訊息提示
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toastMessage.textContent = message;
+
+            if (type === 'success') {
+                toast.className = "fixed bottom-5 right-5 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-0 opacity-100 transition-all duration-300 z-50 pointer-events-auto";
+                toastIcon.innerHTML = `<i class="fa-solid fa-circle-check text-lg"></i>`;
+            } else if (type === 'info') {
+                toast.className = "fixed bottom-5 right-5 bg-indigo-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-0 opacity-100 transition-all duration-300 z-50 pointer-events-auto";
+                toastIcon.innerHTML = `<i class="fa-solid fa-circle-info text-lg"></i>`;
+            } else {
+                toast.className = "fixed bottom-5 right-5 bg-rose-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-0 opacity-100 transition-all duration-300 z-50 pointer-events-auto";
+                toastIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-lg"></i>`;
+            }
+
+            // 3秒後消失
+            setTimeout(() => {
+                toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none";
+            }, 3000);
+        }
+
+        // 開啟 Modal
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // 關閉 Modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // 渲染主畫面
+        function renderApp() {
+            renderStats();
+            renderCustomerGrid();
+        }
+
+        // 渲染上方統計卡片
+        function renderStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            
+            // 計算各類別數量
+            const counts = { ALL: customers.length, A: 0, B: 0, C: 0, D: 0, PENDING: 0 };
+            customers.forEach(c => {
+                if (counts[c.category] !== undefined) {
+                    counts[c.category]++;
+                }
+            });
+
+            statsContainer.innerHTML = `
+                <!-- 全部 -->
+                <div onclick="setFilter('ALL')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">總客戶數</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.ALL}</p>
+                    </div>
+                    <div class="bg-slate-100 text-slate-600 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <!-- A類 -->
+                <div onclick="setFilter('A')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-rose-500">A 類 (高意願)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.A}</p>
+                    </div>
+                    <div class="bg-rose-100 text-rose-600 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                </div>
+                <!-- B類 -->
+                <div onclick="setFilter('B')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-amber-500">B 類 (中意願)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.B}</p>
+                    </div>
+                    <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-star-half-stroke"></i></div>
+                </div>
+                <!-- C類 -->
+                <div onclick="setFilter('C')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-emerald-500">C 類 (低意願)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.C}</p>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-seedling"></i></div>
+                </div>
+                <!-- D類 -->
+                <div onclick="setFilter('D')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">D 類 (存檔)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.D}</p>
+                    </div>
+                    <div class="bg-slate-100 text-slate-500 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-box-archive"></i></div>
+                </div>
+                <!-- 待定區 -->
+                <div onclick="setFilter('PENDING')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-indigo-500">★ 待定區</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1">${counts.PENDING}</p>
+                    </div>
+                    <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg text-lg"><i class="fa-solid fa-circle-question"></i></div>
+                </div>
+            `;
+        }
+
+        // 點擊上方統計項目快速切換篩選
+        function setFilter(categoryValue) {
+            document.getElementById('filterCategory').value = categoryValue;
+            renderApp();
+        }
+
+        // 渲染客戶清單
+        function renderCustomerGrid() {
+            const customerGrid = document.getElementById('customerGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
+            const filterCategory = document.getElementById('filterCategory').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // 1. 篩選
+            let filtered = customers.filter(c => {
+                // 搜尋文字過濾
+                const matchesSearch = 
+                    c.name.toLowerCase().includes(searchValue) || 
+                    (c.company && c.company.toLowerCase().includes(searchValue)) ||
+                    (c.phone && c.phone.includes(searchValue)) ||
+                    (c.email && c.email.toLowerCase().includes(searchValue)) ||
+                    (c.notes && c.notes.toLowerCase().includes(searchValue));
+
+                // 類別過濾
+                const matchesCategory = (filterCategory === 'ALL') || (c.category === filterCategory);
+
+                return matchesSearch && matchesCategory;
+            });
+
+            // 2. 排序
+            filtered.sort((a, b) => {
+                if (sortBy === 'newest') {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                } else if (sortBy === 'oldest') {
+                    return new Date(a.createdAt) - new Date(b.createdAt);
+                } else if (sortBy === 'lastFollowUp') {
+                    // 找出最後一次跟進日期
+                    const aLast = a.history && a.history.length > 0 ? a.history[a.history.length - 1].date : '1970-01-01';
+                    const bLast = b.history && b.history.length > 0 ? b.history[b.history.length - 1].date : '1970-01-01';
+                    return new Date(bLast) - new Date(aLast);
+                }
+                return 0;
+            });
+
+            // 3. 渲染
+            if (filtered.length === 0) {
+                customerGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.remove('flex');
+            emptyState.classList.add('hidden');
+
+            customerGrid.innerHTML = filtered.map(c => {
+                const cfg = categoryConfig[c.category] || categoryConfig['PENDING'];
+                
+                // 最後一次跟進內容
+                let lastFollowUpHtml = '';
+                if (c.history && c.history.length > 0) {
+                    const lastHistory = c.history[c.history.length - 1];
+                    lastFollowUpHtml = `
+                        <div class="mt-4 pt-3 border-t border-dashed border-slate-100 text-xs">
+                            <div class="flex justify-between text-slate-400 font-medium mb-1">
+                                <span><i class="fa-regular fa-clock"></i> 最近一次跟進：${lastHistory.date}</span>
+                            </div>
+                            <p class="text-slate-600 line-clamp-2 italic">「${lastHistory.content}」</p>
+                        </div>
+                    `;
+                } else {
+                    lastFollowUpHtml = `
+                        <div class="mt-4 pt-3 border-t border-dashed border-slate-100 text-xs text-slate-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info"></i> 暫無跟進紀錄，點擊下方按鈕新增。
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white rounded-2xl border ${cfg.border} shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between overflow-hidden">
+                        <!-- 卡片頂部資訊 -->
+                        <div class="p-5 flex-1">
+                            <div class="flex justify-between items-start gap-2 mb-3">
+                                <div>
+                                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${cfg.badge} mb-2">
+                                        ${cfg.label}
+                                    </span>
+                                    <h4 class="text-lg font-bold text-slate-900 flex items-center gap-1">
+                                        ${c.name}
+                                    </h4>
+                                    ${c.company ? `<p class="text-xs text-slate-500 mt-0.5 font-medium">${c.company}</p>` : ''}
+                                </div>
+                                <div class="flex gap-1">
+                                    <button onclick="openEditModal('${c.id}')" class="p-1.5 text-slate-400 hover:text-amber-500 transition" title="編輯基本資料">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 聯絡方式 -->
+                            <div class="space-y-1.5 text-xs text-slate-600 mb-3">
+                                ${c.phone ? `<p class="flex items-center gap-1.5"><i class="fa-solid fa-phone text-slate-400 w-4"></i> ${c.phone}</p>` : ''}
+                                ${c.email ? `<p class="flex items-center gap-1.5"><i class="fa-solid fa-envelope text-slate-400 w-4 block truncate"></i> ${c.email}</p>` : ''}
+                            </div>
+
+                            <!-- 主備註 -->
+                            <div class="bg-slate-50 p-2.5 rounded-lg text-xs text-slate-600 border border-slate-100">
+                                <p class="font-semibold text-slate-500 mb-0.5">背景說明：</p>
+                                <p class="line-clamp-3">${c.notes || '無詳細備註'}</p>
+                            </div>
+
+                            <!-- 最後跟進紀錄 -->
+                            ${lastFollowUpHtml}
+                        </div>
+
+                        <!-- 卡片底部按鈕 -->
+                        <div class="px-5 py-3 bg-slate-50/80 border-t border-slate-100 flex gap-2">
+                            <button onclick="openFollowUpModal('${c.id}')" class="flex-1 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-lg transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-clock-rotate-left"></i> 追蹤與歷程 (${c.history ? c.history.length : 0})
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== 操作功能：新增客戶 ====================
+        function handleAddCustomer(e) {
+            e.preventDefault();
+            
+            const newCustomer = {
+                id: 'cust-' + Date.now(),
+                name: document.getElementById('addName').value.trim(),
+                company: document.getElementById('addCompany').value.trim(),
+                phone: document.getElementById('addPhone').value.trim(),
+                email: document.getElementById('addEmail').value.trim(),
+                category: document.getElementById('addCategory').value,
+                notes: document.getElementById('addNotes').value.trim(),
+                createdAt: new Date().toISOString(),
+                history: []
+            };
+
+            customers.push(newCustomer);
+            saveToLocalStorage();
+            renderApp();
+            
+            // 關閉並重設表單
+            closeModal('addCustomerModal');
+            document.getElementById('addCustomerForm').reset();
+            
+            showToast(`客戶「${newCustomer.name}」已成功新增！`, 'success');
+        }
+
+        // ==================== 操作功能：編輯客戶 ====================
+        function openEditModal(id) {
+            const c = customers.find(item => item.id === id);
+            if (!c) return;
+
+            document.getElementById('editId').value = c.id;
+            document.getElementById('editName').value = c.name;
+            document.getElementById('editCategory').value = c.category;
+            document.getElementById('editPhone').value = c.phone || '';
+            document.getElementById('editEmail').value = c.email || '';
+            document.getElementById('editCompany').value = c.company || '';
+            document.getElementById('editNotes').value = c.notes || '';
+
+            openModal('editCustomerModal');
+        }
+
+        function handleEditCustomer(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('editId').value;
+            const index = customers.findIndex(item => item.id === id);
+            
+            if (index !== -1) {
+                customers[index].name = document.getElementById('editName').value.trim();
+                customers[index].category = document.getElementById('editCategory').value;
+                customers[index].phone = document.getElementById('editPhone').value.trim();
+                customers[index].email = document.getElementById('editEmail').value.trim();
+                customers[index].company = document.getElementById('editCompany').value.trim();
+                customers[index].notes = document.getElementById('editNotes').value.trim();
+
+                saveToLocalStorage();
+                renderApp();
+                closeModal('editCustomerModal');
+                showToast(`客戶「${customers[index].name}」基本資料已成功更新。`, 'success');
+            }
+        }
+
+        // ==================== 操作功能：刪除客戶 ====================
+        function confirmDeleteCustomer() {
+            activeDeleteId = document.getElementById('editId').value;
+            closeModal('editCustomerModal');
+            
+            // 設定確認刪除按鈕
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            confirmBtn.onclick = function() {
+                executeDeleteCustomer(activeDeleteId);
+                closeModal('deleteConfirmModal');
+            };
+
+            openModal('deleteConfirmModal');
+        }
+
+        function executeDeleteCustomer(id) {
+            const index = customers.findIndex(item => item.id === id);
+            if (index !== -1) {
+                const deletedName = customers[index].name;
+                customers.splice(index, 1);
+                saveToLocalStorage();
+                renderApp();
+                showToast(`已成功將客戶「${deletedName}」及其歷程全數刪除。`, 'info');
+            }
+            activeDeleteId = null;
+        }
+
+        // ==================== 操作功能：追蹤進度 & 時間軸 ====================
+        function openFollowUpModal(id) {
+            const c = customers.find(item => item.id === id);
+            if (!c) return;
+
+            // 帶入基本資訊
+            document.getElementById('historyCustomerId').value = c.id;
+            document.getElementById('followUpCustomerName').innerHTML = `
+                客戶姓名：<span class="text-white font-semibold">${c.name}</span> 
+                ${c.company ? ` | 公司：<span class="text-white/90">${c.company}</span>` : ''}
+            `;
+            
+            // 重設新增歷史表單
+            document.getElementById('historyContent').value = '';
+            document.getElementById('historyCategory').value = 'KEEP';
+            document.getElementById('historyDate').valueAsDate = new Date();
+
+            renderTimeline(c);
+            openModal('followUpModal');
+        }
+
+        // 渲染追蹤時間軸
+        function renderTimeline(customer) {
+            const timelineContainer = document.getElementById('timelineContainer');
+            
+            if (!customer.history || customer.history.length === 0) {
+                timelineContainer.innerHTML = `
+                    <div class="text-center text-slate-400 py-6">
+                        <p class="text-sm">目前尚無追蹤進度紀錄</p>
+                        <p class="text-xs mt-1">請填寫上方表單新增第一次對話進度吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 按跟進日期降序排列 (最新在最上面)
+            const sortedHistory = [...customer.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            timelineContainer.innerHTML = sortedHistory.map((h, idx) => {
+                const categoryBadge = h.category && h.category !== 'KEEP' ? `
+                    <span class="ml-2 inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white ${categoryConfig[h.category].badge}">
+                        改為：${categoryConfig[h.category].label}
+                    </span>
+                ` : '';
+
+                return `
+                    <div class="relative">
+                        <!-- 時間軸小圓點 -->
+                        <span class="absolute -left-[31px] top-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-100 ring-4 ring-white">
+                            <span class="h-2 w-2 rounded-full bg-indigo-600"></span>
+                        </span>
+                        
+                        <!-- 歷程內容 -->
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 relative group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-bold text-slate-700">${h.date} ${categoryBadge}</span>
+                                <button onclick="deleteHistoryItem('${customer.id}', '${h.id}')" class="text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition text-xs" title="刪除此條紀錄">
+                                    <i class="fa-solid fa-trash-can"></i> 刪除
+                                </button>
+                            </div>
+                            <p class="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed">${h.content}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 新增一筆追蹤歷史紀錄
+        function handleAddHistory(e) {
+            e.preventDefault();
+            
+            const custId = document.getElementById('historyCustomerId').value;
+            const customer = customers.find(item => item.id === custId);
+            
+            if (!customer) return;
+
+            const dateValue = document.getElementById('historyDate').value;
+            const categorySelect = document.getElementById('historyCategory').value;
+            const contentValue = document.getElementById('historyContent').value.trim();
+
+            const newHistoryItem = {
+                id: 'h-' + Date.now(),
+                date: dateValue,
+                content: contentValue,
+                category: categorySelect
+            };
+
+            // 若在新增進度時有修改分類，一併更新客戶主分類
+            if (categorySelect !== 'KEEP') {
+                customer.category = categorySelect;
+            }
+
+            if (!customer.history) {
+                customer.history = [];
+            }
+            customer.history.push(newHistoryItem);
+
+            saveToLocalStorage();
+            renderApp();
+            
+            // 重新渲染時間軸
+            renderTimeline(customer);
+            
+            // 清空輸入欄位
+            document.getElementById('historyContent').value = '';
+            document.getElementById('historyCategory').value = 'KEEP';
+            
+            showToast('跟進紀錄已成功送出！', 'success');
+        }
+
+        // 刪除歷史中的某特定一筆紀錄
+        function deleteHistoryItem(customerId, historyId) {
+            const customer = customers.find(item => item.id === customerId);
+            if (!customer) return;
+
+            const index = customer.history.findIndex(h => h.id === historyId);
+            if (index !== -1) {
+                customer.history.splice(index, 1);
+                saveToLocalStorage();
+                renderApp();
+                renderTimeline(customer);
+                showToast('已刪除該條追蹤紀錄。', 'info');
+            }
+        }
+
+        // ==================== 匯入/匯出 JSON 資料備份 ====================
+        
+        // 匯出 JSON
+        function exportData() {
+            const dataStr = JSON.stringify(customers, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `新客戶追蹤資料備份_${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            showToast('已成功匯出備份檔案！', 'success');
+        }
+
+        // 觸發選擇檔案
+        function triggerImport() {
+            document.getElementById('importFile').click();
+        }
+
+        // 匯入檔案處理
+        function importData(event) {
+            const input = event.target;
+            if (!input.files || input.files.length === 0) return;
+
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function() {
+                try {
+                    const parsedData = JSON.parse(reader.result);
+                    if (Array.isArray(parsedData)) {
+                        // 基本格式驗證
+                        const isValid = parsedData.every(item => item.id && item.name && item.category);
+                        if (isValid) {
+                            customers = parsedData;
+                            saveToLocalStorage();
+                            renderApp();
+                            showToast(`匯入成功！共載入 ${customers.length} 位客戶資料。`, 'success');
+                        } else {
+                            showToast('匯入失敗：備份檔案欄位格式不正確。', 'error');
+                        }
+                    } else {
+                        showToast('匯入失敗：備份檔案非客戶陣列。', 'error');
+                    }
+                } catch (e) {
+                    showToast('匯入失敗：無法解析 JSON 檔案內容。', 'error');
+                }
+                // 重設 input 確保下次還能選同檔案
+                input.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
