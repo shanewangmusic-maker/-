@@ -774,6 +774,7 @@
             <div class="bg-white rounded-2xl w-full max-w-sm p-6">
                 <form id="goalForm" onsubmit="handleSaveGoal(event)">
                     <input type="hidden" id="goalYearInput">
+                    <input type="hidden" id="goalAgentInput"> <!-- 新增隱藏欄位：紀錄目標設定對象 -->
                     <h3 id="goalYearDisplay" class="font-bold font-editorial text-center mb-4 text-[#1E2E3D]"></h3>
                     <label class="block text-xs font-bold text-slate-500 mb-1">FYC 年度目標 (C)</label>
                     <input type="number" step="0.1" id="goalTargetFyc" class="w-full px-3 py-2 mb-3 border border-slate-200 rounded-lg text-sm outline-none" required>
@@ -1668,20 +1669,30 @@
                 }
             });
 
-            // 目標計算
-            const tgFyc = annualGoals[year]?.fyc || 0, tgComm = annualGoals[year]?.comm || 0;
-            
+            // 目標計算 (支援各業務員獨立目標)
+            const goalKey = `${year}_${fAgent}`;
+            // 為了向下相容，若找不到專屬目標，則預設讀取全局目標
+            const tgData = annualGoals[goalKey] || (fAgent === 'ALL' ? annualGoals[year] : null) || {};
+            const tgFyc = tgData.fyc || 0;
+            const tgComm = tgData.comm || 0;
+
+            let agentLabel = '';
+            if (fAgent === 'PERSONAL') agentLabel = '👤 我的個人業績';
+            else if (fAgent === 'TEAM_ONLY') agentLabel = '👥 團隊貢獻';
+            else if (fAgent === 'ALL') agentLabel = '🌐 全局總覽';
+            else agentLabel = `👤 ${fAgent} 的業績`;
+
             if (!tgFyc && !tgComm) { 
                 panel.innerHTML = `
                     <div class="bg-white rounded-2xl p-5 border border-dashed border-slate-300 flex justify-between items-center premium-shadow">
                         <div class="flex items-center gap-3">
                             <div class="bg-amber-50 text-amber-500 p-2 rounded-lg"><i class="fa-solid fa-bullseye text-xl"></i></div>
                             <div>
-                                <span class="text-sm font-bold text-slate-700 block">尚未設定 ${year} 年度目標</span>
-                                <span class="text-[10px] text-slate-400">設定目標以啟動進度追蹤與潛在業績預測</span>
+                                <span class="text-sm font-bold text-slate-700 block">尚未設定 ${year} 年度目標 (${agentLabel})</span>
+                                <span class="text-[10px] text-slate-400">請點擊設定，建立該角色的專屬進度追蹤</span>
                             </div>
                         </div>
-                        <button onclick="openGoalModal('${year}')" class="bg-[#1E2E3D] hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">設定目標</button>
+                        <button onclick="openGoalModal('${year}', '${fAgent}')" class="bg-[#1E2E3D] hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">設定目標</button>
                     </div>`; 
                 return; 
             }
@@ -1693,24 +1704,19 @@
             const commPct = tgComm > 0 ? Math.min(100, (yComm/tgComm)*100) : 0;
             const commPotPct = tgComm > 0 ? Math.min(100 - commPct, (potComm/tgComm)*100) : 0;
 
-            let agentLabel = '';
-            if (fAgent === 'PERSONAL') agentLabel = '👤 我的個人業績';
-            else if (fAgent === 'TEAM_ONLY') agentLabel = '👥 團隊貢獻';
-            else if (fAgent !== 'ALL') agentLabel = `👤 ${fAgent} 的業績`;
-
             panel.innerHTML = `
                 <div class="bg-white rounded-2xl p-5 border border-slate-200 premium-shadow">
                     <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
                         <h3 class="font-bold text-lg font-editorial text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-bullseye text-[#D4AF37]"></i> ${year} 年度目標追蹤 
-                            ${agentLabel ? `<span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded ml-2 border border-indigo-200">正在查看: ${agentLabel}</span>` : ''}
+                            <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded ml-2 border border-indigo-200">正在查看: ${agentLabel}</span>
                         </h3>
                         <div class="flex items-center gap-4">
                             <div class="hidden sm:flex items-center gap-3 text-[10px] font-bold text-slate-400">
                                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#1E2E3D]"></span> 已達標</span>
                                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-300/60 border border-blue-300"></span> 關鍵潛在</span>
                             </div>
-                            <button onclick="openGoalModal('${year}')" class="text-xs border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition font-bold shadow-sm flex items-center gap-1">
+                            <button onclick="openGoalModal('${year}', '${fAgent}')" class="text-xs border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition font-bold shadow-sm flex items-center gap-1">
                                 <i class="fa-solid fa-pen text-[10px]"></i> 修改
                             </button>
                         </div>
@@ -1750,12 +1756,22 @@
                 </div>`;
         }
 
-        function openGoalModal(year) {
-            document.getElementById('goalYearInput').value = year; 
-            document.getElementById('goalYearDisplay').innerText = `${year} 年度目標設定 (FYC: C / 薪水: 萬)`;
+        function openGoalModal(year, fAgent) {
+            // 如果沒有傳入，則預設抓取目前篩選器的值
+            if (!fAgent) fAgent = document.getElementById('filterAgent')?.value || 'ALL';
             
-            const storedFyc = annualGoals[year]?.fyc || 0;
-            const storedComm = annualGoals[year]?.comm || 0;
+            document.getElementById('goalYearInput').value = year; 
+            document.getElementById('goalAgentInput').value = fAgent; 
+            
+            // 設定顯示標題
+            let agentLabel = fAgent === 'ALL' ? '全局總覽' : (fAgent === 'PERSONAL' ? '我的個人業績' : (fAgent === 'TEAM_ONLY' ? '團隊貢獻' : fAgent));
+            document.getElementById('goalYearDisplay').innerText = `${year} 目標設定 - ${agentLabel} (FYC: C / 薪水: 萬)`;
+            
+            // 讀取該業務專員的目標，若無則降級讀取全局設定（向下相容）
+            const goalKey = `${year}_${fAgent}`;
+            const tgData = annualGoals[goalKey] || (fAgent === 'ALL' ? annualGoals[year] : null) || {};
+            const storedFyc = tgData.fyc || 0;
+            const storedComm = tgData.comm || 0;
             
             document.getElementById('goalTargetFyc').value = storedFyc > 0 ? (storedFyc / 10000) : ''; 
             document.getElementById('goalTargetComm').value = storedComm > 0 ? (storedComm / 10000) : '';
@@ -1766,18 +1782,25 @@
         function handleSaveGoal(e) {
             e.preventDefault(); 
             const y = document.getElementById('goalYearInput').value;
+            const a = document.getElementById('goalAgentInput').value || 'ALL';
             const inputFyc = parseFloat(document.getElementById('goalTargetFyc').value) || 0;
             const inputComm = parseFloat(document.getElementById('goalTargetComm').value) || 0;
             
-            annualGoals[y] = { 
+            const goalKey = `${y}_${a}`;
+            annualGoals[goalKey] = { 
                 fyc: inputFyc * 10000, 
                 comm: inputComm * 10000 
             };
+
+            // 如果設定的是全局(ALL)，為了向下相容，同時更新舊版格式
+            if (a === 'ALL') {
+                annualGoals[y] = annualGoals[goalKey];
+            }
             
             recordState(); 
             renderApp(); 
             closeModal('goalModal'); 
-            showToast('已更新年度目標', 'success');
+            showToast('已更新專屬年度目標', 'success');
         }
 
         function handleAddPeriod(e) {
