@@ -718,7 +718,17 @@
             </div>
         </div>
 
-        <!-- 新增：確認刪除業務員彈窗 -->
+        <!-- 新增：登出確認彈窗 (取代原本的 confirm 以避免 iframe 阻擋) -->
+        <div id="logoutConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+            <div class="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4"><i class="fa-solid fa-right-from-bracket text-xl"></i></div>
+                <h3 class="text-lg font-bold text-slate-900 font-editorial">確認登出團隊？</h3>
+                <p class="text-sm text-slate-500 mb-6 mt-2">確定要登出並切換團隊嗎？這將會清除您目前的連線狀態。</p>
+                <div class="flex justify-end gap-3"><button onclick="closeModal('logoutConfirmModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold">取消</button><button onclick="executeLogout()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold">確認登出</button></div>
+            </div>
+        </div>
+
+        <!-- 確認刪除業務員彈窗 -->
         <div id="deleteAgentConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
             <div class="bg-white rounded-xl w-full max-w-md shadow-2xl p-6 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4"><i class="fa-solid fa-user-xmark text-xl"></i></div>
@@ -1025,10 +1035,13 @@
         };
 
         window.logoutTeam = function() {
-            if(confirm('確定要登出並切換團隊嗎？這將會清除您目前的連線狀態。')) {
-                localStorage.removeItem('crm_team_id');
-                location.reload();
-            }
+            // 使用自訂 Modal 取代原有的 confirm 避免 iframe 阻擋
+            openModal('logoutConfirmModal');
+        };
+
+        window.executeLogout = function() {
+            localStorage.removeItem('crm_team_id');
+            location.reload();
         };
         // -------------------------
 
