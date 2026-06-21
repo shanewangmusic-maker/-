@@ -44,12 +44,15 @@
             <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-indigo-100">
                 <i class="fa-solid fa-layer-group text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold font-editorial text-slate-800 mb-2">進入專屬工作區</h2>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed">這是一個團隊公版系統。請輸入您的「團隊專屬代碼」，建立或進入獨立的雲端資料庫，各團隊資料將完全隔離互不干擾。</p>
-            <form onsubmit="window.loginTeam(event)">
-                <input type="text" id="teamCodeInput" required placeholder="例如：TEAM-A 或 YOUTREND-01" class="w-full px-4 py-3.5 border border-slate-200 rounded-xl text-center font-bold text-lg focus:ring-2 focus:ring-indigo-500 outline-none mb-4 uppercase bg-slate-50 placeholder-slate-300 tracking-wider">
-                <button type="submit" class="w-full py-3.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-xl font-bold shadow-md transition text-base flex justify-center items-center gap-2">
-                    連接雲端資料庫 <i class="fa-solid fa-arrow-right"></i>
+            <h2 class="text-2xl font-bold font-editorial text-slate-800 mb-2">登入專屬工作區</h2>
+            <p class="text-sm text-slate-500 mb-6 leading-relaxed">請以授權的 Email 帳號登入。只有名單內的帳號能讀寫資料，未登入者一律拒絕。</p>
+            <form onsubmit="window.doLogin(event)">
+                <input type="email" id="loginEmail" required placeholder="Email" autocomplete="username" class="w-full px-4 py-3.5 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-indigo-500 outline-none mb-3 bg-slate-50 placeholder-slate-300">
+                <input type="password" id="loginPassword" required placeholder="密碼" autocomplete="current-password" class="w-full px-4 py-3.5 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-indigo-500 outline-none mb-3 bg-slate-50 placeholder-slate-300">
+                <input type="text" id="teamCodeInput" required placeholder="團隊代碼（例如：YOUTREND-01）" class="w-full px-4 py-3.5 border border-slate-200 rounded-xl text-center font-bold focus:ring-2 focus:ring-indigo-500 outline-none mb-3 uppercase bg-slate-50 placeholder-slate-300 tracking-wider">
+                <p id="loginError" class="hidden text-rose-600 text-sm mb-3 font-bold"></p>
+                <button type="submit" id="loginSubmitBtn" class="w-full py-3.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-xl font-bold shadow-md transition text-base flex justify-center items-center gap-2">
+                    登入 <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
         </div>
@@ -122,8 +125,12 @@
                 <button onclick="switchMainTab('ARCHIVE')" id="mainTab-ARCHIVE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-box-archive"></i> 待定與流失
                 </button>
+                <button onclick="switchMainTab('PNL')" id="mainTab-PNL" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-scale-balanced"></i> 損益分析
+                </button>
             </div>
 
+            <div id="crmBody">
             <!-- 年度/月份 統整切換區 (全域共用) -->
             <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-slate-200 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 premium-shadow relative overflow-hidden">
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#1E2E3D]"></div>
@@ -287,6 +294,69 @@
                 <i class="fa-solid fa-folder-open text-6xl mb-4 text-slate-300"></i>
                 <p class="text-lg font-bold font-editorial text-slate-600">目前尚無符合條件的名單</p>
                 <p class="text-sm mt-1 text-slate-400">請嘗試調整過濾條件，或點擊右上角新增資料。</p>
+            </div>
+            </div><!-- /crmBody -->
+
+            <!-- ============ 損益分析面板 ============ -->
+            <div id="pnlPanel" style="display:none;">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 premium-shadow mb-5 relative overflow-hidden">
+                    <div id="pnlVerdictBar" class="absolute left-0 top-0 bottom-0 w-1.5 bg-slate-300"></div>
+                    <p class="text-xs text-slate-500 font-bold tracking-wide mb-1">目前每月實際（收入 − 全部支出）</p>
+                    <p id="pnlStatus" class="text-sm font-bold text-slate-500 mb-1">填入數字看結果</p>
+                    <p id="pnlNet" class="text-4xl font-bold font-editorial text-slate-700">NT$0</p>
+                    <p id="pnlFoot" class="text-xs text-slate-400 mt-2"></p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm"><p class="text-xs text-slate-500 mb-1">每月收入</p><p id="pnlIncomeChip" class="text-lg font-bold text-slate-700">NT$0</p></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm"><p class="text-xs text-slate-500 mb-1">每月支出</p><p id="pnlExpenseChip" class="text-lg font-bold text-slate-700">NT$0</p></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm"><p class="text-xs text-slate-500 mb-1">事業淨利（不含生活費）</p><p id="pnlBizNetChip" class="text-lg font-bold text-slate-700">NT$0</p></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm"><p class="text-xs text-slate-500 mb-1">打平所需月收入</p><p id="pnlBreakChip" class="text-lg font-bold text-slate-700">NT$0</p></div>
+                </div>
+
+                <button id="pnlRecordBtn" class="w-full py-3.5 mb-5 bg-[#D4AF37] hover:bg-[#C59B27] text-[#1E2E3D] rounded-xl font-bold shadow-sm transition">記錄今天這筆快照</button>
+
+                <div id="pnlGap" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
+                    <p class="text-sm font-bold text-amber-700 mb-1">補洞要教幾堂課？</p>
+                    <p class="text-sm text-amber-800">每週需教 <span id="pnlGapHours" class="text-2xl font-bold">0</span> 小時，才能把每月缺口補平。</p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-amber-200">
+                        <label class="text-sm text-amber-700">鐘點費（每小時 NT$）</label>
+                        <div class="flex items-center gap-1"><span class="text-amber-600 text-sm">NT$</span><input type="number" id="pnlRate" class="w-28 px-3 py-2 border border-amber-200 rounded-lg text-right bg-white" min="0" step="50"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+                    <div class="flex items-center justify-between mb-3"><h3 class="font-bold text-slate-700">收入</h3><span id="pnlIncomeSum" class="text-sm text-slate-500">NT$0 / 月</span></div>
+                    <div class="flex gap-1 mb-3 bg-slate-100 rounded-lg p-1">
+                        <button type="button" id="pnlModeMonthly" class="flex-1 py-2 rounded-md text-sm font-bold bg-white text-slate-700">每月平均</button>
+                        <button type="button" id="pnlModeQuarterly" class="flex-1 py-2 rounded-md text-sm font-bold text-slate-400">每季一次 ÷ 3</button>
+                    </div>
+                    <div id="pnlRowMonthly" class="flex items-center justify-between py-1"><label class="text-sm text-slate-600">每月平均財顧收入</label><div class="flex items-center gap-1"><span class="text-slate-400 text-sm">NT$</span><input type="number" id="pnlIncMonthly" class="w-28 px-3 py-2 border border-slate-200 rounded-lg text-right bg-slate-50" min="0" step="1000"></div></div>
+                    <div id="pnlRowQuarterly" class="hidden items-center justify-between py-1"><label class="text-sm text-slate-600">每季進帳一次（÷3）</label><div class="flex items-center gap-1"><span class="text-slate-400 text-sm">NT$</span><input type="number" id="pnlIncQuarterly" class="w-28 px-3 py-2 border border-slate-200 rounded-lg text-right bg-slate-50" min="0" step="5000"></div></div>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+                    <div class="flex items-center justify-between mb-2"><h3 class="font-bold text-slate-700">事業成本</h3><span id="pnlBizSum" class="text-sm text-slate-500">NT$0 / 月</span></div>
+                    <div id="pnlBizList"></div>
+                    <button type="button" id="pnlAddBiz" class="w-full mt-3 py-2.5 border border-dashed border-slate-300 text-slate-500 rounded-lg text-sm font-bold hover:border-slate-400 transition">＋ 新增事業成本項目</button>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+                    <div class="flex items-center justify-between mb-2"><h3 class="font-bold text-slate-700">生活開銷</h3><span id="pnlLifeSum" class="text-sm text-slate-500">NT$0 / 月</span></div>
+                    <div id="pnlLifeList"></div>
+                    <button type="button" id="pnlAddLife" class="w-full mt-3 py-2.5 border border-dashed border-slate-300 text-slate-500 rounded-lg text-sm font-bold hover:border-slate-400 transition">＋ 新增生活開銷項目</button>
+                </div>
+
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-5">
+                    <div class="flex items-center justify-between mb-2"><h3 class="font-bold text-slate-700">記錄歷史</h3><span id="pnlLogCount" class="text-sm text-slate-500">0 筆</span></div>
+                    <div id="pnlLogList"></div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" id="pnlUndoBtn" disabled class="flex-1 py-3 border border-slate-200 rounded-xl text-sm text-slate-400 font-bold transition">↶ 復原上一步</button>
+                    <button type="button" id="pnlClearBtn" class="flex-1 py-3 border border-slate-200 rounded-xl text-sm text-slate-500 font-bold transition">清空所有金額</button>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-4 leading-relaxed">「清空」要按兩次才生效；清空或刪除可用「復原上一步」還原一次。損益資料與客戶資料同步存在你的 Firebase。</p>
             </div>
         </main>
 
@@ -718,17 +788,7 @@
             </div>
         </div>
 
-        <!-- 新增：登出確認彈窗 (取代原本的 confirm 以避免 iframe 阻擋) -->
-        <div id="logoutConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
-            <div class="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4"><i class="fa-solid fa-right-from-bracket text-xl"></i></div>
-                <h3 class="text-lg font-bold text-slate-900 font-editorial">確認登出團隊？</h3>
-                <p class="text-sm text-slate-500 mb-6 mt-2">確定要登出並切換團隊嗎？這將會清除您目前的連線狀態。</p>
-                <div class="flex justify-end gap-3"><button onclick="closeModal('logoutConfirmModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold">取消</button><button onclick="executeLogout()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold">確認登出</button></div>
-            </div>
-        </div>
-
-        <!-- 確認刪除業務員彈窗 -->
+        <!-- 新增：確認刪除業務員彈窗 -->
         <div id="deleteAgentConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
             <div class="bg-white rounded-xl w-full max-w-md shadow-2xl p-6 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4"><i class="fa-solid fa-user-xmark text-xl"></i></div>
@@ -784,7 +844,6 @@
             <div class="bg-white rounded-2xl w-full max-w-sm p-6">
                 <form id="goalForm" onsubmit="handleSaveGoal(event)">
                     <input type="hidden" id="goalYearInput">
-                    <input type="hidden" id="goalAgentInput"> <!-- 新增隱藏欄位：紀錄目標設定對象 -->
                     <h3 id="goalYearDisplay" class="font-bold font-editorial text-center mb-4 text-[#1E2E3D]"></h3>
                     <label class="block text-xs font-bold text-slate-500 mb-1">FYC 年度目標 (C)</label>
                     <input type="number" step="0.1" id="goalTargetFyc" class="w-full px-3 py-2 mb-3 border border-slate-200 rounded-lg text-sm outline-none" required>
@@ -812,7 +871,32 @@
             if (customers.length === 0 && !window.hasLoadedOnce) {
                 customers = initialCustomers;
             }
-            
+
+            // 既有資料相容處理（沿用原本的階段升級規則）
+            customers.forEach(c => {
+                if (!c.tags) c.tags = [];
+                if (c.progress === 'CONTACT' && c.category !== 'RECRUIT') c.progress = 'NURTURE';
+                if (c.lastStage === 'CONTACT' && c.category !== 'RECRUIT') c.lastStage = 'NURTURE';
+                if (c.progress === 'R_OPP') c.progress = 'R_INTERVIEW';
+                if (c.lastStage === 'R_OPP') c.lastStage = 'R_INTERVIEW';
+                if (c.history) c.history.forEach(h => {
+                    if (h.progress === 'CONTACT' && c.category !== 'RECRUIT') h.progress = 'NURTURE';
+                    if (h.progress === 'R_OPP') h.progress = 'R_INTERVIEW';
+                });
+            });
+
+            // 損益資料一併從雲端載入
+            if (data.pnl && typeof data.pnl === 'object') {
+                pnlData = data.pnl;
+                if (!Array.isArray(pnlData.biz)) pnlData.biz = [];
+                if (!Array.isArray(pnlData.life)) pnlData.life = [];
+                if (!Array.isArray(pnlData.log)) pnlData.log = [];
+                if (!pnlData.income) pnlData.income = { monthly: 0, quarterly: 0 };
+                if (pnlData.rate == null) pnlData.rate = 800;
+                if (!pnlData.mode) pnlData.mode = 'monthly';
+            }
+            if (typeof renderPnl === 'function') renderPnl();
+
             window.hasLoadedOnce = true;
             if (typeof renderApp === 'function') renderApp();
         };
@@ -822,10 +906,214 @@
                 cust: customers,
                 per: customPeriods,
                 goals: annualGoals,
-                tags: customTags
+                tags: customTags,
+                pnl: pnlData
             };
         };
         // ----------------------------------------------------
+
+        // ========== 損益分析引擎 ==========
+        function defaultPnl() {
+            return {
+                mode: 'monthly', rate: 800,
+                income: { monthly: 0, quarterly: 0 },
+                biz: [
+                    { id: pnlUid(), name: '交通', amount: 4000 },
+                    { id: pnlUid(), name: '通訊 / 網路', amount: 1500 },
+                    { id: pnlUid(), name: '證照 + 公會年費（月攤）', amount: 1000 },
+                    { id: pnlUid(), name: '社團 / BNI 會費（月攤）', amount: 3000 },
+                    { id: pnlUid(), name: '應酬 / 客戶經營', amount: 4000 },
+                    { id: pnlUid(), name: '行政 / 桌費 / 名片', amount: 2000 },
+                    { id: pnlUid(), name: '進修 / 軟體工具', amount: 1500 },
+                    { id: pnlUid(), name: '治裝（月攤）', amount: 1000 }
+                ],
+                life: [
+                    { id: pnlUid(), name: '房租', amount: 12000 },
+                    { id: pnlUid(), name: '伙食', amount: 9000 },
+                    { id: pnlUid(), name: '個人保險 / 水電 / 雜支', amount: 5000 }
+                ],
+                log: []
+            };
+        }
+        function pnlUid() { return 'p' + Date.now().toString(36) + Math.floor(Math.random() * 10000); }
+        let pnlData = defaultPnl();
+
+        function pnlFmt(n) { return Math.round(n).toLocaleString('en-US'); }
+        function pnlMoney(n) { return 'NT$' + pnlFmt(n); }
+        function pnlSign(n) { return (n < 0 ? '−NT$' : 'NT$') + pnlFmt(Math.abs(n)); }
+        function pnlTotal(key) { return (pnlData[key] || []).reduce(function (s, i) { return s + (parseFloat(i.amount) || 0); }, 0); }
+        function pnlGetIncome() { var raw = parseFloat(pnlData.income[pnlData.mode]) || 0; return pnlData.mode === 'quarterly' ? raw / 3 : raw; }
+        function pnlNetVal() { return pnlGetIncome() - pnlTotal('biz') - pnlTotal('life'); }
+
+        var pnlSaveTimer = null;
+        function persistPnl() {
+            if (window.syncToCloudForce) { window.syncToCloudForce(); }
+            else { try { localStorage.setItem('crm_v2_pnl', JSON.stringify(pnlData)); } catch (e) {} }
+        }
+        function pnlSaveSoon() { if (pnlSaveTimer) clearTimeout(pnlSaveTimer); pnlSaveTimer = setTimeout(persistPnl, 900); }
+
+        // 一段式復原
+        var pnlUndoSnap = null;
+        function pnlUpdateUndoBtn() {
+            var b = document.getElementById('pnlUndoBtn'); if (!b) return;
+            b.disabled = !pnlUndoSnap;
+            b.className = 'flex-1 py-3 border rounded-xl text-sm font-bold transition ' + (pnlUndoSnap ? 'border-amber-300 text-amber-700' : 'border-slate-200 text-slate-400');
+        }
+        function armPnlUndo() { pnlUndoSnap = JSON.parse(JSON.stringify(pnlData)); pnlUpdateUndoBtn(); }
+        function disarmPnlUndo() { if (pnlUndoSnap) { pnlUndoSnap = null; pnlUpdateUndoBtn(); } }
+        function doPnlUndo() {
+            if (!pnlUndoSnap) return;
+            pnlData = JSON.parse(JSON.stringify(pnlUndoSnap)); pnlUndoSnap = null;
+            applyPnlToInputs(); renderPnlSection('biz'); renderPnlSection('life'); renderPnlLog(); recalcPnl(); persistPnl(); pnlUpdateUndoBtn();
+        }
+
+        function setPnlMode(m, silent) {
+            pnlData.mode = m;
+            var mo = document.getElementById('pnlModeMonthly'), qu = document.getElementById('pnlModeQuarterly');
+            var rm = document.getElementById('pnlRowMonthly'), rq = document.getElementById('pnlRowQuarterly');
+            if (mo && qu) {
+                mo.className = 'flex-1 py-2 rounded-md text-sm font-bold ' + (m === 'monthly' ? 'bg-white text-slate-700' : 'text-slate-400');
+                qu.className = 'flex-1 py-2 rounded-md text-sm font-bold ' + (m === 'quarterly' ? 'bg-white text-slate-700' : 'text-slate-400');
+            }
+            if (rm) rm.style.display = (m === 'monthly') ? 'flex' : 'none';
+            if (rq) rq.style.display = (m === 'quarterly') ? 'flex' : 'none';
+            if (!silent) { disarmPnlUndo(); recalcPnl(); persistPnl(); }
+        }
+
+        function applyPnlToInputs() {
+            var im = document.getElementById('pnlIncMonthly'); if (!im) return;
+            im.value = pnlData.income.monthly;
+            document.getElementById('pnlIncQuarterly').value = pnlData.income.quarterly;
+            document.getElementById('pnlRate').value = pnlData.rate;
+            setPnlMode(pnlData.mode, true);
+        }
+
+        function recalcPnl() {
+            var $ = function (id) { return document.getElementById(id); };
+            if (!$('pnlNet')) return;
+            var inc = pnlGetIncome(), biz = pnlTotal('biz'), life = pnlTotal('life');
+            var exp = biz + life, net = inc - exp, bizNet = inc - biz;
+            $('pnlIncomeSum').textContent = pnlMoney(inc) + ' / 月';
+            $('pnlBizSum').textContent = pnlMoney(biz) + ' / 月';
+            $('pnlLifeSum').textContent = pnlMoney(life) + ' / 月';
+            $('pnlIncomeChip').textContent = pnlMoney(inc);
+            $('pnlExpenseChip').textContent = pnlMoney(exp);
+            $('pnlBreakChip').textContent = pnlMoney(exp);
+            var bn = $('pnlBizNetChip'); bn.textContent = pnlSign(bizNet);
+            bn.className = 'text-lg font-bold ' + (bizNet < 0 ? 'text-rose-600' : (bizNet > 0 ? 'text-emerald-600' : 'text-amber-600'));
+            var st = $('pnlStatus'), ne = $('pnlNet'), ft = $('pnlFoot'), bar = $('pnlVerdictBar');
+            if (Math.abs(net) < 500) {
+                st.textContent = '幾乎打平'; ne.textContent = pnlMoney(Math.abs(net));
+                ne.className = 'text-4xl font-bold font-editorial text-amber-600'; bar.className = 'absolute left-0 top-0 bottom-0 w-1.5 bg-amber-400';
+                ft.textContent = '收支幾乎相等，沒有結餘也沒有缺口。';
+            } else if (net > 0) {
+                st.textContent = '目前有賺'; ne.textContent = pnlMoney(net);
+                ne.className = 'text-4xl font-bold font-editorial text-emerald-600'; bar.className = 'absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500';
+                ft.textContent = '扣掉所有成本與生活開銷後，每月結餘 ' + pnlMoney(net) + '。';
+            } else {
+                st.textContent = '目前在虧'; ne.textContent = '−' + pnlMoney(Math.abs(net));
+                ne.className = 'text-4xl font-bold font-editorial text-rose-600'; bar.className = 'absolute left-0 top-0 bottom-0 w-1.5 bg-rose-500';
+                ft.textContent = '每月缺口 ' + pnlMoney(-net) + '，等於在吃老本。';
+            }
+            var gap = $('pnlGap');
+            if (net < -500) { gap.classList.remove('hidden'); var rate = parseFloat(pnlData.rate) || 0; $('pnlGapHours').textContent = rate > 0 ? ((-net) / rate / 4.33).toFixed(1) : '—'; }
+            else gap.classList.add('hidden');
+        }
+
+        function renderPnlSection(key) {
+            var box = document.getElementById(key === 'biz' ? 'pnlBizList' : 'pnlLifeList');
+            if (!box) return;
+            box.innerHTML = '';
+            (pnlData[key] || []).forEach(function (item) {
+                var row = document.createElement('div');
+                row.className = 'flex items-center gap-2 py-2 border-b border-slate-100';
+                var name = document.createElement('input');
+                name.type = 'text'; name.value = item.name || ''; name.placeholder = '項目名稱';
+                name.className = 'flex-1 min-w-0 bg-transparent border-b border-transparent focus:border-indigo-400 outline-none text-sm py-1 text-slate-700';
+                name.addEventListener('input', function () { item.name = name.value; disarmPnlUndo(); pnlSaveSoon(); });
+                var cur = document.createElement('span'); cur.className = 'text-slate-400 text-sm'; cur.textContent = 'NT$';
+                var amt = document.createElement('input');
+                amt.type = 'number'; amt.min = '0'; amt.step = '500'; amt.value = item.amount;
+                amt.className = 'w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-right bg-slate-50 text-sm';
+                amt.addEventListener('input', function () { item.amount = parseFloat(amt.value) || 0; disarmPnlUndo(); recalcPnl(); pnlSaveSoon(); });
+                var del = document.createElement('button'); del.type = 'button'; del.textContent = '×';
+                del.className = 'text-slate-300 hover:text-rose-500 text-lg px-1 leading-none';
+                del.addEventListener('click', function () { armPnlUndo(); pnlData[key] = pnlData[key].filter(function (x) { return x.id !== item.id; }); renderPnlSection(key); recalcPnl(); persistPnl(); });
+                row.appendChild(name); row.appendChild(cur); row.appendChild(amt); row.appendChild(del);
+                box.appendChild(row);
+            });
+        }
+
+        function addPnlItem(key) {
+            disarmPnlUndo();
+            pnlData[key].push({ id: pnlUid(), name: '', amount: 0 });
+            renderPnlSection(key); recalcPnl(); persistPnl();
+            var box = document.getElementById(key === 'biz' ? 'pnlBizList' : 'pnlLifeList');
+            var inputs = box.querySelectorAll('input[type=text]'); if (inputs.length) inputs[inputs.length - 1].focus();
+        }
+
+        function renderPnlLog() {
+            var list = document.getElementById('pnlLogList'); if (!list) return;
+            var log = pnlData.log || [];
+            document.getElementById('pnlLogCount').textContent = log.length + ' 筆';
+            if (!log.length) { list.innerHTML = '<p class="text-sm text-slate-400 py-2">還沒有記錄。把數字調到目前實況後，按上面的「記錄今天這筆快照」。</p>'; return; }
+            var maxAbs = 1; log.forEach(function (r) { maxAbs = Math.max(maxAbs, Math.abs(r.net)); });
+            list.innerHTML = '';
+            log.slice().reverse().forEach(function (r) {
+                var pos = r.net >= 0, w = Math.min(100, Math.abs(r.net) / maxAbs * 100);
+                var row = document.createElement('div');
+                row.className = 'flex items-center gap-3 py-2.5 border-b border-slate-100';
+                row.innerHTML = '<span class="text-sm text-slate-500 w-24 flex-shrink-0">' + r.d + '</span>' +
+                    '<span class="flex-1 h-1.5 rounded bg-slate-100 relative overflow-hidden"><span class="absolute top-0 bottom-0 rounded" style="' + (pos ? 'left:50%;background:#10B981;' : 'right:50%;background:#F43F5E;') + 'width:' + (w / 2) + '%"></span></span>' +
+                    '<span class="text-sm font-bold w-24 text-right ' + (pos ? 'text-emerald-600' : 'text-rose-600') + '">' + pnlSign(r.net) + '</span>';
+                var del = document.createElement('button'); del.type = 'button'; del.textContent = '×';
+                del.className = 'text-slate-300 hover:text-rose-500 text-base px-1 flex-shrink-0';
+                del.addEventListener('click', function () { armPnlUndo(); pnlData.log = pnlData.log.filter(function (x) { return x.id !== r.id; }); renderPnlLog(); persistPnl(); });
+                row.appendChild(del);
+                list.appendChild(row);
+            });
+        }
+
+        function recordPnlSnapshot() {
+            var d = new Date();
+            var ds = d.getFullYear() + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2);
+            pnlData.log = pnlData.log || [];
+            pnlData.log.push({ id: pnlUid(), d: ds, net: Math.round(pnlNetVal()), income: Math.round(pnlGetIncome()), expense: Math.round(pnlTotal('biz') + pnlTotal('life')) });
+            renderPnlLog(); persistPnl();
+        }
+
+        function renderPnl() {
+            applyPnlToInputs(); renderPnlSection('biz'); renderPnlSection('life'); renderPnlLog(); recalcPnl(); pnlUpdateUndoBtn();
+        }
+
+        var pnlClearArmed = false, pnlClearTimer = null;
+        function pnlResetClear() {
+            var b = document.getElementById('pnlClearBtn'); pnlClearArmed = false;
+            if (b) { b.textContent = '清空所有金額'; b.className = 'flex-1 py-3 border border-slate-200 rounded-xl text-sm text-slate-500 font-bold transition'; }
+            if (pnlClearTimer) { clearTimeout(pnlClearTimer); pnlClearTimer = null; }
+        }
+        function pnlInit() {
+            var $ = function (id) { return document.getElementById(id); };
+            if (!$('pnlRecordBtn')) return;
+            $('pnlModeMonthly').addEventListener('click', function () { setPnlMode('monthly'); });
+            $('pnlModeQuarterly').addEventListener('click', function () { setPnlMode('quarterly'); });
+            $('pnlIncMonthly').addEventListener('input', function () { pnlData.income.monthly = parseFloat(this.value) || 0; disarmPnlUndo(); recalcPnl(); pnlSaveSoon(); });
+            $('pnlIncQuarterly').addEventListener('input', function () { pnlData.income.quarterly = parseFloat(this.value) || 0; disarmPnlUndo(); recalcPnl(); pnlSaveSoon(); });
+            $('pnlRate').addEventListener('input', function () { pnlData.rate = parseFloat(this.value) || 0; disarmPnlUndo(); recalcPnl(); pnlSaveSoon(); });
+            $('pnlAddBiz').addEventListener('click', function () { addPnlItem('biz'); });
+            $('pnlAddLife').addEventListener('click', function () { addPnlItem('life'); });
+            $('pnlRecordBtn').addEventListener('click', recordPnlSnapshot);
+            $('pnlUndoBtn').addEventListener('click', doPnlUndo);
+            $('pnlClearBtn').addEventListener('click', function () {
+                if (!pnlClearArmed) { pnlClearArmed = true; this.textContent = '再按一次確認清空'; this.className = 'flex-1 py-3 border border-rose-400 bg-rose-500 text-white rounded-xl text-sm font-bold transition'; pnlClearTimer = setTimeout(pnlResetClear, 3500); return; }
+                pnlResetClear(); armPnlUndo();
+                (pnlData.biz || []).forEach(function (i) { i.amount = 0; }); (pnlData.life || []).forEach(function (i) { i.amount = 0; });
+                renderPnlSection('biz'); renderPnlSection('life'); recalcPnl(); persistPnl();
+            });
+            renderPnl();
+        }
+        pnlInit();
+        // ========== /損益分析引擎 ==========
 
         // 核心邏輯：判斷客戶是否符合當前的「負責業務」過濾條件
         function matchAgentFilter(c, fAgent) {
@@ -963,54 +1251,12 @@
         }
 
         window.onload = function() {
-            // Check if there's a saved team ID
-            const savedTeam = localStorage.getItem('crm_team_id');
-            if (!savedTeam) {
-                document.getElementById('teamLoginModal').classList.remove('hidden');
-                document.getElementById('teamLoginModal').classList.add('flex');
-            } else {
-                // Initialize cloud later (handled by the module script)
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-            }
-
-            // Fallback for offline mode after 3 seconds if not connecting
-            setTimeout(() => {
-                const overlay = document.getElementById('loadingOverlay');
-                if (overlay && !overlay.classList.contains('hidden')) {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.classList.add('hidden'), 500);
-                    
-                    try { customers = JSON.parse(localStorage.getItem('crm_v2_cust')) || initialCustomers; } catch(e) { customers = initialCustomers; }
-                    try { customPeriods = JSON.parse(localStorage.getItem('crm_v2_per')) || []; } catch(e) {}
-                    try { annualGoals = JSON.parse(localStorage.getItem('crm_v2_goals')) || {}; } catch(e) {}
-                    try { customTags = JSON.parse(localStorage.getItem('crm_v2_tags')) || defaultTags; } catch(e) { customTags = defaultTags; }
-                    
-                    customers.forEach(c => { 
-                        if (!c.tags) c.tags = []; 
-                        if (c.progress === 'CONTACT' && c.category !== 'RECRUIT') c.progress = 'NURTURE';
-                        if (c.lastStage === 'CONTACT' && c.category !== 'RECRUIT') c.lastStage = 'NURTURE';
-                        if (c.progress === 'R_OPP') c.progress = 'R_INTERVIEW';
-                        if (c.lastStage === 'R_OPP') c.lastStage = 'R_INTERVIEW';
-                        c.history?.forEach(h => { 
-                            if(h.progress === 'CONTACT' && c.category !== 'RECRUIT') h.progress = 'NURTURE'; 
-                            if(h.progress === 'R_OPP') h.progress = 'R_INTERVIEW'; 
-                        });
-                    });
-                    
-                    const now = new Date(); document.getElementById('addPeriodYear').value = now.getFullYear();
-                    document.getElementById('addPeriodMonth').value = String(now.getMonth() + 1).padStart(2, '0');
-                    document.getElementById('historyDate').valueAsDate = new Date();
-
-                    recordState(); renderApp();
-                    
-                    if (localStorage.getItem('crm_team_id')) {
-                        showToast('系統已就緒 (單機備援模式)', 'info');
-                        document.getElementById('cloudStatusText').innerHTML = '<i class="fa-solid fa-hard-drive"></i> 本機模式';
-                        document.getElementById('cloudStatusText').className = 'text-[10px] text-slate-400 tracking-widest uppercase font-bold';
-                        document.getElementById('cloudPingIndicator').style.display = 'none';
-                    }
-                }
-            }, 3000);
+            // 日期欄位初始化（與資料無關）
+            const now = new Date();
+            const py = document.getElementById('addPeriodYear'); if (py) py.value = now.getFullYear();
+            const pm = document.getElementById('addPeriodMonth'); if (pm) pm.value = String(now.getMonth() + 1).padStart(2, '0');
+            const hd = document.getElementById('historyDate'); if (hd) hd.valueAsDate = new Date();
+            // 登入與資料載入統一由 Firebase 模組的 onAuthStateChanged 處理
         };
 
         // --- 團隊管理相關函數 ---
@@ -1035,20 +1281,20 @@
         };
 
         window.logoutTeam = function() {
-            // 使用自訂 Modal 取代原有的 confirm 避免 iframe 阻擋
-            openModal('logoutConfirmModal');
-        };
-
-        window.executeLogout = function() {
-            localStorage.removeItem('crm_team_id');
-            location.reload();
+            if(confirm('確定要登出嗎？')) {
+                if (typeof window.doLogout === 'function') { window.doLogout(); }
+                else { localStorage.removeItem('crm_team_id'); location.reload(); }
+            }
         };
         // -------------------------
 
         function switchMainTab(tab) {
             currentMainTab = tab;
-            
-            const tabs = ['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT'];
+
+            const crmBody = document.getElementById('crmBody');
+            const pnlPanel = document.getElementById('pnlPanel');
+
+            const tabs = ['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT', 'PNL'];
             tabs.forEach(t => {
                 const el = document.getElementById(`mainTab-${t}`);
                 if (el) {
@@ -1059,7 +1305,16 @@
                     }
                 }
             });
-            
+
+            if (tab === 'PNL') {
+                if (crmBody) crmBody.style.display = 'none';
+                if (pnlPanel) pnlPanel.style.display = 'block';
+                if (typeof renderPnl === 'function') renderPnl();
+                return;
+            }
+            if (crmBody) crmBody.style.display = 'block';
+            if (pnlPanel) pnlPanel.style.display = 'none';
+
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
             
@@ -1682,30 +1937,20 @@
                 }
             });
 
-            // 目標計算 (支援各業務員獨立目標)
-            const goalKey = `${year}_${fAgent}`;
-            // 為了向下相容，若找不到專屬目標，則預設讀取全局目標
-            const tgData = annualGoals[goalKey] || (fAgent === 'ALL' ? annualGoals[year] : null) || {};
-            const tgFyc = tgData.fyc || 0;
-            const tgComm = tgData.comm || 0;
-
-            let agentLabel = '';
-            if (fAgent === 'PERSONAL') agentLabel = '👤 我的個人業績';
-            else if (fAgent === 'TEAM_ONLY') agentLabel = '👥 團隊貢獻';
-            else if (fAgent === 'ALL') agentLabel = '🌐 全局總覽';
-            else agentLabel = `👤 ${fAgent} 的業績`;
-
+            // 目標計算
+            const tgFyc = annualGoals[year]?.fyc || 0, tgComm = annualGoals[year]?.comm || 0;
+            
             if (!tgFyc && !tgComm) { 
                 panel.innerHTML = `
                     <div class="bg-white rounded-2xl p-5 border border-dashed border-slate-300 flex justify-between items-center premium-shadow">
                         <div class="flex items-center gap-3">
                             <div class="bg-amber-50 text-amber-500 p-2 rounded-lg"><i class="fa-solid fa-bullseye text-xl"></i></div>
                             <div>
-                                <span class="text-sm font-bold text-slate-700 block">尚未設定 ${year} 年度目標 (${agentLabel})</span>
-                                <span class="text-[10px] text-slate-400">請點擊設定，建立該角色的專屬進度追蹤</span>
+                                <span class="text-sm font-bold text-slate-700 block">尚未設定 ${year} 年度目標</span>
+                                <span class="text-[10px] text-slate-400">設定目標以啟動進度追蹤與潛在業績預測</span>
                             </div>
                         </div>
-                        <button onclick="openGoalModal('${year}', '${fAgent}')" class="bg-[#1E2E3D] hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">設定目標</button>
+                        <button onclick="openGoalModal('${year}')" class="bg-[#1E2E3D] hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">設定目標</button>
                     </div>`; 
                 return; 
             }
@@ -1717,19 +1962,24 @@
             const commPct = tgComm > 0 ? Math.min(100, (yComm/tgComm)*100) : 0;
             const commPotPct = tgComm > 0 ? Math.min(100 - commPct, (potComm/tgComm)*100) : 0;
 
+            let agentLabel = '';
+            if (fAgent === 'PERSONAL') agentLabel = '👤 我的個人業績';
+            else if (fAgent === 'TEAM_ONLY') agentLabel = '👥 團隊貢獻';
+            else if (fAgent !== 'ALL') agentLabel = `👤 ${fAgent} 的業績`;
+
             panel.innerHTML = `
                 <div class="bg-white rounded-2xl p-5 border border-slate-200 premium-shadow">
                     <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
                         <h3 class="font-bold text-lg font-editorial text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-bullseye text-[#D4AF37]"></i> ${year} 年度目標追蹤 
-                            <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded ml-2 border border-indigo-200">正在查看: ${agentLabel}</span>
+                            ${agentLabel ? `<span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded ml-2 border border-indigo-200">正在查看: ${agentLabel}</span>` : ''}
                         </h3>
                         <div class="flex items-center gap-4">
                             <div class="hidden sm:flex items-center gap-3 text-[10px] font-bold text-slate-400">
                                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#1E2E3D]"></span> 已達標</span>
                                 <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-300/60 border border-blue-300"></span> 關鍵潛在</span>
                             </div>
-                            <button onclick="openGoalModal('${year}', '${fAgent}')" class="text-xs border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition font-bold shadow-sm flex items-center gap-1">
+                            <button onclick="openGoalModal('${year}')" class="text-xs border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition font-bold shadow-sm flex items-center gap-1">
                                 <i class="fa-solid fa-pen text-[10px]"></i> 修改
                             </button>
                         </div>
@@ -1769,22 +2019,12 @@
                 </div>`;
         }
 
-        function openGoalModal(year, fAgent) {
-            // 如果沒有傳入，則預設抓取目前篩選器的值
-            if (!fAgent) fAgent = document.getElementById('filterAgent')?.value || 'ALL';
-            
+        function openGoalModal(year) {
             document.getElementById('goalYearInput').value = year; 
-            document.getElementById('goalAgentInput').value = fAgent; 
+            document.getElementById('goalYearDisplay').innerText = `${year} 年度目標設定 (FYC: C / 薪水: 萬)`;
             
-            // 設定顯示標題
-            let agentLabel = fAgent === 'ALL' ? '全局總覽' : (fAgent === 'PERSONAL' ? '我的個人業績' : (fAgent === 'TEAM_ONLY' ? '團隊貢獻' : fAgent));
-            document.getElementById('goalYearDisplay').innerText = `${year} 目標設定 - ${agentLabel} (FYC: C / 薪水: 萬)`;
-            
-            // 讀取該業務專員的目標，若無則降級讀取全局設定（向下相容）
-            const goalKey = `${year}_${fAgent}`;
-            const tgData = annualGoals[goalKey] || (fAgent === 'ALL' ? annualGoals[year] : null) || {};
-            const storedFyc = tgData.fyc || 0;
-            const storedComm = tgData.comm || 0;
+            const storedFyc = annualGoals[year]?.fyc || 0;
+            const storedComm = annualGoals[year]?.comm || 0;
             
             document.getElementById('goalTargetFyc').value = storedFyc > 0 ? (storedFyc / 10000) : ''; 
             document.getElementById('goalTargetComm').value = storedComm > 0 ? (storedComm / 10000) : '';
@@ -1795,25 +2035,18 @@
         function handleSaveGoal(e) {
             e.preventDefault(); 
             const y = document.getElementById('goalYearInput').value;
-            const a = document.getElementById('goalAgentInput').value || 'ALL';
             const inputFyc = parseFloat(document.getElementById('goalTargetFyc').value) || 0;
             const inputComm = parseFloat(document.getElementById('goalTargetComm').value) || 0;
             
-            const goalKey = `${y}_${a}`;
-            annualGoals[goalKey] = { 
+            annualGoals[y] = { 
                 fyc: inputFyc * 10000, 
                 comm: inputComm * 10000 
             };
-
-            // 如果設定的是全局(ALL)，為了向下相容，同時更新舊版格式
-            if (a === 'ALL') {
-                annualGoals[y] = annualGoals[goalKey];
-            }
             
             recordState(); 
             renderApp(); 
             closeModal('goalModal'); 
-            showToast('已更新專屬年度目標', 'success');
+            showToast('已更新年度目標', 'success');
         }
 
         function handleAddPeriod(e) {
@@ -2616,8 +2849,8 @@
     <!-- ========================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 🔥 請將您從 Firebase 控制台取得的配置填入這裡：
         const firebaseConfig = {
@@ -2635,81 +2868,182 @@
         const db = getFirestore(app);
         const APP_ID = 'youtrend-crm';
 
-        window.initCloud = async function(teamId) {
-            if (!teamId) return; // 單機模式
+        // 記住「我們最後一次看到的雲端版本號」，用來偵測別人是否搶先寫入
+        let lastSeenRev = 0;
+        let cloudDocRef = null;
+        let isSaving = false;
 
-            // 根據團隊代碼，設定專屬的文件路徑 (徹底隔離)
-            const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', teamId);
+        function hideOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) { overlay.style.opacity = '0'; setTimeout(() => overlay.classList.add('hidden'), 500); }
+        }
 
+        // 用「交易(transaction)」安全寫入：先讀雲端版本號，
+        // 只有在沒被別人改過（版本號相符）時才覆寫，避免把同事的整包資料蓋掉。
+        async function saveToCloud() {
+            if (!cloudDocRef || !window.getCloudData || isSaving) return;
+            isSaving = true;
             try {
-                // 1. 執行匿名登入
-                await signInAnonymously(auth);
-                
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        // 2. 設定監聽器：當專屬團隊的雲端資料有變動時，即時更新畫面
-                        onSnapshot(docRef, (snapshot) => {
-                            if (snapshot.exists()) {
-                                const data = snapshot.data();
-                                // 呼叫橋樑函數，將資料送回給舊有的系統
-                                if (window.syncFromCloud) {
-                                    window.syncFromCloud(data);
-                                }
-                            }
-                            
-                            // 隱藏載入畫面並更新狀態
-                            const overlay = document.getElementById('loadingOverlay');
-                            if (overlay) {
-                                overlay.style.opacity = '0';
-                                setTimeout(() => overlay.classList.add('hidden'), 500);
-                            }
-                            const statusText = document.getElementById('cloudStatusText');
-                            if(statusText) {
-                                statusText.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> <span class="text-emerald-400">連線至: ${teamId}</span>`;
-                            }
-                        }, (error) => {
-                            console.error("Firestore Listen Error:", error);
-                            window.showToast("雲端連線被拒絕，請檢查資料庫規則 (Rules)。", "error");
-                            const overlay = document.getElementById('loadingOverlay');
-                            if (overlay) { overlay.style.opacity = '0'; setTimeout(() => overlay.classList.add('hidden'), 500); }
-                        });
+                await runTransaction(db, async (tx) => {
+                    const snap = await tx.get(cloudDocRef);
+                    const cloudRev = snap.exists() ? (snap.data()._rev || 0) : 0;
 
-                        // 3. 攔截並覆寫您的存檔函數
-                        const originalRecordState = window.recordState;
-                        window.recordState = function() {
-                            // 先執行原本的存檔與 Undo 紀錄
-                            if (originalRecordState) originalRecordState();
-                            
-                            // 然後取得最新的資料，上傳到團隊專屬雲端
-                            if (window.getCloudData) {
-                                setDoc(docRef, window.getCloudData()).catch(err => {
-                                    console.error("Firestore Save Error:", err);
-                                    window.showToast("資料同步失敗：" + err.message, "error");
-                                });
-                            }
-                        };
-
-                        // 給予一個額外的橋樑，讓 Undo/Redo 也能觸發雲端同步
-                        window.syncToCloudForce = function() {
-                             if (window.getCloudData) {
-                                setDoc(docRef, window.getCloudData()).catch(console.error);
-                            }
-                        };
+                    // 衝突偵測：雲端版本已比我們看到的還新 → 有人搶先存檔了
+                    if (snap.exists() && cloudRev !== lastSeenRev) {
+                        const err = new Error('CONFLICT');
+                        err.__conflict = true;
+                        throw err;
                     }
+
+                    const payload = window.getCloudData();
+                    payload._rev = cloudRev + 1;
+                    payload._updatedAt = Date.now();
+                    tx.set(cloudDocRef, payload);
+                    lastSeenRev = payload._rev; // 樂觀更新本地版本號
                 });
-            } catch (error) {
-                console.error("Auth Error:", error);
-                window.showToast("雲端認證失敗：" + error.message, "error");
-                const overlay = document.getElementById('loadingOverlay');
-                if (overlay) { overlay.style.opacity = '0'; setTimeout(() => overlay.classList.add('hidden'), 500); }
+            } catch (e) {
+                if (e && e.__conflict) {
+                    // 關鍵差異：不再盲目覆寫，改成保留雲端最新版並提醒使用者。
+                    // onSnapshot 會自動把畫面更新成雲端最新狀態。
+                    if (window.showToast) window.showToast('偵測到其他成員剛更新資料，已保留雲端最新版本。若您剛才的修改沒被存到，請重新操作一次。', 'error');
+                } else {
+                    console.error("Firestore Save Error:", e);
+                    if (window.showToast) window.showToast('資料同步失敗：' + (e.message || e), 'error');
+                }
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        let cloudAttached = false;
+
+        function showLogin() {
+            const m = document.getElementById('teamLoginModal');
+            if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+            const pre = document.getElementById('teamCodeInput');
+            const saved = localStorage.getItem('crm_team_id');
+            if (pre && saved && !pre.value) pre.value = saved;
+            hideOverlay();
+        }
+        function hideLogin() {
+            const m = document.getElementById('teamLoginModal');
+            if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+        }
+
+        function attachCloud(teamId) {
+            if (cloudAttached) return;
+            cloudAttached = true;
+
+            cloudDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', teamId);
+
+            // 監聽器：雲端有變動時即時更新畫面
+            onSnapshot(cloudDocRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    lastSeenRev = data._rev || 0;
+                    if (window.syncFromCloud) window.syncFromCloud(data);
+                } else {
+                    lastSeenRev = 0;
+                }
+                hideOverlay();
+                const statusText = document.getElementById('cloudStatusText');
+                if (statusText) {
+                    statusText.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> <span class="text-emerald-400">連線至: ${teamId}</span>`;
+                }
+                const ping = document.getElementById('cloudPingIndicator');
+                if (ping) ping.style.display = 'flex';
+            }, (error) => {
+                console.error("Firestore Listen Error:", error);
+                if (window.showToast) window.showToast("雲端連線被拒絕：請確認你的帳號在白名單內、且資料庫規則已套用。", "error");
+                hideOverlay();
+            });
+
+            // 攔截存檔函數：原本邏輯照跑，再用交易方式安全上傳
+            const originalRecordState = window.recordState;
+            window.recordState = function() {
+                if (originalRecordState) originalRecordState();
+                try {
+                    const d = window.getCloudData ? window.getCloudData() : null;
+                    if (d) {
+                        localStorage.setItem('crm_v2_cust', JSON.stringify(d.cust));
+                        localStorage.setItem('crm_v2_per', JSON.stringify(d.per));
+                        localStorage.setItem('crm_v2_goals', JSON.stringify(d.goals));
+                        localStorage.setItem('crm_v2_tags', JSON.stringify(d.tags));
+                        localStorage.setItem('crm_v2_pnl', JSON.stringify(d.pnl));
+                    }
+                } catch (e) {}
+                saveToCloud();
+            };
+
+            // Undo/Redo 與損益儲存共用同一條安全通道
+            window.syncToCloudForce = function() { saveToCloud(); };
+        }
+
+        function loginErrorText(err) {
+            const c = (err && err.code) ? err.code : '';
+            if (c.indexOf('invalid-credential') >= 0 || c.indexOf('wrong-password') >= 0 || c.indexOf('user-not-found') >= 0) return '帳號或密碼錯誤。';
+            if (c.indexOf('too-many-requests') >= 0) return '嘗試次數過多，請稍後再試。';
+            if (c.indexOf('invalid-email') >= 0) return 'Email 格式不正確。';
+            return '登入失敗：' + ((err && err.message) ? err.message : c);
+        }
+
+        window.doLogin = async function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const email = (document.getElementById('loginEmail').value || '').trim();
+            const pw = document.getElementById('loginPassword').value || '';
+            const team = (document.getElementById('teamCodeInput').value || '').trim().toUpperCase();
+            const errEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginSubmitBtn');
+            if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+            if (!email || !pw || !team) {
+                if (errEl) { errEl.textContent = '請完整填寫 Email、密碼與團隊代碼。'; errEl.classList.remove('hidden'); }
+                return;
+            }
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+            try {
+                try { localStorage.setItem('crm_team_id', team); } catch (_) {}
+                await signInWithEmailAndPassword(auth, email, pw);
+                hideLogin();
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+                const ln = document.getElementById('loadingTeamName');
+                if (ln) ln.textContent = '正在連線至 ' + team + '...';
+                // onAuthStateChanged 會接手後續連線
+            } catch (err) {
+                if (errEl) { errEl.textContent = loginErrorText(err); errEl.classList.remove('hidden'); }
+            } finally {
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
             }
         };
 
-        // 啟動雲端引擎前，先檢查是否有輸入團隊代碼
-        const currentTeamId = localStorage.getItem('crm_team_id');
-        if (currentTeamId) {
-            window.initCloud(currentTeamId);
-        }
+        window.doLogout = async function() {
+            try { await signOut(auth); } catch (_) {}
+            try { localStorage.removeItem('crm_team_id'); } catch (_) {}
+            location.reload();
+        };
+
+        // 向後相容（舊流程可能呼叫到）
+        window.initCloud = function(teamId) {
+            if (teamId) { try { localStorage.setItem('crm_team_id', teamId); } catch (_) {} attachCloud(teamId); }
+        };
+
+        // 維持登入狀態，重開頁面免重新登入
+        setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+        // 唯一進場守門員：依登入狀態決定顯示登入畫面或連線
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                const teamId = localStorage.getItem('crm_team_id');
+                if (teamId) {
+                    hideLogin();
+                    document.getElementById('loadingOverlay').classList.remove('hidden');
+                    attachCloud(teamId);
+                } else {
+                    showLogin();
+                }
+            } else {
+                showLogin();
+            }
+        });
     </script>
 </body>
 </html>
