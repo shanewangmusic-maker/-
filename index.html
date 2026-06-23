@@ -418,7 +418,27 @@
                     <p id="schedStatus" class="hidden text-sm font-bold mt-3 text-center"></p>
                 </div>
 
-                <!-- 週視圖 -->
+                <!-- 日 / 週 切換 -->
+                <div class="flex gap-1 mb-3 bg-slate-100 rounded-lg p-1">
+                    <button type="button" id="schedViewDay" class="flex-1 py-2 rounded-md text-sm font-bold text-slate-400">日</button>
+                    <button type="button" id="schedViewWeek" class="flex-1 py-2 rounded-md text-sm font-bold bg-white text-slate-700 shadow-sm">週</button>
+                </div>
+
+                <!-- 日檢視（時間軸） -->
+                <div id="schedDayView" style="display:none;">
+                    <div class="flex items-center justify-between mb-2">
+                        <button type="button" id="schedDayPrev" class="w-9 h-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition text-lg leading-none">‹</button>
+                        <span id="schedDayLabel" class="font-bold text-slate-700"></span>
+                        <button type="button" id="schedDayNext" class="w-9 h-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition text-lg leading-none">›</button>
+                    </div>
+                    <button type="button" id="schedDayReplan" class="w-full mb-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg text-sm font-bold hover:bg-indigo-50 transition">重排這天</button>
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-2">
+                        <div id="schedTimeline" class="relative"></div>
+                    </div>
+                    <div id="schedDayUntimed"></div>
+                </div>
+
+                <!-- 週檢視 -->
                 <div id="schedWeekGrid" class="space-y-3"></div>
 
                 <p class="text-xs text-slate-400 text-center mt-4 leading-relaxed">行程存在同一個 Firebase。送給 AI 的只有「姓名＋事項」這種最少資訊，不含電話、保單、佣金。</p>
@@ -1260,6 +1280,98 @@
         // ========== 週行程引擎 ==========
         function defaultSched() { return { fixed: '', week: {}, weekStart: '' }; }
         let schedData = defaultSched();
+        var schedView = 'week';
+        var schedDayDate = schedFmtDate(new Date());
+        var SCHED_START_HOUR = 6, SCHED_END_HOUR = 23, SCHED_HOUR_PX = 50;
+
+        function schedHexA(hex, a) {
+            var h = hex.replace('#', '');
+            var r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        }
+        function schedParseTime(s) {
+            if (!s) return null;
+            var m = String(s).match(/(\d{1,2}):(\d{2})\s*[-–~〜]\s*(\d{1,2}):(\d{2})/);
+            if (m) return { start: (+m[1]) * 60 + (+m[2]), end: (+m[3]) * 60 + (+m[4]) };
+            var m2 = String(s).match(/(\d{1,2}):(\d{2})/);
+            if (m2) { var st = (+m2[1]) * 60 + (+m2[2]); return { start: st, end: st + 60 }; }
+            return null;
+        }
+        function renderSchedActive() { if (schedView === 'day') renderDayView(); else renderWeekGrid(); }
+
+        function setSchedView(v) {
+            schedView = v;
+            var dayBtn = document.getElementById('schedViewDay'), wkBtn = document.getElementById('schedViewWeek');
+            var dayView = document.getElementById('schedDayView'), weekView = document.getElementById('schedWeekGrid');
+            if (dayBtn && wkBtn) {
+                dayBtn.className = 'flex-1 py-2 rounded-md text-sm font-bold ' + (v === 'day' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400');
+                wkBtn.className = 'flex-1 py-2 rounded-md text-sm font-bold ' + (v === 'week' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400');
+            }
+            if (v === 'day') { if (dayView) dayView.style.display = 'block'; if (weekView) weekView.style.display = 'none'; renderDayView(); }
+            else { if (dayView) dayView.style.display = 'none'; if (weekView) weekView.style.display = 'block'; renderWeekGrid(); }
+        }
+
+        function schedDayShift(delta) {
+            var d = new Date(schedDayDate + 'T00:00:00'); d.setDate(d.getDate() + delta);
+            schedDayDate = schedFmtDate(d); renderDayView();
+        }
+
+        function renderDayView() {
+            var wrap = document.getElementById('schedTimeline'); if (!wrap) return;
+            var d = new Date(schedDayDate + 'T00:00:00');
+            var lbl = document.getElementById('schedDayLabel');
+            if (lbl) lbl.textContent = (d.getMonth() + 1) + '/' + d.getDate() + '（週' + schedWeekdayZh(d) + '）';
+            var items = (schedData.week && schedData.week[schedDayDate]) ? schedData.week[schedDayDate] : [];
+            var pxPerMin = SCHED_HOUR_PX / 60;
+            wrap.style.height = ((SCHED_END_HOUR - SCHED_START_HOUR) * SCHED_HOUR_PX) + 'px';
+            wrap.innerHTML = '';
+            // 小時線 + 標籤
+            for (var h = SCHED_START_HOUR; h <= SCHED_END_HOUR; h++) {
+                var top = (h - SCHED_START_HOUR) * SCHED_HOUR_PX;
+                var line = document.createElement('div');
+                line.className = 'absolute left-0 right-0 border-t border-slate-100';
+                line.style.top = top + 'px';
+                var ampm = h < 12 ? '上午' : '下午'; var hh = (h % 12 === 0) ? 12 : (h > 12 ? h - 12 : h);
+                line.innerHTML = '<span class="absolute -top-2 left-1 text-[10px] text-slate-400">' + ampm + hh + '時</span>';
+                wrap.appendChild(line);
+            }
+            // 已定時事件
+            var untimed = [];
+            items.forEach(function (it) {
+                var t = schedParseTime(it.time);
+                if (!t) { untimed.push(it); return; }
+                var s = Math.max(t.start, SCHED_START_HOUR * 60);
+                var e = Math.min(t.end, SCHED_END_HOUR * 60);
+                if (e <= s) e = s + 30;
+                var col = (SCHED_TYPE[it.type] || SCHED_TYPE.admin);
+                var ev = document.createElement('div');
+                ev.className = 'absolute rounded-lg px-2 py-1 overflow-hidden';
+                ev.style.cssText = 'top:' + ((s - SCHED_START_HOUR * 60) * pxPerMin) + 'px;height:' + Math.max(22, (e - s) * pxPerMin) + 'px;left:50px;right:6px;background:' + schedHexA(col.dot, 0.12) + ';border-left:3px solid ' + col.dot + ';';
+                ev.innerHTML = '<div class="text-[11px] font-bold text-slate-700 leading-tight truncate">' + schedEsc(it.title) + '</div><div class="text-[10px] text-slate-400 leading-tight">' + schedEsc(it.time) + '</div>';
+                wrap.appendChild(ev);
+            });
+            // 今天的當前時間紅線
+            if (schedDayDate === schedFmtDate(new Date())) {
+                var now = new Date(); var nowMin = now.getHours() * 60 + now.getMinutes();
+                if (nowMin >= SCHED_START_HOUR * 60 && nowMin <= SCHED_END_HOUR * 60) {
+                    var nl = document.createElement('div');
+                    nl.className = 'absolute left-12 right-0 z-10';
+                    nl.style.cssText = 'top:' + ((nowMin - SCHED_START_HOUR * 60) * pxPerMin) + 'px;height:2px;background:#EF4444;';
+                    wrap.appendChild(nl);
+                }
+            }
+            // 未定時清單
+            var ut = document.getElementById('schedDayUntimed');
+            if (ut) {
+                if (untimed.length) {
+                    ut.style.display = 'block';
+                    ut.innerHTML = '<p class="text-xs font-bold text-slate-500 mb-1 mt-3">未定時</p>' + untimed.map(function (it) {
+                        var c = (SCHED_TYPE[it.type] || SCHED_TYPE.admin);
+                        return '<div class="flex items-center gap-2 py-1"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + c.dot + '"></span><span class="text-sm text-slate-700">' + schedEsc(it.title) + '</span></div>';
+                    }).join('');
+                } else { ut.style.display = 'none'; ut.innerHTML = ''; }
+            }
+        }
 
         var SCHED_TYPE = {
             client:   { label: '客戶', dot: '#6366F1' },
@@ -1371,7 +1483,7 @@
                 if (!days || typeof days !== 'object') throw new Error('AI 回傳格式看不懂，再按一次試試');
                 schedData.week = days;
                 schedData.weekStart = wk.startStr;
-                persistSched(); renderWeekGrid();
+                persistSched(); renderSchedActive();
                 schedSetStatus('排好了！下面是這週的安排。', 'ok');
             } catch (e) {
                 schedSetStatus('排程失敗：' + e.message, 'err');
@@ -1400,7 +1512,7 @@
                 if (!arr) throw new Error('AI 回傳格式看不懂，再試一次');
                 if (!schedData.week) schedData.week = {};
                 schedData.week[dateStr] = arr;
-                persistSched(); renderWeekGrid();
+                persistSched(); renderSchedActive();
                 schedSetStatus(dateStr + ' 重排好了！', 'ok');
             } catch (e) {
                 schedSetStatus('重排失敗：' + e.message, 'err');
@@ -1474,7 +1586,7 @@
             var u = document.getElementById('schedWorkerUrl'); if (u) u.value = localStorage.getItem('crm_ai_worker_url') || '';
             var s = document.getElementById('schedSecret'); if (s) s.value = localStorage.getItem('crm_ai_secret') || '';
             var fx = document.getElementById('schedFixed'); if (fx) fx.value = schedData.fixed || '';
-            renderWeekGrid();
+            setSchedView(schedView);
         }
 
         function schedInit() {
@@ -1485,6 +1597,11 @@
             document.getElementById('schedSaveBtn').addEventListener('click', schedSaveSettings);
             document.getElementById('schedTestBtn').addEventListener('click', schedTest);
             document.getElementById('schedPlanBtn').addEventListener('click', schedPlanWeek);
+            document.getElementById('schedViewDay').addEventListener('click', function () { setSchedView('day'); });
+            document.getElementById('schedViewWeek').addEventListener('click', function () { setSchedView('week'); });
+            document.getElementById('schedDayPrev').addEventListener('click', function () { schedDayShift(-1); });
+            document.getElementById('schedDayNext').addEventListener('click', function () { schedDayShift(1); });
+            document.getElementById('schedDayReplan').addEventListener('click', function () { schedReplanDay(schedDayDate); });
             renderSched();
         }
         schedInit();
