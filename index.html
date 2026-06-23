@@ -125,11 +125,11 @@
                 <button onclick="switchMainTab('ARCHIVE')" id="mainTab-ARCHIVE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-box-archive"></i> 待定與流失
                 </button>
-                <button onclick="switchMainTab('PNL')" id="mainTab-PNL" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-scale-balanced"></i> 損益分析
-                </button>
                 <button onclick="switchMainTab('SCHED')" id="mainTab-SCHED" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-week"></i> 週行程
+                </button>
+                <button onclick="switchMainTab('PNL')" id="mainTab-PNL" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-scale-balanced"></i> 損益分析
                 </button>
             </div>
 
@@ -462,10 +462,10 @@
                 <label class="block text-xs font-bold text-slate-500 mb-1">類型</label>
                 <select id="schedItemType" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mb-4 bg-white">
                     <option value="client">客戶</option>
-                    <option value="recruit">增員</option>
-                    <option value="teaching">教課</option>
+                    <option value="referral">引薦</option>
                     <option value="admin">行政</option>
                     <option value="personal">個人</option>
+                    <option value="company">公司</option>
                 </select>
                 <div class="flex items-center gap-2">
                     <button type="button" id="schedItemDelete" class="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold">刪除</button>
@@ -1416,11 +1416,11 @@
         }
 
         var SCHED_TYPE = {
-            client:   { label: '客戶', dot: '#6366F1' },
-            recruit:  { label: '增員', dot: '#D97706' },
-            teaching: { label: '教課', dot: '#9333EA' },
-            admin:    { label: '行政', dot: '#64748B' },
-            personal: { label: '個人', dot: '#10B981' }
+            client:   { label: '客戶', dot: '#2563EB' },
+            referral: { label: '引薦', dot: '#16A34A' },
+            admin:    { label: '行政', dot: '#EC4899' },
+            personal: { label: '個人', dot: '#1F2937' },
+            company:  { label: '公司', dot: '#DC2626' }
         };
         var SCHED_STAGE_LABEL = { FIRST_VISIT: '初訪', KEY_VISIT: '關鍵訪', NURTURE: '經營中', LEAD: '開發名單', HOLD: '待定', R_CONTACT: '增員接觸', R_INTERVIEW: '增員面談' };
 
@@ -1513,7 +1513,7 @@
                 var instr = instrEl ? instrEl.value : '';
                 var fixed = schedData.fixed || '';
                 var dayList = wk.dates.map(function (d) { return schedFmtDate(d) + '（週' + schedWeekdayZh(d) + '）'; }).join('、');
-                var sys = '你是 Shane 的個人行程規劃助手。Shane 是台灣的保險財務顧問，平日要跑客戶、約訪、增員、做行政，晚上有時教鋼琴。請把任務務實地排進七天，不要排太滿，逾期和重要的優先，客戶與增員類盡量排白天。\n你只能輸出 JSON，不要任何說明文字、不要 markdown 標記。格式：\n{"days":{"' + wk.startStr + '":[{"time":"09:00-10:00","title":"具體事項","type":"client"}]}}\ntype 只能是 client、recruit、teaching、admin、personal 其中之一。';
+                var sys = '你是 Shane 的個人行程規劃助手。Shane 是台灣的保險財務顧問，平日要跑客戶、引薦、行政、公司活動，也有個人時間。請把任務務實地排進七天，不要排太滿，逾期和重要的優先，客戶與引薦類盡量排白天。\n你只能輸出 JSON，不要任何說明文字、不要 markdown 標記。格式：\n{"days":{"' + wk.startStr + '":[{"time":"09:00-10:00","title":"具體事項","type":"client"}]}}\ntype 只能是 client、referral、admin、personal、company 其中之一（客戶、引薦、行政、個人、公司）。';
                 var usr = '本週七天（請務必用這些日期當 key）：' + dayList +
                     '\n\n【固定行程與原則】\n' + (fixed || '（未填）') +
                     '\n\n【本週 CRM 待辦】\n' + (wk.tasks.length ? wk.tasks.map(function (t, i) { return (i + 1) + '. ' + t; }).join('\n') : '（本週 CRM 沒有特別待辦，可安排開發、進修、行政）') +
@@ -1542,7 +1542,7 @@
                 var fixed = schedData.fixed || '';
                 var cur = (schedData.week && schedData.week[dateStr]) ? JSON.stringify(schedData.week[dateStr]) : '[]';
                 var d = new Date(dateStr + 'T00:00:00');
-                var sys = '你是 Shane 的行程助手，只重排指定的那一天。你只能輸出一個 JSON 陣列，不要任何說明文字、不要 markdown。格式：\n[{"time":"09:00-10:00","title":"具體事項","type":"client"}]\ntype 只能是 client、recruit、teaching、admin、personal。';
+                var sys = '你是 Shane 的行程助手，只重排指定的那一天。你只能輸出一個 JSON 陣列，不要任何說明文字、不要 markdown。格式：\n[{"time":"09:00-10:00","title":"具體事項","type":"client"}]\ntype 只能是 client、referral、admin、personal、company（客戶、引薦、行政、個人、公司）。';
                 var usr = '要重排的日期：' + dateStr + '（週' + schedWeekdayZh(d) + '）' +
                     '\n\n【這天原本的安排】\n' + cur +
                     '\n\n【固定行程與原則】\n' + (fixed || '（未填）') +
