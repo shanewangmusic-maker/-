@@ -431,7 +431,11 @@
                         <span id="schedDayLabel" class="font-bold text-slate-700"></span>
                         <button type="button" id="schedDayNext" class="w-9 h-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition text-lg leading-none">›</button>
                     </div>
-                    <button type="button" id="schedDayReplan" class="w-full mb-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg text-sm font-bold hover:bg-indigo-50 transition">重排這天</button>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" id="schedDayAdd" class="flex-1 py-2 border border-indigo-200 text-indigo-600 rounded-lg text-sm font-bold hover:bg-indigo-50 transition">＋ 新增</button>
+                        <button type="button" id="schedDayClear" class="flex-1 py-2 border border-slate-200 text-slate-500 rounded-lg text-sm font-bold hover:bg-slate-50 transition">清空</button>
+                        <button type="button" id="schedDayReplan" class="flex-1 py-2 border border-amber-200 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-50 transition">✨ AI重排</button>
+                    </div>
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-2">
                         <div id="schedTimeline" class="relative"></div>
                     </div>
@@ -444,6 +448,33 @@
                 <p class="text-xs text-slate-400 text-center mt-4 leading-relaxed">行程存在同一個 Firebase。送給 AI 的只有「姓名＋事項」這種最少資訊，不含電話、保單、佣金。</p>
             </div>
         </main>
+
+        <!-- 週行程：新增/編輯單筆 -->
+        <div id="schedItemModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <h3 id="schedItemHeading" class="font-bold text-slate-800 mb-4">新增行程</h3>
+                <div class="flex gap-2 mb-3">
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">開始</label><input type="time" id="schedItemStart" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none"></div>
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">結束</label><input type="time" id="schedItemEnd" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none"></div>
+                </div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">內容</label>
+                <input type="text" id="schedItemTitleInput" placeholder="要做的事" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mb-3">
+                <label class="block text-xs font-bold text-slate-500 mb-1">類型</label>
+                <select id="schedItemType" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mb-4 bg-white">
+                    <option value="client">客戶</option>
+                    <option value="recruit">增員</option>
+                    <option value="teaching">教課</option>
+                    <option value="admin">行政</option>
+                    <option value="personal">個人</option>
+                </select>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="schedItemDelete" class="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold">刪除</button>
+                    <div class="flex-1"></div>
+                    <button type="button" id="schedItemCancel" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold">取消</button>
+                    <button type="button" id="schedItemSave" class="px-5 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">儲存</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 全域彈窗訊息 -->
         <div id="toast" class="fixed bottom-5 right-5 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
@@ -1337,17 +1368,18 @@
             }
             // 已定時事件
             var untimed = [];
-            items.forEach(function (it) {
+            items.forEach(function (it, idx) {
                 var t = schedParseTime(it.time);
-                if (!t) { untimed.push(it); return; }
+                if (!t) { untimed.push({ it: it, idx: idx }); return; }
                 var s = Math.max(t.start, SCHED_START_HOUR * 60);
                 var e = Math.min(t.end, SCHED_END_HOUR * 60);
                 if (e <= s) e = s + 30;
                 var col = (SCHED_TYPE[it.type] || SCHED_TYPE.admin);
                 var ev = document.createElement('div');
-                ev.className = 'absolute rounded-lg px-2 py-1 overflow-hidden';
+                ev.className = 'absolute rounded-lg px-2 py-1 overflow-hidden cursor-pointer';
                 ev.style.cssText = 'top:' + ((s - SCHED_START_HOUR * 60) * pxPerMin) + 'px;height:' + Math.max(22, (e - s) * pxPerMin) + 'px;left:50px;right:6px;background:' + schedHexA(col.dot, 0.12) + ';border-left:3px solid ' + col.dot + ';';
                 ev.innerHTML = '<div class="text-[11px] font-bold text-slate-700 leading-tight truncate">' + schedEsc(it.title) + '</div><div class="text-[10px] text-slate-400 leading-tight">' + schedEsc(it.time) + '</div>';
+                ev.addEventListener('click', function () { schedOpenItem(schedDayDate, idx); });
                 wrap.appendChild(ev);
             });
             // 今天的當前時間紅線
@@ -1363,13 +1395,23 @@
             // 未定時清單
             var ut = document.getElementById('schedDayUntimed');
             if (ut) {
+                ut.innerHTML = '';
                 if (untimed.length) {
                     ut.style.display = 'block';
-                    ut.innerHTML = '<p class="text-xs font-bold text-slate-500 mb-1 mt-3">未定時</p>' + untimed.map(function (it) {
+                    var hdr = document.createElement('p');
+                    hdr.className = 'text-xs font-bold text-slate-500 mb-1 mt-3';
+                    hdr.textContent = '未定時（點一下可補時間）';
+                    ut.appendChild(hdr);
+                    untimed.forEach(function (entry) {
+                        var it = entry.it;
                         var c = (SCHED_TYPE[it.type] || SCHED_TYPE.admin);
-                        return '<div class="flex items-center gap-2 py-1"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + c.dot + '"></span><span class="text-sm text-slate-700">' + schedEsc(it.title) + '</span></div>';
-                    }).join('');
-                } else { ut.style.display = 'none'; ut.innerHTML = ''; }
+                        var r = document.createElement('div');
+                        r.className = 'flex items-center gap-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer px-1';
+                        r.innerHTML = '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:' + c.dot + '"></span><span class="text-sm text-slate-700">' + schedEsc(it.title) + '</span>';
+                        r.addEventListener('click', function () { schedOpenItem(schedDayDate, entry.idx); });
+                        ut.appendChild(r);
+                    });
+                } else { ut.style.display = 'none'; }
             }
         }
 
@@ -1543,41 +1585,108 @@
             if (chev) chev.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
         }
 
+        function schedPad2(n) { return ('0' + n).slice(-2); }
+        var schedEditDate = null, schedEditIdx = -1;
+        function schedOpenItem(date, idx) {
+            schedEditDate = date; schedEditIdx = idx;
+            var list = (schedData.week && schedData.week[date]) ? schedData.week[date] : [];
+            var it = (idx >= 0 && list[idx]) ? list[idx] : null;
+            var t = it ? schedParseTime(it.time) : null;
+            document.getElementById('schedItemHeading').textContent = it ? '編輯行程' : '新增行程';
+            document.getElementById('schedItemStart').value = t ? (schedPad2(Math.floor(t.start / 60)) + ':' + schedPad2(t.start % 60)) : '';
+            document.getElementById('schedItemEnd').value = t ? (schedPad2(Math.floor(t.end / 60)) + ':' + schedPad2(t.end % 60)) : '';
+            document.getElementById('schedItemTitleInput').value = it ? (it.title || '') : '';
+            document.getElementById('schedItemType').value = it ? (it.type || 'admin') : 'client';
+            document.getElementById('schedItemDelete').style.display = it ? 'block' : 'none';
+            var m = document.getElementById('schedItemModal');
+            m.classList.replace('hidden', 'flex'); document.body.classList.add('overflow-hidden');
+        }
+        function schedCloseItem() {
+            var m = document.getElementById('schedItemModal');
+            m.classList.replace('flex', 'hidden'); document.body.classList.remove('overflow-hidden');
+        }
+        function schedSaveItem() {
+            var st = document.getElementById('schedItemStart').value;
+            var en = document.getElementById('schedItemEnd').value;
+            var title = (document.getElementById('schedItemTitleInput').value || '').trim();
+            var type = document.getElementById('schedItemType').value;
+            if (!title) { alert('請填要做的事'); return; }
+            var time = (st && en) ? (st + '-' + en) : (st || '');
+            if (!schedData.week) schedData.week = {};
+            if (!Array.isArray(schedData.week[schedEditDate])) schedData.week[schedEditDate] = [];
+            var obj = { time: time, title: title, type: type };
+            if (schedEditIdx >= 0 && schedData.week[schedEditDate][schedEditIdx]) schedData.week[schedEditDate][schedEditIdx] = obj;
+            else schedData.week[schedEditDate].push(obj);
+            schedData.week[schedEditDate].sort(function (a, b) { var ta = schedParseTime(a.time), tb = schedParseTime(b.time); return (ta ? ta.start : 9999) - (tb ? tb.start : 9999); });
+            persistSched(); renderSchedActive(); schedCloseItem();
+        }
+        function schedDeleteItem() {
+            if (schedEditIdx >= 0 && schedData.week[schedEditDate]) { schedData.week[schedEditDate].splice(schedEditIdx, 1); persistSched(); renderSchedActive(); }
+            schedCloseItem();
+        }
+        function schedAddItem(date) { schedOpenItem(date, -1); }
+        function schedClearDay(date) {
+            if (!confirm('確定清空 ' + date + ' 整天的行程？')) return;
+            if (schedData.week) schedData.week[date] = [];
+            persistSched(); renderSchedActive();
+        }
+
         function renderWeekGrid() {
             var box = document.getElementById('schedWeekGrid'); if (!box) return;
             var dates = schedWeekDates();
             box.innerHTML = '';
             dates.forEach(function (d) {
                 var ds = schedFmtDate(d);
-                var items = (schedData.week && schedData.week[ds]) ? schedData.week[ds] : null;
+                var items = (schedData.week && schedData.week[ds]) ? schedData.week[ds] : [];
                 var card = document.createElement('div');
                 card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden';
                 var head = document.createElement('div');
                 head.className = 'flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-100';
                 head.innerHTML = '<span class="font-bold text-slate-700 text-sm">' + (d.getMonth() + 1) + '/' + d.getDate() + ' <span class="text-slate-400 font-normal">（週' + schedWeekdayZh(d) + '）</span></span>';
-                var rb = document.createElement('button');
-                rb.type = 'button'; rb.textContent = '重排這天';
-                rb.className = 'text-xs font-bold text-indigo-600 hover:text-indigo-800 transition';
-                rb.addEventListener('click', function () { schedReplanDay(ds); });
-                head.appendChild(rb);
+                var addBtn = document.createElement('button');
+                addBtn.type = 'button'; addBtn.textContent = '＋ 新增';
+                addBtn.className = 'text-xs font-bold text-indigo-600 hover:text-indigo-800 transition';
+                addBtn.addEventListener('click', function () { schedAddItem(ds); });
+                head.appendChild(addBtn);
                 card.appendChild(head);
+
                 var bodyEl = document.createElement('div');
                 bodyEl.className = 'p-3';
-                if (items && items.length) {
-                    var html = '';
-                    items.forEach(function (it) {
+                if (items.length) {
+                    items.forEach(function (it, idx) {
                         var t = SCHED_TYPE[it.type] || SCHED_TYPE.admin;
-                        html += '<div class="flex items-start gap-2 py-1.5">' +
+                        var row = document.createElement('div');
+                        row.className = 'flex items-start gap-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer px-1 -mx-1';
+                        row.innerHTML =
                             '<span class="mt-1.5 w-2 h-2 rounded-full flex-shrink-0" style="background:' + t.dot + '"></span>' +
                             '<span class="text-xs text-slate-400 w-24 flex-shrink-0 pt-0.5">' + schedEsc(it.time) + '</span>' +
-                            '<span class="text-sm text-slate-700 flex-1">' + schedEsc(it.title) + '</span>' +
-                            '</div>';
+                            '<span class="text-sm text-slate-700 flex-1">' + schedEsc(it.title) + '</span>';
+                        row.addEventListener('click', function () { schedOpenItem(ds, idx); });
+                        var del = document.createElement('button');
+                        del.type = 'button'; del.textContent = '×';
+                        del.className = 'text-slate-300 hover:text-rose-500 text-base px-1 leading-none flex-shrink-0';
+                        del.addEventListener('click', function (e) { e.stopPropagation(); schedEditDate = ds; schedEditIdx = idx; schedDeleteItem(); });
+                        row.appendChild(del);
+                        bodyEl.appendChild(row);
                     });
-                    bodyEl.innerHTML = html;
                 } else {
-                    bodyEl.innerHTML = '<p class="text-sm text-slate-300 py-2 text-center">尚未安排</p>';
+                    bodyEl.innerHTML = '<p class="text-sm text-slate-300 py-2 text-center">尚未安排（按右上＋新增）</p>';
                 }
                 card.appendChild(bodyEl);
+
+                var foot = document.createElement('div');
+                foot.className = 'flex items-center justify-end gap-4 px-4 py-2 border-t border-slate-100';
+                var aiBtn = document.createElement('button');
+                aiBtn.type = 'button'; aiBtn.textContent = '✨ AI重排';
+                aiBtn.className = 'text-xs font-bold text-amber-600 hover:text-amber-800 transition';
+                aiBtn.addEventListener('click', function () { schedReplanDay(ds); });
+                var clrBtn = document.createElement('button');
+                clrBtn.type = 'button'; clrBtn.textContent = '清空';
+                clrBtn.className = 'text-xs font-bold text-slate-400 hover:text-rose-500 transition';
+                clrBtn.addEventListener('click', function () { schedClearDay(ds); });
+                foot.appendChild(aiBtn); foot.appendChild(clrBtn);
+                card.appendChild(foot);
+
                 box.appendChild(card);
             });
         }
@@ -1602,6 +1711,11 @@
             document.getElementById('schedDayPrev').addEventListener('click', function () { schedDayShift(-1); });
             document.getElementById('schedDayNext').addEventListener('click', function () { schedDayShift(1); });
             document.getElementById('schedDayReplan').addEventListener('click', function () { schedReplanDay(schedDayDate); });
+            document.getElementById('schedDayAdd').addEventListener('click', function () { schedAddItem(schedDayDate); });
+            document.getElementById('schedDayClear').addEventListener('click', function () { schedClearDay(schedDayDate); });
+            document.getElementById('schedItemSave').addEventListener('click', schedSaveItem);
+            document.getElementById('schedItemCancel').addEventListener('click', schedCloseItem);
+            document.getElementById('schedItemDelete').addEventListener('click', schedDeleteItem);
             renderSched();
         }
         schedInit();
