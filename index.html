@@ -131,6 +131,9 @@
                 <button onclick="switchMainTab('PNL')" id="mainTab-PNL" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-scale-balanced"></i> 損益分析
                 </button>
+                <button onclick="switchMainTab('ACT')" id="mainTab-ACT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-clipboard-list"></i> 活動
+                </button>
             </div>
 
             <div id="crmBody">
@@ -447,7 +450,80 @@
 
                 <p class="text-xs text-slate-400 text-center mt-4 leading-relaxed">行程存在同一個 Firebase。送給 AI 的只有「姓名＋事項」這種最少資訊，不含電話、保單、佣金。</p>
             </div>
+
+            <!-- ============ 活動面板 ============ -->
+            <div id="actPanel" style="display:none;">
+                <!-- 活動選擇 -->
+                <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm mb-4">
+                    <div class="flex items-center gap-2">
+                        <select id="actSelect" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 outline-none font-bold text-slate-700"></select>
+                        <button type="button" id="actNewBtn" class="px-3 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold whitespace-nowrap">＋ 新活動</button>
+                    </div>
+                    <div class="flex items-center justify-end gap-4 mt-2">
+                        <button type="button" id="actRenameBtn" class="text-xs font-bold text-slate-400 hover:text-slate-600">改名</button>
+                        <button type="button" id="actDeleteBtn" class="text-xs font-bold text-slate-400 hover:text-rose-500">刪除此活動</button>
+                    </div>
+                </div>
+
+                <div id="actEmpty" class="hidden bg-white rounded-xl p-8 border border-slate-200 shadow-sm text-center text-slate-400 mb-4">
+                    還沒有活動。按右上「＋ 新活動」建立第一個（例如：2026愛心捐贈）。
+                </div>
+
+                <div id="actMain">
+                    <!-- 分類選項設定（收合） -->
+                    <button type="button" id="actOptToggle" class="w-full mb-3 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2">⚙️ 自訂分類選項 <span id="actOptChev" class="text-xs transition-transform duration-200">▾</span></button>
+                    <div id="actOptArea" style="display:none;">
+                        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm mb-4">
+                            <p class="text-xs text-slate-400 mb-3 leading-relaxed">每一項用逗號分隔，這些就是你要分類統計的「大項目」。改完按儲存。</p>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">進度</label>
+                            <input type="text" id="actOptStatus" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mb-3 bg-slate-50 outline-none" placeholder="已捐贈, 承諾, 溝通中">
+                            <label class="block text-xs font-bold text-slate-500 mb-1">來源 / 行銷行動</label>
+                            <input type="text" id="actOptSource" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mb-3 bg-slate-50 outline-none" placeholder="磊山夥伴, 舊客戶, 線上經營, 關鍵訪, 見面吃飯">
+                            <label class="block text-xs font-bold text-slate-500 mb-1">類別</label>
+                            <input type="text" id="actOptCategory" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm mb-3 bg-slate-50 outline-none" placeholder="重點, 一般, 待觀察">
+                            <button type="button" id="actOptSave" class="w-full py-2.5 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">儲存分類選項</button>
+                        </div>
+                    </div>
+
+                    <!-- 分類統計 -->
+                    <div id="actStats" class="mb-4"></div>
+
+                    <!-- 名單 -->
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-bold text-slate-700 text-sm">名單 <span id="actRowCount" class="text-slate-400 font-normal"></span></h3>
+                        <button type="button" id="actAddRowBtn" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">＋ 新增一筆</button>
+                    </div>
+                    <div id="actRows" class="space-y-2"></div>
+                </div>
+
+                <p class="text-xs text-slate-400 text-center mt-4 leading-relaxed">「加入 CRM」會把這個人放進開發名單庫跟進，備註會標明來自哪個活動。活動資料與客戶資料同步存在你的 Firebase。</p>
+            </div>
         </main>
+
+        <!-- 活動：新增/編輯單筆 -->
+        <div id="actRowModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <h3 id="actRowHeading" class="font-bold text-slate-800 mb-4">新增一筆</h3>
+                <label class="block text-xs font-bold text-slate-500 mb-1">名字</label>
+                <input type="text" id="actRowName" placeholder="姓名" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mb-3">
+                <div class="flex gap-2 mb-3">
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">進度</label><select id="actRowStatus" class="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm outline-none bg-white"></select></div>
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">類別</label><select id="actRowCategory" class="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm outline-none bg-white"></select></div>
+                </div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">來源 / 行銷行動</label>
+                <select id="actRowSource" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mb-3 bg-white"></select>
+                <div class="flex gap-2 mb-4">
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">日期</label><input type="date" id="actRowDate" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none"></div>
+                    <div class="flex-1"><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><input type="text" id="actRowNote" placeholder="備註" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="actRowDelete" class="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold">刪除</button>
+                    <div class="flex-1"></div>
+                    <button type="button" id="actRowCancel" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold">取消</button>
+                    <button type="button" id="actRowSave" class="px-5 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">儲存</button>
+                </div>
+            </div>
+        </div>
 
         <!-- 週行程：新增/編輯單筆 -->
         <div id="schedItemModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
@@ -1022,6 +1098,14 @@
             }
             if (typeof renderSched === 'function') renderSched();
 
+            // 活動資料一併從雲端載入
+            if (data.act && typeof data.act === 'object') {
+                actData = data.act;
+                if (!Array.isArray(actData.activities)) actData.activities = [];
+                if (typeof actData.current !== 'string') actData.current = '';
+            }
+            if (typeof renderAct === 'function') renderAct();
+
             window.hasLoadedOnce = true;
             if (typeof renderApp === 'function') renderApp();
         };
@@ -1033,7 +1117,8 @@
                 goals: annualGoals,
                 tags: customTags,
                 pnl: pnlData,
-                sched: schedData
+                sched: schedData,
+                act: actData
             };
         };
         // ----------------------------------------------------
@@ -1721,6 +1806,260 @@
         schedInit();
         // ========== /週行程引擎 ==========
 
+        // ========== 活動引擎 ==========
+        function defaultAct() {
+            return { activities: [], current: '' };
+        }
+        let actData = defaultAct();
+        function actUid() { return 'a' + Date.now().toString(36) + Math.floor(Math.random() * 10000); }
+        function actDefaultOpts() {
+            return {
+                status: ['已完成', '承諾', '溝通中'],
+                source: ['磊山夥伴', '舊客戶', '線上經營', '關鍵訪', '見面吃飯', '其他'],
+                category: ['重點', '一般', '待觀察']
+            };
+        }
+        function actPersist() {
+            if (window.syncToCloudForce) { window.syncToCloudForce(); }
+            else { try { localStorage.setItem('crm_v2_act', JSON.stringify(actData)); } catch (e) {} }
+        }
+        function actCurrent() {
+            if (!actData.activities.length) return null;
+            var a = actData.activities.filter(function (x) { return x.id === actData.current; })[0];
+            return a || actData.activities[0];
+        }
+        function actFillSelectOptions(sel, opts, val) {
+            sel.innerHTML = '';
+            (opts || []).forEach(function (o) {
+                var op = document.createElement('option'); op.value = o; op.textContent = o; sel.appendChild(op);
+            });
+            if (val != null) sel.value = val;
+        }
+
+        function actNewActivity() {
+            var name = window.prompt('活動名稱（例如：2026愛心捐贈）');
+            if (name === null) return;
+            name = name.trim(); if (!name) return;
+            var a = { id: actUid(), name: name, createdAt: new Date().toISOString(), opts: actDefaultOpts(), rows: [] };
+            actData.activities.push(a);
+            actData.current = a.id;
+            actPersist(); renderAct();
+        }
+        function actRenameActivity() {
+            var a = actCurrent(); if (!a) return;
+            var name = window.prompt('改活動名稱', a.name);
+            if (name === null) return; name = name.trim(); if (!name) return;
+            a.name = name; actPersist(); renderAct();
+        }
+        function actDeleteActivity() {
+            var a = actCurrent(); if (!a) return;
+            if (!confirm('確定刪除活動「' + a.name + '」？裡面的名單也會一起刪除（不影響已加入 CRM 的客戶）。')) return;
+            actData.activities = actData.activities.filter(function (x) { return x.id !== a.id; });
+            actData.current = actData.activities.length ? actData.activities[0].id : '';
+            actPersist(); renderAct();
+        }
+        function actSaveOpts() {
+            var a = actCurrent(); if (!a) return;
+            function parse(id) { return (document.getElementById(id).value || '').split(/[,，]/).map(function (s) { return s.trim(); }).filter(Boolean); }
+            a.opts = { status: parse('actOptStatus'), source: parse('actOptSource'), category: parse('actOptCategory') };
+            if (!a.opts.status.length) a.opts.status = actDefaultOpts().status;
+            actPersist(); renderAct();
+            if (window.showToast) window.showToast('分類選項已儲存', 'success');
+        }
+        function actToggleOpts() {
+            var area = document.getElementById('actOptArea'), chev = document.getElementById('actOptChev');
+            if (!area) return;
+            var open = (area.style.display === 'none' || area.style.display === '');
+            area.style.display = open ? 'block' : 'none';
+            if (chev) chev.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        // 名單單筆編輯
+        var actRowEditIdx = -1;
+        function actOpenRow(idx) {
+            var a = actCurrent(); if (!a) return;
+            actRowEditIdx = idx;
+            var r = (idx >= 0 && a.rows[idx]) ? a.rows[idx] : null;
+            document.getElementById('actRowHeading').textContent = r ? '編輯名單' : '新增一筆';
+            document.getElementById('actRowName').value = r ? (r.name || '') : '';
+            actFillSelectOptions(document.getElementById('actRowStatus'), a.opts.status, r ? r.status : (a.opts.status[a.opts.status.length - 1] || ''));
+            actFillSelectOptions(document.getElementById('actRowSource'), a.opts.source, r ? r.source : (a.opts.source[0] || ''));
+            actFillSelectOptions(document.getElementById('actRowCategory'), a.opts.category, r ? r.category : (a.opts.category[0] || ''));
+            document.getElementById('actRowDate').value = r ? (r.date || '') : '';
+            document.getElementById('actRowNote').value = r ? (r.note || '') : '';
+            document.getElementById('actRowDelete').style.display = r ? 'block' : 'none';
+            var m = document.getElementById('actRowModal'); m.classList.replace('hidden', 'flex'); document.body.classList.add('overflow-hidden');
+        }
+        function actCloseRow() { var m = document.getElementById('actRowModal'); m.classList.replace('flex', 'hidden'); document.body.classList.remove('overflow-hidden'); }
+        function actSaveRow() {
+            var a = actCurrent(); if (!a) return;
+            var name = (document.getElementById('actRowName').value || '').trim();
+            if (!name) { alert('請填名字'); return; }
+            var obj = {
+                name: name,
+                status: document.getElementById('actRowStatus').value,
+                source: document.getElementById('actRowSource').value,
+                category: document.getElementById('actRowCategory').value,
+                date: document.getElementById('actRowDate').value,
+                note: (document.getElementById('actRowNote').value || '').trim()
+            };
+            if (actRowEditIdx >= 0 && a.rows[actRowEditIdx]) { obj.id = a.rows[actRowEditIdx].id; obj.inCrm = a.rows[actRowEditIdx].inCrm; a.rows[actRowEditIdx] = obj; }
+            else { obj.id = actUid(); obj.inCrm = false; a.rows.push(obj); }
+            actPersist(); renderAct(); actCloseRow();
+        }
+        function actDeleteRow() {
+            var a = actCurrent(); if (!a) return;
+            if (actRowEditIdx >= 0 && a.rows[actRowEditIdx]) { a.rows.splice(actRowEditIdx, 1); actPersist(); renderAct(); }
+            actCloseRow();
+        }
+
+        // 從活動名單加入 CRM 開發名單
+        function actAddToCrm(idx) {
+            var a = actCurrent(); if (!a) return;
+            var r = a.rows[idx]; if (!r) return;
+            if (r.inCrm) { if (!confirm(r.name + ' 已經加入過 CRM，要再加一次嗎？')) return; }
+            var noteParts = ['來自活動：' + a.name];
+            if (r.source) noteParts.push('來源：' + r.source);
+            if (r.note) noteParts.push(r.note);
+            customers.push({
+                id: 'cust-' + Date.now() + Math.random(),
+                name: r.name,
+                phone: '',
+                company: '',
+                notes: noteParts.join('｜'),
+                agentName: '',
+                category: 'NEW',
+                progress: 'LEAD',
+                lastStage: 'NURTURE',
+                createdAt: new Date().toISOString(),
+                tags: [a.name],
+                history: []
+            });
+            r.inCrm = true;
+            if (typeof recordState === 'function') recordState();
+            actPersist();
+            renderAct();
+            if (typeof renderApp === 'function') renderApp();
+            if (window.showToast) window.showToast(r.name + ' 已加入開發名單庫', 'success');
+        }
+
+        function renderActStats() {
+            var box = document.getElementById('actStats'); if (!box) return;
+            var a = actCurrent();
+            if (!a) { box.innerHTML = ''; return; }
+            var rows = a.rows || [];
+            function countBy(field) {
+                var m = {};
+                rows.forEach(function (r) { var k = r[field] || '（未填）'; m[k] = (m[k] || 0) + 1; });
+                return m;
+            }
+            function block(title, m) {
+                var keys = Object.keys(m);
+                if (!keys.length) return '';
+                var chips = keys.map(function (k) {
+                    return '<span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs text-slate-600 mr-1 mb-1">' + schedEsc(k) + ' <span class="font-bold text-slate-800">' + m[k] + '</span></span>';
+                }).join('');
+                return '<div class="mb-2"><p class="text-xs font-bold text-slate-400 mb-1">' + title + '</p><div>' + chips + '</div></div>';
+            }
+            var inCrm = rows.filter(function (r) { return r.inCrm; }).length;
+            var html = '<div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">' +
+                '<div class="flex items-center gap-4 mb-3 pb-3 border-b border-slate-100">' +
+                '<div><p class="text-xs text-slate-400">總人數</p><p class="text-2xl font-bold text-slate-700">' + rows.length + '</p></div>' +
+                '<div><p class="text-xs text-slate-400">已加入 CRM</p><p class="text-2xl font-bold text-emerald-600">' + inCrm + '</p></div>' +
+                '</div>' +
+                block('依進度', countBy('status')) +
+                block('依來源', countBy('source')) +
+                block('依類別', countBy('category')) +
+                '</div>';
+            box.innerHTML = html;
+        }
+
+        function renderActRows() {
+            var box = document.getElementById('actRows'); if (!box) return;
+            var a = actCurrent();
+            box.innerHTML = '';
+            if (!a) return;
+            document.getElementById('actRowCount').textContent = '（' + a.rows.length + '）';
+            if (!a.rows.length) { box.innerHTML = '<p class="text-sm text-slate-300 py-4 text-center bg-white rounded-xl border border-slate-200">還沒有名單，按「＋ 新增一筆」開始。</p>'; return; }
+            a.rows.forEach(function (r, idx) {
+                var card = document.createElement('div');
+                card.className = 'bg-white rounded-xl border border-slate-200 shadow-sm p-3';
+                var top = document.createElement('div');
+                top.className = 'flex items-start justify-between gap-2';
+                var left = document.createElement('div');
+                left.className = 'flex-1 min-w-0 cursor-pointer';
+                left.innerHTML = '<p class="font-bold text-slate-700 text-sm">' + schedEsc(r.name) + '</p>' +
+                    '<div class="flex flex-wrap gap-1 mt-1">' +
+                    (r.status ? '<span class="text-[11px] bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">' + schedEsc(r.status) + '</span>' : '') +
+                    (r.source ? '<span class="text-[11px] bg-indigo-50 text-indigo-600 rounded px-1.5 py-0.5">' + schedEsc(r.source) + '</span>' : '') +
+                    (r.category ? '<span class="text-[11px] bg-amber-50 text-amber-700 rounded px-1.5 py-0.5">' + schedEsc(r.category) + '</span>' : '') +
+                    (r.date ? '<span class="text-[11px] text-slate-400">' + schedEsc(r.date) + '</span>' : '') +
+                    '</div>' +
+                    (r.note ? '<p class="text-xs text-slate-400 mt-1">' + schedEsc(r.note) + '</p>' : '');
+                left.addEventListener('click', function () { actOpenRow(idx); });
+                top.appendChild(left);
+                card.appendChild(top);
+
+                var foot = document.createElement('div');
+                foot.className = 'flex items-center justify-end gap-3 mt-2 pt-2 border-t border-slate-100';
+                var crmBtn = document.createElement('button');
+                crmBtn.type = 'button';
+                if (r.inCrm) { crmBtn.textContent = '✓ 已加入 CRM'; crmBtn.className = 'text-xs font-bold text-emerald-600'; }
+                else { crmBtn.textContent = '加入 CRM →'; crmBtn.className = 'text-xs font-bold text-indigo-600 hover:text-indigo-800'; }
+                crmBtn.addEventListener('click', function () { actAddToCrm(idx); });
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button'; delBtn.textContent = '刪除';
+                delBtn.className = 'text-xs font-bold text-slate-400 hover:text-rose-500';
+                delBtn.addEventListener('click', function () { actRowEditIdx = idx; actDeleteRow(); });
+                foot.appendChild(crmBtn); foot.appendChild(delBtn);
+                card.appendChild(foot);
+                box.appendChild(card);
+            });
+        }
+
+        function renderAct() {
+            var sel = document.getElementById('actSelect'); if (!sel) return;
+            var empty = document.getElementById('actEmpty'), main = document.getElementById('actMain');
+            if (!actData.activities.length) {
+                sel.innerHTML = '<option>（尚無活動）</option>';
+                if (empty) empty.classList.remove('hidden');
+                if (main) main.style.display = 'none';
+                return;
+            }
+            if (empty) empty.classList.add('hidden');
+            if (main) main.style.display = 'block';
+            var cur = actCurrent();
+            actData.current = cur.id;
+            sel.innerHTML = '';
+            actData.activities.forEach(function (a) {
+                var op = document.createElement('option'); op.value = a.id; op.textContent = a.name; sel.appendChild(op);
+            });
+            sel.value = cur.id;
+            document.getElementById('actOptStatus').value = (cur.opts.status || []).join(', ');
+            document.getElementById('actOptSource').value = (cur.opts.source || []).join(', ');
+            document.getElementById('actOptCategory').value = (cur.opts.category || []).join(', ');
+            renderActStats();
+            renderActRows();
+        }
+
+        function actInit() {
+            var sel = document.getElementById('actSelect');
+            if (!sel) return;
+            sel.addEventListener('change', function () { actData.current = this.value; renderAct(); });
+            document.getElementById('actNewBtn').addEventListener('click', actNewActivity);
+            document.getElementById('actRenameBtn').addEventListener('click', actRenameActivity);
+            document.getElementById('actDeleteBtn').addEventListener('click', actDeleteActivity);
+            document.getElementById('actOptToggle').addEventListener('click', actToggleOpts);
+            document.getElementById('actOptSave').addEventListener('click', actSaveOpts);
+            document.getElementById('actAddRowBtn').addEventListener('click', function () { if (actCurrent()) actOpenRow(-1); else actNewActivity(); });
+            document.getElementById('actRowSave').addEventListener('click', actSaveRow);
+            document.getElementById('actRowCancel').addEventListener('click', actCloseRow);
+            document.getElementById('actRowDelete').addEventListener('click', actDeleteRow);
+            renderAct();
+        }
+        actInit();
+        // ========== /活動引擎 ==========
+
         // 核心邏輯：判斷客戶是否符合當前的「負責業務」過濾條件
         function matchAgentFilter(c, fAgent) {
             // 如果 agentName 為空，代表是「自己的個人業績」
@@ -1900,8 +2239,9 @@
             const crmBody = document.getElementById('crmBody');
             const pnlPanel = document.getElementById('pnlPanel');
             const schedPanel = document.getElementById('schedPanel');
+            const actPanel = document.getElementById('actPanel');
 
-            const tabs = ['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT', 'PNL', 'SCHED'];
+            const tabs = ['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT', 'PNL', 'SCHED', 'ACT'];
             tabs.forEach(t => {
                 const el = document.getElementById(`mainTab-${t}`);
                 if (el) {
@@ -1916,6 +2256,7 @@
             if (tab === 'PNL') {
                 if (crmBody) crmBody.style.display = 'none';
                 if (schedPanel) schedPanel.style.display = 'none';
+                if (actPanel) actPanel.style.display = 'none';
                 if (pnlPanel) pnlPanel.style.display = 'block';
                 if (typeof renderPnl === 'function') renderPnl();
                 return;
@@ -1923,13 +2264,23 @@
             if (tab === 'SCHED') {
                 if (crmBody) crmBody.style.display = 'none';
                 if (pnlPanel) pnlPanel.style.display = 'none';
+                if (actPanel) actPanel.style.display = 'none';
                 if (schedPanel) schedPanel.style.display = 'block';
                 if (typeof renderSched === 'function') renderSched();
+                return;
+            }
+            if (tab === 'ACT') {
+                if (crmBody) crmBody.style.display = 'none';
+                if (pnlPanel) pnlPanel.style.display = 'none';
+                if (schedPanel) schedPanel.style.display = 'none';
+                if (actPanel) actPanel.style.display = 'block';
+                if (typeof renderAct === 'function') renderAct();
                 return;
             }
             if (crmBody) crmBody.style.display = 'block';
             if (pnlPanel) pnlPanel.style.display = 'none';
             if (schedPanel) schedPanel.style.display = 'none';
+            if (actPanel) actPanel.style.display = 'none';
 
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
@@ -3587,6 +3938,7 @@
                         localStorage.setItem('crm_v2_tags', JSON.stringify(d.tags));
                         localStorage.setItem('crm_v2_pnl', JSON.stringify(d.pnl));
                         localStorage.setItem('crm_v2_sched', JSON.stringify(d.sched));
+                        localStorage.setItem('crm_v2_act', JSON.stringify(d.act));
                     }
                 } catch (e) {}
                 saveToCloud();
