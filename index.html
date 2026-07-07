@@ -252,6 +252,19 @@
                                 <div id="tagDropdownMenu" class="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg hidden z-50 max-h-60 overflow-y-auto premium-shadow py-1"></div>
                             </div>
 
+                            <!-- 商品種類篩選 (依成交商品) -->
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1.5 flex-shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+                                <i class="fa-solid fa-box-open text-slate-400"></i> 商品種類：
+                            </span>
+                            <select id="filterProductType" onchange="renderApp()" class="px-2 py-1.5 md:py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] bg-white cursor-pointer h-[34px] md:h-[38px] flex-shrink-0">
+                                <option value="ALL">全部商品</option>
+                                <option value="醫療險">醫療險</option>
+                                <option value="投資型保單">投資型保單</option>
+                                <option value="分紅保單">分紅保單</option>
+                                <option value="躉繳">躉繳</option>
+                                <option value="其他">其他</option>
+                            </select>
+
                             <!-- 冷名單/待定流失庫 專用階段篩選 -->
                             <div id="filterLastStageContainer" class="hidden items-center gap-1.5 flex-shrink-0 pl-1 sm:pl-2">
                                 <span class="text-xs font-bold text-slate-500 hidden sm:inline-block">階段：</span>
@@ -873,6 +886,7 @@
                         <div class="flex gap-2">
                             <button type="button" onclick="confirmDeleteCustomer()" class="px-3 py-2 text-rose-600 border border-rose-200 bg-white hover:bg-rose-50 rounded-lg text-sm font-bold flex items-center gap-1 transition"><i class="fa-solid fa-trash-can"></i> 刪除</button>
                             <button type="button" onclick="switchTab('edit', 'basic')" class="px-4 py-2 bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-bold transition">返回</button>
+                            <button type="button" onclick="copyCustomerNewPlan()" class="px-3 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg text-sm font-bold flex items-center gap-1 transition" title="用這位客戶的基本資料，快速建立一筆新規劃"><i class="fa-solid fa-copy"></i> 複製新增規劃</button>
                         </div>
                         <button type="submit" class="px-6 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-md transition">儲存變更 <i class="fa-solid fa-check ml-1"></i></button>
                     </div>
@@ -2750,6 +2764,7 @@
             const todayStr = new Date().toISOString().substring(0, 10);
             const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
             let followUps = [], birthdays = [], deductions = []; 
+            const seenBirthday = new Set(); // 同一人（姓名+電話）壽星只顯示一次
             
             customers.forEach(c => {
                 // 套用全域業務員過濾
@@ -2775,14 +2790,46 @@
                     }
                 }
                 if (c.category !== 'RECRUIT' && c.progress !== 'LEAD' && c.progress !== 'LOST' && c.birthday && c.birthday.substring(5, 7) === String(new Date().getMonth() + 1).padStart(2, '0')) {
-                    birthdays.push(c);
+                    const bKey = (c.name||'').trim() + '|' + (c.phone||'').trim();
+                    if (!seenBirthday.has(bKey)) { seenBirthday.add(bKey); birthdays.push(c); }
+                }
+
+                // 扣款提醒：成交保單依「下期扣款日 + 扣款頻率」自動推算下一次扣款日
+                if (c.category === 'WON' && c.deductionDate && c.deductionFrequency && c.deductionFrequency !== '一次性') {
+                    const freqMonths = { '每月':1, '每季':3, '半年':6, '每年':12 }[c.deductionFrequency];
+                    if (freqMonths) {
+                        const today0 = new Date(todayStr + 'T00:00:00');
+                        let due = new Date(c.deductionDate + 'T00:00:00');
+                        let guard = 0;
+                        // 往後滾動到「今天(含)之後」的下一個扣款日
+                        while (due < today0 && guard < 600) { due.setMonth(due.getMonth() + freqMonths); guard++; }
+                        const daysDiff = Math.floor((due - today0) / 86400000);
+                        if (daysDiff <= 7) { // 到期前 7 天內（含當天）才提醒
+                            const dueStr = due.getFullYear() + '-' + String(due.getMonth()+1).padStart(2,'0') + '-' + String(due.getDate()).padStart(2,'0');
+                            const label = daysDiff === 0 ? '🚨 今日扣款' : `💳 ${daysDiff}天後扣款`;
+                            const color = daysDiff <= 1 ? 'text-emerald-800 bg-emerald-50 border-emerald-200' : 'text-emerald-700 bg-white border-emerald-100';
+                            deductions.push({ cust: c, date: dueStr, label, color });
+                        }
+                    }
                 }
             });
-            if (!followUps.length && !birthdays.length) return panel.classList.add('hidden');
+            // 同一個人（姓名+電話）的待辦只保留最緊急的一筆，避免多筆規劃重複提醒
+            if (followUps.length) {
+                const _fuMap = new Map();
+                followUps.forEach(item => {
+                    const k = (item.cust.name||'').trim() + '|' + (item.cust.phone||'').trim();
+                    const ex = _fuMap.get(k);
+                    if (!ex || new Date(item.date) < new Date(ex.date)) _fuMap.set(k, item);
+                });
+                followUps = Array.from(_fuMap.values());
+            }
+
+            if (!followUps.length && !birthdays.length && !deductions.length) return panel.classList.add('hidden');
             panel.classList.remove('hidden');
             panel.innerHTML = `
                 <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-2"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-clipboard-list text-[#1E2E3D]"></i> 待辦提醒</h3><div class="max-h-36 overflow-y-auto">${followUps.map(item => `<div onclick="openFollowUpModal('${item.cust.id}')" class="flex justify-between p-2 mb-1 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${item.cust.name}</span></div>`).join('')||'<p class="text-xs text-slate-400">無待辦</p>'}</div></div>
                 <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-cake-candles text-pink-500"></i> 本月壽星</h3><div class="max-h-36 overflow-y-auto">${birthdays.map(c => `<div onclick="openEditModal('${c.id}')" class="flex justify-between p-2 mb-1 rounded border border-pink-100 bg-pink-50 text-xs"><span class="font-bold text-slate-800">${c.name} (${c.birthday.substring(5)})</span></div>`).join('')||'<p class="text-xs text-slate-400">無壽星</p>'}</div></div>
+                ${deductions.length ? `<div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-3"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-credit-card text-emerald-600"></i> 扣款提醒 (成交保單續期・7天內)</h3><div class="max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">${deductions.map(item => `<div onclick="openEditModal('${item.cust.id}')" class="flex justify-between items-center p-2 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${item.cust.name}</span><span class="text-[10px] text-slate-400 flex-shrink-0 ml-1">${item.date}</span></div>`).join('')}</div></div>` : ''}
             `;
         }
 
@@ -2825,9 +2872,9 @@
             cont.innerHTML = `
                 <div class="bg-white p-4 rounded-xl border premium-shadow relative overflow-hidden flex flex-col justify-between">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
-                    <div class="cursor-pointer hover:opacity-70 transition" onclick="document.getElementById('filterCategory').value='ALL'; document.getElementById('filterProgress').value='ALL'; renderApp();" title="檢視所有客戶">
-                        <p class="text-xs font-bold text-slate-500 uppercase">${statsTitlePrefix}客戶數</p>
-                        <p class="text-3xl font-black text-[#1E2E3D] mt-1">${total}</p>
+                    <div class="cursor-pointer hover:opacity-70 transition" onclick="document.getElementById('filterCategory').value='WON'; document.getElementById('filterProgress').value='ALL'; renderApp();" title="檢視已成交客戶">
+                        <p class="text-xs font-bold text-slate-500 uppercase">${statsTitlePrefix}客戶數 <span class="text-[9px] text-emerald-500 font-bold">(已成交)</span></p>
+                        <p class="text-3xl font-black text-[#1E2E3D] mt-1">${wonCount}</p>
                     </div>
                 </div>
                 
@@ -3036,6 +3083,8 @@
             const fArchiveStatus = document.getElementById('filterArchiveStatus')?.value || 'ALL';
             const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
             
+            const fProductType = document.getElementById('filterProductType')?.value || 'ALL';
+
             let filtered = customers.filter(c => {
                 // 0. 負責業務員過濾 (全域)
                 if (!matchAgentFilter(c, fAgent)) return false;
@@ -3062,6 +3111,9 @@
                     const hasTag = activeTagFilters.some(tid => c.tags && c.tags.includes(tid));
                     if (!hasTag) return false;
                 }
+
+                // 3.5 商品種類過濾 (依成交商品類型)
+                if (fProductType !== 'ALL' && c.productType !== fProductType) return false;
 
                 // 4. 文字搜尋
                 const ms = c.name.toLowerCase().includes(search) || (c.company||'').toLowerCase().includes(search) || (c.phone||'').includes(search) || (c.policyName||'').toLowerCase().includes(search) || (c.notes||'').toLowerCase().includes(search);
@@ -3597,6 +3649,34 @@
             renderTagSelector('edit'); switchTab('edit', 'basic');
             syncCategoryAndFields('edit'); openModal('editCustomerModal');
         }
+
+        // 複製客戶基本資料，快速建立一筆新規劃（維持「一筆=一規劃、各自跑進度」的結構）
+        window.copyCustomerNewPlan = function() {
+            const id = document.getElementById('editId').value;
+            const src = customers.find(x => x.id === id);
+            if (!src) return;
+            const nc = {
+                id: 'cust-' + Date.now() + Math.floor(Math.random() * 100000),
+                name: src.name || '',
+                company: src.company || '',
+                phone: src.phone || '',
+                birthday: src.birthday || '',
+                agentName: src.agentName || '',
+                tags: Array.isArray(src.tags) ? [...src.tags] : [],
+                notes: '',
+                category: 'NEW',
+                progress: 'NURTURE',
+                lastStage: 'NURTURE',
+                nextContactDate: '',
+                createdAt: new Date().toISOString(),
+                history: []
+            };
+            customers.push(nc);
+            recordState();
+            renderApp();
+            showToast('已複製基本資料，請填寫這筆新規劃');
+            openEditModal(nc.id);
+        };
 
         function handleEditCustomer(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('editId').value);
