@@ -101,6 +101,9 @@
                     <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出資料備份">
                         <i class="fa-solid fa-file-export"></i>
                     </button>
+                    <button onclick="exportMonthlyReport()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出業績月報（依上方選的期間，CSV 可用 Excel 開啟）">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </button>
                     <!-- 電腦版登出按鈕 -->
                     <button onclick="window.logoutTeam()" class="hidden md:flex bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 p-2.5 rounded-lg transition duration-200 border border-rose-500/30 flex-shrink-0" title="登出 / 切換團隊">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -834,6 +837,26 @@
                                 </div>
                             </div>
                             <div><textarea id="editNotes" rows="3" placeholder="備註背景" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
+                            <div class="border-t border-slate-100 pt-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-2"><i class="fa-solid fa-link text-[#1E2E3D]"></i> 相關連結 / 附件（貼雲端網址：PPT、建議書等）</label>
+                                <div id="editLinksList" class="space-y-1.5 mb-2"></div>
+                                <div class="flex flex-col sm:flex-row gap-1.5">
+                                    <input type="text" id="editLinkName" placeholder="名稱（如：退休規劃簡報）" class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="text" id="editLinkUrl" placeholder="貼上雲端網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <button type="button" onclick="addEditLink()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm flex-shrink-0">＋ 加入</button>
+                                </div>
+                            </div>
+
+                            <!-- 雲端附件連結（PPT／建議書等，只存雲端分享網址，不上傳檔案）-->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-paperclip text-indigo-400"></i> 雲端附件連結（PPT／建議書等）</label>
+                                <div class="flex gap-1.5 mb-2">
+                                    <input type="text" id="editLinkName" placeholder="名稱（選填）" class="w-2/5 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="url" id="editLinkUrl" placeholder="貼上雲端分享網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <button type="button" onclick="addCustomerLink()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm flex-shrink-0"><i class="fa-solid fa-plus"></i> 新增</button>
+                                </div>
+                                <div id="editLinksList" class="space-y-1.5"></div>
+                            </div>
                         </div>
 
                         <!-- TAB 2 -->
@@ -2518,6 +2541,66 @@
             a.download = `業務系統備份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast('已匯出備份');
         }
 
+        // ===== 渲染防護：單筆卡片壞掉只變成一張提示卡，不影響其他、也不會整個 App 崩掉 =====
+        function safeMap(arr, fn) {
+            return (arr || []).map(function (item) {
+                try { return fn(item); }
+                catch (err) {
+                    console.error('單筆卡片渲染失敗', item && item.id, err);
+                    var who = esc((item && (item.name || item.id)) || '未知資料');
+                    return `<div class="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-700"><i class="fa-solid fa-triangle-exclamation"></i> 這筆資料顯示異常（${who}），已略過以免影響其他資料。可開啟編輯修正，或先匯出備份。</div>`;
+                }
+            });
+        }
+
+        function showRenderError(failed) {
+            var bar = document.getElementById('renderErrorBar');
+            if (!bar) {
+                bar = document.createElement('div');
+                bar.id = 'renderErrorBar';
+                bar.className = 'fixed top-0 left-0 right-0 z-[60] bg-rose-600 text-white text-xs md:text-sm px-4 py-2 text-center shadow-lg';
+                document.body.appendChild(bar);
+            }
+            bar.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> 部分畫面顯示發生問題（' + esc(failed.join('、')) + '），你的資料仍安全。建議先按「匯出備份」，再重新整理頁面。';
+            bar.style.display = 'block';
+        }
+        function hideRenderError() {
+            var bar = document.getElementById('renderErrorBar');
+            if (bar) bar.style.display = 'none';
+        }
+
+        // ===== 匯出業績月報（CSV，可用 Excel / Numbers / Google 試算表開啟；依畫面上方選的期間）=====
+        function exportMonthlyReport() {
+            var period = (document.getElementById('globalPeriodFilter') || {}).value || 'ALL';
+            var num = function (v) { return Number(String(v == null ? 0 : v).replace(/,/g, '')) || 0; };
+            var rows = (customers || []).filter(function (c) {
+                if (!c || c.category !== 'WON') return false;
+                var p = getPeriod(c);
+                if (period === 'ALL') return true;
+                if (period.indexOf('YEAR_') === 0) return p.indexOf(period.replace('YEAR_', '')) === 0;
+                return p === period;
+            });
+            if (!rows.length) { showToast('這個期間沒有成交資料可匯出', 'error'); return; }
+            var header = ['成交月份', '客戶姓名', '公司', '負責業務', '商品種類', '保單名稱', '保險公司', '保費', 'FYC', '佣金', '成交日'];
+            var totPrem = 0, totFyc = 0, totComm = 0;
+            var body = rows.map(function (c) {
+                var prem = num(c.premium), fyc = num(c.fyc), comm = num(c.commission);
+                totPrem += prem; totFyc += fyc; totComm += comm;
+                return [getPeriod(c), c.name || '', c.company || '', c.agentName || '', c.productType || '', c.policyName || '', c.insuranceCompany || '', prem, fyc, comm, c.dealDate || ''];
+            });
+            var totalRow = ['合計', rows.length + ' 件', '', '', '', '', '', totPrem, totFyc, totComm, ''];
+            var all = [header].concat(body).concat([totalRow]);
+            var cell = function (s) { s = String(s == null ? '' : s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+            var csv = '\uFEFF' + all.map(function (r) { return r.map(cell).join(','); }).join('\r\n');
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            var label = period === 'ALL' ? '全部' : period.replace('YEAR_', '');
+            a.href = url; a.download = '業績月報_' + label + '.csv'; a.click();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            showToast('已匯出 ' + rows.length + ' 筆成交明細');
+        }
+
         document.addEventListener('click', function(e) {
             const menu = document.getElementById('tagDropdownMenu');
             const wrapper = document.getElementById('tagDropdownWrapper');
@@ -2548,6 +2631,13 @@
             setTimeout(() => { t.className = "fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none"; }, 3000);
         }
 
+        // 轉義 HTML 特殊字元，避免客戶資料裡的 < > & " ' 破版或注入
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function(m) {
+                return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m];
+            });
+        }
+
         function openModal(id) { document.getElementById(id).classList.replace('hidden','flex'); document.body.classList.add('overflow-hidden'); }
         function closeModal(id) { document.getElementById(id).classList.replace('flex','hidden'); document.body.classList.remove('overflow-hidden'); }
 
@@ -2567,13 +2657,20 @@
         }
 
         function renderApp() {
-            populatePeriodFilter(); 
-            renderAgentFilter(); 
-            renderTagDropdownFilter(); 
-            renderActionCenter(); 
-            renderStats(); 
-            renderGoalPanel(); 
-            renderCustomerGrid();
+            var steps = [
+                ['期間篩選', populatePeriodFilter],
+                ['業務員篩選', renderAgentFilter],
+                ['標籤篩選', renderTagDropdownFilter],
+                ['待辦提醒', renderActionCenter],
+                ['業績統計', renderStats],
+                ['目標面板', renderGoalPanel],
+                ['客戶列表', renderCustomerGrid]
+            ];
+            var failed = [];
+            steps.forEach(function (s) {
+                try { s[1](); } catch (err) { console.error('渲染錯誤 @ ' + s[0], err); failed.push(s[0]); }
+            });
+            if (failed.length) showRenderError(failed); else hideRenderError();
         }
 
         // ===== 核心新增：動態生成與渲染業務員過濾器 =====
@@ -2711,7 +2808,7 @@
                     <div onclick="selectTagFilter(event, '${t.id}')" class="px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center justify-between ${isSelected ? 'bg-slate-50 font-black' : ''}">
                         <div class="flex items-center gap-2 truncate">
                             <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${cfg.hex}"></span>
-                            <span class="truncate">${t.name}</span>
+                            <span class="truncate">${esc(t.name)}</span>
                         </div>
                         ${isSelected ? '<i class="fa-solid fa-check text-blue-600 text-[10px]"></i>' : ''}
                     </div>`;
@@ -2743,7 +2840,7 @@
             const cont = document.getElementById(prefix + 'TagsContainer'); if (!cont) return;
             cont.innerHTML = customTags.map(t => {
                 const isSelected = tempSelectedTags.includes(t.id); const cfg = tagColors[t.color];
-                return `<div class="relative inline-block"><button type="button" onclick="toggleTagSelection('${prefix}', '${t.id}')" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${isSelected ? cfg.active : 'bg-white text-slate-600'}"><span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : cfg.badge}"></span>${t.name}${isSelected ? '<i class="fa-solid fa-check ml-1"></i>' : ''}</button><button type="button" onclick="event.stopPropagation(); deleteCustomTag('${t.id}', '${prefix}')" class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white rounded-full flex items-center justify-center text-[8px] border hover:bg-rose-600"><i class="fa-solid fa-xmark"></i></button></div>`;
+                return `<div class="relative inline-block"><button type="button" onclick="toggleTagSelection('${prefix}', '${t.id}')" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 ${isSelected ? cfg.active : 'bg-white text-slate-600'}"><span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : cfg.badge}"></span>${esc(t.name)}${isSelected ? '<i class="fa-solid fa-check ml-1"></i>' : ''}</button><button type="button" onclick="event.stopPropagation(); deleteCustomTag('${t.id}', '${prefix}')" class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white rounded-full flex items-center justify-center text-[8px] border hover:bg-rose-600"><i class="fa-solid fa-xmark"></i></button></div>`;
             }).join('') || `<p class="text-[11px] text-slate-400">目前尚無標籤</p>`;
         }
 
@@ -2827,9 +2924,9 @@
             if (!followUps.length && !birthdays.length && !deductions.length) return panel.classList.add('hidden');
             panel.classList.remove('hidden');
             panel.innerHTML = `
-                <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-2"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-clipboard-list text-[#1E2E3D]"></i> 待辦提醒</h3><div class="max-h-36 overflow-y-auto">${followUps.map(item => `<div onclick="openFollowUpModal('${item.cust.id}')" class="flex justify-between p-2 mb-1 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${item.cust.name}</span></div>`).join('')||'<p class="text-xs text-slate-400">無待辦</p>'}</div></div>
-                <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-cake-candles text-pink-500"></i> 本月壽星</h3><div class="max-h-36 overflow-y-auto">${birthdays.map(c => `<div onclick="openEditModal('${c.id}')" class="flex justify-between p-2 mb-1 rounded border border-pink-100 bg-pink-50 text-xs"><span class="font-bold text-slate-800">${c.name} (${c.birthday.substring(5)})</span></div>`).join('')||'<p class="text-xs text-slate-400">無壽星</p>'}</div></div>
-                ${deductions.length ? `<div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-3"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-credit-card text-emerald-600"></i> 扣款提醒 (成交保單續期・7天內)</h3><div class="max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">${deductions.map(item => `<div onclick="openEditModal('${item.cust.id}')" class="flex justify-between items-center p-2 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${item.cust.name}</span><span class="text-[10px] text-slate-400 flex-shrink-0 ml-1">${item.date}</span></div>`).join('')}</div></div>` : ''}
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-2"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-clipboard-list text-[#1E2E3D]"></i> 待辦提醒</h3><div class="max-h-36 overflow-y-auto">${followUps.map(item => `<div onclick="openFollowUpModal('${item.cust.id}')" class="flex justify-between p-2 mb-1 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${esc(item.cust.name)}</span></div>`).join('')||'<p class="text-xs text-slate-400">無待辦</p>'}</div></div>
+                <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-cake-candles text-pink-500"></i> 本月壽星</h3><div class="max-h-36 overflow-y-auto">${birthdays.map(c => `<div onclick="openEditModal('${c.id}')" class="flex justify-between p-2 mb-1 rounded border border-pink-100 bg-pink-50 text-xs"><span class="font-bold text-slate-800">${esc(c.name)} (${c.birthday.substring(5)})</span></div>`).join('')||'<p class="text-xs text-slate-400">無壽星</p>'}</div></div>
+                ${deductions.length ? `<div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-3"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-credit-card text-emerald-600"></i> 扣款提醒 (成交保單續期・7天內)</h3><div class="max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">${deductions.map(item => `<div onclick="openEditModal('${item.cust.id}')" class="flex justify-between items-center p-2 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${esc(item.cust.name)}</span><span class="text-[10px] text-slate-400 flex-shrink-0 ml-1">${item.date}</span></div>`).join('')}</div></div>` : ''}
             `;
         }
 
@@ -3143,13 +3240,13 @@
                 if(!tags || !tags.length) return '';
                 return `<div class="flex flex-wrap gap-1 mt-1">` + tags.map(tid => {
                     const t = customTags.find(x => x.id === tid); if(!t) return ''; const c = tagColors[t.color] || tagColors['slate'];
-                    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${c.bg}">${t.name}</span>`;
+                    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${c.bg}">${esc(t.name)}</span>`;
                 }).join('') + `</div>`;
             };
 
             const getAgentBadge = (agentName) => {
                 if (!agentName || agentName.trim() === '') return '';
-                return `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-user-tie"></i> ${agentName}</span>`;
+                return `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-user-tie"></i> ${esc(agentName)}</span>`;
             };
 
             // ===== 獨立渲染：冷名單庫視圖 =====
@@ -3172,24 +3269,24 @@
                                 <tr><th class="p-3">姓名 / 建檔日</th><th class="p-3">聯絡資訊 / 公司</th><th class="p-3 text-center">停留階段</th><th class="p-3">自訂標籤</th><th class="p-3">備註</th><th class="p-3 w-40 text-center">下次提醒設定</th><th class="p-3 text-center">操作</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                ${filtered.map(c => `
+                                ${safeMap(filtered, c => `
                                     <tr class="hover:bg-slate-50 transition group">
                                         <td class="p-3">
                                             <div class="flex items-center gap-1.5">
-                                                <p class="font-bold text-slate-800">${c.name}</p>
+                                                <p class="font-bold text-slate-800">${esc(c.name)}</p>
                                                 ${getAgentBadge(c.agentName)}
                                             </div>
                                             <p class="text-[9px] text-slate-400 mt-0.5">建檔: ${c.createdAt.substring(0,10)}</p>
                                         </td>
                                         <td class="p-3">
-                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs text-slate-600 flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition w-max"><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
-                                            <p class="text-[10px] text-slate-400 mt-1">${c.company || '-'}</p>
+                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs text-slate-600 flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition w-max"><i class="fa-solid fa-phone text-slate-400"></i> ${esc(c.phone || '-')}</span>
+                                            <p class="text-[10px] text-slate-400 mt-1">${esc(c.company || '-')}</p>
                                         </td>
                                         <td class="p-3 text-center">
                                             <span class="bg-slate-100 px-2 py-1 rounded text-[10px] font-bold border border-slate-200 text-slate-600">${stageConfig[c.lastStage || 'NURTURE']?.label || '經營 🌱(自介)'}</span>
                                         </td>
                                         <td class="p-3">${getTagsHtml(c.tags)}</td>
-                                        <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${c.notes}">${c.notes || '-'}</td>
+                                        <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${esc(c.notes)}">${esc(c.notes || '-')}</td>
                                         <td class="p-3">
                                             <input type="date" value="${c.nextContactDate || ''}" onchange="updateLeadDate('${c.id}', this.value)" class="w-full text-xs p-1.5 border border-slate-200 rounded text-slate-600 mb-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
                                             <div class="flex gap-1">
@@ -3228,11 +3325,11 @@
                                 <tr><th class="p-3">姓名 / 狀態</th><th class="p-3">聯絡資訊 / 公司</th><th class="p-3 text-center">停留階段</th><th class="p-3">自訂標籤</th><th class="p-3">備註</th><th class="p-3 w-40 text-center">下次提醒 (僅待定適用)</th><th class="p-3 text-center">操作</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                ${filtered.map(c => `
+                                ${safeMap(filtered, c => `
                                     <tr class="hover:bg-slate-50 transition group opacity-90">
                                         <td class="p-3">
                                             <div class="flex items-center gap-1.5">
-                                                <p class="font-bold ${c.progress === 'HOLD' ? 'text-amber-900' : 'text-slate-600'}">${c.name}</p>
+                                                <p class="font-bold ${c.progress === 'HOLD' ? 'text-amber-900' : 'text-slate-600'}">${esc(c.name)}</p>
                                                 ${getAgentBadge(c.agentName)}
                                             </div>
                                             <div class="mt-1">
@@ -3242,14 +3339,14 @@
                                             </div>
                                         </td>
                                         <td class="p-3">
-                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs text-slate-600 flex items-center gap-1 cursor-pointer hover:text-blue-600 transition w-max"><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
-                                            <p class="text-[10px] text-slate-400 mt-1">${c.company || '-'}</p>
+                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs text-slate-600 flex items-center gap-1 cursor-pointer hover:text-blue-600 transition w-max"><i class="fa-solid fa-phone text-slate-400"></i> ${esc(c.phone || '-')}</span>
+                                            <p class="text-[10px] text-slate-400 mt-1">${esc(c.company || '-')}</p>
                                         </td>
                                         <td class="p-3 text-center">
                                             <span class="bg-slate-100 px-2 py-1 rounded text-[10px] font-bold border border-slate-200 text-slate-600">${stageConfig[c.lastStage || 'NURTURE']?.label || '經營 🌱(自介)'}</span>
                                         </td>
                                         <td class="p-3">${getTagsHtml(c.tags)}</td>
-                                        <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${c.notes}">${c.notes || '-'}</td>
+                                        <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${esc(c.notes)}">${esc(c.notes || '-')}</td>
                                         <td class="p-3 text-center">
                                             ${c.progress === 'HOLD' ? `
                                                 <input type="date" value="${c.nextContactDate || ''}" onchange="updateLeadDate('${c.id}', this.value)" class="w-full text-xs p-1 border border-amber-200 rounded text-amber-700 mb-1 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-amber-50/50">
@@ -3293,17 +3390,17 @@
                                     <tr><th class="p-3">姓名/來源</th><th class="p-3">聯絡資訊</th><th class="p-3">招募進度</th><th class="p-3">自訂標籤</th><th class="p-3 text-center">下次提醒設定</th><th class="p-3 text-center">操作</th></tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    ${filtered.map(c => `
+                                    ${safeMap(filtered, c => `
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="p-3">
                                                 <div class="flex items-center gap-1.5">
-                                                    <p class="font-bold text-slate-800">${c.name}</p>
+                                                    <p class="font-bold text-slate-800">${esc(c.name)}</p>
                                                     ${getAgentBadge(c.agentName)}
                                                 </div>
-                                                <p class="text-[10px] text-slate-400 mt-1">${c.company || '-'}</p>
+                                                <p class="text-[10px] text-slate-400 mt-1">${esc(c.company || '-')}</p>
                                             </td>
                                             <td class="p-3">
-                                                <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs font-medium text-slate-500 hover:text-purple-600 cursor-pointer flex items-center gap-1 w-max" title="點擊複製電話"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${c.phone || '-'}</span>
+                                                <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs font-medium text-slate-500 hover:text-purple-600 cursor-pointer flex items-center gap-1 w-max" title="點擊複製電話"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone || '-')}</span>
                                             </td>
                                             <td class="p-3">
                                                 <span class="px-2 py-1 rounded text-xs font-bold border ${stageConfig[c.progress]?.bg} ${stageConfig[c.progress]?.color} ${stageConfig[c.progress]?.border}">${stageConfig[c.progress]?.label}</span>
@@ -3330,7 +3427,7 @@
                         <h3 class="font-bold text-purple-900 flex items-center gap-1"><i class="fa-solid fa-user-tie text-purple-500"></i> 引薦招募庫</h3>
                         <p class="text-xs text-purple-700/70 mt-1">專屬增員漏斗。此處名單不干擾銷售業績統計，但擁有獨立的招募階段（接觸 ➔ 面談 ➔ 報聘）及提醒功能。</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${filtered.map(c => {
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${safeMap(filtered, c => {
                         const sc = stageConfig[c.progress] || stageConfig['R_CONTACT'];
                         const badge = `<span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${sc.bg} ${sc.color} border ${sc.border}">${sc.label}</span>`;
                         const nextIdx = recruitOrder.indexOf(c.progress) + 1;
@@ -3345,17 +3442,17 @@
                                                 ${badge}
                                                 ${getAgentBadge(c.agentName)}
                                             </div>
-                                            <h4 class="text-lg font-bold font-editorial">${c.name}</h4>
-                                            <p class="text-[10px] text-slate-400">${c.company||''}</p>
+                                            <h4 class="text-lg font-bold font-editorial">${esc(c.name)}</h4>
+                                            <p class="text-[10px] text-slate-400">${esc(c.company||'')}</p>
                                         </div>
                                         <button onclick="openEditModal('${c.id}')" class="p-1.5 text-slate-400 hover:text-purple-600 transition"><i class="fa-regular fa-pen-to-square"></i></button>
                                     </div>
                                     <div class="text-xs font-medium text-slate-500 mb-2 mt-1">
-                                        ${c.phone ? `<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-purple-600 transition flex items-center gap-1 w-max" title="點擊複製"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${c.phone}</span>` : ''}
+                                        ${c.phone ? `<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-purple-600 transition flex items-center gap-1 w-max" title="點擊複製"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone)}</span>` : ''}
                                     </div>
                                     ${renderRecruitStepper(c.progress)}
                                     ${getTagsHtml(c.tags)}
-                                    <p class="line-clamp-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">${c.notes || '無備註'}</p>
+                                    <p class="line-clamp-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">${esc(c.notes || '無備註')}</p>
                                 </div>
                                 <div class="px-5 py-3 bg-slate-50 border-t border-slate-150 flex gap-2"><button onclick="openFollowUpModal('${c.id}')" class="flex-[0.6] py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-200 transition"><i class="fa-solid fa-clock-rotate-left"></i> 歷程</button>${actBtn}</div>
                             </div>`;
@@ -3378,24 +3475,24 @@
                                 <tr><th class="p-3">姓名/公司</th><th class="p-3">聯絡資訊</th><th class="p-3">階段狀態</th><th class="p-3">商品/企劃</th><th class="p-3 text-right">預估/實領 FYC</th><th class="p-3 text-right">預估/實領佣金</th><th class="p-3 text-center">操作</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                ${filtered.map(c => `
+                                ${safeMap(filtered, c => `
                                     <tr class="hover:bg-slate-50 transition">
                                         <td class="p-3">
                                             <div class="flex items-center gap-1.5">
-                                                <p class="font-bold text-slate-800">${c.name}</p>
+                                                <p class="font-bold text-slate-800">${esc(c.name)}</p>
                                                 ${getAgentBadge(c.agentName)}
                                             </div>
-                                            <p class="text-[10px] text-slate-400 mt-1">${c.company || '-'}</p>
+                                            <p class="text-[10px] text-slate-400 mt-1">${esc(c.company || '-')}</p>
                                             ${getTagsHtml(c.tags)}
                                         </td>
                                         <td class="p-3">
-                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs font-medium text-slate-500 hover:text-blue-600 cursor-pointer flex items-center gap-1 w-max" title="點擊複製電話"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${c.phone || '-'}</span>
+                                            <span onclick="copyToClipboard('${c.phone}', '電話')" class="text-xs font-medium text-slate-500 hover:text-blue-600 cursor-pointer flex items-center gap-1 w-max" title="點擊複製電話"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone || '-')}</span>
                                         </td>
                                         <td class="p-3">
                                             ${c.category==='WON' ? `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded text-xs font-bold border border-emerald-200">已成交</span>` : `<span class="bg-slate-100 px-2 py-1 rounded text-xs font-bold border border-slate-200 text-slate-600">${stageConfig[c.progress]?.label || ''}</span>`}
                                         </td>
                                         <td class="p-3 text-xs">
-                                            ${c.category==='WON' ? `<p class="font-bold text-slate-700">${c.policyName}</p><p class="text-slate-400">${c.productType}</p>` : `<p class="text-slate-500 max-w-[150px] truncate">${c.plannedPolicyName || c.notes || '-'}</p>`}
+                                            ${c.category==='WON' ? `<p class="font-bold text-slate-700">${esc(c.policyName)}</p><p class="text-slate-400">${c.productType}</p>` : `<p class="text-slate-500 max-w-[150px] truncate">${esc(c.plannedPolicyName || c.notes || '-')}</p>`}
                                         </td>
                                         <td class="p-3 text-right font-bold text-slate-600">
                                             ${(() => { const v = Number(c.category==='WON'?c.fyc:c.plannedFyc||0)/10000; return v%1===0 ? v : v.toFixed(2); })()} <span class="text-[10px] font-normal text-slate-400">C</span>
@@ -3417,7 +3514,7 @@
                     </div>
                 `;
             } else {
-                grid.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${filtered.map(c => {
+                grid.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${safeMap(filtered, c => {
                     let badge, actBtn, detHtml;
                     if (c.category === 'NEW') {
                         const sc = stageConfig[c.progress] || stageConfig['NURTURE'];
@@ -3427,18 +3524,18 @@
                         
                         detHtml = c.progress === 'KEY_VISIT' ? `
                             <div class="bg-rose-50/40 p-3 rounded-xl border border-rose-100 text-xs space-y-1.5 mt-2">
-                                <p class="font-bold text-rose-900 truncate">📑 提案: ${c.plannedPolicyName || '未定保單'}</p>
+                                <p class="font-bold text-rose-900 truncate">📑 提案: ${esc(c.plannedPolicyName || '未定保單')}</p>
                                 <div class="flex justify-between text-[11px] text-rose-800 pt-1 border-t border-rose-200/40">
                                     <span>預計保費: ${Number(c.plannedPremium||0).toLocaleString()}</span>
                                     <span class="font-black">預估佣金: ${Number(c.plannedCommission||0).toLocaleString()}</span>
                                 </div>
-                            </div>` : `<p class="line-clamp-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">${c.notes || '無備註'}</p>`;
+                            </div>` : `<p class="line-clamp-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">${esc(c.notes || '無備註')}</p>`;
                     } else {
                         badge = `<span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🏆 已成交保單</span>`;
                         actBtn = `<div class="flex-1 text-center py-1.5 text-emerald-700 font-bold text-xs bg-emerald-50 rounded-lg border border-emerald-100">🎉 結案</div>`;
                         detHtml = `
                             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs mt-2 space-y-1">
-                                <p class="font-bold text-[#1E2E3D] truncate">📑 ${c.policyName}</p>
+                                <p class="font-bold text-[#1E2E3D] truncate">📑 ${esc(c.policyName)}</p>
                                 <div class="flex justify-between pt-1 border-t border-slate-200/60 font-bold">
                                     <span class="text-slate-600">首期: ${Number(c.premium).toLocaleString()}</span>
                                     <span class="text-emerald-600">實領: ${Number(c.commission).toLocaleString()}</span>
@@ -3455,13 +3552,13 @@
                                             ${badge}
                                             ${getAgentBadge(c.agentName)}
                                         </div>
-                                        <h4 class="text-lg font-bold font-editorial">${c.name}</h4>
-                                        <p class="text-[10px] text-slate-400">${c.company||''}</p>
+                                        <h4 class="text-lg font-bold font-editorial">${esc(c.name)}</h4>
+                                        <p class="text-[10px] text-slate-400">${esc(c.company||'')}</p>
                                     </div>
                                     <button onclick="openEditModal('${c.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 transition"><i class="fa-regular fa-pen-to-square"></i></button>
                                 </div>
                                 <div class="text-xs font-medium text-slate-500 mb-2 mt-1">
-                                    ${c.phone ? `<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-blue-600 transition flex items-center gap-1 w-max" title="點擊複製"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${c.phone}</span>` : ''}
+                                    ${c.phone ? `<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-blue-600 transition flex items-center gap-1 w-max" title="點擊複製"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone)}</span>` : ''}
                                 </div>
                                 ${c.category==='NEW' ? renderStepper(c.progress) : ''}
                                 ${getTagsHtml(c.tags)}
@@ -3598,6 +3695,8 @@
         function openEditModal(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
             document.getElementById('editId').value = c.id;
+            tempLinks = Array.isArray(c.links) ? c.links.map(function (l) { return { name: l.name, url: l.url }; }) : [];
+            renderEditLinks();
             document.getElementById('editCreatedAt').value = c.createdAt.substring(0,10);
             document.getElementById('editName').value = c.name;
             document.getElementById('editBirthday').value = c.birthday || '';
@@ -3678,6 +3777,35 @@
             openEditModal(nc.id);
         };
 
+        // ===== 相關連結 / 附件（雲端網址）=====
+        var tempLinks = [];
+        function renderEditLinks() {
+            var box = document.getElementById('editLinksList');
+            if (!box) return;
+            if (!tempLinks.length) { box.innerHTML = '<p class="text-[11px] text-slate-400">尚無連結</p>'; return; }
+            box.innerHTML = tempLinks.map(function (l, i) {
+                return '<div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5">' +
+                    '<i class="fa-solid fa-paperclip text-slate-400 text-xs flex-shrink-0"></i>' +
+                    '<a href="' + esc(l.url) + '" target="_blank" rel="noopener" class="flex-1 min-w-0 truncate text-xs font-bold text-indigo-600 hover:underline">' + esc(l.name || l.url) + '</a>' +
+                    '<button type="button" onclick="removeEditLink(' + i + ')" class="text-slate-300 hover:text-rose-500 text-base leading-none flex-shrink-0" title="刪除">×</button>' +
+                    '</div>';
+            }).join('');
+        }
+        function addEditLink() {
+            var nameEl = document.getElementById('editLinkName'), urlEl = document.getElementById('editLinkUrl');
+            var url = (urlEl.value || '').trim();
+            var name = (nameEl.value || '').trim();
+            if (!url) { showToast('請貼上網址', 'error'); return; }
+            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+            tempLinks.push({ name: name || url, url: url });
+            nameEl.value = ''; urlEl.value = '';
+            renderEditLinks();
+        }
+        function removeEditLink(i) {
+            tempLinks.splice(i, 1);
+            renderEditLinks();
+        }
+
         function handleEditCustomer(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('editId').value);
             const name = document.getElementById('editName').value.trim();
@@ -3737,6 +3865,7 @@
             }
             
             c.phone = document.getElementById('editPhone').value; c.company = document.getElementById('editCompany').value; c.notes = document.getElementById('editNotes').value;
+            c.links = tempLinks.map(function (l) { return { name: l.name, url: l.url }; });
             recordState(); renderApp(); closeModal('editCustomerModal'); showToast('資料已更新');
         }
 
@@ -3782,7 +3911,7 @@
 
         function openFollowUpModal(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
-            document.getElementById('historyCustomerId').value = c.id; document.getElementById('followUpCustomerName').innerHTML = `<span class="text-white font-bold font-editorial">${c.name}</span>`;
+            document.getElementById('historyCustomerId').value = c.id; document.getElementById('followUpCustomerName').innerHTML = `<span class="text-white font-bold font-editorial">${esc(c.name)}</span>`;
             document.getElementById('addHistoryForm').reset(); document.getElementById('historyDate').valueAsDate = new Date();
             document.getElementById('historyNextContact').value = c.nextContactDate || ''; 
             
@@ -3830,7 +3959,7 @@
             
             const stepEl = document.getElementById('timelineStepper');
             if (c.category === 'WON') {
-                stepEl.innerHTML = `<div class="bg-emerald-50 text-emerald-800 p-2 rounded-lg text-sm font-bold text-center border border-emerald-150">🏆 本案已成交簽約 (${c.policyName || ''})</div>`;
+                stepEl.innerHTML = `<div class="bg-emerald-50 text-emerald-800 p-2 rounded-lg text-sm font-bold text-center border border-emerald-150">🏆 本案已成交簽約 (${esc(c.policyName || '')})</div>`;
             } else if (c.category === 'RECRUIT') {
                 const curIdx = recruitOrder.indexOf(c.progress);
                 if (c.progress === 'LOST') {
@@ -3848,7 +3977,7 @@
 
             const tc = document.getElementById('timelineContainer');
             if (!c.history || c.history.length===0) tc.innerHTML = '<p class="text-xs text-slate-400">尚無跟進歷程記錄</p>';
-            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${h.content}</p></div></div>`).join('');
+            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
             openModal('followUpModal');
         }
 
