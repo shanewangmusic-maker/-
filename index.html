@@ -104,6 +104,9 @@
                     <button onclick="exportMonthlyReport()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出業績月報（依上方選的期間，CSV 可用 Excel 開啟）">
                         <i class="fa-solid fa-file-excel"></i>
                     </button>
+                    <button id="memberAdminBtn" onclick="openMemberAdmin()" style="display:none" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="成員權限設定（分配各業務員可用的分頁）">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </button>
                     <!-- 電腦版登出按鈕 -->
                     <button onclick="window.logoutTeam()" class="hidden md:flex bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 p-2.5 rounded-lg transition duration-200 border border-rose-500/30 flex-shrink-0" title="登出 / 切換團隊">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -742,6 +745,8 @@
                                             <option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年" selected>每年</option><option value="一次性">一次性</option>
                                         </select>
                                     </div>
+                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-700 mb-0.5">配息日</label><input type="date" id="addDividendDate" class="w-full px-3 py-1.5 border border-violet-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-700 mb-0.5">配息頻率</label><select id="addDividendFrequency" class="w-full px-3 py-1.5 border border-violet-200 rounded-lg text-sm font-bold text-violet-800 outline-none"><option value="">（無）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-700 mb-0.5">成交日期 *</label><input type="date" id="addDealDate" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-700 mb-0.5">送件日期 *</label><input type="date" id="addSubmitDate" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 bg-white p-2 rounded-lg border border-emerald-200 flex justify-between items-center mt-1">
@@ -897,6 +902,8 @@
                                     <div class="col-span-2 sm:col-span-1"><select id="editRankRate" onchange="calcComm('edit')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none font-bold text-emerald-850 bg-white"><option value="" disabled selected>職階 *</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">扣款日</label><input type="date" id="editDeductionDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">扣款頻率</label><select id="editDeductionFrequency" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option><option value="一次性">一次性</option></select></div>
+                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-600 mb-0.5">配息日</label><input type="date" id="editDividendDate" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-600 mb-0.5">配息頻率</label><select id="editDividendFrequency" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white font-bold text-violet-800"><option value="">（無）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">成交日期 *</label><input type="date" id="editDealDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">送件日期 *</label><input type="date" id="editSubmitDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 bg-white p-2 rounded-lg border border-emerald-200 flex justify-between items-center mt-1"><span class="text-xs font-bold text-emerald-800">佣金(元)</span><input type="text" id="editCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-lg font-black text-emerald-800 outline-none"></div>
@@ -988,6 +995,8 @@
                                     <div class="col-span-2 sm:col-span-1"><select id="historyRankRate" onchange="calcComm('history')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none font-bold text-emerald-800"><option value="" disabled selected>職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><input type="date" id="historyDeductionDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white" placeholder="扣款日"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyDeductionFrequency" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option><option value="一次性">一次性</option></select></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="date" id="historyDividendDate" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white" placeholder="配息日"></div>
+                                    <div class="col-span-2 sm:col-span-1"><select id="historyDividendFrequency" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white font-bold text-violet-800"><option value="">（無配息）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">成交日期</label><input type="date" id="historyDealDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">送件日期</label><input type="date" id="historySubmitDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 bg-white p-1 rounded border flex justify-between items-center"><span class="text-[10px] font-bold text-emerald-600">佣金</span><input type="text" id="historyCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-emerald-600 outline-none"></div>
@@ -1049,6 +1058,10 @@
                             <div class="col-span-2 sm:col-span-1"><select id="quickWonRankRate" onchange="calcComm('quickWon')" required class="w-full px-3 py-2 border rounded-lg text-sm font-bold text-emerald-800 outline-none"><option value="" disabled selected>職階 *</option><option value="78">副總</option><option value="58">襄理</option><option value="40">代表</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><input type="date" id="quickWonDealDate" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
                             <div class="col-span-2 sm:col-span-1"><input type="date" id="quickWonSubmitDate" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-700 mb-0.5">扣款日</label><input type="date" id="quickWonDeductionDate" class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-700 mb-0.5">扣款頻率</label><select id="quickWonDeductionFrequency" class="w-full px-3 py-2 border rounded-lg text-sm outline-none font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年" selected>每年</option><option value="一次性">一次性</option></select></div>
+                            <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-700 mb-0.5">配息日</label><input type="date" id="quickWonDividendDate" class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-700 mb-0.5">配息頻率</label><select id="quickWonDividendFrequency" class="w-full px-3 py-2 border rounded-lg text-sm outline-none font-bold text-violet-800"><option value="">（無）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                             <div class="col-span-2 bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex justify-between items-center mt-2">
                                 <span class="text-xs font-bold text-emerald-800">實領佣金 (元)</span>
                                 <input type="text" id="quickWonCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-xl font-black text-emerald-800 outline-none">
@@ -1143,8 +1156,11 @@
             }
             if (typeof renderAct === 'function') renderAct();
 
+            teamMembers = Array.isArray(data.members) ? data.members : [];
+
             window.hasLoadedOnce = true;
             if (typeof renderApp === 'function') renderApp();
+            if (typeof applyTabPermissions === 'function') applyTabPermissions();
         };
 
         window.getCloudData = function() {
@@ -1155,7 +1171,8 @@
                 tags: customTags,
                 pnl: pnlData,
                 sched: schedData,
-                act: actData
+                act: actData,
+                members: teamMembers
             };
         };
         // ----------------------------------------------------
@@ -2172,6 +2189,19 @@
         let isDashboardOpen = true; 
         
         let currentMainTab = 'PIPELINE'; 
+        let teamMembers = [];
+        let tempMembers = [];
+        const OWNER_EMAIL = 'shanewangmusic@gmail.com'; // 永遠是管理者，避免鎖死
+        const ALL_TABS = [
+            { key: 'PIPELINE', name: '核心業績看板' },
+            { key: 'LEADS', name: '開發名單庫' },
+            { key: 'RECRUIT', name: '引薦招募庫' },
+            { key: 'ARCHIVE', name: '待定與流失' },
+            { key: 'SCHED', name: '週行程' },
+            { key: 'PNL', name: '損益分析' },
+            { key: 'ACT', name: '活動' }
+        ];
+        let _applyingPerms = false;
         
         let stateHistory = []; let currentStateIndex = -1; const MAX_HISTORY = 20;
         
@@ -2359,6 +2389,120 @@
             }
             
             renderApp();
+        }
+
+        // ================= 成員分頁權限 =================
+        function myEmail() { return (window.currentUserEmail || '').toLowerCase(); }
+        function findMember(email) { email = (email || '').toLowerCase(); return teamMembers.find(function (m) { return (m.email || '').toLowerCase() === email; }); }
+        function isAdmin() {
+            var e = myEmail();
+            if (!e) return true;                 // 尚未取得登入身分 → 給全部，避免誤鎖
+            if (e === OWNER_EMAIL) return true;  // 擁有者永遠是管理者
+            var m = findMember(e);
+            if (!m) return true;                 // 能登入但不在名單 → 預設管理者，避免鎖死
+            return !!m.admin;
+        }
+        function myAllowedTabs() {
+            if (isAdmin()) return ALL_TABS.map(function (t) { return t.key; });
+            var m = findMember(myEmail());
+            return (m && Array.isArray(m.tabs) && m.tabs.length) ? m.tabs : ['PIPELINE'];
+        }
+        function applyTabPermissions() {
+            if (_applyingPerms) return;
+            _applyingPerms = true;
+            try {
+                var allowed = myAllowedTabs();
+                ALL_TABS.forEach(function (t) {
+                    var el = document.getElementById('mainTab-' + t.key);
+                    if (el) el.style.display = (allowed.indexOf(t.key) >= 0) ? '' : 'none';
+                });
+                var adminBtn = document.getElementById('memberAdminBtn');
+                if (adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
+                if (allowed.length && allowed.indexOf(currentMainTab) < 0) switchMainTab(allowed[0]);
+            } finally { _applyingPerms = false; }
+        }
+
+        function openMemberAdmin() {
+            if (!isAdmin()) { showToast('只有管理者可以設定成員權限', 'error'); return; }
+            tempMembers = teamMembers.map(function (m) { return { email: m.email, name: m.name, admin: !!m.admin, tabs: Array.isArray(m.tabs) ? m.tabs.slice() : [] }; });
+            var modal = document.getElementById('memberAdminModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'memberAdminModal';
+                modal.className = 'fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4';
+                modal.innerHTML =
+                    '<div class="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">' +
+                        '<div class="px-5 py-4 border-b flex items-center justify-between">' +
+                            '<h3 class="font-bold text-lg font-editorial text-[#1E2E3D]"><i class="fa-solid fa-users-gear"></i> 成員權限設定</h3>' +
+                            '<button onclick="closeMemberAdmin()" class="text-slate-400 hover:text-slate-700 text-xl">&times;</button>' +
+                        '</div>' +
+                        '<div class="p-5 overflow-y-auto flex-1">' +
+                            '<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 mb-4">每位成員以「登入 Email」對應。勾選他能開啟的分頁；沒勾的登入後會被隱藏。<b>管理者</b>可看到全部分頁與本設定。提醒：此為畫面層的分頁權限，非資料的硬隔離。</div>' +
+                            '<div id="memberAdminList" class="space-y-3 mb-4"></div>' +
+                            '<div class="border-t pt-3">' +
+                                '<p class="text-xs font-bold text-slate-500 mb-2">＋ 新增成員（需先在 Firebase 建好該 Email 帳號）</p>' +
+                                '<div class="flex flex-col sm:flex-row gap-2">' +
+                                    '<input id="newMemberEmail" type="text" placeholder="登入 Email" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
+                                    '<input id="newMemberName" type="text" placeholder="顯示名稱（業務員）" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
+                                    '<button onclick="addMember()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-sm font-bold rounded-lg flex-shrink-0">加入</button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="px-5 py-4 border-t flex justify-end gap-2">' +
+                            '<button onclick="closeMemberAdmin()" class="px-4 py-2 bg-white border text-slate-600 rounded-lg text-sm font-bold">取消</button>' +
+                            '<button onclick="saveMembers()" class="px-4 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">儲存並套用</button>' +
+                        '</div>' +
+                    '</div>';
+                document.body.appendChild(modal);
+            }
+            modal.style.display = 'flex';
+            renderMemberAdmin();
+        }
+        function closeMemberAdmin() { var m = document.getElementById('memberAdminModal'); if (m) m.style.display = 'none'; }
+        function renderMemberAdmin() {
+            var box = document.getElementById('memberAdminList');
+            if (!box) return;
+            if (!tempMembers.length) { box.innerHTML = '<p class="text-xs text-slate-400">尚無成員設定。未列入名單、但能登入的帳號，預設視為「管理者（可見全部分頁）」。</p>'; return; }
+            box.innerHTML = tempMembers.map(function (m, i) {
+                var tabsHtml = ALL_TABS.map(function (t) {
+                    var on = (m.tabs || []).indexOf(t.key) >= 0;
+                    return '<label class="flex items-center gap-1 text-xs px-2 py-1 border rounded-lg cursor-pointer ' + (on ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200') + '"><input type="checkbox" class="hidden" ' + (on ? 'checked' : '') + ' onchange="toggleMemberTab(' + i + ',\'' + t.key + '\')">' + esc(t.name) + '</label>';
+                }).join('');
+                return '<div class="border border-slate-200 rounded-xl p-3">' +
+                    '<div class="flex items-center justify-between gap-2 mb-2">' +
+                        '<div class="min-w-0"><p class="font-bold text-sm text-slate-800 truncate">' + esc(m.name || m.email) + '</p><p class="text-[11px] text-slate-400 truncate">' + esc(m.email) + '</p></div>' +
+                        '<div class="flex items-center gap-2 flex-shrink-0">' +
+                            '<label class="flex items-center gap-1 text-xs font-bold text-indigo-600"><input type="checkbox" ' + (m.admin ? 'checked' : '') + ' onchange="toggleMemberAdmin(' + i + ')"> 管理者</label>' +
+                            '<button onclick="removeMember(' + i + ')" class="text-slate-300 hover:text-rose-500 text-lg leading-none" title="移除">&times;</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex flex-wrap gap-1.5 ' + (m.admin ? 'opacity-40 pointer-events-none' : '') + '">' + tabsHtml + '</div>' +
+                '</div>';
+            }).join('');
+        }
+        function addMember() {
+            var em = (document.getElementById('newMemberEmail').value || '').trim().toLowerCase();
+            var nm = (document.getElementById('newMemberName').value || '').trim();
+            if (!em) { showToast('請填入 Email', 'error'); return; }
+            if (tempMembers.some(function (m) { return (m.email || '').toLowerCase() === em; })) { showToast('這個 Email 已在名單中', 'error'); return; }
+            tempMembers.push({ email: em, name: nm || em, admin: false, tabs: ['PIPELINE'] });
+            document.getElementById('newMemberEmail').value = ''; document.getElementById('newMemberName').value = '';
+            renderMemberAdmin();
+        }
+        function removeMember(i) { tempMembers.splice(i, 1); renderMemberAdmin(); }
+        function toggleMemberAdmin(i) { tempMembers[i].admin = !tempMembers[i].admin; renderMemberAdmin(); }
+        function toggleMemberTab(i, key) {
+            if (!Array.isArray(tempMembers[i].tabs)) tempMembers[i].tabs = [];
+            var idx = tempMembers[i].tabs.indexOf(key);
+            if (idx >= 0) tempMembers[i].tabs.splice(idx, 1); else tempMembers[i].tabs.push(key);
+            renderMemberAdmin();
+        }
+        function saveMembers() {
+            teamMembers = tempMembers.map(function (m) { return { email: (m.email || '').toLowerCase(), name: m.name || m.email, admin: !!m.admin, tabs: Array.isArray(m.tabs) ? m.tabs.slice() : [] }; });
+            recordState();
+            applyTabPermissions();
+            closeMemberAdmin();
+            showToast('成員權限已儲存並套用');
         }
 
         window.reactivateCustomer = function(id) {
@@ -2860,7 +3004,7 @@
             const panel = document.getElementById('notificationCenter');
             const todayStr = new Date().toISOString().substring(0, 10);
             const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
-            let followUps = [], birthdays = [], deductions = []; 
+            let followUps = [], birthdays = [], deductions = [], dividends = []; 
             const seenBirthday = new Set(); // 同一人（姓名+電話）壽星只顯示一次
             
             customers.forEach(c => {
@@ -2921,12 +3065,28 @@
                 followUps = Array.from(_fuMap.values());
             }
 
-            if (!followUps.length && !birthdays.length && !deductions.length) return panel.classList.add('hidden');
+            customers.forEach(function (c) {
+                if (c.category !== 'WON' || !c.dividendDate || !c.dividendFrequency || c.dividendFrequency === '一次性') return;
+                const dFreq = { '每月':1, '每季':3, '半年':6, '每年':12 }[c.dividendFrequency];
+                if (!dFreq) return;
+                const t0 = new Date(todayStr + 'T00:00:00');
+                let ddue = new Date(c.dividendDate + 'T00:00:00');
+                let dg = 0;
+                while (ddue < t0 && dg < 600) { ddue.setMonth(ddue.getMonth() + dFreq); dg++; }
+                const dDiff = Math.floor((ddue - t0) / 86400000);
+                if (dDiff > 7) return;
+                const dStr = ddue.getFullYear() + '-' + String(ddue.getMonth()+1).padStart(2,'0') + '-' + String(ddue.getDate()).padStart(2,'0');
+                const dLabel = dDiff === 0 ? '🎁 今日配息' : `💰 ${dDiff}天後配息`;
+                const dColor = dDiff <= 1 ? 'text-violet-800 bg-violet-50 border-violet-200' : 'text-violet-700 bg-white border-violet-100';
+                dividends.push({ cust: c, date: dStr, label: dLabel, color: dColor });
+            });
+            if (!followUps.length && !birthdays.length && !deductions.length && !dividends.length) return panel.classList.add('hidden');
             panel.classList.remove('hidden');
             panel.innerHTML = `
                 <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-2"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-clipboard-list text-[#1E2E3D]"></i> 待辦提醒</h3><div class="max-h-36 overflow-y-auto">${followUps.map(item => `<div onclick="openFollowUpModal('${item.cust.id}')" class="flex justify-between p-2 mb-1 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${esc(item.cust.name)}</span></div>`).join('')||'<p class="text-xs text-slate-400">無待辦</p>'}</div></div>
                 <div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-cake-candles text-pink-500"></i> 本月壽星</h3><div class="max-h-36 overflow-y-auto">${birthdays.map(c => `<div onclick="openEditModal('${c.id}')" class="flex justify-between p-2 mb-1 rounded border border-pink-100 bg-pink-50 text-xs"><span class="font-bold text-slate-800">${esc(c.name)} (${c.birthday.substring(5)})</span></div>`).join('')||'<p class="text-xs text-slate-400">無壽星</p>'}</div></div>
                 ${deductions.length ? `<div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-3"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-credit-card text-emerald-600"></i> 扣款提醒 (成交保單續期・7天內)</h3><div class="max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">${deductions.map(item => `<div onclick="openEditModal('${item.cust.id}')" class="flex justify-between items-center p-2 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${esc(item.cust.name)}</span><span class="text-[10px] text-slate-400 flex-shrink-0 ml-1">${item.date}</span></div>`).join('')}</div></div>` : ''}
+                ${dividends.length ? `<div class="bg-white rounded-xl p-3.5 border border-slate-200 premium-shadow col-span-1 lg:col-span-3"><h3 class="font-bold text-xs mb-2 border-b pb-1"><i class="fa-solid fa-sack-dollar text-violet-600"></i> 配息提醒 (分紅/投資型・7天內)</h3><div class="max-h-36 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">${dividends.map(item => `<div onclick="openEditModal('${item.cust.id}')" class="flex justify-between items-center p-2 rounded border ${item.color} cursor-pointer text-xs"><span class="font-bold">${item.label} ${esc(item.cust.name)}</span><span class="text-[10px] text-slate-400 flex-shrink-0 ml-1">${item.date}</span></div>`).join('')}</div></div>` : ''}
             `;
         }
 
@@ -3685,7 +3845,7 @@
                 nc.productType = document.getElementById('addProductType').value; nc.premium = document.getElementById('addPremium').value.replace(/,/g, '');
                 nc.fyc = document.getElementById('addFyc').value.replace(/,/g, ''); nc.commissionRate = document.getElementById('addCommissionRate').value;
                 nc.rankRate = document.getElementById('addRankRate').value; nc.commission = document.getElementById('addCommission').value.replace(/,/g, '');
-                nc.deductionDate = document.getElementById('addDeductionDate').value; nc.deductionFrequency = document.getElementById('addDeductionFrequency').value;
+                nc.deductionDate = document.getElementById('addDeductionDate').value; nc.deductionFrequency = document.getElementById('addDeductionFrequency').value; nc.dividendDate = (document.getElementById('addDividendDate')||{}).value || ''; nc.dividendFrequency = (document.getElementById('addDividendFrequency')||{}).value || '';
                 nc.dealDate = document.getElementById('addDealDate').value; nc.submitDate = document.getElementById('addSubmitDate').value;
                 nc.history.push({ id:'h-'+Date.now(), date:cDate, content:`直接建檔成交(${nc.productType} - ${nc.policyName})`, progress:'WON' });
             }
@@ -3739,6 +3899,8 @@
                 document.getElementById('editCommission').value = c.commission ? Number(c.commission).toLocaleString() : '';
                 document.getElementById('editDeductionDate').value = c.deductionDate || '';
                 document.getElementById('editDeductionFrequency').value = c.deductionFrequency || '每年';
+                if (document.getElementById('editDividendDate')) document.getElementById('editDividendDate').value = c.dividendDate || '';
+                if (document.getElementById('editDividendFrequency')) document.getElementById('editDividendFrequency').value = c.dividendFrequency || '';
                 document.getElementById('editDealDate').value = c.dealDate || '';
                 document.getElementById('editSubmitDate').value = c.submitDate || '';
             }
@@ -3849,19 +4011,19 @@
                 } else {
                     c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
                 }
-                c.policyName = ""; c.insuranceCompany = ""; c.productType = ""; c.premium = 0; c.fyc = 0; c.commissionRate = 0; c.rankRate = ""; c.commission = 0; c.deductionDate = ""; c.deductionFrequency = ""; c.dealDate = ""; c.submitDate = "";
+                c.policyName = ""; c.insuranceCompany = ""; c.productType = ""; c.premium = 0; c.fyc = 0; c.commissionRate = 0; c.rankRate = ""; c.commission = 0; c.deductionDate = ""; c.deductionFrequency = ""; c.dividendDate = ""; c.dividendFrequency = ""; c.dealDate = ""; c.submitDate = "";
             } else if (cat === 'WON') {
                 c.policyName = document.getElementById('editPolicyName').value; c.insuranceCompany = document.getElementById('editInsuranceCompany').value; c.productType = document.getElementById('editProductType').value;
                 c.premium = document.getElementById('editPremium').value.replace(/,/g, ''); 
                 c.fyc = document.getElementById('editFyc').value.replace(/,/g, '');
                 c.commissionRate = document.getElementById('editCommissionRate').value; c.rankRate = document.getElementById('editRankRate').value; 
                 c.commission = document.getElementById('editCommission').value.replace(/,/g, '');
-                c.deductionDate = document.getElementById('editDeductionDate').value; c.deductionFrequency = document.getElementById('editDeductionFrequency').value;
+                c.deductionDate = document.getElementById('editDeductionDate').value; c.deductionFrequency = document.getElementById('editDeductionFrequency').value; c.dividendDate = (document.getElementById('editDividendDate')||{}).value || ''; c.dividendFrequency = (document.getElementById('editDividendFrequency')||{}).value || '';
                 c.dealDate = document.getElementById('editDealDate').value; c.submitDate = document.getElementById('editSubmitDate').value;
                 c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
             } else if (cat === 'LEAD' || cat === 'HOLD' || cat === 'LOST') {
                 c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
-                c.policyName = ""; c.insuranceCompany = ""; c.productType = ""; c.premium = 0; c.fyc = 0; c.commissionRate = 0; c.rankRate = ""; c.commission = 0; c.deductionDate = ""; c.deductionFrequency = ""; c.dealDate = ""; c.submitDate = "";
+                c.policyName = ""; c.insuranceCompany = ""; c.productType = ""; c.premium = 0; c.fyc = 0; c.commissionRate = 0; c.rankRate = ""; c.commission = 0; c.deductionDate = ""; c.deductionFrequency = ""; c.dividendDate = ""; c.dividendFrequency = ""; c.dealDate = ""; c.submitDate = "";
             }
             
             c.phone = document.getElementById('editPhone').value; c.company = document.getElementById('editCompany').value; c.notes = document.getElementById('editNotes').value;
@@ -3902,7 +4064,7 @@
             c.policyName = document.getElementById('quickWonPolicyName').value; c.insuranceCompany = document.getElementById('quickWonInsuranceCompany').value; c.productType = document.getElementById('quickWonProductType').value;
             c.premium = document.getElementById('quickWonPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('quickWonFyc').value.replace(/,/g, '');
             c.commissionRate = document.getElementById('quickWonCommissionRate').value; c.rankRate = document.getElementById('quickWonRankRate').value; c.commission = document.getElementById('quickWonCommission').value.replace(/,/g, '');
-            c.deductionDate = document.getElementById('quickWonDeductionDate').value; c.deductionFrequency = document.getElementById('quickWonDeductionFrequency').value;
+            c.deductionDate = (document.getElementById('quickWonDeductionDate')||{}).value || ''; c.deductionFrequency = (document.getElementById('quickWonDeductionFrequency')||{}).value || ''; c.dividendDate = (document.getElementById('quickWonDividendDate')||{}).value || ''; c.dividendFrequency = (document.getElementById('quickWonDividendFrequency')||{}).value || '';
             c.dealDate = document.getElementById('quickWonDealDate').value; c.submitDate = document.getElementById('quickWonSubmitDate').value;
             c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
             c.history = c.history || []; c.history.push({ id:'h-'+Date.now(), date:new Date().toISOString().substring(0,10), content:`成交(${c.productType} - ${c.policyName})`, progress:'WON' });
@@ -3951,7 +4113,7 @@
                 document.getElementById('historyPolicyName').value = c.policyName || ''; document.getElementById('historyInsuranceCompany').value = c.insuranceCompany || ''; document.getElementById('historyProductType').value = c.productType || '';
                 document.getElementById('historyPremium').value = c.premium ? Number(c.premium).toLocaleString() : ''; document.getElementById('historyCommissionRate').value = c.commissionRate || '';
                 document.getElementById('historyFyc').value = c.fyc ? Number(c.fyc).toLocaleString() : ''; document.getElementById('historyRankRate').value = c.rankRate || ''; document.getElementById('historyCommission').value = c.commission ? Number(c.commission).toLocaleString() : '';
-                document.getElementById('historyDeductionDate').value = c.deductionDate || ''; document.getElementById('historyDeductionFrequency').value = c.deductionFrequency || '每年';
+                document.getElementById('historyDeductionDate').value = c.deductionDate || ''; document.getElementById('historyDeductionFrequency').value = c.deductionFrequency || '每年'; if (document.getElementById('historyDividendDate')) document.getElementById('historyDividendDate').value = c.dividendDate || ''; if (document.getElementById('historyDividendFrequency')) document.getElementById('historyDividendFrequency').value = c.dividendFrequency || '';
                 document.getElementById('historyDealDate').value = c.dealDate || ''; document.getElementById('historySubmitDate').value = c.submitDate || '';
             } else { document.getElementById('historyDealDate').value = ''; document.getElementById('historySubmitDate').value = ''; }
 
@@ -3992,7 +4154,7 @@
                 c.policyName = document.getElementById('historyPolicyName').value; c.insuranceCompany = document.getElementById('historyInsuranceCompany').value; c.productType = document.getElementById('historyProductType').value;
                 c.premium = document.getElementById('historyPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('historyFyc').value.replace(/,/g, '');
                 c.commissionRate = document.getElementById('historyCommissionRate').value; c.rankRate = document.getElementById('historyRankRate').value; c.commission = document.getElementById('historyCommission').value.replace(/,/g, '');
-                c.deductionDate = document.getElementById('historyDeductionDate').value; c.deductionFrequency = document.getElementById('historyDeductionFrequency').value;
+                c.deductionDate = document.getElementById('historyDeductionDate').value; c.deductionFrequency = document.getElementById('historyDeductionFrequency').value; c.dividendDate = (document.getElementById('historyDividendDate')||{}).value || ''; c.dividendFrequency = (document.getElementById('historyDividendFrequency')||{}).value || '';
                 c.dealDate = document.getElementById('historyDealDate').value; c.submitDate = document.getElementById('historySubmitDate').value;
                 c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
                 h.content += ` (成交商品: ${c.productType}, 保單名稱: ${c.policyName})`;
@@ -4210,6 +4372,7 @@
         // 唯一進場守門員：依登入狀態決定顯示登入畫面或連線
         onAuthStateChanged(auth, (user) => {
             if (user && !user.isAnonymous) {
+                window.currentUserEmail = (user.email || '').toLowerCase();
                 const teamId = localStorage.getItem('crm_team_id');
                 if (teamId) {
                     hideLogin();
