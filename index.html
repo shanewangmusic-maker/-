@@ -4188,7 +4188,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, runTransaction, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 🔥 請將您從 Firebase 控制台取得的配置填入這裡：
         const firebaseConfig = {
@@ -4384,6 +4384,175 @@
             } else {
                 showLogin();
             }
+        });
+
+        /* ============================================================
+           自來客（線上預約表 bookings）匯入面板 — 純外掛，即時監聽
+           讀 bookings → 轉成標準客戶物件 → push 進 getCloudData().cust
+           → 呼叫 recordState() 走既有 _rev 交易存檔（與 CSV／活動匯入同路徑）
+           ============================================================ */
+        let zlk_rows = [];
+        let zlk_unsub = null;
+        function zlk_esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+        function zlk_agents(){
+            const set = new Set();
+            try {
+                const d = window.getCloudData ? window.getCloudData() : null;
+                if (d && Array.isArray(d.cust)) d.cust.forEach(c=>{ if(c.agentName && String(c.agentName).trim()) set.add(String(c.agentName).trim()); });
+                if (d && Array.isArray(d.members)) d.members.forEach(m=>{ if(m && m.name && String(m.name).trim()) set.add(String(m.name).trim()); });
+            } catch(e){}
+            return [...set].sort();
+        }
+
+        function zlk_toCustomer(b, agentName){
+            const topics = Array.isArray(b.諮詢主題) ? b.諮詢主題.join('、') : (b.諮詢主題||'');
+            const slots  = Array.isArray(b.方便時段) ? b.方便時段.join('、') : (b.方便時段||'');
+            const L = ['【自來客・線上預約表】'];
+            if (topics) L.push('諮詢主題：'+topics+(b.其他主題?'（其他：'+b.其他主題+'）':''));
+            if (b.諮詢方式) L.push('諮詢方式：'+b.諮詢方式);
+            if (b.希望日期) L.push('希望日期：'+b.希望日期+(slots?'（'+slots+'）':''));
+            if (b.Email) L.push('Email：'+b.Email);
+            if (b.LINE) L.push('LINE：'+b.LINE);
+            if (b.區域) L.push('區域：'+b.區域);
+            if (b.人生階段) L.push('人生階段：'+b.人生階段);
+            if (b.已有投資保險) L.push('已有投資/保險：'+b.已有投資保險);
+            if (b.參與對象) L.push('參與對象：'+b.參與對象);
+            if (b.得知管道) L.push('得知管道：'+b.得知管道);
+            if (b.財務目標) L.push('財務目標：'+b.財務目標);
+            if (b.備註) L.push('備註：'+b.備註);
+            const today = new Date().toISOString().substring(0,10);
+            const wantDate = (b.希望日期 && /^\d{4}-\d{2}-\d{2}$/.test(b.希望日期)) ? b.希望日期 : '';
+            return {
+                id:'cust-'+Date.now()+Math.random(),
+                name:b.姓名||'(未填姓名)',
+                phone:b.電話||'',
+                company:'',
+                notes:L.join('\n'),
+                agentName:agentName||'',
+                category:'NEW',
+                progress:'NURTURE',            // 進核心看板的「經營」階段
+                lastStage:'NURTURE',
+                nextContactDate:wantDate,       // 帶入預約日期 → 自動進「待辦提醒」
+                createdAt:new Date().toISOString(),
+                tags:[],
+                history:[{ id:'h-'+Date.now(), date:today, content:'由線上預約表匯入（自來客）'+(topics?'｜'+topics:''), progress:'NURTURE' }]
+            };
+        }
+
+        async function zlk_import(b, agentName){
+            if (!window.getCloudData || !window.recordState){ if(window.showToast) window.showToast('CRM 尚未就緒，請稍候再試','error'); return; }
+            const data = window.getCloudData();
+            const digits = s => (s||'').replace(/\D/g,'');
+            const dup = (data.cust||[]).find(c => c.phone && b.電話 && digits(c.phone)===digits(b.電話));
+            if (dup && !confirm('已有客戶「'+dup.name+'」電話相同，可能重複。仍要匯入嗎？')) return;
+            data.cust.push(zlk_toCustomer(b, agentName));
+            window.recordState();
+            if (window.renderApp) window.renderApp();
+            zlk_dropLocal(b.__id);
+            try { await updateDoc(doc(db,'bookings',b.__id), { imported:true, importedAt:Date.now() }); }
+            catch(e){ console.warn('標記 bookings 已匯入失敗（不影響 CRM 匯入）', e); }
+            const who = (agentName && agentName.trim()) ? ('「'+agentName.trim()+'」') : '你的個人';
+            if (window.showToast) window.showToast((b.姓名||'該筆')+' 已匯入 '+who+' 名單・預約日已設待辦', 'success');
+        }
+
+        async function zlk_ignore(b){
+            if (!confirm('將「'+(b.姓名||'此筆')+'」標記為已處理並移出待匯入清單？')) return;
+            try { await updateDoc(doc(db,'bookings',b.__id), { imported:true, ignored:true, importedAt:Date.now() }); zlk_dropLocal(b.__id); }
+            catch(e){ if(window.showToast) window.showToast('操作失敗：'+(e.message||e),'error'); }
+        }
+
+        function zlk_updateBadge(){
+            const badge=document.getElementById('zlk_badge');
+            if (badge){ badge.textContent=zlk_rows.length; badge.style.display=zlk_rows.length?'inline-flex':'none'; }
+        }
+        function zlk_dropLocal(id){ zlk_rows = zlk_rows.filter(r=> r.__id!==id); zlk_updateBadge(); zlk_render(); }
+
+        function zlk_render(){
+            const el = document.getElementById('zlk_list'); if(!el) return;
+            if (!zlk_rows.length){ el.innerHTML = '<p style="padding:28px;text-align:center;color:#64748b;">目前沒有待匯入的自來客。</p>'; return; }
+            const agents = zlk_agents();
+            const agentOpts = '<option value="">個人業績（我自己）</option>' + agents.map(a=>'<option value="'+zlk_esc(a)+'">'+zlk_esc(a)+'</option>').join('');
+            el.innerHTML = zlk_rows.map((b,i)=>{
+                const topics = Array.isArray(b.諮詢主題)?b.諮詢主題.join('、'):(b.諮詢主題||'');
+                return '<div style="border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff;">'
+                 + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">'
+                 +   '<div style="font-weight:700;font-size:15px;color:#0f172a;">'+zlk_esc(b.姓名||'(未填姓名)')+'</div>'
+                 +   '<div style="font-size:12px;color:#94a3b8;">'+zlk_esc(b.諮詢方式||'')+'</div>'
+                 + '</div>'
+                 + '<div style="font-size:13px;color:#475569;margin-top:4px;">☎ '+zlk_esc(b.電話||'—')+(b.LINE?'　·　LINE '+zlk_esc(b.LINE):'')+'</div>'
+                 + (topics?'<div style="font-size:12.5px;color:#475569;margin-top:4px;">需求：'+zlk_esc(topics)+'</div>':'')
+                 + (b.希望日期?'<div style="font-size:12.5px;color:#0f766e;margin-top:2px;font-weight:700;">預約：'+zlk_esc(b.希望日期)+'</div>':'')
+                 + (b.得知管道?'<div style="font-size:11.5px;color:#94a3b8;margin-top:4px;">管道：'+zlk_esc(b.得知管道)+'</div>':'')
+                 + '<div style="display:flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:#64748b;white-space:nowrap;">指派給'
+                 +   '<select data-zlk-agent="'+i+'" style="flex:1;min-width:0;padding:7px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;color:#0f172a;">'+agentOpts+'</select>'
+                 + '</div>'
+                 + '<div style="display:flex;gap:8px;margin-top:8px;">'
+                 +   '<button data-zlk-imp="'+i+'" style="flex:1;background:#0f766e;color:#fff;border:none;border-radius:8px;padding:9px;font-weight:700;font-size:13px;cursor:pointer;">匯入 CRM</button>'
+                 +   '<button data-zlk-ign="'+i+'" style="background:#f1f5f9;color:#64748b;border:none;border-radius:8px;padding:9px 14px;font-size:13px;cursor:pointer;">已處理</button>'
+                 + '</div>'
+                 + '</div>';
+            }).join('');
+            el.querySelectorAll('[data-zlk-imp]').forEach(btn=> btn.onclick=()=>{ const i=+btn.getAttribute('data-zlk-imp'); const sel=el.querySelector('[data-zlk-agent="'+i+'"]'); zlk_import(zlk_rows[i], sel?sel.value:''); });
+            el.querySelectorAll('[data-zlk-ign]').forEach(btn=> btn.onclick=()=> zlk_ignore(zlk_rows[+btn.getAttribute('data-zlk-ign')]));
+        }
+
+        function zlk_start(){
+            if (zlk_unsub || !auth.currentUser) return;
+            zlk_unsub = onSnapshot(collection(db,'bookings'), (snap)=>{
+                const rows=[]; snap.forEach(d=>{ const v=d.data(); if(!v.imported){ v.__id=d.id; rows.push(v);} });
+                rows.sort((a,b)=> ((b.建立時間&&b.建立時間.seconds)||0)-((a.建立時間&&a.建立時間.seconds)||0));
+                zlk_rows = rows; zlk_updateBadge();
+                const modal=document.getElementById('zlk_modal');
+                if (modal && modal.style.display==='flex') zlk_render();
+            }, (err)=>{
+                console.error('bookings 監聽失敗', err);
+                const el=document.getElementById('zlk_list'); const modal=document.getElementById('zlk_modal');
+                if (el && modal && modal.style.display==='flex')
+                    el.innerHTML='<p style="padding:24px;color:#b91c1c;line-height:1.6;">讀取失敗。請確認已在 Firestore 規則加上 bookings 區塊，且登入帳號在白名單內。</p>';
+            });
+        }
+        function zlk_stop(){ if(zlk_unsub){ zlk_unsub(); zlk_unsub=null; } }
+
+        function zlk_open(){
+            const m=document.getElementById('zlk_modal'); if(!m) return;
+            m.style.display='flex';
+            if (!auth.currentUser){ const el=document.getElementById('zlk_list'); if(el) el.innerHTML='<p style="padding:28px;text-align:center;color:#64748b;">請先登入 CRM。</p>'; return; }
+            zlk_start(); zlk_render();
+        }
+        function zlk_close(){ const m=document.getElementById('zlk_modal'); if(m) m.style.display='none'; }
+
+        function zlk_inject(){
+            if (document.getElementById('zlk_fab')) return;
+            const fab = document.createElement('button');
+            fab.id='zlk_fab'; fab.title='自來客待匯入';
+            fab.style.cssText='display:none;position:fixed;right:20px;bottom:20px;z-index:9998;background:#0f766e;color:#fff;border:none;border-radius:999px;padding:13px 18px;font-weight:700;font-size:14px;box-shadow:0 6px 18px rgba(15,118,110,.4);cursor:pointer;';
+            fab.innerHTML='自來客 <span id="zlk_badge" style="display:none;align-items:center;justify-content:center;background:#f43f5e;color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:12px;padding:0 5px;margin-left:6px;vertical-align:middle;">0</span>';
+            fab.onclick=zlk_open;
+            document.body.appendChild(fab);
+
+            const modal=document.createElement('div');
+            modal.id='zlk_modal';
+            modal.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.5);align-items:flex-end;justify-content:center;';
+            modal.innerHTML='<div style="background:#f8fafc;width:100%;max-width:520px;max-height:86vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;">'
+              +'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#0f766e;color:#fff;">'
+              +  '<div style="font-weight:700;font-size:16px;">自來客待匯入</div>'
+              +  '<div><button id="zlk_refresh" style="background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;margin-right:8px;">重新整理</button>'
+              +  '<button id="zlk_x" style="background:none;color:#fff;border:none;font-size:22px;cursor:pointer;line-height:1;">&times;</button></div>'
+              +'</div>'
+              +'<div id="zlk_list" style="padding:16px;overflow-y:auto;"></div>'
+              +'</div>';
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e=>{ if(e.target===modal) zlk_close(); });
+            document.getElementById('zlk_x').onclick=zlk_close;
+            document.getElementById('zlk_refresh').onclick=()=>{ zlk_stop(); zlk_start(); };
+        }
+        zlk_inject();
+
+        onAuthStateChanged(auth, (user)=>{
+            const fab=document.getElementById('zlk_fab');
+            if (user && !user.isAnonymous){ if(fab) fab.style.display='block'; setTimeout(zlk_start, 1500); }
+            else { zlk_stop(); zlk_rows=[]; zlk_updateBadge(); if(fab) fab.style.display='none'; }
         });
     </script>
 </body>
