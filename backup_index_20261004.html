@@ -135,35 +135,26 @@
 
             <div id="crmBody">
             <!-- 年度/月份 統整切換區 (全域共用) -->
-            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-slate-200 mb-6 flex flex-col gap-3 premium-shadow relative overflow-hidden">
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-slate-200 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 premium-shadow relative overflow-hidden">
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#1E2E3D]"></div>
-                <div class="flex items-center justify-between gap-3 pl-2">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="bg-slate-100 text-[#1E2E3D] p-2.5 rounded-xl flex-shrink-0">
-                            <i class="fa-regular fa-calendar-check text-xl"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h2 class="font-bold font-editorial text-slate-800 text-lg">年度與月份統整</h2>
-                            <p class="text-xs text-slate-500">先選年份，再選月份或「全年」，獨立篩選當期客戶與各名單庫</p>
-                        </div>
+                <div class="flex items-center gap-3 pl-2">
+                    <div class="bg-slate-100 text-[#1E2E3D] p-2.5 rounded-xl">
+                        <i class="fa-regular fa-calendar-check text-xl"></i>
                     </div>
+                    <div>
+                        <h2 class="font-bold font-editorial text-slate-800 text-lg">年度與月份統整</h2>
+                        <p class="text-xs text-slate-500">切換年月，獨立篩選當期客戶與各名單庫</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <button onclick="openModal('addPeriodModal')" class="bg-slate-100 hover:bg-slate-200 text-[#1E2E3D] px-3 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-1 flex-shrink-0 border border-slate-200">
                         <i class="fa-solid fa-plus"></i> 新增月份
                     </button>
-                </div>
-                <!-- 兩層式期間選擇器（實際篩選值仍存在下方隱藏的 select#globalPeriodFilter，所有既有邏輯不變） -->
-                <div id="periodPicker" class="pl-2 space-y-2.5">
-                    <div id="periodYearPills" class="flex flex-wrap gap-2"></div>
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <button type="button" id="periodAllYearBtn" onclick="selectPeriodAllYear()" class="px-3 py-1.5 rounded-lg text-sm font-bold border transition">全年</button>
-                            <span id="periodCurrentLabel" class="text-xs text-slate-500 truncate"></span>
-                        </div>
-                        <button type="button" onclick="jumpToCurrentMonth()" class="px-3 py-1.5 rounded-lg text-sm font-bold border border-[#D4AF37] text-[#8a6d0a] bg-amber-50 hover:bg-amber-100 transition flex-shrink-0"><i class="fa-solid fa-location-crosshairs mr-1"></i>本月</button>
+                    <div class="relative flex-1 sm:w-64">
+                        <select id="globalPeriodFilter" onchange="renderApp()" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] font-bold text-[#1E2E3D] bg-slate-50 cursor-pointer text-base appearance-none"></select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
-                    <div id="periodMonthGrid" class="grid grid-cols-6 sm:grid-cols-12 gap-1.5"></div>
                 </div>
-                <select id="globalPeriodFilter" onchange="renderApp()" class="hidden" aria-hidden="true" tabindex="-1"></select>
             </div>
 
             <!-- 儀表板可折疊化 (僅在正式看板顯示) -->
@@ -1739,71 +1730,16 @@
             showToast(`已成功移除 ${fAgent}，並接收 ${updatedCount} 筆名單`, 'success');
         };
 
-        // ===== 期間篩選：兩層式（年 → 月）；實際值仍存於隱藏的 select#globalPeriodFilter =====
-        // 值的格式不變："YEAR_2026"（全年）或 "2026-10"（單月）
         function populatePeriodFilter() {
             const filterEl = document.getElementById('globalPeriodFilter'); const currentVal = filterEl.value;
-            const now = new Date(); const curY = String(now.getFullYear()); const curM = String(now.getMonth() + 1).padStart(2, '0');
-            const monthCount = {}; const years = new Set([curY]);
-            customers.forEach(c => { const p = getPeriod(c); if (/^\d{4}-\d{2}$/.test(p)) { monthCount[p] = (monthCount[p] || 0) + 1; years.add(p.substring(0, 4)); } });
-            customPeriods.forEach(p => { if (/^\d{4}-\d{2}$/.test(p)) { if (!monthCount[p]) monthCount[p] = 0; years.add(p.substring(0, 4)); } });
-            const yearList = Array.from(years).sort();
-            let opts = '';
-            yearList.slice().reverse().forEach(y => {
-                opts += `<option value="YEAR_${y}">${y}年 年度總覽</option>`;
-                for (let i = 12; i >= 1; i--) { const m = String(i).padStart(2, '0'); opts += `<option value="${y}-${m}">${y}年 ${i}月</option>`; }
-            });
-            filterEl.innerHTML = opts;
-            const valid = Array.from(filterEl.options).some(o => o.value === currentVal);
-            filterEl.value = valid ? currentVal : `${curY}-${curM}`; // 預設：本月
-            renderPeriodPicker(yearList, monthCount, curY, curM);
-        }
-
-        function renderPeriodPicker(yearList, monthCount, curY, curM) {
-            const val = document.getElementById('globalPeriodFilter').value;
-            const isYear = val.startsWith('YEAR_');
-            const selYear = isYear ? val.replace('YEAR_', '') : val.split('-')[0];
-            const selMonth = isYear ? null : val.split('-')[1];
-            const pillBase = 'px-4 py-1.5 rounded-full text-sm font-bold border transition cursor-pointer ';
-            document.getElementById('periodYearPills').innerHTML = yearList.slice().reverse().map(y => {
-                const on = y === selYear;
-                const cls = on ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100';
-                const dot = (y === curY) ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37] ml-1 align-middle" title="今年"></span>' : '';
-                return `<button type="button" data-year="${y}" onclick="selectPeriodYear('${y}')" class="${pillBase}${cls}">${y}年${dot}</button>`;
-            }).join('');
-            const allBtn = document.getElementById('periodAllYearBtn');
-            allBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-bold border transition ' + (isYear ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-[#1E2E3D] border-slate-300 hover:bg-slate-100');
-            allBtn.textContent = '全年'; allBtn.setAttribute('data-period', 'YEAR_' + selYear);
-            document.getElementById('periodCurrentLabel').textContent = '目前：' + selYear + '年' + (isYear ? ' 全年' : ' ' + parseInt(selMonth, 10) + '月');
-            let html = '';
-            for (let i = 1; i <= 12; i++) {
-                const m = String(i).padStart(2, '0'); const key = `${selYear}-${m}`;
-                const cnt = monthCount[key]; const has = cnt !== undefined;
-                const isSel = !isYear && m === selMonth; const isCur = (selYear === curY && m === curM);
-                let cls = 'relative py-1.5 rounded-lg text-sm border transition leading-tight ';
-                if (isSel) cls += 'bg-[#1E2E3D] text-white border-[#1E2E3D] font-bold ';
-                else if (has) cls += 'bg-slate-100 text-[#1E2E3D] border-slate-300 font-bold hover:bg-slate-200 ';
-                else cls += 'bg-white text-slate-400 border-slate-200 font-medium hover:bg-slate-50 ';
-                if (isCur) cls += 'ring-2 ring-[#D4AF37] ring-offset-1 ';
-                const badge = (has && cnt > 0) ? `<span class="block text-[10px] ${isSel ? 'text-slate-200' : 'text-slate-500'} font-normal">${cnt}</span>` : '<span class="block text-[10px] opacity-0">0</span>';
-                html += `<button type="button" data-period="${key}" data-has-data="${has ? 1 : 0}" data-current="${isCur ? 1 : 0}" onclick="selectPeriodMonth('${key}')" class="${cls}">${i}月${badge}</button>`;
-            }
-            document.getElementById('periodMonthGrid').innerHTML = html;
-        }
-
-        function setPeriodValue(v) {
-            const el = document.getElementById('globalPeriodFilter');
-            el.value = v; renderApp();
-        }
-        function selectPeriodYear(y) { setPeriodValue('YEAR_' + y); }
-        function selectPeriodAllYear() {
-            const val = document.getElementById('globalPeriodFilter').value;
-            setPeriodValue('YEAR_' + (val.startsWith('YEAR_') ? val.replace('YEAR_', '') : val.split('-')[0]));
-        }
-        function selectPeriodMonth(key) { setPeriodValue(key); }
-        function jumpToCurrentMonth() {
-            const now = new Date();
-            setPeriodValue(now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0'));
+            const periods = new Set(); let hasData = false;
+            customers.forEach(c => { const p = getPeriod(c); if(p!=='Unknown'){ periods.add(p); hasData=true; } });
+            customPeriods.forEach(p => { periods.add(p); hasData=true; });
+            if (!hasData) { filterEl.innerHTML = `<option value="YEAR_${new Date().getFullYear()}">⭐ ${new Date().getFullYear()}年</option>`; return; }
+            const sorted = Array.from(periods).sort().reverse(); const yearsMap = {}; sorted.forEach(p => { const [y,m] = p.split('-'); if(!yearsMap[y]) yearsMap[y]=[]; yearsMap[y].push(m); });
+            let html = ``; Object.keys(yearsMap).sort().reverse().forEach(y => { html += `<option value="YEAR_${y}">⭐ ${y}年 年度總覽</option>`; yearsMap[y].forEach(m => { html += `<option value="${y}-${m}">&nbsp;&nbsp;📍 ${y}年 ${m}月</option>`; }); });
+            filterEl.innerHTML = html; const opts = Array.from(filterEl.options).map(o=>o.value);
+            filterEl.value = (opts.includes(currentVal) && !currentVal.includes('ALL')) ? currentVal : (sorted.length>0 ? sorted[0] : opts[0]);
         }
 
         function renderTagDropdownFilter() {
