@@ -36,10 +36,6 @@
         .at-addable { cursor: cell; transition: background-color .12s; }
         .at-addable:hover { background-color: rgba(212,175,55,.10) !important; }
         .at-chip[draggable="true"] { cursor: grab; }
-        .at-chip.at-personal { background: #111827 !important; color: #fff; }
-        .at-chip.at-personal *:not(.at-cat) { color: #fff !important; }
-        .at-chip.at-personal .at-visit { border-color: #fff !important; }
-        .at-chip.at-personal .at-cat-pers { box-shadow: inset 0 0 0 1px rgba(255,255,255,.75); }
         .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
     </style>
 </head>
@@ -131,7 +127,7 @@
                     <i class="fa-solid fa-layer-group"></i> 核心業績看板
                 </button>
                 <button onclick="switchMainTab('LEADS')" id="mainTab-LEADS" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-address-book"></i> 一畝田
+                    <i class="fa-solid fa-address-book"></i> 開發名單庫
                 </button>
                 <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-week"></i> Airtable 模式
@@ -927,53 +923,6 @@
             </div>
         </div>
 
-        <!-- v11：上傳手寫週計畫 Modal（選圖 → 辨識中 → 預覽核對 → 確認寫入） -->
-        <div id="atPhotoModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[58] p-2 sm:p-4" onclick="if(event.target===this)closeModal('atPhotoModal')">
-            <div class="bg-white rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[94vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-4 sm:px-5 py-3 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial flex items-center gap-2"><i class="fa-solid fa-camera text-[#D4AF37]"></i> 上傳手寫週計畫</h3>
-                    <button type="button" onclick="closeModal('atPhotoModal')" class="text-white/80 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="overflow-y-auto flex-1 min-h-0">
-                    <!-- 1. 選圖 -->
-                    <div id="atPhPick" class="p-4 sm:p-6 space-y-4 text-sm">
-                        <p class="text-slate-600 leading-relaxed">拍一張（或選一張）手寫週計畫的照片，AI 會辨識日期、時間、標題、墨水顏色與圈起來的記號，<b>先給你預覽核對，確認後才會寫入</b>。<br><span class="text-xs text-slate-400">紅字＝公事、藍字＝客戶、綠字＝夥伴、黑字＝個人；圈「經／關／初／檢」＝經營訪／關鍵訪／初訪／定期檢視。沒寫的就不寫。</span></p>
-                        <div class="flex flex-wrap gap-3">
-                            <label class="cursor-pointer px-4 py-3 rounded-xl bg-[#1E2E3D] text-white font-bold hover:bg-[#2C3E50] flex items-center gap-2"><i class="fa-solid fa-camera"></i> 拍照<input id="atPhotoCam" type="file" accept="image/*" capture="environment" class="hidden" onchange="atPhotoPicked(this)"></label>
-                            <label class="cursor-pointer px-4 py-3 rounded-xl bg-white border-2 border-[#1E2E3D] text-[#1E2E3D] font-bold hover:bg-slate-50 flex items-center gap-2"><i class="fa-regular fa-image"></i> 選擇圖片<input id="atPhotoFile" type="file" accept="image/*" class="hidden" onchange="atPhotoPicked(this)"></label>
-                        </div>
-                        <p id="atPhErr" class="text-sm font-bold text-rose-600"></p>
-                        <details class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                            <summary class="cursor-pointer text-xs font-bold text-slate-600">⚙️ AI 連線設定（與「AI 排程」相同的 Cloudflare Worker）</summary>
-                            <div class="mt-3 space-y-2">
-                                <p class="text-[11px] text-slate-500 leading-relaxed">網址與密語只存在這台裝置的瀏覽器（localStorage），不會寫進網頁原始碼、也不會同步給團隊。圖片會縮小到長邊 1600px 後，經你的 Worker 送給 AI 服務辨識；Worker 需支援圖片（見 worker_vision_patch.js）。</p>
-                                <label class="block text-[11px] font-bold text-slate-500">Worker 網址<input id="atPhUrl" type="text" placeholder="https://crm-ai.xxx.workers.dev" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
-                                <label class="block text-[11px] font-bold text-slate-500">通關密語（APP_SECRET）<input id="atPhSecret" type="password" autocomplete="off" placeholder="你在 Cloudflare 設的那串" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
-                                <button type="button" id="atPhSaveCfg" onclick="atPhSaveCfg()" class="px-3 py-1.5 bg-[#1E2E3D] text-white rounded-lg text-xs font-bold">儲存設定</button>
-                            </div>
-                        </details>
-                    </div>
-                    <!-- 2. 辨識中 -->
-                    <div id="atPhLoading" class="hidden p-8 text-center space-y-3">
-                        <img id="atPhThumb" alt="" class="mx-auto max-h-40 rounded-lg border border-slate-200 shadow-sm">
-                        <div class="text-[#1E2E3D] text-2xl"><i class="fa-solid fa-spinner fa-spin"></i></div>
-                        <p id="atPhLoadMsg" class="text-sm text-slate-600 font-bold">辨識中…</p>
-                    </div>
-                    <!-- 3. 預覽 -->
-                    <div id="atPhPreview" class="hidden p-3 sm:p-5 space-y-3">
-                        <div id="atPhInfo" class="space-y-2"></div>
-                        <div id="atPhRows" class="space-y-1.5"></div>
-                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-[#D4AF37]"></i> 每日地點備註（附加到當天「備注」，不會覆蓋原有內容）</h4><div id="atPhLocs" class="space-y-1.5"></div></div>
-                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-regular fa-square-check text-[#D4AF37]"></i> 待辦事項（預設不寫入）</h4><div id="atPhTodos" class="space-y-1.5"></div></div>
-                    </div>
-                </div>
-                <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0">
-                    <button type="button" id="atPhCancel" onclick="closeModal('atPhotoModal')" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消</button>
-                    <button type="button" id="atPhConfirm" onclick="atPhConfirm()" class="hidden px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-check"></i> 確認寫入</button>
-                </div>
-            </div>
-        </div>
-
         <!-- v9：週曆直接編輯 Modal -->
         <div id="atEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[57] p-3 sm:p-4" onclick="if(event.target===this)closeModal('atEditModal')">
             <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
@@ -987,12 +936,9 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atEdDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div id="atEdMore" class="contents">
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atEdTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div id="atEdMethodWrap"><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atEdMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"></select></div>
+                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atEdMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"></select></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atEdEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atEdEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">分類</label><select id="atEdCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤</label><select id="atEdVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="關鍵訪">關鍵訪</option><option value="初訪">初訪</option><option value="定期檢視">定期檢視</option></select></div>
-                            <div class="col-span-2"><label id="atEdLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                            <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                         </div>
                     </div>
                 </div>
@@ -1015,7 +961,7 @@
                 </div>
                 <div class="p-4 sm:p-5 overflow-y-auto space-y-3 text-sm">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 mb-1">客戶 / 一畝田 <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">(輸入姓名、公司、電話或業務員搜尋)</span></label>
+                        <label class="block text-[11px] font-bold text-slate-500 mb-1">客戶 / 開發名單 <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">(輸入姓名、公司、電話或業務員搜尋)</span></label>
                         <input type="text" id="atAddSearch" autocomplete="off" placeholder="搜尋…" oninput="atAddRender()" onkeydown="if(event.key==='Enter'){event.preventDefault();atAddPickFirst()}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]">
                         <div id="atAddList" role="listbox" class="mt-1 border border-slate-200 rounded-lg max-h-40 overflow-y-auto bg-white"></div>
                         <p id="atAddPicked" class="text-xs mt-1"></p>
@@ -1025,7 +971,6 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
                         <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atAddContent" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                     </div>
                 </div>
@@ -1041,7 +986,6 @@
             <div class="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-4"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
                 <h3 class="text-lg font-bold text-slate-900 font-editorial">確認刪除此資料嗎？</h3>
-                <p id="deleteLinkNote" class="hidden mt-2 text-xs text-slate-500"></p>
                 <div class="mt-6 flex justify-end gap-3"><button onclick="closeModal('deleteConfirmModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold">取消</button><button id="confirmDeleteBtn" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold">確認刪除</button></div>
             </div>
         </div>
@@ -1331,7 +1275,7 @@
         const OWNER_EMAIL = 'shanewangmusic@gmail.com'; // 永遠是管理者，避免鎖死
         const ALL_TABS = [
             { key: 'PIPELINE', name: '核心業績看板' },
-            { key: 'LEADS', name: '一畝田' },
+            { key: 'LEADS', name: '開發名單庫' },
             { key: 'AIRTABLE', name: 'Airtable 模式' },
             { key: 'RECRUIT', name: '引薦招募庫' },
             { key: 'ARCHIVE', name: '待定與流失' }
@@ -1469,7 +1413,7 @@
             const lsLabel = document.getElementById('lastStageLabel'); if (lsLabel) lsLabel.textContent = isLeadsTab ? '啟用後階段：' : '階段：';
             const lsSel = document.getElementById('filterLastStage'); if (lsSel && lsSel.options[0]) lsSel.options[0].text = isLeadsTab ? '啟用後階段(全部)' : '所有階段';
             const searchEl = document.getElementById('searchInput');
-            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : (isAirtableTab ? '搜尋客戶姓名、聯絡方式、紀錄內容...' : '搜尋姓名、電話、商品、保單、備註...');
+            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : (isAirtableTab ? '搜尋客戶／開發名單姓名、聯絡方式、紀錄內容...' : '搜尋姓名、電話、商品、保單、備註...');
 
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
@@ -1772,7 +1716,7 @@
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = "一畝田批次匯入範本.csv";
+            link.download = "開發名單批次匯入範本.csv";
             link.click();
         }
 
@@ -1975,11 +1919,11 @@
                 if (nb !== ob || nm !== om) ch.push({ field: 'birthday', old: xlsBirthText(ob, om), neu: xlsBirthText(nb, nm), set: () => { c.birthday = nb; if (nm) c.birthMonth = nm; else delete c.birthMonth; } });
             }
             // v8：下次聯絡日有填且不同 → 更新 nextContactDate；空白保留系統值
-            if (rec.next && leadValidDate(c.nextContactDate) !== rec.next) ch.push({ field: 'nextContactDate', old: c.nextContactDate || '', neu: rec.next, set: () => { nxtSet(c, rec.next); } });
+            if (rec.next && leadValidDate(c.nextContactDate) !== rec.next) ch.push({ field: 'nextContactDate', old: c.nextContactDate || '', neu: rec.next, set: () => { c.nextContactDate = rec.next; } });
             // v8：最近聯絡日只在「晚於所有現有紀錄」時才補一筆「(匯入)」聯絡紀錄（方式＝未註明）；否則忽略；絕不刪除既有紀錄
             if (rec.last) {
                 const cur = leadLastContact(c);
-                if (!cur || rec.last > cur) ch.push({ field: 'lastContact', old: cur || '(無紀錄)', neu: rec.last + '（新增聯絡紀錄「(匯入)」）', set: () => { const K = customers.indexOf(c) >= 0 ? leadCoreOf(c) : null; if (K) { K.history = Array.isArray(K.history) ? K.history : []; const ic = xlsImportContact(rec.last); K.history.push({ id: 'h-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: ic.date, content: ic.content, progress: K.progress || '', method: ic.method }); } else { if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(xlsImportContact(rec.last)); } } });
+                if (!cur || rec.last > cur) ch.push({ field: 'lastContact', old: cur || '(無紀錄)', neu: rec.last + '（新增聯絡紀錄「(匯入)」）', set: () => { if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(xlsImportContact(rec.last)); } });
             }
             if (rec.cls) {
                 const oc = leadClsOf(c).slice(), same = xlsNormCls(oc).join() === xlsNormCls(rec.cls).join();
@@ -2189,7 +2133,7 @@
         function xlsExport() {
             const rows = xlsExportRows();
             if (!rows.length) return showToast('目前範圍內沒有名單可匯出', 'error');
-            const base = '一畝田_' + xlsExportStamp();
+            const base = '開發名單庫_' + xlsExportStamp();
             const btn = document.getElementById('xlsExportBtn');
             if (btn) btn.disabled = true;
             const csv = function () {
@@ -2222,107 +2166,23 @@
               .then(function () { if (btn) btn.disabled = false; });
         }
 
-        function leadNewCoreId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
-        function leadMakeCore(L) {
-            const C = JSON.parse(JSON.stringify(L));
-            ['acreStage', 'leadCls', 'contacts', 'coreId', 'history', 'sendCalendar'].forEach(function (k) { delete C[k]; });
-            C.id = leadNewCoreId(); C.category = 'NEW'; C.progress = L.lastStage || 'NURTURE'; C.history = []; C.leadId = L.id;
-            if (!C.createdAt) C.createdAt = new Date().toISOString();
-            return C;
-        }
-        // 把名單連到核心客戶：雙向 id ＋ 聯絡紀錄併進 customer.history（srcContactId 去重）＋ 舊 lead.history 一併搬入
-        function leadLinkCore(L, C) {
-            L.coreId = C.id; C.leadId = L.id;
-            const n = leadCarryContacts(L, C);
-            if (Array.isArray(L.history) && L.history.length) {
-                C.history = Array.isArray(C.history) ? C.history : [];
-                const ids = new Set(C.history.map(function (h) { return h && h.id; }));
-                L.history.forEach(function (h) { if (h && !(h.id && ids.has(h.id))) C.history.push(h); });
-                L.history = [];
-            }
-            if (!leadValidDate(C.nextContactDate) && leadValidDate(L.nextContactDate)) C.nextContactDate = L.nextContactDate;
-            if (leadValidDate(C.nextContactDate)) L.nextContactDate = C.nextContactDate;
-            return n;
-        }
         function activateLead(id) {
-            const L = customers.find(x => x.id === id);
-            if (!L || L.progress !== 'LEAD') return;
-            let C = leadCoreOf(L);
-            if (C) { showToast(L.name + ' 已在核心看板', 'info'); return leadViewCore(id); }          // 不重複啟用
-            C = customers.find(x => x.progress !== 'LEAD' && x.leadId === L.id) || null;          // 單邊連結（只有客戶端記得）→ 補回雙向
-            let created = false;
-            if (!C) {
-                const nm = String(L.name || '').trim();
-                const same = customers.filter(x => x.progress !== 'LEAD' && x !== L && String(x.name || '').trim() === nm && nm);
-                const free = same.filter(x => !coreLeadOf(x));
-                if (free.length) {
-                    if (!window.confirm('核心看板已有同名客戶「' + nm + '」，要把這位名單連結到那位客戶嗎？\n（確定＝連結、不新增；取消＝什麼都不做）')) return;
-                    C = free[0];
-                } else if (same.length) {
-                    if (!window.confirm('核心看板已有同名客戶「' + nm + '」且已連結其他名單。仍要另外新增一位核心客戶嗎？')) return;
-                }
+            const c = customers.find(x => x.id === id);
+            if(c) {
+                c.progress = c.lastStage || 'NURTURE'; 
+                c.history = c.history || [];
+                const carried = leadCarryContacts(c);     // v8：名單的聯絡紀錄帶入核心客戶歷程（含聯絡方式），不重複
+                c.history.push({ id:'h-'+Date.now(), date:new Date().toISOString().substring(0,10), content: `從開發名單庫正式啟用跟進`, progress: c.progress });
+                recordState();
+                renderApp();
+                showToast(`已將 ${c.name} 轉入核心看板！` + (carried ? `（已帶入 ${carried} 筆聯絡紀錄）` : ''));
             }
-            atEnsureUndoBase();                                                                  // 第一次操作也能「還原」
-            if (!C) { C = leadMakeCore(L); customers.push(C); created = true; }
-            const carried = leadLinkCore(L, C);
-            if (created) C.history.push({ id: 'h-' + Date.now(), date: new Date().toISOString().substring(0, 10), content: '從一畝田正式啟用跟進', progress: C.progress, sys: true });
-            recordState();
-            renderApp();
-            showToast(`已將 ${L.name} 加入核心看板（一畝田仍保留）` + (carried ? `（已帶入 ${carried} 筆聯絡紀錄）` : ''));
-        }
-        function leadViewCore(id) {
-            const L = customers.find(x => x.id === id), C = leadCoreOf(L);
-            if (!C) return showToast('這位名單目前不在核心看板', 'error');
-            openFollowUpModal(C.id);
-        }
-        // 刪除時的連結處理：
-        //  · 刪核心客戶 → 名單留在一畝田，清掉 coreId；客戶歷程複製回 lead.contacts（系統自動紀錄不複製），下次聯絡日一併帶回
-        //  · 刪一畝田名單 → 核心客戶留著，清掉 leadId（紀錄本來就在客戶歷程裡）
-        function leadDetachOnDelete(id) {
-            const X = customers.find(x => x.id === id); if (!X) return { restored: 0, lead: null };
-            if (X.progress === 'LEAD') { const K = leadCoreOf(X); if (K) delete K.leadId; return { restored: 0, lead: null, core: K }; }
-            const L = coreLeadOf(X); if (!L) return { restored: 0, lead: null };
-            const have = new Set(leadContacts(L).map(function (c) { return c.id; }));
-            let n = 0, seq = Date.now();
-            (Array.isArray(X.history) ? X.history : []).forEach(function (h) {
-                if (!h || typeof h !== 'object' || h.sys) return;
-                const d = leadValidDate(h.date); if (!d) return;
-                let cid = h.srcContactId || ('lc-' + (String(h.id || '').replace(/\D/g, '') || (seq++)));
-                if (have.has(cid)) cid = 'lc-' + (seq++) + '-' + Math.random().toString(36).slice(2, 5);
-                have.add(cid);
-                const ct = { id: cid, date: d, content: String(h.content || '') };
-                if (h.method) ct.method = String(h.method);
-                const e = leadValidDate(h.endDate); if (e && e > d) ct.endDate = e;
-                if (atValidTime(h.time)) ct.time = atValidTime(h.time);
-                if (atValidTime(h.time) && atValidTime(h.endTime)) ct.endTime = atValidTime(h.endTime);
-                if (atCatOf(h)) ct.cat = h.cat; if (atVisitOf(h)) ct.visitType = h.visitType; if (h.by) ct.by = String(h.by); if (h.src) ct.src = String(h.src);
-                if (!Array.isArray(L.contacts)) L.contacts = [];
-                L.contacts.push(ct); n++;
-            });
-            if (leadValidDate(X.nextContactDate)) L.nextContactDate = X.nextContactDate;
-            delete L.coreId;
-            return { restored: n, lead: L };
-        }
-        function leadDoDelete(id) {
-            atEnsureUndoBase();
-            const wasLead = (customers.find(c => c.id === id) || {}).progress === 'LEAD';
-            const r = leadDetachOnDelete(id);
-            customers = customers.filter(c => c.id !== id);
-            recordState(); renderApp(); closeModal('deleteConfirmModal');
-            showToast(r.lead ? ('已刪除核心客戶；「' + r.lead.name + '」仍保留在一畝田' + (r.restored ? '（' + r.restored + ' 筆聯絡紀錄已帶回）' : '')) : (wasLead && r.core ? '已從一畝田刪除；核心看板的客戶仍保留' : '資料已刪除'), 'info');
         }
 
-        function leadDeleteNote(id) {
-            const X = customers.find(c => c.id === id), el = document.getElementById('deleteLinkNote'); if (!el) return;
-            let t = '';
-            if (X && X.progress === 'LEAD' && leadCoreOf(X)) t = '這位在核心看板也有一筆客戶：只會從一畝田刪除，核心客戶與其紀錄會保留。';
-            else if (X && X.progress !== 'LEAD' && coreLeadOf(X)) t = '這位在一畝田也有一筆：刪除核心客戶後，一畝田會保留此人，聯絡紀錄會帶回一畝田。';
-            el.textContent = t; el.classList.toggle('hidden', !t);
-        }
         function deleteLead(id) {
-            activeDeleteId = id; leadDeleteNote(id);
+            activeDeleteId = id;
             // 確認鈕在此自行綁定（原本只在 confirmDeleteCustomer 內綁定，直接從名單庫刪除時可能沒有動作）
-            document.getElementById('confirmDeleteBtn').onclick = () => leadDoDelete(activeDeleteId);
+            document.getElementById('confirmDeleteBtn').onclick = () => { customers = customers.filter(c => c.id !== activeDeleteId); recordState(); renderApp(); closeModal('deleteConfirmModal'); showToast('資料已刪除', 'info'); };
             openModal('deleteConfirmModal');
         }
 
@@ -2339,7 +2199,7 @@
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             
-            nxtSet(c, `${year}-${month}-${day}`);
+            c.nextContactDate = `${year}-${month}-${day}`;
             recordState();
             renderApp();
             showToast('已設定下次提醒時間');
@@ -2348,7 +2208,7 @@
         window.updateLeadDate = function(id, val) {
             const c = customers.find(x => x.id === id);
             if (!c) return;
-            nxtSet(c, val);
+            c.nextContactDate = val;
             recordState();
             renderApp();
             showToast('已更新提醒時間');
@@ -3264,8 +3124,7 @@
             if (bText) meta.push(`<span class="${bThis ? 'text-[#8a6d0a] font-bold' : 'text-slate-500'}" title="${esc(c.birthday || '')}"><i class="fa-solid fa-cake-candles ${bThis ? 'text-[#D4AF37]' : 'text-slate-300'} mr-0.5"></i>${esc(bText)}</span>`);
             if (c.phone) meta.push(`<span data-phone="${esc(c.phone)}" onclick="copyToClipboard(this.dataset.phone, '電話')" class="text-slate-500 cursor-pointer hover:text-[#1E2E3D]" title="點擊複製"><i class="fa-solid fa-phone text-slate-300 mr-0.5"></i>${esc(c.phone)}</span>`);
             { const lcd = leadLastContact(c); if (lcd) meta.push(`<span class="lead-lastcontact text-slate-500" title="最近聯絡日 ${esc(lcd)}"><i class="fa-regular fa-comments text-slate-300 mr-0.5"></i>最近聯絡 ${esc(lcd.substring(5, 7) + '/' + lcd.substring(8, 10))}</span>`); }
-            const coreC = leadCoreOf(c);
-            const ctN = (leadRecArr(c) || []).filter(x => x && typeof x === 'object').length;     // v12：已連結時＝核心客戶的 history（同一份）
+            const ctN = leadContacts(c).length;
             const tagHtml = (c.tags || []).map(tid => { const t = customTags.find(x => x.id === tid); if (!t) return ''; const tc = tagColors[t.color] || tagColors['slate']; return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${tc.bg}">${esc(t.name)}</span>`; }).join('');
             const agent = (c.agentName && c.agentName.trim()) ? `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0"><i class="fa-solid fa-user-tie"></i> ${esc(c.agentName)}</span>` : '';
             const overdue = c.nextContactDate && c.nextContactDate <= leadTodayStr();
@@ -3276,7 +3135,7 @@
                 <div class="min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" onclick="openLeadModal('${id}')" class="font-bold text-slate-800 hover:text-[#1E2E3D] hover:underline text-left">${esc(c.name)}</button>
-                        ${agent}${tagHtml}${coreC ? '<span class="lead-corebadge px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0" title="這位已加入核心業績看板（一畝田仍保留）"><i class="fa-solid fa-link"></i> 已在核心看板</span>' : ''}
+                        ${agent}${tagHtml}
                     </div>
                     ${meta.length ? `<div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] mt-0.5">${meta.join('')}</div>` : ''}
                     ${c.notes ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ''}
@@ -3297,7 +3156,7 @@
                     </div>
                 <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
                         <button onclick="openLeadContacts('${id}')" class="lead-contacts text-rose-500 hover:text-rose-700 transition px-1.5 py-1 text-xs font-bold whitespace-nowrap" title="聯絡紀錄（${ctN} 筆）"><i class="fa-regular fa-comments"></i>${ctN ? ' ' + ctN : ''}</button>
-                        ${coreC ? `<button onclick="leadViewCore('${id}')" class="lead-viewcore bg-slate-50 text-[#1E2E3D] border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-[#1E2E3D] hover:text-white transition shadow-sm whitespace-nowrap" title="開啟核心看板中的這位客戶">查看核心客戶</button>` : `<button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用＝加入核心看板（一畝田仍保留）：${esc(lastLabel)}">啟用 ➔</button>`}
+                        <button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用後進入核心看板：${esc(lastLabel)}">啟用 ➔</button>
                         <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                         <button onclick="deleteLead('${id}')" class="lead-del text-slate-300 hover:text-rose-500 transition px-2 py-1" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
@@ -3343,8 +3202,8 @@
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#D4AF37]"></div>
                 <div class="pl-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div class="min-w-0">
-                        <h3 class="font-bold font-editorial text-slate-800 flex items-center gap-2"><i class="fa-solid fa-seedling text-[#547360]"></i> 一畝田・全部人脈</h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">一畝田＝你整個職涯的人脈；核心業績看板是其中正在積極經營的一部分（「啟用」只是加入核心看板，人仍留在這裡）。點階段可篩選名單；長條上的黑線是理想比例 30 / 50 / 20 / 0</p>
+                        <h3 class="font-bold font-editorial text-slate-800 flex items-center gap-2"><i class="fa-solid fa-seedling text-[#547360]"></i> 一畝田・開發名單庫</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">點階段可篩選名單；長條上的黑線是理想比例 30 / 50 / 20 / 0</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" onclick="leadSetFilter('stage','ALL')" id="leadStageAll" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${allActive ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">全部 <span id="leadTotalCount">${total}</span></button>
@@ -3426,7 +3285,7 @@
 
             let listHtml;
             if (!scope.length) {
-                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-seedling text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">一畝田目前沒有名單</p><p class="text-sm mt-1">點「新增名單」或用 CSV 批次匯入。</p></div>`;
+                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-seedling text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">開發名單庫目前沒有名單</p><p class="text-sm mt-1">點「新增名單」或用 CSV 批次匯入。</p></div>`;
             } else if (!filtered.length) {
                 listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-folder-open text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">沒有符合條件的名單</p><p class="text-sm mt-1">請調整篩選條件。</p></div>`;
             } else {
@@ -3558,8 +3417,7 @@
             c.phone = $('leadPhone').value.trim();
             c.company = $('leadCompany').value.trim();
             c.notes = $('leadNotes').value.trim();
-            nxtSet(c, $('leadNext').value);
-            { const _p = pairOf(c); if (_p) _p.name = c.name; }      // v12：已連結時姓名一併同步
+            c.nextContactDate = $('leadNext').value;
             c.lastStage = $('leadLastStage').value || 'NURTURE';
             c.agentName = $('leadAgent').value.trim();
             if (isNew) customers.push(c);
@@ -3598,15 +3456,13 @@
         function lcRender() {
             const c = lcLead(); if (!c) return;
             document.getElementById('lcNext').value = leadValidDate(c.nextContactDate);
-            const C = leadCoreOf(c);
-            const raw = leadRecArr(c) || [];                    // v12：已連結 → 讀核心客戶的 history（同一份紀錄）；未連結 → lead.contacts
+            const raw = Array.isArray(c.contacts) ? c.contacts : [];
             const items = [];
             raw.forEach(function (ct, i) { if (ct && typeof ct === 'object') items.push({ ct: ct, i: i, d: leadCtDate(ct) }); });
             items.sort((a, b) => { const ta = atValidTime(a.ct.time), tb = atValidTime(b.ct.time); return a.d < b.d ? 1 : a.d > b.d ? -1 : (ta < tb ? 1 : ta > tb ? -1 : b.i - a.i); });
-            const hist = C ? [] : (Array.isArray(c.history) ? c.history : []).filter(h => h && leadValidDate(h.date)).sort((a, b) => (a.date < b.date ? 1 : -1));
+            const hist = (Array.isArray(c.history) ? c.history : []).filter(h => h && leadValidDate(h.date)).sort((a, b) => (a.date < b.date ? 1 : -1));
             document.getElementById('lcCount').textContent = '(' + items.length + ' 筆' + (hist.length ? '，另有 ' + hist.length + ' 筆舊歷程' : '') + ')';
             let h = '';
-            if (C) h += '<p id="lcLinkedNote" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-link"></i> 已在核心看板：這裡的紀錄與核心客戶「' + esc(C.name) + '」的跟進歷程是<b>同一份</b>，兩邊新增／修改／刪除都會同步。</p>';
             if (!items.length) h += '<p class="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-200 rounded-lg">還沒有聯絡紀錄。上方填好日期與內容後按「新增紀錄」。</p>';
             items.forEach(function (o) {
                 const ct = o.ct, m = atMethodOf(ct), color = AT_METHODS[m] || '#64748B', end = leadValidDate(ct.endDate);
@@ -3636,28 +3492,24 @@
             const time = atValidTime(document.getElementById('lcTime').value);
             const content = document.getElementById('lcContent').value.trim();
             const idxStr = document.getElementById('lcEditIdx').value;
-            const C = leadCoreOf(c), arr = leadRecArr(c, true);
-            if (idxStr !== '' && arr[+idxStr]) {
-                const ct = arr[+idxStr];
+            if (!Array.isArray(c.contacts)) c.contacts = [];
+            if (idxStr !== '' && c.contacts[+idxStr]) {
+                const ct = c.contacts[+idxStr];
                 ct.date = date; ct.method = method; ct.content = content;
                 if (atParse(end) && end > date) ct.endDate = end; else delete ct.endDate;
-                if (time) ct.time = time; else { delete ct.time; delete ct.endTime; }
-                if (!ct.id) ct.id = C ? ('h-' + Date.now()) : leadNewContactId();
+                if (time) ct.time = time; else delete ct.time;
+                if (!ct.id) ct.id = leadNewContactId();
                 lcResetForm(); lcAfterChange('聯絡紀錄已更新');
             } else {
-                let ct;
-                if (C) {
-                    const ids = new Set(arr.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
-                    ct = { id: hid, date: date, content: content, progress: C.progress || '', method: method };
-                } else ct = { id: leadNewContactId(), date: date, method: method, content: content };
+                const ct = { id: leadNewContactId(), date: date, method: method, content: content };
                 if (atParse(end) && end > date) ct.endDate = end;
                 if (time) ct.time = time;
-                arr.push(ct);
+                c.contacts.push(ct);
                 lcResetForm(); lcAfterChange('聯絡紀錄已新增');
             }
         }
         function lcEdit(i) {
-            const c = lcLead(); const arr = c ? leadRecArr(c) : null; const ct = arr ? arr[i] : null; if (!ct) return;
+            const c = lcLead(); const ct = c && Array.isArray(c.contacts) ? c.contacts[i] : null; if (!ct) return;
             const sel = document.getElementById('lcMethod'), m = ct.method ? String(ct.method) : '未註明';
             sel.innerHTML = LEAD_CT_METHODS.concat(LEAD_CT_METHODS.indexOf(m) < 0 ? [m] : []).map(x => '<option value="' + esc(x) + '">' + esc(x) + '</option>').join('');
             sel.value = m;
@@ -3670,16 +3522,16 @@
             document.getElementById('lcCancelEdit').classList.remove('hidden');
         }
         function lcDelete(i) {
-            const c = lcLead(); const arr = c ? leadRecArr(c) : null; if (!arr || !arr[i]) return;
+            const c = lcLead(); if (!c || !Array.isArray(c.contacts) || !c.contacts[i]) return;
             if (!window.confirm('確定刪除這筆聯絡紀錄？（可按「還原」復原）')) return;
-            arr.splice(i, 1);
-            if (!leadCoreOf(c) && !arr.length) delete c.contacts;
+            c.contacts.splice(i, 1);
+            if (!c.contacts.length) delete c.contacts;
             lcResetForm(); lcAfterChange('聯絡紀錄已刪除');
         }
         function lcSetNext(val) {
             const c = lcLead(); if (!c) return;
             val = val ? leadValidDate(val) : '';
-            nxtSet(c, val);
+            c.nextContactDate = val;
             const ln = document.getElementById('leadNext');
             if (ln && document.getElementById('leadId').value === c.id) ln.value = val;   // 名單編輯視窗同時開著時保持同步
             lcAfterChange(val ? '已設定下次聯絡日' : '已清除下次聯絡日');
@@ -3777,7 +3629,7 @@
                 grid.innerHTML = `
                     <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 gap-3">
                         <div>
-                            <h3 class="font-bold text-indigo-900 flex items-center gap-1"><i class="fa-solid fa-address-book text-indigo-500"></i> 大量一畝田名單</h3>
+                            <h3 class="font-bold text-indigo-900 flex items-center gap-1"><i class="fa-solid fa-address-book text-indigo-500"></i> 大量開發名單庫</h3>
                             <p class="text-xs text-indigo-700/70 mt-1">您可以利用上方過濾器按月份檢視名單。設定提醒時間後，將自動於指揮中心跳出待辦提示。</p>
                         </div>
                         <div class="flex gap-2">
@@ -4357,7 +4209,7 @@
             if (wasLead && progressVal !== 'LEAD') leadCarryContacts(c);     // v8：從編輯視窗把名單改成核心客戶，也帶入聯絡紀錄
 
             c.createdAt = new Date(document.getElementById('editCreatedAt').value+'T12:00:00Z').toISOString();
-            c.name = name; c.birthday = document.getElementById('editBirthday').value; nxtSet(c, document.getElementById('editNextContact').value); { const _p = pairOf(c); if (_p) _p.name = name; }
+            c.name = name; c.birthday = document.getElementById('editBirthday').value; c.nextContactDate = document.getElementById('editNextContact').value;
             c.category = realCat; c.progress = progressVal; c.tags = [...tempSelectedTags]; 
             c.lastStage = document.getElementById('editLastStage').value || 'NURTURE';
             c.agentName = document.getElementById('editAgentName').value.trim();
@@ -4399,7 +4251,7 @@
 
         function confirmDeleteCustomer() {
             activeDeleteId = document.getElementById('editId').value || activeDeleteId; closeModal('editCustomerModal');
-            document.getElementById('confirmDeleteBtn').onclick = () => leadDoDelete(activeDeleteId); leadDeleteNote(activeDeleteId);
+            document.getElementById('confirmDeleteBtn').onclick = () => { customers = customers.filter(c => c.id !== activeDeleteId); recordState(); renderApp(); closeModal('deleteConfirmModal'); showToast('資料已刪除', 'info'); };
             openModal('deleteConfirmModal');
         }
 
@@ -4426,7 +4278,7 @@
 
         function handleQuickWon(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('quickWonId').value);
-            c.category = 'WON'; c.progress = ''; nxtSet(c, ''); 
+            c.category = 'WON'; c.progress = ''; c.nextContactDate = ''; 
             c.policyName = document.getElementById('quickWonPolicyName').value; c.insuranceCompany = document.getElementById('quickWonInsuranceCompany').value; c.productType = document.getElementById('quickWonProductType').value;
             c.premium = document.getElementById('quickWonPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('quickWonFyc').value.replace(/,/g, '');
             c.commissionRate = document.getElementById('quickWonCommissionRate').value; c.rankRate = document.getElementById('quickWonRankRate').value; c.commission = document.getElementById('quickWonCommission').value.replace(/,/g, '');
@@ -4443,54 +4295,26 @@
         // ---- v8：開發名單聯絡紀錄 / 下次聯絡 → 週曆 ----
         // 資料全部存在「名單物件本身」：lead.contacts（選填陣列）＋ 既有的 lead.nextContactDate（＝名單庫「下次提醒日」，這裡正名為「下次聯絡日」）。
         // 雲端 payload 的頂層鍵不變；舊名單沒有 contacts 照常運作。
+        let atKind = 'ALL'; // ALL / LEAD / CORE
         const LEAD_CT_METHODS = ['Line', '電話', '面談', '其他'];
         function leadContacts(c) { return (c && Array.isArray(c.contacts)) ? c.contacts.filter(function (x) { return x && typeof x === 'object'; }) : []; }
         function leadCtDate(x) { const d = String((x && x.date) || '').substring(0, 10); return atParse(d) ? d : ''; }
         function leadValidDate(v) { const d = String(v || '').substring(0, 10); return atParse(d) ? d : ''; }
-        // ---- v12：一畝田 ↔ 核心看板 雙向連結（加法式欄位：lead.coreId / customer.leadId；雲端頂層鍵不變）----
-        // 啟用不再「搬走」名單：名單留在一畝田，另建（或連結）一位核心客戶；聯絡紀錄只有一份（連結後以 customer.history 為準）。
-        function leadCoreOf(L) {
-            if (!L || L.progress !== 'LEAD' || !L.coreId) return null;
-            const C = customers.find(function (x) { return x.id === L.coreId; });
-            return (C && C.progress !== 'LEAD' && C.leadId === L.id) ? C : null;      // 雙向都對得上才算連結（斷掉的 id 視為未連結）
-        }
-        function coreLeadOf(C) {
-            if (!C || C.progress === 'LEAD' || !C.leadId) return null;
-            const L = customers.find(function (x) { return x.id === C.leadId; });
-            return (L && L.progress === 'LEAD' && L.coreId === C.id) ? L : null;
-        }
-        function pairOf(c) { return c ? (c.progress === 'LEAD' ? leadCoreOf(c) : coreLeadOf(c)) : null; }
-        // 下次聯絡日：兩邊各存一份，寫入時同步（只對真實物件同步；Excel 預覽用的複本不會動到對方）
-        function nxtSet(c, v) {
-            c.nextContactDate = v;
-            if (customers.indexOf(c) < 0) return;
-            const o = pairOf(c); if (o) o.nextContactDate = v;
-        }
-        // 名單的「聯絡紀錄」正本：已連結 → 核心客戶的 history；未連結 → lead.contacts
-        function leadRecArr(L, create) {
-            const C = leadCoreOf(L);
-            if (C) { if (create && !Array.isArray(C.history)) C.history = []; return Array.isArray(C.history) ? C.history : null; }
-            if (create && !Array.isArray(L.contacts)) L.contacts = [];
-            return Array.isArray(L.contacts) ? L.contacts : null;
-        }
-        // 名單的所有「聯絡紀錄」日期＝ contacts ＋（舊的）history ＋（已連結時）核心客戶的 history；供「最近聯絡日」使用（系統自動寫的啟用紀錄不算）
+        // 名單的所有「聯絡紀錄」日期＝ contacts ＋（舊的）history；供「最近聯絡日」使用
         function leadLastContact(c) {
             let best = '';
-            const C = leadCoreOf(c);
             leadContacts(c).forEach(function (x) { const d = leadCtDate(x); if (d > best) best = d; });
-            (c && Array.isArray(c.history) ? c.history : []).concat(C && Array.isArray(C.history) ? C.history : []).forEach(function (h) { if (h && h.sys) return; const d = leadValidDate(h && h.date); if (d > best) best = d; });
+            (c && Array.isArray(c.history) ? c.history : []).forEach(function (h) { const d = leadValidDate(h && h.date); if (d > best) best = d; });
             return best;
         }
         function leadNewContactId() { return 'lc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6); }
         // 啟用 / 轉入核心時：把名單的聯絡紀錄搬進 history（保留 method / endDate，附 srcContactId 避免重複），搬完從 contacts 移除，因此重複執行也不會重複。
-        // v12：多一個可選參數 target＝搬進「另一個物件」（連結的核心客戶）的 history；不給就和 v8 一樣搬進自己的 history。
-        function leadCarryContacts(c, target) {
+        function leadCarryContacts(c) {
             const list = Array.isArray(c.contacts) ? c.contacts : [];
             if (!list.length) return 0;
-            const dst = target || c;
-            dst.history = Array.isArray(dst.history) ? dst.history : [];
+            c.history = Array.isArray(c.history) ? c.history : [];
             const have = new Set(), ids = new Set();
-            dst.history.forEach(function (h) { if (h && h.srcContactId) have.add(h.srcContactId); if (h && h.id) ids.add(h.id); });
+            c.history.forEach(function (h) { if (h && h.srcContactId) have.add(h.srcContactId); if (h && h.id) ids.add(h.id); });
             const keep = []; let n = 0, seq = Date.now() - list.length - 5;
             list.forEach(function (ct) {
                 if (!ct || typeof ct !== 'object') return;
@@ -4498,14 +4322,12 @@
                 if (ct.id && have.has(ct.id)) return;                 // 已搬過 → 不重複
                 if (!d) { keep.push(ct); return; }                    // 日期壞掉的原樣保留，不丟資料
                 let hid; do { hid = 'h-' + (seq++); } while (ids.has(hid)); ids.add(hid);
-                const h = { id: hid, date: d, content: String(ct.content || ''), progress: target ? (target.progress || '') : '' };
+                const h = { id: hid, date: d, content: String(ct.content || ''), progress: '' };
                 if (ct.method) h.method = String(ct.method);
                 const e = leadValidDate(ct.endDate); if (e && e > d) h.endDate = e;
                 if (atValidTime(ct.time)) h.time = atValidTime(ct.time);
-                if (atValidTime(ct.time) && atValidTime(ct.endTime)) h.endTime = atValidTime(ct.endTime);
-                if (atCatOf(ct)) h.cat = ct.cat; if (atVisitOf(ct)) h.visitType = ct.visitType; if (ct.by) h.by = String(ct.by); if (ct.src) h.src = String(ct.src);
                 if (ct.id) { h.srcContactId = ct.id; have.add(ct.id); }
-                dst.history.push(h); n++;
+                c.history.push(h); n++;
             });
             if (keep.length) c.contacts = keep; else delete c.contacts;
             return n;
@@ -4527,24 +4349,20 @@
         // ---- 編輯 ----
         let atEditRef = null;
         function atOpenEdit(cid, src, idx) {
-            const _rs = atResolve(cid, src, idx); const c = _rs && _rs.c, r = _rs && _rs.r;
+            const c = customers.find(function (x) { return x.id === cid; }); const r = atRecOf(c, src, idx);
             if (!c || !r) return;
             atEditRef = { cid: cid, src: src, idx: idx };
             const $ = function (n) { return document.getElementById(n); };
             const isLead = c.progress === 'LEAD', isNext = src === 'n';
             $('atEdWho').innerHTML = '<span class="font-bold text-[#1E2E3D] text-base truncate">' + esc(c.name) + '</span>' +
-
-                (isNext ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>' : '');
+                (isLead ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>' : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>') +
+                (isNext ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>' : '');
             $('atEdTitle').textContent = isNext ? '調整下次聯絡日' : (isLead ? '編輯聯絡紀錄' : '編輯跟進紀錄');
-            const isEvt = src === 'e';
-            $('atEdMethodWrap').classList.toggle('hidden', isEvt); $('atEdLblContent').textContent = isEvt ? '標題' : '內容';
-            if (isEvt) { $('atEdWho').innerHTML = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">個人行程</span>' + (r.src === 'photo' ? '<span class="text-[10px] text-slate-400">由手寫週計畫匯入</span>' : ''); $('atEdTitle').textContent = '編輯行程'; }
             $('atEdDate').value = leadValidDate(r.date);
             $('atEdMore').classList.toggle('hidden', isNext);
             $('atEdDelete').innerHTML = isNext ? '<i class="fa-solid fa-eraser"></i> 清除日期' : '<i class="fa-solid fa-trash-can"></i> 刪除';
             if (!isNext) {
                 $('atEdTime').value = atValidTime(r.time);
-                $('atEdEndTime').value = atValidTime(r.endTime); $('atEdCat').value = atCatOf(r); $('atEdVisit').value = atVisitOf(r);
                 $('atEdEnd').value = leadValidDate(r.endDate);
                 $('atEdContent').value = r.content || '';
                 const m = r.method ? String(r.method) : '';
@@ -4557,19 +4375,15 @@
         }
         function atEditSave() {
             const ref = atEditRef; if (!ref) return;
-            const _rs = atResolve(ref.cid, ref.src, ref.idx); const c = _rs && _rs.c, r = _rs && _rs.r; if (!c || !r) return closeModal('atEditModal');
+            const c = customers.find(function (x) { return x.id === ref.cid; }); const r = atRecOf(c, ref.src, ref.idx); if (!c || !r) return closeModal('atEditModal');
             const $ = function (n) { return document.getElementById(n); };
             const date = $('atEdDate').value;
             if (!atParse(date)) return showToast('請選擇日期', 'error');
-            if (ref.src === 'n') nxtSet(c, date);
+            if (ref.src === 'n') c.nextContactDate = date;
             else {
-                if (ref.src === 'e' && !$('atEdContent').value.trim()) return showToast('請輸入標題', 'error');
                 r.date = date;
                 const t = atValidTime($('atEdTime').value); if (t) r.time = t; else delete r.time;
-                const et = atValidTime($('atEdEndTime').value); if (t && et && et > t) r.endTime = et; else delete r.endTime;
-                const ca = $('atEdCat').value; if (atCatOf({ cat: ca })) r.cat = ca; else delete r.cat;
-                const vi = $('atEdVisit').value; if (AT_VISITS.indexOf(vi) >= 0) r.visitType = vi; else delete r.visitType;
-                if (ref.src !== 'e') { const m = $('atEdMethod').value; if (m) r.method = m; else delete r.method; }
+                const m = $('atEdMethod').value; if (m) r.method = m; else delete r.method;
                 const end = $('atEdEnd').value; if (atParse(end) && end > date) r.endDate = end; else delete r.endDate;
                 const ct = $('atEdContent').value; if (ct.trim() !== String(r.content || '').trim()) r.content = ct.trim();
             }
@@ -4577,14 +4391,13 @@
         }
         function atEditDelete() {
             const ref = atEditRef; if (!ref) return;
-            const _rs = atResolve(ref.cid, ref.src, ref.idx); const c = _rs && _rs.c, r = _rs && _rs.r; if (!c || !r) return closeModal('atEditModal');
+            const c = customers.find(function (x) { return x.id === ref.cid; }); const r = atRecOf(c, ref.src, ref.idx); if (!c || !r) return closeModal('atEditModal');
             if (ref.src === 'n') {
                 if (!window.confirm('清除「下次聯絡日」？（可按「還原」復原）')) return;
-                nxtSet(c, '');
+                c.nextContactDate = '';
             } else {
                 if (!window.confirm('確定刪除這筆紀錄？（可按「還原」復原）')) return;
-                if (ref.src === 'e') { const L = atPlanRaw(), k = L ? L.indexOf(r) : -1; if (k >= 0) L.splice(k, 1); if (L && !L.length) delete annualGoals.planEvents; }
-                else if (ref.src === 'c') { c.contacts.splice(ref.idx, 1); if (!c.contacts.length) delete c.contacts; }
+                if (ref.src === 'c') { c.contacts.splice(ref.idx, 1); if (!c.contacts.length) delete c.contacts; }
                 else c.history.splice(ref.idx, 1);
             }
             closeModal('atEditModal'); atEditRef = null; atSaved('已刪除');
@@ -4595,7 +4408,6 @@
         function atAddRender() {
             const q = (document.getElementById('atAddSearch').value || '').trim().toLowerCase();
             let list = customers.filter(function (c) {
-                if (c.progress === 'LEAD' && leadCoreOf(c)) return false;          // v12：已連結的名單不重複列出（用核心客戶那一筆）
                 if (!q) return true;
                 return ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + (c.agentName || '')).toLowerCase().indexOf(q) >= 0;
             });
@@ -4605,13 +4417,12 @@
                 const lead = c.progress === 'LEAD';
                 return '<button type="button" role="option" class="at-add-opt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-amber-50 border-b border-slate-100 text-sm' + (atAddPick === c.id ? ' bg-amber-50' : '') + '" data-id="' + esc(c.id) + '" onclick="atAddPickPerson(this.dataset.id)">' +
                     '<span class="font-bold text-[#1E2E3D] truncate">' + esc(c.name) + '</span>' +
-
+                    (lead ? '<span class="px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200 flex-shrink-0">開發名單</span>' : '<span class="px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300 flex-shrink-0">核心客戶</span>') +
                     (c.agentName ? '<span class="text-[10px] text-indigo-600 flex-shrink-0">' + esc(c.agentName) + '</span>' : '') +
                     (c.company ? '<span class="text-[10px] text-slate-400 truncate">' + esc(c.company) + '</span>' : '') + '</button>';
             }).join('') + (total > 40 ? '<p class="text-[11px] text-slate-400 px-2.5 py-1">還有 ' + (total - 40) + ' 位，請輸入更多關鍵字</p>' : '') : '<p class="text-xs text-slate-400 px-2.5 py-3">找不到符合的客戶／名單</p>';
-            document.getElementById('atAddList').insertAdjacentHTML('afterbegin', '<button type="button" role="option" class="at-add-evt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-50 border-b border-slate-100 text-sm' + (atAddPick === '__evt__' ? ' bg-blue-50' : '') + '" data-id="__evt__" onclick="atAddPickPerson(this.dataset.id)"><span class="font-bold text-[#1E2E3D]">＋ 個人行程</span><span class="text-[10px] text-slate-400">（不綁客戶，例如公事、夥伴聚會、個人時間；標題寫在「內容」）</span></button>');
-            const pc = atAddPick === '__evt__' ? { name: '個人行程', progress: 'EVT' } : customers.find(function (x) { return x.id === atAddPick; });
-            document.getElementById('atAddPicked').innerHTML = pc ? '已選擇：<b class="text-[#1E2E3D]">' + esc(pc.name) + '</b> ' + (pc.progress === 'EVT' ? '<span class="text-blue-700 font-bold">（個人行程 → 存成獨立行程）</span>' : '<span class="text-slate-500 font-bold">（存成聯絡／跟進紀錄）</span>') : '<span class="text-slate-400">尚未選擇（請在上方搜尋並點選）</span>';
+            const pc = customers.find(function (x) { return x.id === atAddPick; });
+            document.getElementById('atAddPicked').innerHTML = pc ? '已選擇：<b class="text-[#1E2E3D]">' + esc(pc.name) + '</b> ' + (pc.progress === 'LEAD' ? '<span class="text-rose-600 font-bold">（開發名單 → 存成聯絡紀錄）</span>' : '<span class="text-slate-500 font-bold">（核心客戶 → 存成跟進紀錄）</span>') : '<span class="text-slate-400">尚未選擇（請在上方搜尋並點選）</span>';
         }
         function atAddPickPerson(id) { atAddPick = id; atAddRender(); }
         function atAddPickFirst() { const b = document.querySelector('#atAddList .at-add-opt'); if (b) atAddPickPerson(b.dataset.id); }
@@ -4621,34 +4432,20 @@
             $('atAddSearch').value = '';
             $('atAddDate').value = leadValidDate(date) || atToday();
             $('atAddTime').value = atValidTime(time);
-            $('atAddMethod').value = 'Line'; $('atAddCat').value = ''; $('atAddEnd').value = ''; $('atAddContent').value = '';
+            $('atAddMethod').value = 'Line'; $('atAddEnd').value = ''; $('atAddContent').value = '';
             atAddRender();
             openModal('atAddModal');
             setTimeout(function () { try { $('atAddSearch').focus(); } catch (e) {} }, 30);
         }
         function atAddSave() {
             const $ = function (n) { return document.getElementById(n); };
-            if (atAddPick === '__evt__') {
-                const edate = $('atAddDate').value; if (!atParse(edate)) return showToast('請選擇日期', 'error');
-                const econtent = $('atAddContent').value.trim(); if (!econtent) return showToast('個人行程請在「內容」輸入標題', 'error');
-                const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value;
-                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, content: econtent, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
-                if (etime) er.time = etime; if (atParse(eend) && eend > edate) er.endDate = eend;
-                { const ecat = $('atAddCat').value; if (atCatOf({ cat: ecat })) er.cat = ecat; }
-                atEnsureUndoBase();
-                if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; }
-                annualGoals.planEvents.push(er);
-                closeModal('atAddModal'); atAddPick = null; return atSaved('已新增個人行程');
-            }
-            const c0 = customers.find(function (x) { return x.id === atAddPick; });
-            const c = (c0 && c0.progress === 'LEAD' && leadCoreOf(c0)) || c0;      // v12：已連結的名單 → 寫進核心客戶的 history（同一份）
+            const c = customers.find(function (x) { return x.id === atAddPick; });
             if (!c) return showToast('請先選擇客戶或名單', 'error');
             const date = $('atAddDate').value; if (!atParse(date)) return showToast('請選擇日期', 'error');
             const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = $('atAddContent').value.trim();
             if (c.progress === 'LEAD') {
                 const r = { id: leadNewContactId(), date: date, method: method, content: content };
                 if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
-                { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 if (!Array.isArray(c.contacts)) c.contacts = [];
                 c.contacts.push(r);
             } else {
@@ -4656,7 +4453,6 @@
                 const ids = new Set(c.history.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
                 const r = { id: hid, date: date, content: content, progress: c.progress || '', method: method };
                 if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
-                { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 c.history.push(r);
             }
             closeModal('atAddModal'); atAddPick = null; atSaved('已新增 ' + c.name + ' 的' + (c.progress === 'LEAD' ? '聯絡紀錄' : '跟進紀錄'));
@@ -4669,23 +4465,17 @@
 
         // ---- 拖曳移動（桌機；HTML5 drag & drop）----
         function atMove(cid, src, idx, date, hour) {
-            const _rs = atResolve(cid, src, idx); const c = _rs && _rs.c, r = _rs && _rs.r;
+            const c = customers.find(function (x) { return x.id === cid; }); const r = atRecOf(c, src, idx);
             if (!c || !r || !atParse(date)) return;
             const before = [r.date, r.time, r.endDate, c.nextContactDate].join('|');
-            if (src === 'n') nxtSet(c, date);
+            if (src === 'n') c.nextContactDate = date;
             else {
                 const od = leadValidDate(r.date), oe = leadValidDate(r.endDate), multi = !!(oe && oe > od);
                 const delta = Math.round((atParse(date) - atParse(od)) / 86400000);
                 r.date = date;
                 if (multi) r.endDate = atAdd(oe, delta);
                 if (hour == null || hour === '') { if (!multi) delete r.time; }                 // 丟到「未定時間」帶 → 變成沒有時間
-                else {
-                    const t = atValidTime(r.time), oe = atValidTime(r.endTime);
-                    if (!t || atHourOf(t) !== +hour) {
-                        r.time = atPad(+hour) + ':00';
-                        if (t && oe) { const dur = (+oe.substring(0, 2) * 60 + +oe.substring(3)) - (+t.substring(0, 2) * 60 + +t.substring(3)), ne = +hour * 60 + dur; if (dur > 0 && ne < 1440) r.endTime = atPad(Math.floor(ne / 60)) + ':' + atPad(ne % 60); else delete r.endTime; }   // 結束時間跟著平移（保留長度）
-                    }
-                }
+                else { const t = atValidTime(r.time); if (!t || atHourOf(t) !== +hour) r.time = atPad(+hour) + ':00'; }   // 同一小時內保留原分鐘
             }
             if ([r.date, r.time, r.endDate, c.nextContactDate].join('|') === before) return;
             atSaved('已移動：' + c.name + ' → ' + date.substring(5).replace('-', '/') + (src !== 'n' && r.time ? ' ' + r.time : ''));
@@ -4712,457 +4502,6 @@
                 atMove(d.cid, d.src, d.idx, cell.getAttribute('data-date'), cell.getAttribute('data-hour'));
             });
         }
-        // ---- v10：每日備注（每個日曆日一則自由文字）----
-        // 存放位置：既有雲端鍵 goals（annualGoals）底下的子物件 goals.dayNotes = { 'YYYY-MM-DD': '備注文字' }。
-        // goals 原本只以「年份」為鍵（goals['2026'] = {fyc, comm}），舊版程式只讀 goals[年份]，不會碰到 dayNotes；雲端頂層鍵不變，全團隊共用。
-        // 空白 = 不存（鍵會被刪掉；全空時連 dayNotes 一起移除）。
-        const AT_NOTE_MAX = 2000;
-        function atNotesObj() { const o = annualGoals && annualGoals.dayNotes; return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null; }
-        function atDayNote(d) { const o = atNotesObj(); const v = (o && Object.prototype.hasOwnProperty.call(o, d)) ? o[d] : ''; return typeof v === 'string' ? v : ''; }
-        // 只改記憶體資料，回傳是否有變動（呼叫端負責 recordState）
-        function atNormNote(text) {
-            let t = String(text == null ? '' : text).replace(/\r\n?/g, '\n').slice(0, AT_NOTE_MAX).replace(/\s+$/, '');
-            return t.trim() ? t : '';
-        }
-        // 開啟後的「第一次」編輯也要能還原：若還原堆疊是空的，或最新快照與目前資料不同（例如剛收到雲端更新），先補一筆「編輯前」快照（不觸發雲端寫入；做法同 Excel 匯入）
-        function atEnsureUndoBase() {
-            try {
-                const base = JSON.stringify({ cust: customers, per: customPeriods, goals: annualGoals, tags: customTags });
-                if (currentStateIndex < 0 || stateHistory[currentStateIndex] !== base) {
-                    stateHistory = stateHistory.slice(0, currentStateIndex + 1); stateHistory.push(base);
-                    if (stateHistory.length > MAX_HISTORY) stateHistory.shift();
-                    currentStateIndex = stateHistory.length - 1;
-                }
-            } catch (e) {}
-        }
-        function atSetDayNote(d, text) {
-            if (!atParse(d)) return false;
-            const t = atNormNote(text);
-            const cur = atDayNote(d);
-            if (t === cur) return false;
-            if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {};
-            if (t) {
-                if (!atNotesObj()) annualGoals.dayNotes = {};
-                annualGoals.dayNotes[d] = t;
-            } else {
-                const o = atNotesObj();
-                if (o) { delete o[d]; if (!Object.keys(o).length) delete annualGoals.dayNotes; }
-            }
-            return true;
-        }
-        function atNoteFit(el) {
-            if (!el || el.offsetParent === null) return;              // 隱藏中的（桌機/手機另一套）不量高度
-            el.style.height = 'auto';
-            el.style.height = Math.max(el.scrollHeight + 2, 56) + 'px';
-        }
-        function atFitNotes() { document.querySelectorAll('#airtableArea textarea.at-note').forEach(atNoteFit); }
-        let atNoteMute = false;                                       // 重繪期間（舊欄位被移除時瀏覽器會補送 blur）不存檔，草稿由 render 保留
-        function atNoteSave(el) {
-            if (atNoteMute || !el || !el.isConnected) return;                       // 重繪時被移除的欄位不處理（草稿由 render 保留）
-            const d = el.getAttribute('data-date');
-            if (!atParse(d) || atNormNote(el.value) === atDayNote(d)) return;
-            atEnsureUndoBase();
-            atSetDayNote(d, el.value);
-            recordState();                                            // 既有存檔路徑（可還原、同步雲端）
-            const saved = atDayNote(d);
-            document.querySelectorAll('#airtableArea textarea.at-note').forEach(function (o) {   // 桌機 / 手機同一天的欄位保持一致
-                if (o !== el && o.getAttribute('data-date') === d) { o.value = saved; atNoteFit(o); }
-            });
-            if (el.value !== saved) { el.value = saved; }
-            atNoteFit(el);
-            showToast('備注已儲存', 'info');
-        }
-        function atNoteHtml(d, mobile) {
-            return '<textarea class="at-note block w-full resize-none overflow-hidden rounded-md border border-slate-200 bg-white/90 px-2 py-1.5 text-[12px] leading-snug text-slate-700 placeholder-slate-300 outline-none focus:ring-2 focus:ring-[#D4AF37]" rows="2" style="min-height:56px" maxlength="' + AT_NOTE_MAX + '" placeholder="備注…" aria-label="' + d + ' 備注" data-date="' + d + '"' + (mobile ? ' data-mobile="1"' : '') +
-                ' oninput="atNoteFit(this)" onchange="atNoteSave(this)" onblur="atNoteSave(this)">' + esc(atDayNote(d)) + '</textarea>';
-        }
-        window.addEventListener('resize', function () { if (document.getElementById('atTimeGrid')) atFitNotes(); });
-        // ---- v11：分類（公事／客戶／夥伴）、拜訪標籤、獨立行程、手寫週計畫（拍照辨識）----
-        // 新增的選填欄位都在紀錄物件內：history[].cat / .visitType / .endTime / .by、contacts[] 同；雲端頂層鍵不變。
-        // 「不屬於任何客戶」的行程（例如公事、夥伴聚會）存在既有鍵 goals 底下的陣列 goals.planEvents（與 v10 的 goals.dayNotes 同一個容器；舊版只讀 goals[年份]，不受影響）。
-        const AT_CATS = { '公事': '#DC2626', '客戶': '#2563EB', '夥伴': '#16A34A', '個人': '#111827' };      // 紅／藍／綠／黑（v13：個人時間）
-        const AT_VISITS = ['經營訪', '關鍵訪', '初訪', '定期檢視'];
-        let atCat = 'ALL';                                              // ALL / 公事 / 客戶 / 夥伴 / 個人
-        function atCatOf(r) { const c = r && r.cat; return (typeof c === 'string' && Object.prototype.hasOwnProperty.call(AT_CATS, c)) ? c : ''; }
-        function atVisitOf(r) { const v = r && r.visitType; return (typeof v === 'string' && AT_VISITS.indexOf(v) >= 0) ? v : ''; }
-        function atEvtColor(cat) { return cat ? AT_CATS[cat] : '#64748B'; }
-        function atSetCat(k) { atCat = AT_CATS[k] ? k : 'ALL'; renderAirtableCalendar(); }
-        function atPlanRaw() { return (annualGoals && Array.isArray(annualGoals.planEvents)) ? annualGoals.planEvents : null; }
-        function atEvtPseudo(r) { return { id: r.id, name: String(r.content || '(未命名)'), agentName: String(r.agent || ''), progress: '', company: '', phone: '', isEvt: true }; }
-        // 依 (客戶/行程 id, 來源, 位置) 找到紀錄：src = h / c / n（客戶底下）或 e（獨立行程）
-        function atResolve(cid, src, idx) {
-            if (src === 'e') {
-                const L = atPlanRaw(); const r = L && L.find(function (x) { return x && x.id === cid; });
-                return r ? { c: atEvtPseudo(r), r: r } : null;
-            }
-            const c = customers.find(function (x) { return x.id === cid; }); const r = atRecOf(c, src, idx);
-            return (c && r) ? { c: c, r: r } : null;
-        }
-        function atMyAgent() { const e = myEmail(); if (!e || e === OWNER_EMAIL) return ''; const m = findMember(e); return m ? String(m.name || '') : ''; }   // 擁有者＝「個人」（agentName 空白）；其他成員＝自己的姓名
-        function atMyName() { const e = myEmail(); const m = e ? findMember(e) : null; return (m && m.name) ? String(m.name) : (e || ''); }
-        function atCatPills(r, small) {
-            const cat = atCatOf(r), v = atVisitOf(r); let s = '';
-            if (cat) s += '<span class="at-cat at-cat-' + (cat === '公事' ? 'biz' : cat === '客戶' ? 'cust' : cat === '個人' ? 'pers' : 'part') + ' flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + AT_CATS[cat] + '">' + cat + '</span>';
-            if (v) s += '<span class="at-visit flex-shrink-0 px-1 rounded-full text-[9px] font-bold border" style="color:' + (cat ? AT_CATS[cat] : '#475569') + ';border-color:' + (cat ? AT_CATS[cat] : '#94a3b8') + '">' + v + '</span>';
-            return s;
-        }
-        function atTimeTxt(ev) { return ev.time ? ev.time + (ev.endTime ? '–' + ev.endTime : '') : ''; }
-        // 與「Excel 匯入／每日備注」相同的做法：開啟後第一次編輯也要能還原
-        // （atEnsureUndoBase / atSetDayNote / atDayNote 由 v10 提供）
-
-        // ================= 上傳手寫週計畫 =================
-        // 連線方式沿用「AI 排程」：POST 到使用者自己的 Cloudflare Worker，標頭 X-App-Secret；網址與密語存在本機 localStorage（crm_ai_worker_url / crm_ai_secret），不在原始碼、不同步給團隊。
-        // 若 Worker 要用獨立路由處理圖片，改 AT_VISION_PATH（例如 '/vision'）即可；預設與排程 AI 同一個網址。
-        const AT_VISION_PATH = '';
-        const AT_PH_MAX_PX = 1600;
-        const AT_MARKS = { '經': '經營訪', '關': '關鍵訪', '初': '初訪', '檢': '定期檢視' };
-        const AT_INKS = { red: '公事', blue: '客戶', green: '夥伴', '紅': '公事', '藍': '客戶', '綠': '夥伴', black: '個人', '黑': '個人' };
-        let atPh = { stage: 'pick', rows: [], locs: [], todos: [], info: null };
-        function atPhEl(id) { return document.getElementById(id); }
-        function atPhStage(s) {
-            atPh.stage = s;
-            ['atPhPick', 'atPhLoading', 'atPhPreview'].forEach(function (id) { atPhEl(id).classList.toggle('hidden', id !== 'atPh' + s.charAt(0).toUpperCase() + s.slice(1)); });
-            atPhEl('atPhConfirm').classList.toggle('hidden', s !== 'preview');
-        }
-        let atPhTok = 0;                                                // 重新開啟視窗後，舊的辨識結果不會跑進新的流程
-        function atOpenPhoto() {
-            atPhTok++;
-            atPh = { stage: 'pick', rows: [], locs: [], todos: [], info: null };
-            atPhEl('atPhUrl').value = (localStorage.getItem('crm_ai_worker_url') || '');
-            atPhEl('atPhSecret').value = (localStorage.getItem('crm_ai_secret') || '');
-            atPhEl('atPhErr').textContent = '';
-            atPhStage('pick'); openModal('atPhotoModal');
-        }
-        function atPhSaveCfg() {
-            try { localStorage.setItem('crm_ai_worker_url', atPhEl('atPhUrl').value.trim()); localStorage.setItem('crm_ai_secret', atPhEl('atPhSecret').value.trim()); } catch (e) {}
-            showToast('AI 連線設定已儲存（只存在這台裝置）', 'info');
-        }
-        // --- 圖片縮放（長邊最多 1600px，JPEG）---
-        function atPhLoadImage(file) {
-            return new Promise(function (resolve, reject) {
-                const viaImg = function () {
-                    const u = URL.createObjectURL(file), im = new Image();
-                    im.onload = function () { resolve({ src: im, w: im.naturalWidth, h: im.naturalHeight, done: function () { URL.revokeObjectURL(u); } }); };
-                    im.onerror = function () { URL.revokeObjectURL(u); reject(new Error('無法讀取這張圖片（格式不支援？）')); };
-                    im.src = u;
-                };
-                if (window.createImageBitmap) createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bm) { resolve({ src: bm, w: bm.width, h: bm.height, done: function () { try { bm.close(); } catch (e) {} } }); }, viaImg);
-                else viaImg();
-            });
-        }
-        async function atPhDownscale(file) {
-            const im = await atPhLoadImage(file);
-            try {
-                if (!im.w || !im.h) throw new Error('圖片尺寸異常');
-                const k = Math.min(1, AT_PH_MAX_PX / Math.max(im.w, im.h));
-                const w = Math.max(1, Math.round(im.w * k)), h = Math.max(1, Math.round(im.h * k));
-                const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-                const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(im.src, 0, 0, w, h);
-                const url = cv.toDataURL('image/jpeg', 0.85);
-                return { url: url, b64: url.split(',')[1], w: w, h: h, ow: im.w, oh: im.h };
-            } finally { im.done(); }
-        }
-        // --- 提示詞 ---
-        function atPhPrompt() {
-            const ws = atWeekStart || atSunday(atToday()), we = atAdd(ws, 6);
-            const sys = '你是「手寫週計畫」辨識助手。使用者會給你一張照片：手寫在印刷週曆上的一週行程。請只輸出一個 JSON 物件（不要 markdown、不要任何說明文字），格式：\n' +
-                '{"week":{"start":"YYYY-MM-DD","end":"YYYY-MM-DD"},' +
-                '"events":[{"date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","title":"手寫的文字","ink":"red|blue|green|black|other","mark":"經|關|初|檢|none","locationNote":""}],' +
-                '"dayLocations":[{"date":"YYYY-MM-DD","text":"台中"}],"todos":["待辦事項"]}\n' +
-                '規則：\n1. week 與每個 date 都請依照片上「印刷的日期」換算成完整日期；年份以印刷日期為準，沒有就用今年。\n' +
-                '2. start/end 用 24 小時制 HH:MM；沒寫的欄位用空字串，不要猜。\n' +
-                '3. title 只抄寫手寫內容（繁體中文），不要加註解、不要補寫沒寫的字；看不清楚的行程就略過，不要亂猜。\n' +
-                '4. ink 是該行程文字的墨水顏色：紅色=red、藍色=blue、綠色=green、黑色=black（個人時間），其他顏色=other。\n' +
-                '5. mark 是行程旁被圈起來的單字：經、關、初、檢；沒有圈就填 none。\n' +
-                '6. 整天的地點備註（例如「台中」「南」）放 dayLocations；掛在某個行程旁的地點放該行程的 locationNote。沒有就留空陣列／空字串。\n' +
-                '7. 週計畫角落的待辦清單放 todos（字串陣列）；沒有就 []。\n8. 只輸出 JSON。';
-            const usr = '今天是 ' + atToday() + '（年份預設 ' + atToday().substring(0, 4) + '）。使用者目前在行事曆上看的週是 ' + ws + ' ~ ' + we + '（僅供參考，請以照片上印刷的日期為準）。請辨識這張手寫週計畫並輸出 JSON。';
-            return { system: sys, text: usr };
-        }
-        // --- 呼叫 AI（Worker；測試時可用 window.AT_VISION_MOCK 取代）---
-        async function atPhCall(img) {
-            const pr = atPhPrompt();
-            if (typeof window.AT_VISION_MOCK === 'function') {
-                return await window.AT_VISION_MOCK({ system: pr.system, text: pr.text, mime: 'image/jpeg', b64len: img.b64.length, width: img.w, height: img.h });
-            }
-            const base = (localStorage.getItem('crm_ai_worker_url') || '').trim();
-            const secret = (localStorage.getItem('crm_ai_secret') || '').trim();
-            if (!base) throw new Error('還沒設定 Worker 網址（請在視窗下方「AI 連線設定」填入）');
-            const path = (localStorage.getItem('crm_ai_vision_path') || AT_VISION_PATH || '').trim();
-            const url = path ? base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '') : base;
-            let res;
-            try {
-                res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-App-Secret': secret },
-                    body: JSON.stringify({ system: pr.system, max_tokens: 3000, messages: [{ role: 'user', content: [
-                        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img.b64 } },
-                        { type: 'text', text: pr.text }] }] })
-                });
-            } catch (e) { throw new Error('連不上 Worker（網路或 CORS 設定）'); }
-            let data;
-            try { data = await res.json(); } catch (e) { throw new Error('伺服器回應異常（HTTP ' + res.status + '）'); }
-            if (!res.ok) throw new Error((data && data.error) ? (typeof data.error === 'string' ? data.error : (data.error.message || 'HTTP ' + res.status)) : ('HTTP ' + res.status));
-            const txt = (data.content || []).map(function (b) { return b.text || ''; }).join('').trim();
-            if (!txt) throw new Error('AI 沒有回傳內容');
-            return txt;
-        }
-        // --- 解析與正規化 ---
-        function atPhJson(txt) {
-            if (txt && typeof txt === 'object') return txt;
-            let s = String(txt).replace(/```json/gi, '').replace(/```/g, '').trim();
-            const first = s.search(/[\{\[]/); if (first > 0) s = s.slice(first);
-            const last = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']')); if (last >= 0 && last < s.length - 1) s = s.slice(0, last + 1);
-            return JSON.parse(s);
-        }
-        // 日期正規化：完整日期照用；只有月/日時，年份取「離參考日最近」的那一年（處理跨年週）
-        function atPhDate(v, refDate) {
-            const s = String(v == null ? '' : v).trim(); if (!s) return '';
-            let m = /^(\d{4})[-\/.年](\d{1,2})[-\/.月](\d{1,2})/.exec(s);
-            if (m) { const d = m[1] + '-' + atPad(+m[2]) + '-' + atPad(+m[3]); return atParse(d) ? d : ''; }
-            m = /^(\d{1,2})[-\/.月](\d{1,2})/.exec(s);
-            if (!m) return '';
-            const ref = atParse(refDate) ? refDate : atToday(), ry = +ref.substring(0, 4); let best = '', bd = 1e18;
-            [ry - 1, ry, ry + 1].forEach(function (y) { const d = y + '-' + atPad(+m[1]) + '-' + atPad(+m[2]); if (!atParse(d)) return; const diff = Math.abs(atParse(d) - atParse(ref)); if (diff < bd) { bd = diff; best = d; } });
-            return best;
-        }
-        function atPhExists(date, time, title) {
-            const tt = String(title || '').trim(); if (!tt || !atParse(date)) return false;
-            const t = atValidTime(time);
-            const same = function (r) { return r && leadValidDate(r.date) === date && atValidTime(r.time) === t && String(r.content || '').trim() === tt; };
-            if (customers.some(function (c) { return (Array.isArray(c.history) && c.history.some(same)) || (Array.isArray(c.contacts) && c.contacts.some(same)); })) return true;
-            const L = atPlanRaw(); return !!(L && L.some(same));
-        }
-        function atPhMatches(title) {
-            const t = String(title || '').trim(); if (!t) return [];
-            return customers.filter(function (c) { return String(c.name || '').trim() === t && !(c.progress === 'LEAD' && leadCoreOf(c)); });
-        }
-        function atPhRefreshRow(r) {
-            r.matches = atPhMatches(r.title).map(function (c) { return c.id; });
-            if (r.link && r.matches.indexOf(r.link) < 0) r.link = '';
-        }
-        function atPhNormalize(data, selWs) {
-            if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('AI 回傳的格式不是預期的 JSON 物件');
-            if (!Array.isArray(data.events)) throw new Error('AI 回傳的 JSON 缺少 events 陣列');
-            const wk = data.week && typeof data.week === 'object' ? data.week : {};
-            let refStart = atParse(selWs) ? selWs : atToday();
-            const wsGuess = atPhDate(wk.start, refStart);
-            const ref = wsGuess || refStart;
-            let skipped = 0; const rows = [];
-            data.events.forEach(function (e) {
-                if (!e || typeof e !== 'object') { skipped++; return; }
-                const title = String(e.title == null ? '' : e.title).replace(/\s+/g, ' ').trim().slice(0, 200);
-                if (!title) { skipped++; return; }
-                const date = atPhDate(e.date, ref);
-                const st = atValidTime(e.start), en = atValidTime(e.end);
-                const inkKey = String(e.ink == null ? '' : e.ink).trim().toLowerCase();
-                const cat = Object.prototype.hasOwnProperty.call(AT_INKS, inkKey) ? AT_INKS[inkKey] : '';
-                const mk = String(e.mark == null ? '' : e.mark).trim().charAt(0);
-                const visit = Object.prototype.hasOwnProperty.call(AT_MARKS, mk) ? AT_MARKS[mk] : (AT_VISITS.indexOf(String(e.mark || '').trim()) >= 0 ? String(e.mark).trim() : '');
-                const r = { check: true, date: date, start: st, end: (st && en && en > st) ? en : '', title: title, cat: cat, visit: visit, link: '', loc: String(e.locationNote == null ? '' : e.locationNote).trim().slice(0, 100) };
-                atPhRefreshRow(r); if (r.matches.length === 1) r.link = r.matches[0];
-                r.exists = atPhExists(r.date, r.start, r.title); if (r.exists || !r.date) r.check = false;
-                rows.push(r);
-            });
-            const locs = [];
-            const addLoc = function (date, text) {
-                text = String(text == null ? '' : text).replace(/\s+/g, ' ').trim().slice(0, 100); date = atPhDate(date, ref);
-                if (!text || !date) { if (text) skipped++; return; }
-                if (locs.some(function (l) { return l.date === date && l.text === text; })) return;
-                locs.push({ check: true, date: date, text: text });
-            };
-            (Array.isArray(data.dayLocations) ? data.dayLocations : []).forEach(function (l) { if (l && typeof l === 'object') addLoc(l.date, l.text); else skipped++; });
-            rows.forEach(function (r) { if (r.loc && r.date) addLoc(r.date, r.loc); });
-            locs.forEach(function (l) { l.exists = atDayNote(l.date).indexOf(l.text) >= 0; if (l.exists) l.check = false; });
-            const todos = (Array.isArray(data.todos) ? data.todos : []).map(function (t) { return String(t == null ? '' : (typeof t === 'object' ? (t.text || t.title || '') : t)).replace(/\s+/g, ' ').trim().slice(0, 200); }).filter(Boolean).map(function (t) { return { check: false, text: t }; });
-            let ps = wsGuess, pe = atPhDate(wk.end, ref);
-            const ds = rows.map(function (r) { return r.date; }).filter(Boolean).sort();
-            if (!ps && ds.length) ps = atSunday(ds[0]);
-            if (!pe && ps) pe = atAdd(ps, 6);
-            return { rows: rows, locs: locs, todos: todos, skipped: skipped, weekStart: ps || '', weekEnd: pe || '' };
-        }
-        function atPhWeekOk() {
-            const i = atPh.info; if (!i || !i.weekStart) return true;
-            const ws = atWeekStart || atSunday(atToday()), we = atAdd(ws, 6);
-            return i.weekStart <= we && (i.weekEnd || atAdd(i.weekStart, 6)) >= ws;
-        }
-        // --- 流程 ---
-        async function atPhotoPicked(input) {
-            const f = input && input.files && input.files[0];
-            if (!f) return;
-            const tok = atPhTok;
-            atPhEl('atPhErr').textContent = '';
-            if (!/^image\//.test(f.type || '') && !/\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i.test(f.name || '')) { input.value = ''; atPhFail('這不是圖片檔'); return; }
-            atPhStage('loading'); atPhEl('atPhLoadMsg').textContent = '正在縮小圖片…';
-            try {
-                const img = await atPhDownscale(f); input.value = ''; if (tok !== atPhTok) return;
-                atPhEl('atPhThumb').src = img.url;
-                atPhEl('atPhLoadMsg').textContent = '已縮圖為 ' + img.w + '×' + img.h + '，AI 辨識中（約 10～30 秒）…';
-                const txt = await atPhCall(img);
-                if (tok !== atPhTok) return;
-                let data;
-                try { data = atPhJson(txt); } catch (e) { throw new Error('AI 回傳的內容不是有效的 JSON，沒有寫入任何資料（可再試一次或換一張更清楚的照片）'); }
-                const info = atPhNormalize(data, atWeekStart || atSunday(atToday()));
-                atPh.rows = info.rows; atPh.locs = info.locs; atPh.todos = info.todos; atPh.info = info;
-                atPhStage('preview'); atPhRender();
-            } catch (e) {
-                input.value = ''; if (tok !== atPhTok) return;
-                atPhFail(e && e.message ? e.message : String(e));
-            }
-        }
-        function atPhFail(msg) {
-            atPhStage('pick'); atPhEl('atPhErr').textContent = msg; showToast('辨識失敗：' + msg, 'error');
-        }
-        const AT_PH_SEL = 'px-1.5 py-1 border border-slate-200 rounded-md text-xs bg-white outline-none focus:ring-2 focus:ring-[#1E2E3D]';
-        function atPhStatus(r) {
-            if (r.exists) return '<span class="at-ph-badge px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">已存在</span>';
-            if (!atParse(r.date)) return '<span class="at-ph-badge px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">日期無效</span>';
-            if (r.link) { const c = customers.find(function (x) { return x.id === r.link; }); return '<span class="at-ph-badge px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">→ ' + esc(c ? c.name : '') + (c && c.progress === 'LEAD' ? '（名單）' : '') + '</span>'; }
-            return '<span class="at-ph-badge px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">新增・獨立行程</span>';
-        }
-        function atPhLinkOpts(r) {
-            let h = '<option value="">獨立行程（不連結）</option>';
-            (r.matches || []).forEach(function (id) { const c = customers.find(function (x) { return x.id === id; }); if (c) h += '<option value="' + esc(id) + '"' + (r.link === id ? ' selected' : '') + '>連結：' + esc(c.name) + '' + '</option>'; });
-            return h;
-        }
-        function atPhRowHtml(r, i) {
-            const lab = function (t, inner, cls) { return '<label class="flex flex-col text-[10px] font-bold text-slate-400 ' + (cls || '') + '">' + t + inner + '</label>'; };
-            const catOpts = '<option value="">（無）</option>' + Object.keys(AT_CATS).map(function (k) { return '<option value="' + k + '"' + (r.cat === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
-            const visOpts = '<option value="">（無）</option>' + AT_VISITS.map(function (k) { return '<option value="' + k + '"' + (r.visit === k ? ' selected' : '') + '>' + k + '</option>'; }).join('');
-            return '<div class="at-phrow rounded-lg border p-2 flex flex-wrap items-end gap-x-2 gap-y-1.5 ' + (r.exists ? 'bg-slate-50 border-slate-200 opacity-80' : 'bg-white border-slate-200') + '" data-i="' + i + '">' +
-                '<label class="flex items-center self-center pr-1"><input type="checkbox" class="at-ph-check w-4 h-4 accent-[#1E2E3D]" data-f="check" aria-label="寫入這一筆"' + (r.check ? ' checked' : '') + ' onchange="atPhField(this)"></label>' +
-                lab('日期', '<input type="date" data-f="date" value="' + esc(r.date) + '" class="' + AT_PH_SEL + ' w-[8.6rem]" onchange="atPhField(this)">') +
-                lab('開始', '<input type="time" data-f="start" value="' + esc(r.start) + '" class="' + AT_PH_SEL + ' w-[6.2rem]" onchange="atPhField(this)">') +
-                lab('結束', '<input type="time" data-f="end" value="' + esc(r.end) + '" class="' + AT_PH_SEL + ' w-[6.2rem]" onchange="atPhField(this)">') +
-                lab('標題', '<input type="text" data-f="title" value="' + esc(r.title) + '" maxlength="200" class="' + AT_PH_SEL + ' w-full" onchange="atPhField(this)">', 'flex-1 min-w-[10rem]') +
-                lab('分類', '<select data-f="cat" class="' + AT_PH_SEL + '" onchange="atPhField(this)">' + catOpts + '</select>') +
-                lab('標籤', '<select data-f="visit" class="' + AT_PH_SEL + '" onchange="atPhField(this)">' + visOpts + '</select>') +
-                lab('連結對象', '<select data-f="link" class="' + AT_PH_SEL + ' max-w-[11rem]" onchange="atPhField(this)">' + atPhLinkOpts(r) + '</select>') +
-                '<span class="at-ph-status self-center min-w-[4.5rem]">' + atPhStatus(r) + '</span>' +
-                '<button type="button" class="self-center px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-md text-xs font-bold" data-f="del" onclick="atPhDel(' + i + ')" title="刪除這一列"><i class="fa-solid fa-trash-can"></i></button></div>';
-        }
-        function atPhRender() {
-            const i = atPh.info || {}, ws = atWeekStart || atSunday(atToday());
-            const ok = atPhWeekOk();
-            let warn = '';
-            if (!ok) warn = '<div id="atPhWarn" class="rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs p-2.5 flex flex-wrap items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i><span>照片上的週（' + esc(i.weekStart) + ' ~ ' + esc(i.weekEnd) + '）與目前行事曆顯示的週（' + ws + ' ~ ' + atAdd(ws, 6) + '）不同。預設依照片上的日期寫入；若照片其實是這一週，可按右邊按鈕平移。</span><button type="button" id="atPhShift" onclick="atPhShiftToWeek()" class="px-2.5 py-1 bg-amber-600 text-white rounded-md font-bold">平移到目前顯示的週</button></div>';
-            atPhEl('atPhInfo').innerHTML = '<div class="text-xs text-slate-600"><b class="text-[#1E2E3D]">辨識結果</b>　週別：' + (i.weekStart ? esc(i.weekStart) + ' ~ ' + esc(i.weekEnd) : '（照片上未辨識到）') + '　共 ' + atPh.rows.length + ' 筆行程' + (i.skipped ? '（另有 ' + i.skipped + ' 項格式不完整已略過）' : '') + '　<span class="text-slate-400">請核對後再寫入，辨識可能有誤；勾選的才會寫入。</span></div>' + warn;
-            atPhEl('atPhRows').innerHTML = atPh.rows.length ? atPh.rows.map(atPhRowHtml).join('') : '<p class="text-xs text-slate-400 px-1 py-2">沒有辨識到行程。</p>';
-            atPhEl('atPhLocs').innerHTML = atPh.locs.length ? atPh.locs.map(function (l, k) {
-                return '<div class="at-phloc flex flex-wrap items-center gap-2 text-xs" data-k="' + k + '"><label class="flex items-center gap-1.5"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="lcheck"' + (l.check ? ' checked' : '') + ' onchange="atPhField(this)"><span class="font-mono">' + esc(l.date) + '</span></label>' +
-                    '<input type="text" data-f="ltext" value="' + esc(l.text) + '" maxlength="100" class="' + AT_PH_SEL + ' flex-1 min-w-[8rem]" onchange="atPhField(this)">' + (l.exists ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">已在備注</span>' : '<span class="text-[10px] text-slate-400">→ 附加到當天備注</span>') +
-                    '<button type="button" class="text-rose-600 px-1" data-f="ldel" onclick="atPhDelLoc(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
-            }).join('') : '<p class="text-xs text-slate-400">沒有地點備註。</p>';
-            const first = i.weekStart ? atSunday(i.weekStart) : ws;
-            atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天）的備注。</p>' + atPh.todos.map(function (t, k) {
-                return '<div class="at-phtodo flex items-center gap-2 text-xs" data-k="' + k + '"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="tcheck"' + (t.check ? ' checked' : '') + ' onchange="atPhField(this)"><input type="text" data-f="ttext" value="' + esc(t.text) + '" maxlength="200" class="' + AT_PH_SEL + ' flex-1" onchange="atPhField(this)"><button type="button" class="text-rose-600 px-1" onclick="atPhDelTodo(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
-            }).join('') : '<p class="text-xs text-slate-400">沒有待辦事項。</p>';
-            atPhCount();
-        }
-        function atPhCount() {
-            const n = atPh.rows.filter(function (r) { return r.check; }).length, m = atPh.locs.filter(function (l) { return l.check; }).length, t = atPh.todos.filter(function (x) { return x.check; }).length;
-            const b = atPhEl('atPhConfirm'); b.innerHTML = '<i class="fa-solid fa-check"></i> 確認寫入（' + n + ' 筆行程' + (m ? '＋' + m + ' 則地點' : '') + (t ? '＋' + t + ' 則待辦' : '') + '）';
-            b.disabled = !(n || m || t); b.classList.toggle('opacity-50', b.disabled);
-        }
-        function atPhField(el) {
-            const f = el.getAttribute('data-f');
-            const row = el.closest('.at-phrow'), loc = el.closest('.at-phloc'), td = el.closest('.at-phtodo');
-            if (loc) { const l = atPh.locs[+loc.getAttribute('data-k')]; if (!l) return; if (f === 'lcheck') l.check = el.checked; else { l.text = el.value.trim(); l.exists = atDayNote(l.date).indexOf(l.text) >= 0; } return atPhCount(); }
-            if (td) { const t = atPh.todos[+td.getAttribute('data-k')]; if (!t) return; if (f === 'tcheck') t.check = el.checked; else t.text = el.value.trim(); return atPhCount(); }
-            if (!row) return;
-            const r = atPh.rows[+row.getAttribute('data-i')]; if (!r) return;
-            const wasExists = r.exists, wasValid = !!atParse(r.date);
-            if (f === 'check') r.check = el.checked;
-            else if (f === 'date') r.date = atParse(el.value) ? el.value : '';
-            else if (f === 'start') { r.start = atValidTime(el.value); if (!r.start) r.end = ''; }
-            else if (f === 'end') r.end = atValidTime(el.value);
-            else if (f === 'title') { r.title = el.value.replace(/\s+/g, ' ').trim(); const old = r.link; atPhRefreshRow(r); if (!r.link && r.matches.length === 1 && !old) r.link = r.matches[0]; }
-            else if (f === 'cat') r.cat = el.value;
-            else if (f === 'visit') r.visit = el.value;
-            else if (f === 'link') r.link = el.value;
-            if (f !== 'check') {
-                r.exists = atPhExists(r.date, r.start, r.title);
-                if (r.exists !== wasExists || (!wasValid && atParse(r.date))) r.check = !r.exists && !!atParse(r.date);
-                if (!atParse(r.date)) r.check = false;
-                if (f === 'start' || f === 'end') { row.querySelector('[data-f="end"]').value = r.end; }
-                row.querySelector('[data-f="check"]').checked = r.check;
-                row.querySelector('[data-f="link"]').innerHTML = atPhLinkOpts(r);
-                row.querySelector('.at-ph-status').innerHTML = atPhStatus(r);
-                row.classList.toggle('bg-slate-50', r.exists); row.classList.toggle('opacity-80', r.exists);
-            }
-            atPhCount();
-        }
-        function atPhDel(i) { atPh.rows.splice(i, 1); atPhRender(); }
-        function atPhDelLoc(k) { atPh.locs.splice(k, 1); atPhRender(); }
-        function atPhDelTodo(k) { atPh.todos.splice(k, 1); atPhRender(); }
-        function atPhShiftToWeek() {
-            const i = atPh.info; if (!i || !i.weekStart) return;
-            const ws = atWeekStart || atSunday(atToday()), off = Math.round((atParse(ws) - atParse(atSunday(i.weekStart))) / 86400000);
-            const sh = function (d) { return atParse(d) ? atAdd(d, off) : d; };
-            atPh.rows.forEach(function (r) { r.date = sh(r.date); r.exists = atPhExists(r.date, r.start, r.title); r.check = !r.exists && !!atParse(r.date); });
-            atPh.locs.forEach(function (l) { l.date = sh(l.date); l.exists = atDayNote(l.date).indexOf(l.text) >= 0; l.check = !l.exists; });
-            i.weekStart = sh(i.weekStart); i.weekEnd = sh(i.weekEnd); atPhRender();
-            showToast('已把日期平移到目前顯示的週', 'info');
-        }
-        // 確認寫入：全部改完後只呼叫一次 recordState → 還原一次就回到寫入前
-        function atPhConfirm() {
-            const rows = atPh.rows.filter(function (r) { return r.check; });
-            const locs = atPh.locs.filter(function (l) { return l.check && l.text; });
-            const todos = atPh.todos.filter(function (t) { return t.check && t.text; });
-            if (!rows.length && !locs.length && !todos.length) return showToast('沒有勾選要寫入的項目', 'error');
-            for (let k = 0; k < rows.length; k++) {
-                if (!atParse(rows[k].date)) return showToast('「' + rows[k].title + '」的日期無效，請修正或取消勾選', 'error');
-                if (!rows[k].title) return showToast('有一列沒有標題，請修正或取消勾選', 'error');
-            }
-            atEnsureUndoBase();
-            const me = atMyName(), agent = atMyAgent(), usedIds = new Set(); customers.forEach(function (c) { (c.history || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); (c.contacts || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); });
-            (atPlanRaw() || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); });
-            let seq = Date.now(); const nid = function (p) { let id; do { id = p + (seq++); } while (usedIds.has(id)); usedIds.add(id); return id; };
-            let nLinked = 0, nSolo = 0, minDate = '';
-            rows.forEach(function (r) {
-                const rec = { date: r.date, content: r.title };
-                if (r.start) { rec.time = r.start; if (r.end) rec.endTime = r.end; }
-                if (r.cat) rec.cat = r.cat; if (r.visit) rec.visitType = r.visit;
-                rec.by = me; rec.src = 'photo';
-                const c0 = r.link ? customers.find(function (x) { return x.id === r.link; }) : null;
-                const c = (c0 && c0.progress === 'LEAD' && leadCoreOf(c0)) || c0;
-                if (c && c.progress === 'LEAD') { rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
-                else if (c) { rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); nLinked++; }
-                else { rec.id = 'pe-' + nid(''); rec.agent = agent; rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
-                if (!minDate || r.date < minDate) minDate = r.date;
-            });
-            let nLoc = 0;
-            locs.forEach(function (l) { const cur = atDayNote(l.date); if (cur.indexOf(l.text) >= 0) return; atSetDayNote(l.date, cur ? cur + '\n' + l.text : l.text); nLoc++; if (!minDate || l.date < minDate) minDate = l.date; });
-            let nTodo = 0;
-            if (todos.length) {
-                const first = (atPh.info && atPh.info.weekStart) ? atSunday(atPh.info.weekStart) : (minDate ? atSunday(minDate) : (atWeekStart || atSunday(atToday())));
-                let cur = atDayNote(first);
-                todos.forEach(function (t) { const line = '☐ ' + t.text; if (cur.indexOf(line) >= 0) return; cur = cur ? cur + '\n' + line : line; nTodo++; });
-                atSetDayNote(first, cur); if (!minDate || first < minDate) minDate = first;
-            }
-            if (minDate) atWeekStart = atSunday(minDate);
-            recordState(); renderApp(); closeModal('atPhotoModal');
-            showToast('已寫入 ' + (nLinked + nSolo) + ' 筆行程（連結客戶 ' + nLinked + '、獨立行程 ' + nSolo + '）' + (nLoc ? '、' + nLoc + ' 則地點備註' : '') + (nTodo ? '、' + nTodo + ' 則待辦' : '') + '；可按「還原」一次復原');
-        }
-
-        function atOpenEvtDetail(el) {
-            const rs = atResolve(el.getAttribute('data-cid'), 'e', -1); if (!rs) return;
-            const h = rs.r, end = (h.endDate && h.endDate > h.date) ? h.endDate : '', t = atValidTime(h.time);
-            document.getElementById('airtableDetailTitle').innerHTML = '<i class="fa-regular fa-calendar-check text-[#D4AF37]"></i> 個人行程';
-            document.getElementById('airtableDetailBody').innerHTML =
-                '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D] break-words min-w-0">' + esc(h.content || '') + '</p><span class="flex items-center gap-1">' + atCatPills(h) + '</span></div>' +
-                '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
-                    '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
-                    (t ? '<div><span class="font-bold">時間：</span>' + esc(t + (atValidTime(h.endTime) ? '–' + atValidTime(h.endTime) : '')) + '</div>' : '') +
-                    '<div><span class="font-bold">負責業務：</span>' + (h.agent ? esc(h.agent) : '個人') + '</div>' +
-                    (h.by ? '<div><span class="font-bold">建立者：</span>' + esc(h.by) + '</div>' : '') +
-                '</div><div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-500 text-xs">這是不屬於任何客戶的獨立行程' + (h.src === 'photo' ? '（由手寫週計畫匯入）' : '') + '。</div>';
-            const ebtn = document.getElementById('airtableDetailEditBtn');
-            ebtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 編輯';
-            ebtn.onclick = function () { closeModal('airtableDetailModal'); atOpenEdit(h.id, 'e', -1); };
-            document.getElementById('airtableDetailOpenBtn').style.display = 'none';
-            openModal('airtableDetailModal');
-        }
         let atWeekStart = null; // 目前顯示週的「週日」，格式 YYYY-MM-DD
         const AT_DOW = ['日', '一', '二', '三', '四', '五', '六'];
         const AT_METHODS = {
@@ -5185,7 +4524,7 @@
         function atMethodOf(h) { const m = (h && h.method != null) ? String(h.method).trim() : ''; return m || '未註明'; }
         function atProgLabel(p) {
             if (!p) return '';
-            if (p === 'WON') return '成交'; if (p === 'HOLD') return '待定'; if (p === 'LOST') return '流失'; if (p === 'LEAD') return '一畝田';
+            if (p === 'WON') return '成交'; if (p === 'HOLD') return '待定'; if (p === 'LOST') return '流失'; if (p === 'LEAD') return '開發名單';
             return stageConfig[p] ? stageConfig[p].label : p;
         }
         function atCollectEvents() {
@@ -5200,9 +4539,10 @@
             customers.forEach(function (c) {
                 if (!matchAgentFilter(c, fAgent)) return;                     // 負責業務：名單與客戶都用 agentName
                 if (activeTagFilters.length > 0 && !activeTagFilters.some(function (tid) { return c.tags && c.tags.includes(tid); })) return;
-                const isLead = c.progress === 'LEAD', P = pairOf(c), linked = isLead && !!P, pk = (isLead && P) ? P.id : c.id;
-                // v12：已連結的名單，紀錄以核心客戶的 history 為準（由核心客戶那一筆顯示）；名單這邊只留「下次聯絡」chip → 每個人只出現一次
-                const hist = linked ? [] : (Array.isArray(c.history) ? c.history : []);
+                const isLead = c.progress === 'LEAD', kind = isLead ? 'LEAD' : 'CORE';
+                if (atKind === 'LEAD' && !isLead) return;
+                if (atKind === 'CORE' && isLead) return;
+                const hist = Array.isArray(c.history) ? c.history : [];
                 hist.forEach(function (h, idx) {
                     if (!h) return;
                     const ds = String(h.date || '').substring(0, 10);
@@ -5211,93 +4551,72 @@
                     if (!atParse(end) || end < ds) end = ds;
                     const method = atMethodOf(h);
                     if (!hit(c, method, h.content)) return;
-                    if (atCat !== 'ALL' && (atCatOf(h) || '客戶') !== atCat) return;      // v12：名單／客戶的紀錄沒指定分類時算「客戶」
                     const ts = /^h-(\d+)/.exec(h.id || '');
-                    out.push({ c: c, h: h, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, src: 'h', pk: pk, time: atValidTime(h.time), endTime: atValidTime(h.time) ? atValidTime(h.endTime) : '', cat: atCatOf(h) || '客戶', xcat: atCatOf(h) });
+                    out.push({ c: c, h: h, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, kind: kind, src: 'h', time: atValidTime(h.time) });
                 });
                 // 聯絡紀錄（lead.contacts）；已搬進 history 的（srcContactId）不重複顯示
                 const moved = new Set(); hist.forEach(function (h) { if (h && h.srcContactId) moved.add(h.srcContactId); });
-                (linked ? [] : (Array.isArray(c.contacts) ? c.contacts : [])).forEach(function (ct, idx) {
+                (Array.isArray(c.contacts) ? c.contacts : []).forEach(function (ct, idx) {
                     if (!ct || typeof ct !== 'object') return;
                     if (ct.id && moved.has(ct.id)) return;
                     const ds = leadCtDate(ct); if (!ds) return;
                     let end = leadValidDate(ct.endDate); if (!end || end < ds) end = ds;
                     const method = atMethodOf(ct);
                     if (!hit(c, method, ct.content)) return;
-                    if (atCat !== 'ALL' && (atCatOf(ct) || '客戶') !== atCat) return;
                     const ts = /^lc-(\d+)/.exec(ct.id || '');
-                    out.push({ c: c, h: ct, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, src: 'c', pk: pk, time: atValidTime(ct.time), endTime: atValidTime(ct.time) ? atValidTime(ct.endTime) : '', cat: atCatOf(ct) || '客戶', xcat: atCatOf(ct) });
+                    out.push({ c: c, h: ct, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, kind: kind, src: 'c', time: atValidTime(ct.time) });
                 });
-                // 下次聯絡日（名單的 nextContactDate；已連結的人兩邊同步，只由名單這邊出一個 chip）→ 算「客戶」分類
+                // 下次聯絡日（名單的 nextContactDate）→ 獨立樣式的「下次聯絡」chip
                 if (isLead) {
                     const nd = leadValidDate(c.nextContactDate);
-                    if (nd && (atCat === 'ALL' || atCat === '客戶') && hit(c, '下次聯絡', '下次聯絡')) out.push({ c: c, h: { date: nd, content: '' }, idx: -1, start: nd, end: nd, method: '下次聯絡', ts: 9e15, src: 'n', pk: pk, time: '', cat: '客戶', xcat: '' });
+                    if (nd && hit(c, '下次聯絡', '下次聯絡 開發名單')) out.push({ c: c, h: { date: nd, content: '' }, idx: -1, start: nd, end: nd, method: '下次聯絡', ts: 9e15, kind: 'LEAD', src: 'n', time: '' });
                 }
             });
-            // v11：獨立行程（goals.planEvents）。只在「全部」範圍顯示；仍套用負責業務／搜尋／分類篩選
-            if (!(activeTagFilters.length > 0)) {
-                (atPlanRaw() || []).forEach(function (pe, pi) {
-                    if (!pe || typeof pe !== 'object') return;
-                    const ds = leadValidDate(pe.date); if (!ds) return;
-                    let end = leadValidDate(pe.endDate); if (!end || end < ds) end = ds;
-                    const pc = atEvtPseudo(pe);
-                    if (!matchAgentFilter(pc, fAgent)) return;
-                    if (!hit(pc, '', pe.content)) return;
-                    if (atCat !== 'ALL' && atCatOf(pe) !== atCat) return;
-                    const ts = /^pe-(\d+)/.exec(pe.id || '');
-                    out.push({ c: pc, h: pe, idx: -1, start: ds, end: end, method: '', ts: ts ? +ts[1] : 0, pk: '', src: 'e', time: atValidTime(pe.time), endTime: atValidTime(pe.time) ? atValidTime(pe.endTime) : '', cat: atCatOf(pe), xcat: atCatOf(pe) });
-                });
-            }
             out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : (a.time < b.time ? -1 : a.time > b.time ? 1 : 0) || (a.ts - b.ts) || String(a.c.name).localeCompare(String(b.c.name), 'zh-Hant'); });
             return out;
         }
         function atEvTitle(ev) {
-            return ev.start + (ev.time ? ' ' + ev.time : '') + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + (ev.src === 'e' ? '個人行程｜' : '') + ev.method + (ev.xcat ? '｜' + ev.xcat : '') + (atVisitOf(ev.h) ? '｜' + atVisitOf(ev.h) : '') + '\n' + (ev.h.content || '');
+            const tag = ev.src === 'n' ? '開發名單' : (ev.kind === 'LEAD' ? '開發名單' : '核心客戶');
+            return ev.start + (ev.time ? ' ' + ev.time : '') + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + tag + '｜' + ev.method + '\n' + (ev.h.content || '');
         }
-        function atNextColor() { return (typeof AT_CATS !== 'undefined' && AT_CATS['客戶']) || '#2563EB'; }      // 下次聯絡 chip 跟「客戶」同一個藍
+        const AT_LEAD_COLOR = '#E11D48';   // 開發名單／下次聯絡 的識別色（玫瑰紅）；核心客戶沿用深藍
         function atKindPill(ev) {
-            if (ev.src === 'e') return '<span class="at-kind at-kind-evt flex-shrink-0 px-1 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-300">個人行程</span>';
-            if (ev.src === 'n') return '<span class="at-kind at-kind-next flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>';
-            return '';
+            if (ev.src === 'n') return '<span class="at-kind at-kind-next flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>';
+            if (ev.kind === 'LEAD') return '<span class="at-kind at-kind-lead flex-shrink-0 px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>';
+            return '<span class="at-kind at-kind-core flex-shrink-0 px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>';
         }
         function atChipAttrs(ev) {
-            return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-time="' + esc(ev.time || '') + '" draggable="true" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
+            return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-kind="' + ev.kind + '" data-time="' + esc(ev.time || '') + '" draggable="true" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
         }
         function atChipHtml(ev, dayStr, mode) {
-            const isNext = ev.src === 'n', isEvt = ev.src === 'e';
-            const mcolor = AT_METHODS[ev.method] || '#64748B';
-            const color = isEvt ? atEvtColor(ev.cat) : ((ev.cat && AT_CATS[ev.cat]) || mcolor);
+            const isNext = ev.src === 'n', isLead = ev.kind === 'LEAD';
+            const color = isNext ? AT_LEAD_COLOR : (AT_METHODS[ev.method] || '#64748B');
             const multi = ev.end !== ev.start;
-            let dateTxt = mode === 'hour' ? atTimeTxt(ev) : ((ev.time ? atTimeTxt(ev) + ' ' : '') + atMD(ev.start) + (multi ? '~' + atMD(ev.end) : ''));
+            let dateTxt = mode === 'hour' ? (ev.time || '') : ((ev.time ? ev.time + ' ' : '') + atMD(ev.start) + (multi ? '~' + atMD(ev.end) : ''));
             let dayHint = '';
             if (multi && dayStr) { const n = Math.round((atParse(dayStr) - atParse(ev.start)) / 86400000) + 1, tot = Math.round((atParse(ev.end) - atParse(ev.start)) / 86400000) + 1; dayHint = ' <span class="text-slate-400">(第' + n + '/' + tot + '天)</span>'; }
             const unknown = ev.method === '未註明';
-            const skin = isNext ? 'bg-white border border-dashed border-sky-400 hover:border-sky-600' : (ev.cat === '個人' ? 'at-personal border border-slate-900 hover:border-[#D4AF37]' : 'bg-white border border-slate-200 hover:border-[#D4AF37]');
-            const right = (isNext || isEvt) ? '' : '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + mcolor + '"') + '>' + esc(ev.method) + '</span>';
-            const body = isEvt ? '' : isNext ? '<div class="text-sky-700">預定下次聯絡' + (ev.c.agentName ? '・' + esc(ev.c.agentName) : '') + '</div>'
+            const skin = isNext ? 'bg-white border border-dashed border-rose-400 hover:border-rose-600' : (isLead ? 'bg-rose-50/70 border border-rose-200 hover:border-rose-400' : 'bg-white border border-slate-200 hover:border-[#D4AF37]');
+            const right = isNext ? '' : '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + color + '"') + '>' + esc(ev.method) + '</span>';
+            const body = isNext ? '<div class="text-rose-700">預定下次聯絡' + (ev.c.agentName ? '・' + esc(ev.c.agentName) : '') + '</div>'
                 : '<div class="text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(String(ev.h.content || '').substring(0, 160)) + '</div>';
-            return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isEvt ? 'evt' : 'rec')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev) + '>' +
+            return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isLead ? 'lead' : 'core')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + '" ' + atChipAttrs(ev) + '>' +
                 '<div class="flex items-center gap-1 min-w-0 flex-wrap"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
-                '<span class="font-bold text-[#1E2E3D] ' + (isEvt ? 'break-words' : 'truncate') + '">' + esc(ev.c.name) + '</span>' + right + '</div>' +
-                '<div class="mt-0.5 flex items-center gap-1 flex-wrap">' + atKindPill(ev) + atCatPills(ev.h) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
+                '<span class="font-bold text-[#1E2E3D] truncate">' + esc(ev.c.name) + '</span>' + right + '</div>' +
+                '<div class="mt-0.5">' + atKindPill(ev) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
                 '</button>';
         }
         function atBarHtml(ev, colStart, colEnd, lane, weekStart, weekEnd) {
-            const color = (ev.cat && AT_CATS[ev.cat]) || AT_METHODS[ev.method] || '#64748B';
+            const isLead = ev.kind === 'LEAD';
+            const color = AT_METHODS[ev.method] || '#64748B';
             const clipL = ev.start < weekStart, clipR = ev.end > weekEnd;
-            return '<button type="button" class="at-chip at-bar at-chip-rec text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
-                'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2" ' + atChipAttrs(ev) + '>' +
-                (clipL ? '◀ ' : '') + (ev.xcat ? '[' + ev.xcat + '] ' : '') + (ev.time ? atTimeTxt(ev) + ' ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + (ev.src === 'e' ? '' : ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80))) + (clipR ? ' ▶' : '') + '</button>';
+            return '<button type="button" class="at-chip at-bar at-chip-' + (isLead ? 'lead' : 'core') + ' text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
+                'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2' + (isLead ? ';box-shadow:inset 0 -3px 0 ' + AT_LEAD_COLOR : '') + '" ' + atChipAttrs(ev) + '>' +
+                (clipL ? '◀ ' : '') + (isLead ? '[開發名單] ' : '') + (ev.time ? ev.time + ' ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80)) + (clipR ? ' ▶' : '') + '</button>';
         }
         function renderAirtableCalendar() {
             const area = document.getElementById('airtableArea');
             if (!area) return;
-            let keepNote = null;
-            const ae = document.activeElement;
-            if (ae && ae.classList && ae.classList.contains('at-note') && area.contains(ae)) {
-                const kd = ae.getAttribute('data-date');
-                if (ae.value !== atDayNote(kd)) keepNote = { date: kd, mobile: !!ae.getAttribute('data-mobile'), val: ae.value, s: ae.selectionStart, e: ae.selectionEnd };
-            }
             if (!atWeekStart) atWeekStart = atSunday(atToday());
             const ws = atWeekStart, we = atAdd(ws, 6), today = atToday();
             const info = atWeekInfo(ws);
@@ -5314,12 +4633,11 @@
                 let li = 0; while (lanes[li] && lanes[li].some(function (o) { return !(ce < o.cs || cs > o.ce); })) li++;
                 (lanes[li] = lanes[li] || []).push({ e: e, cs: cs, ce: ce });
             });
-            const custCount = new Set(inWeek.filter(function (e) { return e.src !== 'e'; }).map(function (e) { return e.pk || e.c.id; })).size;
+            const custCount = new Set(inWeek.map(function (e) { return e.c.id; })).size;
             const recWeek = inWeek.filter(function (e) { return e.src !== 'n'; }), nextCnt = inWeek.length - recWeek.length;
-            const evtRec = recWeek.filter(function (e) { return e.src === 'e'; }).length;
+            const leadRec = recWeek.filter(function (e) { return e.kind === 'LEAD'; }).length, coreRec = recWeek.length - leadRec;
             const unknownCnt = recWeek.filter(function (e) { return e.method === '未註明'; }).length;
-
-            const catBtn = function (k, label, color) { return '<button type="button" id="atCat' + (k === 'ALL' ? 'All' : k === '公事' ? 'Biz' : k === '客戶' ? 'Cust' : k === '個人' ? 'Pers' : 'Part') + '" data-cat="' + k + '" onclick="atSetCat(\'' + k + '\')" aria-pressed="' + (atCat === k) + '" class="at-cat-btn px-2.5 py-1.5 text-xs font-bold border-l first:border-l-0 border-slate-200 transition ' + (atCat === k ? 'text-white' : 'bg-white text-slate-500 hover:bg-slate-100') + '"' + (atCat === k ? ' style="background:' + color + '"' : '') + '>' + (k === 'ALL' ? '' : '<span class="inline-block w-2 h-2 rounded-full mr-1 align-middle" style="background:' + (atCat === k ? '#fff' : color) + '"></span>') + label + '</button>'; };
+            const kindBtn = function (k, label, cls) { return '<button type="button" id="atKind' + k + '" data-kind="' + k + '" onclick="atSetKind(\'' + k + '\')" aria-pressed="' + (atKind === k) + '" class="at-kind-btn px-2.5 py-1.5 text-xs font-bold border-l first:border-l-0 border-slate-200 transition ' + (atKind === k ? cls : 'bg-white text-slate-500 hover:bg-slate-100') + '">' + label + '</button>'; };
             const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 0 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
 
             // ---- 工具列 ----
@@ -5331,7 +4649,6 @@
                             '<button id="atNext" type="button" onclick="atNav(1)" class="px-3 py-2 hover:bg-slate-100 text-[#1E2E3D] border-l border-slate-200" title="下一週"><i class="fa-solid fa-chevron-right"></i></button>' +
                         '</div>' +
                         '<button id="atToday" type="button" onclick="atGoToday()" class="px-3 py-2 rounded-lg text-sm font-bold border border-[#D4AF37] text-[#8a6d0a] bg-amber-50 hover:bg-amber-100 transition"><i class="fa-solid fa-location-crosshairs mr-1"></i>今天 / 本週</button>' +
-                        '<button id="atPhotoBtn" type="button" onclick="atOpenPhoto()" class="px-3 py-2 rounded-lg text-sm font-bold bg-[#1E2E3D] text-white hover:bg-[#2C3E50] transition" title="拍照或選擇手寫週計畫，AI 辨識後預覽核對再寫入">📷 上傳手寫週計畫</button>' +
                         '<div class="ml-1"><h2 id="atTitle" class="font-bold font-editorial text-lg text-slate-800 leading-tight">' + ws.replace(/-/g, '/') + ' – ' + atMD(we) + '</h2>' +
                         '<p id="atWeekNo" class="text-xs text-slate-500">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
                     '</div>' +
@@ -5342,12 +4659,11 @@
                     '</div>' +
                 '</div>' +
                 '<div class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">' +
-                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + recWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (evtRec ? '（含個人行程 ' + evtRec + ' 筆）' : '') + (nextCnt ? ' · ' + nextCnt + ' 個下次聯絡' : '') + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
-
-                    '<div id="atCatFilter" class="flex items-center border border-slate-200 rounded-lg overflow-hidden" role="group" aria-label="分類">' + catBtn('ALL', '全部分類', '#1E2E3D') + catBtn('公事', '公事', AT_CATS['公事']) + catBtn('客戶', '客戶', AT_CATS['客戶']) + catBtn('夥伴', '夥伴', AT_CATS['夥伴']) + catBtn('個人', '個人', AT_CATS['個人']) + '</div>' +
-                    '<span class="flex items-center gap-1"><span class="at-kind px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span></span>' +
+                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + recWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (leadRec ? '（開發名單紀錄 ' + leadRec + ' ／ 核心客戶紀錄 ' + coreRec + '）' : '') + (nextCnt ? ' · ' + nextCnt + ' 個下次聯絡' : '') + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
+                    '<div id="atKindFilter" class="flex items-center border border-slate-200 rounded-lg overflow-hidden" role="group" aria-label="顯示範圍">' + kindBtn('ALL', '全部', 'bg-[#1E2E3D] text-white') + kindBtn('LEAD', '只看開發名單', 'bg-rose-600 text-white') + kindBtn('CORE', '只看核心客戶', 'bg-[#1E2E3D] text-white') + '</div>' +
+                    '<span class="flex items-center gap-1"><span class="at-kind px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span><span class="at-kind px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span><span class="at-kind px-1 rounded text-[9px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span></span>' +
                     Object.keys(AT_METHODS).map(function (m) { return '<span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:' + AT_METHODS[m] + '"></span>' + m + '</span>'; }).join('') +
-                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上；每天最下方可寫備注；紅＝公事、藍＝客戶、綠＝夥伴、黑＝個人</span>' +
+                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上</span>' +
                 '</div></div>';
 
             // ---- 桌機：7 欄週格 ----
@@ -5383,11 +4699,6 @@
                         evs.map(function (e) { return atChipHtml(e, null, 'hour'); }).join('') + (evs.length ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
                 });
             }
-            // ---- v10：每日備注列（23:00 列之下，每天一格）----
-            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div></div>';
-            days.forEach(function (d, i) {
-                html += '<div class="at-notecell border-r border-slate-100 p-1 ' + dayBg(d, i) + '" style="border-top:2px solid #94a3b8" data-date="' + d + '">' + atNoteHtml(d, false) + '</div>';
-            });
             html += '</div></div>';
 
             // ---- 手機：逐日堆疊 ----
@@ -5397,19 +4708,11 @@
                 const dd = atParse(d);
                 html += '<div class="at-mday bg-white rounded-xl border ' + (d === today ? 'border-[#D4AF37]' : 'border-slate-200') + ' overflow-hidden" data-date="' + d + '">' +
                     '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="flex items-center gap-2"><span class="text-xs opacity-80">' + evs.length + ' 筆</span><button type="button" class="at-madd px-2 py-0.5 rounded-md text-xs font-bold bg-[#D4AF37] text-white" onclick="atOpenAdd(\'' + d + '\', \'\')" title="在這天新增紀錄"><i class="fa-solid fa-plus"></i> 新增</button></span></div>' +
-                    '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div>' +
-                    '<div class="at-mnote px-2 pb-2"><div class="text-[10px] font-bold text-slate-400 mb-0.5">備注</div>' + atNoteHtml(d, true) + '</div></div>';
+                    '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div></div>';
             });
             html += '</div>';
-            atNoteMute = true;
-            try { area.innerHTML = html; } finally { atNoteMute = false; }
+            area.innerHTML = html;
             atBindDnd(area);
-            atFitNotes();
-            if (keepNote) {                                           // 還原使用者輸入到一半的草稿與游標
-                const box = keepNote.mobile ? area.querySelector('#atMobile') : area.querySelector('#atTimeGrid');
-                const ta = box && Array.prototype.find.call(box.querySelectorAll('textarea.at-note'), function (x) { return x.getAttribute('data-date') === keepNote.date; });
-                if (ta) { ta.value = keepNote.val; atNoteFit(ta); try { ta.focus(); ta.setSelectionRange(keepNote.s, keepNote.e); } catch (x) {} }
-            }
         }
         function atNav(n) { if (!atWeekStart) atWeekStart = atSunday(atToday()); atWeekStart = atAdd(atWeekStart, 7 * n); renderAirtableCalendar(); }
         function atGoToday() { atWeekStart = atSunday(atToday()); renderAirtableCalendar(); }
@@ -5419,8 +4722,8 @@
             if (!(y >= 1900 && y <= 2200) || !(w >= 1 && w <= 53)) { showToast('請輸入正確的年份與週次 (1–53)', 'error'); return; }
             atWeekStart = atSundayOfYearWeek(y, w); renderAirtableCalendar();
         }
+        function atSetKind(k) { atKind = (k === 'LEAD' || k === 'CORE') ? k : 'ALL'; renderAirtableCalendar(); }
         function atOpenDetail(el) {
-            if (el.getAttribute('data-src') === 'e') return atOpenEvtDetail(el);
             const c = customers.find(function (x) { return x.id === el.getAttribute('data-cid'); });
             if (!c) return;
             const src = el.getAttribute('data-src') || 'h', hi = +el.getAttribute('data-hi');
@@ -5430,13 +4733,13 @@
             else if (src === 'c') h = Array.isArray(c.contacts) ? c.contacts[hi] : null;
             else h = c.history ? c.history[hi] : null;
             if (!h) return;
-            const method = src === 'n' ? '下次聯絡' : atMethodOf(h), color = src === 'n' ? atNextColor() : (AT_METHODS[method] || '#64748B'), end = (h.endDate && h.endDate > h.date) ? h.endDate : '';
-            const kindBadge = '';
+            const method = src === 'n' ? '下次聯絡' : atMethodOf(h), color = src === 'n' ? AT_LEAD_COLOR : (AT_METHODS[method] || '#64748B'), end = (h.endDate && h.endDate > h.date) ? h.endDate : '';
+            const kindBadge = isLead ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>' : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>';
             const methodBadge = src === 'n'
-                ? '<span class="px-2 py-0.5 rounded text-xs font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>'
+                ? '<span class="px-2 py-0.5 rounded text-xs font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>'
                 : '<span class="px-2 py-0.5 rounded text-xs font-bold ' + (method === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (method === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(method) + '</span>';
             const ttl = document.getElementById('airtableDetailTitle');
-            if (ttl) ttl.innerHTML = '<i class="fa-solid ' + (isLead ? 'fa-seedling' : 'fa-clipboard-list') + ' text-[#D4AF37]"></i> ' + (isLead ? (src === 'n' ? '下次聯絡' : '聯絡紀錄') : '跟進紀錄');
+            if (ttl) ttl.innerHTML = '<i class="fa-solid ' + (isLead ? 'fa-seedling' : 'fa-clipboard-list') + ' text-[#D4AF37]"></i> ' + (isLead ? (src === 'n' ? '開發名單｜下次聯絡' : '開發名單｜聯絡紀錄') : '跟進紀錄');
             let extra = '';
             if (isLead) {
                 const st = LEAD_STAGE_MAP[leadStageOf(c)];
@@ -5450,20 +4753,18 @@
                 '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D] flex items-center gap-2 min-w-0"><span class="truncate">' + esc(c.name) + '</span>' + kindBadge + '</p>' + methodBadge + '</div>' +
                 '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
                     '<div><span class="font-bold">' + (src === 'n' ? '下次聯絡日：' : '日期：') + '</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
-                    (src !== 'n' && atValidTime(h.time) ? '<div><span class="font-bold">時間：</span>' + esc(atValidTime(h.time) + (atValidTime(h.endTime) ? '–' + atValidTime(h.endTime) : '')) + '</div>' : '') +
-                    (src !== 'n' && (atCatOf(h) || atVisitOf(h)) ? '<div class="col-span-2 flex items-center gap-1 flex-wrap"><span class="font-bold">分類：</span>' + atCatPills(h) + '</div>' : '') +
+                    (src !== 'n' && atValidTime(h.time) ? '<div><span class="font-bold">時間：</span>' + esc(atValidTime(h.time)) + '</div>' : '') +
                     (src === 'h' && h.progress ? '<div><span class="font-bold">狀態：</span>' + esc(atProgLabel(h.progress)) + '</div>' : '') +
                     '<div><span class="font-bold">負責業務：</span>' + (c.agentName ? esc(c.agentName) : '個人') + '</div>' +
                     (c.phone ? '<div><span class="font-bold">電話：</span>' + esc(c.phone) + '</div>' : '') + extra +
                 '</div>' +
                 (src === 'n'
-                    ? '<div id="atDetailContent" class="bg-sky-50 border border-dashed border-sky-300 rounded-xl p-3 text-sky-700">這是名單設定的「下次聯絡日」提醒，不是已發生的聯絡紀錄。</div>'
+                    ? '<div id="atDetailContent" class="bg-rose-50 border border-dashed border-rose-300 rounded-xl p-3 text-rose-700">這是名單設定的「下次聯絡日」提醒，不是已發生的聯絡紀錄。</div>'
                     : '<div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 whitespace-pre-wrap break-words">' + esc(h.content || '') + '</div>');
             const ebtn = document.getElementById('airtableDetailEditBtn');
             ebtn.innerHTML = src === 'n' ? '<i class="fa-regular fa-calendar-check"></i> 調整日期' : '<i class="fa-regular fa-pen-to-square"></i> 編輯';
             ebtn.onclick = function () { closeModal('airtableDetailModal'); atOpenEdit(c.id, src, hi); };
             const btn = document.getElementById('airtableDetailOpenBtn');
-            btn.style.display = '';
             if (isLead) {
                 btn.innerHTML = '<i class="fa-regular fa-comments"></i> 開啟聯絡紀錄';
                 btn.onclick = function () { closeModal('airtableDetailModal'); openLeadContacts(c.id); };
@@ -5556,10 +4857,10 @@
                 if (eEl && eEl.value && h.date && eEl.value > h.date) h.endDate = eEl.value;
                 const tEl = document.getElementById('historyTime'); if (tEl && atValidTime(tEl.value)) h.time = atValidTime(tEl.value);   // v9：選填時間
             }
-            nxtSet(c, document.getElementById('historyNextContact').value);
+            c.nextContactDate = document.getElementById('historyNextContact').value;
 
             if (pSel === 'WON') {
-                c.category = 'WON'; c.progress = ''; nxtSet(c, ''); 
+                c.category = 'WON'; c.progress = ''; c.nextContactDate = ''; 
                 c.policyName = document.getElementById('historyPolicyName').value; c.insuranceCompany = document.getElementById('historyInsuranceCompany').value; c.productType = document.getElementById('historyProductType').value;
                 c.premium = document.getElementById('historyPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('historyFyc').value.replace(/,/g, '');
                 c.commissionRate = document.getElementById('historyCommissionRate').value; c.rankRate = document.getElementById('historyRankRate').value; c.commission = document.getElementById('historyCommission').value.replace(/,/g, '');
