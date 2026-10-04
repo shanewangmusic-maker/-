@@ -1625,8 +1625,8 @@
 
         function renderApp() {
             var steps = [
-                ['業務員篩選', renderAgentFilter],
                 ['期間篩選', populatePeriodFilter],
+                ['業務員篩選', renderAgentFilter],
                 ['標籤篩選', renderTagDropdownFilter],
                 ['待辦提醒', renderActionCenter],
                 ['業績統計', renderStats],
@@ -1745,9 +1745,7 @@
             const filterEl = document.getElementById('globalPeriodFilter'); const currentVal = filterEl.value;
             const now = new Date(); const curY = String(now.getFullYear()); const curM = String(now.getMonth() + 1).padStart(2, '0');
             const monthCount = {}; const years = new Set([curY]);
-            // 月份小數字：跟隨「負責業務」篩選（與客戶列表共用 matchAgentFilter）；年份膠囊仍以全部資料為準
-            const fAgentPicker = document.getElementById('filterAgent')?.value || 'ALL';
-            customers.forEach(c => { const p = getPeriod(c); if (/^\d{4}-\d{2}$/.test(p)) { years.add(p.substring(0, 4)); if (matchAgentFilter(c, fAgentPicker)) monthCount[p] = (monthCount[p] || 0) + 1; } });
+            customers.forEach(c => { const p = getPeriod(c); if (/^\d{4}-\d{2}$/.test(p)) { monthCount[p] = (monthCount[p] || 0) + 1; years.add(p.substring(0, 4)); } });
             customPeriods.forEach(p => { if (/^\d{4}-\d{2}$/.test(p)) { if (!monthCount[p]) monthCount[p] = 0; years.add(p.substring(0, 4)); } });
             const yearList = Array.from(years).sort();
             let opts = '';
@@ -1758,11 +1756,10 @@
             filterEl.innerHTML = opts;
             const valid = Array.from(filterEl.options).some(o => o.value === currentVal);
             filterEl.value = valid ? currentVal : `${curY}-${curM}`; // 預設：本月
-            renderPeriodPicker(yearList, monthCount, curY, curM, fAgentPicker);
+            renderPeriodPicker(yearList, monthCount, curY, curM);
         }
 
-        function renderPeriodPicker(yearList, monthCount, curY, curM, fAgent) {
-            fAgent = fAgent || document.getElementById('filterAgent')?.value || 'ALL';
+        function renderPeriodPicker(yearList, monthCount, curY, curM) {
             const val = document.getElementById('globalPeriodFilter').value;
             const isYear = val.startsWith('YEAR_');
             const selYear = isYear ? val.replace('YEAR_', '') : val.split('-')[0];
@@ -1781,16 +1778,15 @@
             let html = '';
             for (let i = 1; i <= 12; i++) {
                 const m = String(i).padStart(2, '0'); const key = `${selYear}-${m}`;
-                const cnt = monthCount[key]; const has = (fAgent === 'ALL') ? (cnt !== undefined) : (cnt > 0);
+                const cnt = monthCount[key]; const has = cnt !== undefined;
                 const isSel = !isYear && m === selMonth; const isCur = (selYear === curY && m === curM);
                 let cls = 'relative py-1.5 rounded-lg text-sm border transition leading-tight ';
                 if (isSel) cls += 'bg-[#1E2E3D] text-white border-[#1E2E3D] font-bold ';
                 else if (has) cls += 'bg-slate-100 text-[#1E2E3D] border-slate-300 font-bold hover:bg-slate-200 ';
                 else cls += 'bg-white text-slate-400 border-slate-200 font-medium hover:bg-slate-50 ';
                 if (isCur) cls += 'ring-2 ring-[#D4AF37] ring-offset-1 ';
-                if (fAgent !== 'ALL' && !has && !isSel) cls += 'opacity-50 ';
                 const badge = (has && cnt > 0) ? `<span class="block text-[10px] ${isSel ? 'text-slate-200' : 'text-slate-500'} font-normal">${cnt}</span>` : '<span class="block text-[10px] opacity-0">0</span>';
-                html += `<button type="button" data-period="${key}" data-has-data="${has ? 1 : 0}" data-count="${cnt || 0}" data-current="${isCur ? 1 : 0}" onclick="selectPeriodMonth('${key}')" class="${cls}">${i}月${badge}</button>`;
+                html += `<button type="button" data-period="${key}" data-has-data="${has ? 1 : 0}" data-current="${isCur ? 1 : 0}" onclick="selectPeriodMonth('${key}')" class="${cls}">${i}月${badge}</button>`;
             }
             document.getElementById('periodMonthGrid').innerHTML = html;
         }
