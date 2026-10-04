@@ -135,7 +135,7 @@
 
             <div id="crmBody">
             <!-- 年度/月份 統整切換區 (全域共用) -->
-            <div id="periodCard" class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-slate-200 mb-6 flex flex-col gap-3 premium-shadow relative overflow-hidden">
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-slate-200 mb-6 flex flex-col gap-3 premium-shadow relative overflow-hidden">
                 <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#1E2E3D]"></div>
                 <div class="flex items-center justify-between gap-3 pl-2">
                     <div class="flex items-center gap-3 min-w-0">
@@ -190,9 +190,6 @@
                 </div>
             </div>
 
-            <!-- 一畝田：階段頁籤 + 比例統整 + 本月生日（僅開發名單庫顯示，內容由 renderLeadsView 產生） -->
-            <div id="leadTopArea" class="hidden mb-4"></div>
-
             <!-- 篩選工具列「吸頂」 -->
             <div class="sticky top-2 z-30 bg-white/95 backdrop-blur-md rounded-xl p-3 md:p-4 shadow-md border border-slate-200 mb-6 flex flex-col gap-3 md:gap-4 premium-shadow transition-all duration-300" id="filterBar">
                 <div class="w-full flex flex-col lg:flex-row justify-between items-center gap-3 md:gap-4">
@@ -223,7 +220,7 @@
                             <button onclick="toggleViewMode('list')" id="viewBtnList" class="px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700"><i class="fa-solid fa-list"></i> 列表</button>
                         </div>
 
-                        <div id="sortByWrap" class="flex items-center gap-1 text-sm text-slate-500">
+                        <div class="flex items-center gap-1 text-sm text-slate-500">
                             <i class="fa-solid fa-sort"></i>
                             <select id="sortBy" onchange="renderApp()" class="border-none bg-transparent font-bold text-[#1E2E3D] focus:outline-none cursor-pointer">
                                 <option value="newest">最新建檔</option>
@@ -262,7 +259,7 @@
                             </div>
 
                             <!-- 商品種類篩選 (依成交商品) -->
-                            <span id="productTypeLabel" class="text-xs font-bold text-slate-500 flex items-center gap-1.5 flex-shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
+                            <span class="text-xs font-bold text-slate-500 flex items-center gap-1.5 flex-shrink-0 pl-1 sm:pl-2 sm:border-l sm:border-slate-200">
                                 <i class="fa-solid fa-box-open text-slate-400"></i> 商品種類：
                             </span>
                             <select id="filterProductType" onchange="renderApp()" class="px-2 py-1.5 md:py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] bg-white cursor-pointer h-[34px] md:h-[38px] flex-shrink-0">
@@ -276,7 +273,7 @@
 
                             <!-- 冷名單/待定流失庫 專用階段篩選 -->
                             <div id="filterLastStageContainer" class="hidden items-center gap-1.5 flex-shrink-0 pl-1 sm:pl-2">
-                                <span id="lastStageLabel" class="text-xs font-bold text-slate-500 hidden sm:inline-block">階段：</span>
+                                <span class="text-xs font-bold text-slate-500 hidden sm:inline-block">階段：</span>
                                 <select id="filterLastStage" onchange="renderApp()" class="px-2 py-1.5 md:py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] bg-white cursor-pointer h-[34px] md:h-[38px]">
                                     <option value="ALL">所有階段</option>
                                     <option value="CONTACT">接觸 📞</option>
@@ -335,8 +332,6 @@
 
         <!-- 全域 Datalist 提供業務員快速選取 (防呆機制) -->
         <datalist id="agentList"></datalist>
-        <datalist id="leadSourceList"></datalist>
-        <datalist id="leadRegionList"></datalist>
 
         <!-- ==================== MODALS 彈出視窗 ==================== -->
         
@@ -775,65 +770,6 @@
             </div>
         </div>
 
-        <!-- 開發名單庫：新增 / 編輯名單 Modal（一畝田） -->
-        <div id="leadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4">
-            <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial text-lg flex items-center gap-2"><i class="fa-solid fa-seedling text-[#D4AF37]"></i> <span id="leadModalTitle">新增名單</span></h3>
-                    <button type="button" onclick="closeModal('leadModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <form id="leadForm" onsubmit="handleLeadSave(event)" class="flex flex-col flex-1 overflow-hidden">
-                    <input type="hidden" id="leadId">
-                    <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label><input type="text" id="leadName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] font-medium"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">準客戶來源 <span class="font-normal text-slate-400">(可自由輸入，亦可選擇既有)</span></label><input type="text" id="leadSource" list="leadSourceList" autocomplete="off" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">一畝田階段</label>
-                            <div id="leadStageBtns" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">地區</label><input type="text" id="leadRegion" list="leadRegionList" autocomplete="off" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">生日</label><input type="date" id="leadBirthday" onchange="leadSyncBirthUi()" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">生日月 <span class="font-normal text-slate-400">(有生日自動帶入)</span></label>
-                                <select id="leadBirthMonth" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white disabled:bg-slate-100 disabled:text-slate-500">
-                                    <option value="">未填</option>
-                                    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-                                    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(可複選；選 F 可再選 F1–F5)</span></label>
-                            <div id="leadClsBox"></div>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">聯絡電話</label><input type="text" id="leadPhone" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">公司或職稱</label><input type="text" id="leadCompany" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                        </div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><textarea id="leadNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">下次提醒日</label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">按「啟用」後進入</label>
-                                <select id="leadLastStage" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
-                                    <option value="NURTURE">經營 🌱(自介)</option><option value="FIRST_VISIT">初訪 🤝</option><option value="KEY_VISIT">關鍵訪 🎯</option>
-                                </select>
-                            </div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">負責業務員</label><input type="text" id="leadAgent" list="agentList" autocomplete="off" placeholder="留白 = 個人" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        </div>
-                    </div>
-                    <div class="px-4 sm:px-5 py-3 border-t bg-slate-50 flex items-center justify-between gap-2 flex-shrink-0">
-                        <button type="button" id="leadDeleteBtn" onclick="leadDeleteFromModal()" class="hidden px-3 py-2 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold transition"><i class="fa-solid fa-trash-can"></i> 刪除</button>
-                        <div class="flex gap-2 ml-auto">
-                            <button type="button" onclick="closeModal('leadModal')" class="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-sm font-bold">取消</button>
-                            <button type="submit" id="leadSaveBtn" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-sm">儲存</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
         <!-- 4. 確認刪除彈窗 -->
         <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
             <div class="bg-white rounded-xl w-full max-w-sm shadow-2xl p-6 text-center">
@@ -894,24 +830,6 @@
         </div>
 
         <!-- 6. 新增月份 Modal -->
-        <!-- ===== 匯入 Excel 預覽 ===== -->
-        <div id="xlsPreviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-3 sm:p-4">
-            <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial text-lg flex items-center gap-2"><i class="fa-solid fa-file-excel text-[#D4AF37]"></i> 匯入 Excel・預覽</h3>
-                    <button type="button" onclick="xlsCancel()" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div id="xlsPreviewBody" class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-sm"></div>
-                <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
-                    <p class="text-[11px] text-slate-500">確認前不會寫入任何資料；匯入後可按上方「還原」一步回到匯入前。</p>
-                    <div class="flex gap-2">
-                        <button type="button" id="xlsCancelBtn" onclick="xlsCancel()" class="px-4 py-2 rounded-lg text-sm font-bold bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 transition">取消</button>
-                        <button type="button" id="xlsConfirmBtn" onclick="xlsConfirm()" class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">確認匯入</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div id="addPeriodModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-sm p-6"><form id="addPeriodForm" onsubmit="handleAddPeriod(event)"><input type="number" id="addPeriodYear" class="w-full px-3 py-2 mb-3 border rounded-lg" placeholder="年份"><select id="addPeriodMonth" class="w-full px-3 py-2 border rounded-lg mb-4 bg-white"><option value="01">1月</option><option value="02">2月</option><option value="03">3月</option><option value="04">4月</option><option value="05">5月</option><option value="06">6月</option><option value="07">7月</option><option value="08">8月</option><option value="09">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select><div class="flex justify-end gap-2"><button type="button" onclick="closeModal('addPeriodModal')" class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">取消</button><button type="submit" class="px-4 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">新增</button></div></form></div>
         </div>
@@ -1252,17 +1170,6 @@
 
             if (crmBody) crmBody.style.display = 'block';
 
-            // 開發名單庫改用一畝田版面：隱藏不適用的全域控制項（年月統整卡、商品種類、共用排序），搜尋框改提示
-            const isLeadsTab = (tab === 'LEADS');
-            ['periodCard', 'productTypeLabel', 'filterProductType', 'sortByWrap'].forEach(function (eid) {
-                const el = document.getElementById(eid); if (el) el.style.display = isLeadsTab ? 'none' : '';
-            });
-            const leadTop = document.getElementById('leadTopArea'); if (leadTop && !isLeadsTab) leadTop.classList.add('hidden');
-            const lsLabel = document.getElementById('lastStageLabel'); if (lsLabel) lsLabel.textContent = isLeadsTab ? '啟用後階段：' : '階段：';
-            const lsSel = document.getElementById('filterLastStage'); if (lsSel && lsSel.options[0]) lsSel.options[0].text = isLeadsTab ? '啟用後階段(全部)' : '所有階段';
-            const searchEl = document.getElementById('searchInput');
-            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : '搜尋姓名、電話、商品、保單、備註...';
-
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
             
@@ -1439,107 +1346,34 @@
             }
         };
 
-        // ---- CSV 解析 / 欄位轉換（供 handleCsvImport 使用；向下相容舊 4 欄範本） ----
-        function leadParseCsv(text) {
-            text = String(text || '').replace(/^\uFEFF/, '');
-            const rows = []; let row = [], cur = '', q = false;
-            for (let i = 0; i < text.length; i++) {
-                const ch = text[i];
-                if (q) {
-                    if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
-                    else cur += ch;
-                } else if (ch === '"') q = true;
-                else if (ch === ',') { row.push(cur); cur = ''; }
-                else if (ch === '\n' || ch === '\r') {
-                    if (ch === '\r' && text[i + 1] === '\n') i++;
-                    row.push(cur); cur = ''; rows.push(row); row = [];
-                } else cur += ch;
-            }
-            if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
-            return rows.map(r => r.map(x => x.trim())).filter(r => r.some(x => x !== ''));
-        }
-        function leadParseStage(v) {
-            const s = String(v || '').normalize('NFKC').trim();
-            if (!s) return '';
-            if (LEAD_STAGE_MAP[s.toUpperCase()]) return s.toUpperCase();
-            const m = /^0?([1-4])(?!\d)/.exec(s);
-            if (m) return LEAD_STAGES[+m[1] - 1].key;
-            if (s.indexOf('結果') >= 0) return 'FRUIT';
-            if (s.indexOf('茁長') >= 0) return 'GROW';
-            if (s.indexOf('樹苗') >= 0) return 'SAPLING';
-            if (s.indexOf('樹種') >= 0) return 'SEED';
-            return '';
-        }
-        function leadParseCls(v) {
-            const out = [];
-            String(v || '').normalize('NFKC').toUpperCase().split(/[\s;；,，、|/]+/).forEach(t => {
-                const m = /^([A-F])([1-5])?/.exec(t);
-                if (!m) return;
-                if (m[2]) { if (out.indexOf('F') < 0) out.push('F'); if (m[1] === 'F' && out.indexOf('F' + m[2]) < 0) out.push('F' + m[2]); }
-                else if (out.indexOf(m[1]) < 0) out.push(m[1]);
-            });
-            return out;
-        }
-        function leadParseBirth(v, monthCol) {
-            const s = String(v || '').normalize('NFKC').trim();
-            const pad = n => String(n).padStart(2, '0');
-            let m;
-            if ((m = /^(\d{4})[-\/.年](\d{1,2})[-\/.月](\d{1,2})/.exec(s)) && +m[2] >= 1 && +m[2] <= 12 && +m[3] >= 1 && +m[3] <= 31) return { birthday: `${m[1]}-${pad(m[2])}-${pad(m[3])}`, month: +m[2] };
-            if ((m = /^(\d{1,2})[-\/.月](\d{1,2})日?$/.exec(s)) && +m[1] >= 1 && +m[1] <= 12 && +m[2] >= 1 && +m[2] <= 31) return { birthday: `1900-${pad(m[1])}-${pad(m[2])}`, month: +m[1] }; // 只知道月/日：年份以 1900 佔位
-            const mm = parseInt(String(monthCol || s).replace(/月/g, ''), 10);
-            if (mm >= 1 && mm <= 12) return { birthday: '', month: mm };
-            return { birthday: '', month: 0 };
-        }
-
         function handleCsvImport(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const rows = leadParseCsv(evt.target.result);
+                const text = evt.target.result;
+                const rows = text.split('\n').filter(r => r.trim() !== '');
                 if(rows.length <= 1) return showToast('CSV 格式錯誤或無資料', 'error');
-
-                // 依標題列對應欄位；若沒有「姓名」標題，退回舊版位置格式（姓名,電話,公司,備註）
-                const norm = s => String(s || '').replace(/[\s\u3000]/g, '');
-                const alias = {
-                    name: ['姓名', '名字'], phone: ['聯絡電話', '電話', '手機'], company: ['公司或職稱', '公司', '職稱'], notes: ['其他備註', '備註'],
-                    source: ['準客戶來源', '來源'], stage: ['一畝田階段', '一畝田', '階段'], region: ['地區'], birthday: ['生日'], bmonth: ['生日月'], cls: ['分類', '分類標籤']
-                };
-                const head = rows[0].map(norm);
-                const col = {};
-                Object.keys(alias).forEach(k => { const ix = head.findIndex(h => alias[k].indexOf(h) >= 0); if (ix >= 0) col[k] = ix; });
-                if (col.name === undefined) { col.name = 0; col.phone = 1; col.company = 2; col.notes = 3; }
-                const get = (cols, k) => (col[k] !== undefined ? (cols[col[k]] || '') : '').trim();
-
+                
                 let count = 0;
-                const stamp = Date.now();
                 for(let i = 1; i < rows.length; i++) {
-                    const cols = rows[i];
-                    const name = get(cols, 'name');
-                    if(!name) continue;
-                    const bi = leadParseBirth(get(cols, 'birthday'), get(cols, 'bmonth'));
-                    const lead = {
-                        id: 'cust-' + stamp + '-' + i + '-' + Math.random().toString(36).slice(2, 7),
-                        name: name,
-                        phone: get(cols, 'phone'),
-                        company: get(cols, 'company'),
-                        notes: get(cols, 'notes'),
-                        agentName: '', // CSV 匯入預設為個人業績
-                        category: 'NEW',
-                        progress: 'LEAD',
-                        lastStage: 'NURTURE',
-                        createdAt: new Date().toISOString(),
-                        tags: [], history: [],
-                        // 一畝田新欄位（舊版 4 欄 CSV 時為預設值）
-                        acreStage: leadParseStage(get(cols, 'stage')) || 'SAPLING',
-                        source: get(cols, 'source'),
-                        region: get(cols, 'region'),
-                        birthday: bi.birthday,
-                        leadCls: leadParseCls(get(cols, 'cls'))
-                    };
-                    if (bi.month) lead.birthMonth = bi.month;
-                    customers.push(lead);
-                    count++;
+                    const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                    if(cols[0]) {
+                        customers.push({
+                            id: 'cust-' + Date.now() + Math.random(),
+                            name: cols[0],
+                            phone: cols[1] || '',
+                            company: cols[2] || '',
+                            notes: cols[3] || '',
+                            agentName: '', // CSV 匯入預設為個人業績
+                            category: 'NEW',
+                            progress: 'LEAD',
+                            lastStage: 'NURTURE', 
+                            createdAt: new Date().toISOString(),
+                            tags: [], history: []
+                        });
+                        count++;
+                    }
                 }
                 recordState();
                 renderApp();
@@ -1550,429 +1384,12 @@
         }
 
         function downloadCsvTemplate() {
-            // 前 4 欄與舊版範本相同（向下相容）；後 5 欄為一畝田新欄位。分類可填 A–F、F1–F5，多個以 ; 分隔
-            const csvContent = "\uFEFF姓名,聯絡電話,公司或職稱,其他備註,準客戶來源,一畝田階段,地區,生日,分類\n" +
-                "陳大明,0912345678,科技公司採購,活動問卷取得名單,朋友,03樹苗,台北,1985-10-12,A;B\n" +
-                "王小美,0987654321,自營商,名單來源B,轉介紹,02茁長的樹,台中,5/20,A;F;F1;F3\n" +
-                "李小華,,,,家人,01已結果的樹,新北,,E";
+            const csvContent = "\uFEFF姓名,聯絡電話,公司或職稱,其他備註\n陳大明,0912345678,科技公司採購,活動問卷取得名單\n王小美,0987654321,自營商,名單來源B";
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = "開發名單批次匯入範本.csv";
             link.click();
-        }
-
-
-        // =====================================================================
-        // 匯入 Excel（我的一畝田）—— 瀏覽器端解析 → 預覽 → 確認後合併
-        // 規則：同名(去空白)更新；Excel 有填的欄位覆蓋、空白保留系統值；分類旗標只有該列有任何標記才取代；
-        //       系統裡有、Excel 沒有的人不動不刪；同名重複 → 衝突，預設跳過，逐列可選。
-        // 寫入走 recordState()（與其他編輯相同：雲端同步 + 還原）。
-        // =====================================================================
-        const XLS_CDN = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-        const XLS_SHEET = '我的一畝田';
-        const XLS_HEADERS = ['準客戶來源', '姓名', '一畝田', '備註', '日曆📆', '地區', '生日月', '生日', 'A未來12個月可持續開拓', 'B高淨值', 'C一般', 'D需移除', 'E轉介紹 中心', 'F可招募(新苗圃)', 'F1.12個月內可加入', 'F2.可持續經營', 'F3.邀約說明會或面談', 'F4.邀約活動', 'F5.可移除'];
-        const XLS_FLAG_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'F1', 'F2', 'F3', 'F4', 'F5'];
-        let xlsPlan = null;
-
-        function xlsLoadLib() {
-            return new Promise(function (resolve, reject) {
-                if (window.XLSX) return resolve(window.XLSX);
-                const el = document.createElement('script');
-                el.src = XLS_CDN; el.async = true;
-                el.onload = function () { window.XLSX ? resolve(window.XLSX) : reject(new Error('XLSX missing')); };
-                el.onerror = function () { el.remove(); reject(new Error('load failed')); };
-                document.head.appendChild(el);
-            });
-        }
-        const xlsNorm = s => String(s == null ? '' : s).normalize('NFKC').replace(/[\s\u3000]/g, '').toUpperCase();
-        const xlsNameKey = s => String(s == null ? '' : s).replace(/[\s\u3000]/g, '');
-        const xlsPad = n => String(n).padStart(2, '0');
-
-        // 表頭 → 欄位種類。未知欄位（含 V–Y 的樞紐/統計欄，例如「01已結果的樹」）回傳 null 並被忽略
-        function xlsHeaderKind(h) {
-            const n = xlsNorm(h);
-            if (!n) return null;
-            const exact = {
-                '姓名': 'name', '名字': 'name', '準客戶來源': 'source', '來源': 'source',
-                '一畝田': 'stage', '一畝田階段': 'stage', '階段': 'stage', '備註': 'notes', '其他備註': 'notes',
-                '地區': 'region', '生日月': 'bmonth', '生日': 'birthday', '聯絡電話': 'phone', '電話': 'phone', '手機': 'phone',
-                '公司或職稱': 'company', '公司': 'company', '職稱': 'company', '分類': 'clsText', '分類標籤': 'clsText'
-            };
-            if (exact[n]) return exact[n];
-            if (n.indexOf('日曆') === 0) return 'cal';
-            let m;
-            if ((m = /^F([1-5])(?![0-9])/.exec(n))) return 'flag:F' + m[1];
-            if (/^F(?=[\u4e00-\u9fff]|$)/.test(n)) return 'flag:F';
-            if ((m = /^([A-E])(?=[\u4e00-\u9fff]|$)/.exec(n))) return 'flag:' + m[1];
-            return null;
-        }
-
-        // 2D 陣列（儲存格已轉為字串）→ 記錄
-        function xlsRowsToRecords(rows) {
-            let hi = -1;
-            for (let i = 0; i < Math.min(rows.length, 15); i++) {
-                if ((rows[i] || []).some(c => ['姓名', '名字'].indexOf(xlsNorm(c)) >= 0)) { hi = i; break; }
-            }
-            if (hi < 0) return { error: '找不到「姓名」欄，請確認表頭（可先下載「匯入範本」對照）' };
-            const col = {}, flagCols = {}; let ignored = 0;
-            (rows[hi] || []).forEach(function (h, ix) {
-                const k = xlsHeaderKind(h);
-                if (!k) { if (xlsNorm(h)) ignored++; return; }
-                if (k.indexOf('flag:') === 0) { const f = k.slice(5); if (flagCols[f] === undefined) flagCols[f] = ix; }
-                else if (col[k] === undefined) col[k] = ix;
-            });
-            const hasFlagCols = Object.keys(flagCols).length > 0 || col.clsText !== undefined;
-            const get = (r, k) => (col[k] !== undefined && r[col[k]] != null ? String(r[col[k]]) : '').trim();
-            const blankish = v => /^[?？\-－—.]*$/.test(v) ? '' : v;
-            const recs = []; let noName = 0;
-            for (let i = hi + 1; i < rows.length; i++) {
-                const r = rows[i] || [];
-                if (!r.some(x => String(x == null ? '' : x).trim() !== '')) continue;
-                const name = get(r, 'name');
-                if (!name) { noName++; continue; }
-                const flags = [];
-                Object.keys(flagCols).forEach(f => { if (String(r[flagCols[f]] == null ? '' : r[flagCols[f]]).trim() !== '') flags.push(f); });
-                if (col.clsText !== undefined) leadParseCls(get(r, 'clsText')).forEach(f => { if (flags.indexOf(f) < 0) flags.push(f); });
-                let cls = null;
-                if (flags.length) {
-                    const set = new Set(flags);
-                    ['F1', 'F2', 'F3', 'F4', 'F5'].forEach(f => { if (set.has(f)) set.add('F'); });
-                    cls = XLS_FLAG_ORDER.filter(f => set.has(f));
-                }
-                const bi = leadParseBirth(get(r, 'birthday'), get(r, 'bmonth'));
-                const stageTxt = get(r, 'stage');
-                recs.push({
-                    row: i + 1, name: name, key: xlsNameKey(name),
-                    source: blankish(get(r, 'source')), region: blankish(get(r, 'region')),
-                    stageTxt: stageTxt, stage: leadParseStage(stageTxt),
-                    notes: get(r, 'notes'), phone: get(r, 'phone'), company: get(r, 'company'),
-                    cal: get(r, 'cal') !== '', birthday: bi.birthday, bmonth: bi.month, cls: cls
-                });
-            }
-            return { recs: recs, ignoredCols: ignored, noName: noName, hasFlagCols: hasFlagCols };
-        }
-
-        function xlsCellStr(cell, XLSX) {
-            if (!cell) return '';
-            if (cell.t === 'd' && cell.v instanceof Date) {
-                const d = cell.v; return d.getFullYear() + '-' + xlsPad(d.getMonth() + 1) + '-' + xlsPad(d.getDate());
-            }
-            if (cell.t === 'n') {
-                if (cell.z && XLSX.SSF.is_date(cell.z)) {
-                    const p = XLSX.SSF.parse_date_code(cell.v);
-                    if (p && p.y >= 1900 && p.y <= 2200) return p.y + '-' + xlsPad(p.m) + '-' + xlsPad(p.d);
-                }
-                return String(cell.v);
-            }
-            if (cell.v == null) return '';
-            return String(cell.v);
-        }
-        function xlsSheetToRows(ws, XLSX) {
-            const rows = [];
-            if (!ws || !ws['!ref']) return rows;
-            const rg = XLSX.utils.decode_range(ws['!ref']);
-            for (let r = rg.s.r; r <= rg.e.r; r++) {
-                const row = [];
-                for (let c = rg.s.c; c <= rg.e.c; c++) row.push(xlsCellStr(ws[XLSX.utils.encode_cell({ r: r, c: c })], XLSX));
-                rows.push(row);
-            }
-            return rows;
-        }
-
-        function xlsHandleFile(e) {
-            const input = e.target, file = input.files && input.files[0];
-            if (!file) return;
-            const done = () => { try { input.value = ''; } catch (x) {} };
-            const isCsv = /\.csv$/i.test(file.name) || /csv|text\/plain/.test(file.type || '');
-            if (isCsv) {
-                const rd = new FileReader();
-                rd.onload = function (ev) {
-                    try { xlsStartPreview(leadParseCsv(ev.target.result), 'CSV'); }
-                    catch (err) { console.error(err); showToast('讀取 CSV 失敗：' + err.message, 'error'); }
-                    done();
-                };
-                rd.onerror = function () { showToast('讀取檔案失敗', 'error'); done(); };
-                rd.readAsText(file, 'UTF-8');
-                return;
-            }
-            const btn = document.getElementById('xlsImportBtn');
-            if (btn) btn.disabled = true;
-            showToast('正在載入 Excel 解析工具…', 'info');
-            xlsLoadLib().then(function (XLSX) {
-                return new Promise(function (resolve, reject) {
-                    const rd = new FileReader();
-                    rd.onload = ev => resolve({ XLSX: XLSX, buf: ev.target.result });
-                    rd.onerror = () => reject(new Error('讀取檔案失敗'));
-                    rd.readAsArrayBuffer(file);
-                });
-            }).then(function (o) {
-                const wb = o.XLSX.read(o.buf, { type: 'array', cellNF: true });
-                const sn = wb.SheetNames.indexOf(XLS_SHEET) >= 0 ? XLS_SHEET : wb.SheetNames[0];
-                xlsStartPreview(xlsSheetToRows(wb.Sheets[sn], o.XLSX), sn);
-            }).catch(function (err) {
-                console.error(err);
-                showToast(err && err.message === 'load failed' ? '無法載入 Excel 解析工具（需要網路連線）。可先把檔案另存成 .csv 再匯入。' : ('匯入失敗：' + (err && err.message || err)), 'error');
-            }).then(function () { if (btn) btn.disabled = false; done(); });
-        }
-
-        // ---- 比對 / 產生計畫（純計算，不改資料） ----
-        const XLS_FIELD_LABEL = { source: '準客戶來源', region: '地區', acreStage: '一畝田階段', notes: '備註', sendCalendar: '送月曆', birthday: '生日', leadCls: '分類', phone: '電話', company: '公司' };
-        function xlsStageText(k) { const st = LEAD_STAGE_MAP[k]; return st ? (st.no + ' ' + st.name) : ''; }
-        function xlsBirthText(bd, bm) {
-            if (bd) return bd.indexOf('1900-') === 0 ? (+bd.substr(5, 2) + '/' + +bd.substr(8, 2)) : bd;
-            return bm ? (bm + '月') : '';
-        }
-        // 分類正規化：只留已知旗標、F1–F5 蓋章時視同也有 F、依固定順序（比較用，不改資料）
-        function xlsNormCls(arr) {
-            const set = new Set((arr || []).filter(x => XLS_FLAG_ORDER.indexOf(x) >= 0));
-            ['F1', 'F2', 'F3', 'F4', 'F5'].forEach(f => { if (set.has(f)) set.add('F'); });
-            return XLS_FLAG_ORDER.filter(f => set.has(f));
-        }
-        function xlsDiff(c, rec) {
-            const ch = [];
-            const strF = (field, val) => { if (val !== '' && String(c[field] || '').trim() !== val) ch.push({ field: field, old: c[field] || '', neu: val, set: () => { c[field] = val; } }); };
-            strF('source', rec.source); strF('region', rec.region); strF('phone', rec.phone); strF('company', rec.company); strF('notes', rec.notes);
-            if (rec.stage && (c.acreStage !== rec.stage && !(!c.acreStage && rec.stage === 'SAPLING'))) ch.push({ field: 'acreStage', old: c.acreStage ? xlsStageText(c.acreStage) : '(未設定)', neu: xlsStageText(rec.stage), set: () => { c.acreStage = rec.stage; } });
-            if (rec.cal && !c.sendCalendar) ch.push({ field: 'sendCalendar', old: '否', neu: '是', set: () => { c.sendCalendar = true; } });
-            if (rec.birthday || rec.bmonth) {
-                const ob = c.birthday || '', om = leadBirth(c) ? leadBirth(c).m : 0;
-                let nb = rec.birthday, nm = rec.bmonth;
-                if (!nb && ob && om === nm) { nb = ob; }            // 只有月份、且與系統生日同月 → 保留完整生日
-                if (nb !== ob || nm !== om) ch.push({ field: 'birthday', old: xlsBirthText(ob, om), neu: xlsBirthText(nb, nm), set: () => { c.birthday = nb; if (nm) c.birthMonth = nm; else delete c.birthMonth; } });
-            }
-            if (rec.cls) {
-                const oc = leadClsOf(c).slice(), same = xlsNormCls(oc).join() === xlsNormCls(rec.cls).join();
-                if (!same) ch.push({ field: 'leadCls', old: oc.join(' ') || '(無)', neu: rec.cls.join(' '), set: () => { c.leadCls = rec.cls.slice(); } });
-            }
-            return ch;
-        }
-        function xlsNewLead(rec, i, stamp) {
-            const lead = {
-                id: 'cust-' + stamp + '-x' + i + '-' + Math.random().toString(36).slice(2, 7),
-                name: rec.name, phone: rec.phone, company: rec.company, notes: rec.notes,
-                agentName: '', category: 'NEW', progress: 'LEAD', lastStage: 'NURTURE',
-                createdAt: new Date().toISOString(), tags: [], history: [],
-                acreStage: rec.stage || 'SAPLING', source: rec.source, region: rec.region,
-                birthday: rec.birthday, leadCls: rec.cls ? rec.cls.slice() : []
-            };
-            if (rec.bmonth) lead.birthMonth = rec.bmonth;
-            if (rec.cal) lead.sendCalendar = true;
-            return lead;
-        }
-
-        function xlsBuildPlan(parsed, sheetName) {
-            const leads = customers.filter(c => c.progress === 'LEAD');
-            const byKey = {};
-            leads.forEach(c => { const k = xlsNameKey(c.name); if (k) (byKey[k] = byKey[k] || []).push(c); });
-            const cnt = {};
-            parsed.recs.forEach(r => { cnt[r.key] = (cnt[r.key] || 0) + 1; });
-            const plan = { sheet: sheetName, ignoredCols: parsed.ignoredCols, noName: parsed.noName, hasFlagCols: parsed.hasFlagCols, total: parsed.recs.length, items: [] };
-            parsed.recs.forEach(function (r) {
-                const ex = byKey[r.key] || [];
-                const conflict = ex.length > 1 || cnt[r.key] > 1;
-                const it = { rec: r, conflict: conflict, existing: ex.map(c => c.id), reason: [] };
-                if (ex.length > 1) it.reason.push('系統內已有 ' + ex.length + ' 筆同名');
-                if (cnt[r.key] > 1) it.reason.push('Excel 內有 ' + cnt[r.key] + ' 列同名');
-                if (conflict) it.choice = 'skip';
-                else if (ex.length === 1) it.choice = 'update';
-                else it.choice = 'new';
-                plan.items.push(it);
-            });
-            return plan;
-        }
-        // 依目前選擇，模擬每一列會發生什麼（更新用複本，不碰真實資料）
-        function xlsEvaluate(plan) {
-            const sim = {};
-            const out = { add: [], upd: [], same: [], skip: [] };
-            plan.items.forEach(function (it) {
-                const act = it.choice;
-                if (act === 'skip') { out.skip.push(it); return; }
-                if (act === 'new') { out.add.push(it); return; }
-                const id = it.existing[0];
-                const base = customers.find(x => x.id === id);
-                if (!base) { out.skip.push(it); return; }
-                const c = sim[id] || (sim[id] = JSON.parse(JSON.stringify(base)));
-                const ch = xlsDiff(c, it.rec);
-                ch.forEach(x => x.set());
-                it.changes = ch.map(x => ({ field: x.field, old: x.old, neu: x.neu }));
-                it.target = base.name;
-                (ch.length ? out.upd : out.same).push(it);
-            });
-            return out;
-        }
-
-        function xlsStartPreview(rows, sheetName) {
-            const parsed = xlsRowsToRecords(rows);
-            if (parsed.error) return showToast(parsed.error, 'error');
-            if (!parsed.recs.length) return showToast('沒有可匯入的資料列（所有列都沒有姓名）', 'error');
-            xlsPlan = xlsBuildPlan(parsed, sheetName);
-            xlsRenderPreview();
-            openModal('xlsPreviewModal');
-        }
-        function xlsSetChoice(i, v) { xlsPlan.items[i].choice = v; xlsRenderPreview(true); }
-
-        function xlsRenderPreview(keepScroll) {
-            const plan = xlsPlan; if (!plan) return;
-            const body = document.getElementById('xlsPreviewBody');
-            const prevScroll = body.scrollTop;
-            const openState = {};
-            body.querySelectorAll('details[data-k]').forEach(d => { openState[d.getAttribute('data-k')] = d.open; });
-            const ev = xlsEvaluate(plan);
-            const chip = (n, label, cls) => `<div class="flex-1 min-w-[6.5rem] rounded-xl border px-3 py-2 text-center ${cls}"><div class="text-2xl font-black leading-none" data-xls-count="${label}">${n}</div><div class="text-[11px] font-bold mt-1">${label}</div></div>`;
-            const flagTxt = a => (a && a.length) ? a.map(x => `<span class="px-1 rounded bg-slate-100 text-slate-600 text-[10px] font-bold">${esc(x)}</span>`).join(' ') : '<span class="text-slate-300">—</span>';
-            const dOpen = k => (openState[k] === undefined ? false : openState[k]) ? 'open' : '';
-            let h = '';
-            h += `<div class="flex flex-wrap gap-2">${chip(ev.add.length, '將新增', 'bg-emerald-50 border-emerald-200 text-emerald-700')}${chip(ev.upd.length, '將更新', 'bg-sky-50 border-sky-200 text-sky-700')}${chip(ev.skip.length, '跳過', 'bg-slate-50 border-slate-200 text-slate-600')}</div>`;
-            h += `<p class="text-[11px] text-slate-500">讀取工作表「${esc(plan.sheet)}」，共 ${plan.total} 筆有姓名的資料列` +
-                (ev.same.length ? `；另有 <b>${ev.same.length}</b> 筆與系統資料相同、無需變更` : '') +
-                (plan.noName ? `；<b>${plan.noName}</b> 列沒有姓名已忽略` : '') +
-                (plan.ignoredCols ? `；${plan.ignoredCols} 個不認得的欄位已忽略` : '') +
-                (plan.hasFlagCols ? '' : '；此檔沒有分類欄位，分類不會變動') + '。系統內不在檔案裡的人不會被更動或刪除。</p>';
-
-            // 更新
-            h += `<details data-k="upd" ${dOpen('upd')} class="rounded-xl border border-sky-200 bg-sky-50/40"><summary class="cursor-pointer px-3 py-2 font-bold text-sky-800 text-sm">將更新的名單（${ev.upd.length}）— 欄位逐項 舊 → 新</summary><div class="px-3 pb-3 space-y-1.5">`;
-            if (!ev.upd.length) h += '<p class="text-xs text-slate-400 py-2">沒有需要更新的資料</p>';
-            ev.upd.forEach(function (it, n) {
-                h += `<details data-k="u${plan.items.indexOf(it)}" ${dOpen('u' + plan.items.indexOf(it))} class="bg-white rounded-lg border border-slate-200"><summary class="cursor-pointer px-2.5 py-1.5 text-xs"><b class="text-slate-800">${esc(it.rec.name)}</b> <span class="text-slate-400">（第 ${it.rec.row} 列・${it.changes.length} 項變更：${esc(it.changes.map(x => XLS_FIELD_LABEL[x.field]).join('、'))}）</span></summary>` +
-                    `<table class="w-full text-xs"><tbody>` + it.changes.map(x => `<tr class="border-t border-slate-100"><td class="px-2.5 py-1 text-slate-500 whitespace-nowrap w-28">${XLS_FIELD_LABEL[x.field]}</td><td class="px-1 py-1 text-rose-500 line-through break-all">${esc(x.old) || '<span class="text-slate-300 no-underline">(空白)</span>'}</td><td class="px-1 text-slate-400">→</td><td class="px-1 py-1 text-emerald-700 font-bold break-all">${esc(x.neu)}</td></tr>`).join('') + `</tbody></table></details>`;
-            });
-            h += '</div></details>';
-
-            // 新增
-            h += `<details data-k="new" ${dOpen('new')} class="rounded-xl border border-emerald-200 bg-emerald-50/40"><summary class="cursor-pointer px-3 py-2 font-bold text-emerald-800 text-sm">將新增的人（${ev.add.length}）</summary><div class="px-3 pb-3 overflow-x-auto">`;
-            if (!ev.add.length) h += '<p class="text-xs text-slate-400 py-2">沒有新增</p>';
-            else h += `<table class="w-full text-xs bg-white rounded-lg border border-slate-200"><thead><tr class="text-slate-400 text-left"><th class="px-2 py-1">姓名</th><th class="px-2 py-1">階段</th><th class="px-2 py-1">來源</th><th class="px-2 py-1">地區</th><th class="px-2 py-1">生日</th><th class="px-2 py-1">分類</th></tr></thead><tbody>` +
-                ev.add.map(it => { const r = it.rec; return `<tr class="border-t border-slate-100"><td class="px-2 py-1 font-bold text-slate-800 whitespace-nowrap">${esc(r.name)}</td><td class="px-2 py-1 whitespace-nowrap">${esc(xlsStageText(r.stage || 'SAPLING'))}${r.stage ? '' : ' <span class="text-slate-300">(預設)</span>'}</td><td class="px-2 py-1">${esc(r.source) || '<span class="text-slate-300">—</span>'}</td><td class="px-2 py-1">${esc(r.region) || '<span class="text-slate-300">—</span>'}</td><td class="px-2 py-1 whitespace-nowrap">${esc(xlsBirthText(r.birthday, r.bmonth)) || '<span class="text-slate-300">—</span>'}</td><td class="px-2 py-1">${flagTxt(r.cls)}</td></tr>`; }).join('') + '</tbody></table>';
-            h += '</div></details>';
-
-            // 同名衝突
-            const conflicts = plan.items.map((it, i) => [it, i]).filter(x => x[0].conflict);
-            h += `<details data-k="cf" ${openState.cf === undefined ? 'open' : (openState.cf ? 'open' : '')} class="rounded-xl border border-amber-300 bg-amber-50/50"><summary class="cursor-pointer px-3 py-2 font-bold text-amber-800 text-sm"><i class="fa-solid fa-triangle-exclamation"></i> 同名衝突（${conflicts.length}）— 預設跳過，請逐列選擇</summary><div class="px-3 pb-3 space-y-1.5">`;
-            if (!conflicts.length) h += '<p class="text-xs text-slate-400 py-2">沒有同名衝突</p>';
-            conflicts.forEach(function (x) {
-                const it = x[0], i = x[1], r = it.rec;
-                const exTxt = it.existing.length ? it.existing.map(id => { const c = customers.find(y => y.id === id); return c ? `${xlsStageText(leadStageOf(c))}${c.source ? '・' + c.source : ''}${c.region ? '・' + c.region : ''}` : ''; }).join(' ／ ') : '系統內沒有';
-                const opt = (v, label, dis) => `<option value="${v}" ${it.choice === v ? 'selected' : ''} ${dis ? 'disabled' : ''}>${label}</option>`;
-                h += `<div class="bg-white rounded-lg border border-amber-200 px-2.5 py-2 flex flex-wrap items-center gap-2 text-xs" data-xls-conflict="${i}">` +
-                    `<div class="flex-1 min-w-[12rem]"><b class="text-slate-800">${esc(r.name)}</b> <span class="text-slate-400">（第 ${r.row} 列）</span><div class="text-[11px] text-amber-700">${esc(it.reason.join('、'))}｜系統：${esc(exTxt)}</div></div>` +
-                    `<select onchange="xlsSetChoice(${i}, this.value)" class="px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-700">${opt('skip', '跳過')}${opt('update', '更新第一筆', !it.existing.length)}${opt('new', '新增為新的人')}</select></div>`;
-            });
-            h += '</div></details>';
-
-            body.innerHTML = h;
-            body.scrollTop = keepScroll ? prevScroll : 0;
-            const btn = document.getElementById('xlsConfirmBtn');
-            const n = ev.add.length + ev.upd.length;
-            btn.disabled = n === 0; btn.classList.toggle('opacity-50', n === 0); btn.classList.toggle('cursor-not-allowed', n === 0);
-        }
-
-        function xlsCancel() { xlsPlan = null; closeModal('xlsPreviewModal'); }
-
-        function xlsConfirm() {
-            if (!xlsPlan) return;
-            const plan = xlsPlan, stamp = Date.now();
-            // 確保「還原」能一步回到匯入前：若還原堆疊是空的（本次開啟後尚未編輯過）或最新快照與目前資料不同（例如剛收到雲端更新），先補一筆匯入前快照（不觸發雲端寫入）
-            try {
-                const base = JSON.stringify({ cust: customers, per: customPeriods, goals: annualGoals, tags: customTags });
-                if (currentStateIndex < 0 || stateHistory[currentStateIndex] !== base) {
-                    stateHistory = stateHistory.slice(0, currentStateIndex + 1); stateHistory.push(base);
-                    if (stateHistory.length > MAX_HISTORY) stateHistory.shift();
-                    currentStateIndex = stateHistory.length - 1;
-                }
-            } catch (e) { console.warn('baseline snapshot failed', e); }
-            let added = 0, updated = 0, same = 0, skipped = 0, missing = 0;
-            const newLeads = [];
-            plan.items.forEach(function (it, i) {
-                if (it.choice === 'skip') { skipped++; return; }
-                if (it.choice === 'new') { newLeads.push(xlsNewLead(it.rec, i, stamp)); added++; return; }
-                const c = customers.find(x => x.id === it.existing[0]);
-                if (!c) { missing++; skipped++; return; }
-                const ch = xlsDiff(c, it.rec);
-                if (!ch.length) { same++; return; }
-                ch.forEach(x => x.set());
-                updated++;
-            });
-            newLeads.forEach(l => customers.push(l));
-            xlsPlan = null;
-            closeModal('xlsPreviewModal');
-            recordState();       // 與其他編輯同一條存檔路徑：雲端同步 + 還原
-            renderApp();
-            showToast(`匯入完成：新增 ${added}、更新 ${updated}、跳過 ${skipped}` + (same ? `、無變更 ${same}` : '') + '（可按「還原」一步復原）', 'success');
-        }
-
-        function xlsDownloadTemplate() {
-            const ex = [
-                ['範例', '範例甲（請刪除此列）', '03樹苗(可/會接觸)', '', 'K', '台北', 5, '', 'A', '', '', '', '', '', '', '', '', '', ''],
-                ['範例', '範例乙（請刪除此列）', '02茁長的樹(有生日)', '備註範例', '', '台中', '', '1985-10-12', 'A', 'B', '', '', '', 'F', 'F1', '', 'F3', '', '']
-            ];
-            const csv = () => {
-                const q = v => '"' + String(v).replace(/"/g, '""') + '"';
-                const text = '\uFEFF' + [XLS_HEADERS].concat(ex).map(r => r.map(q).join(',')).join('\r\n');
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8;' }));
-                a.download = '一畝田匯入範本.csv'; a.click();
-            };
-            xlsLoadLib().then(function (XLSX) {
-                const ws = XLSX.utils.aoa_to_sheet([XLS_HEADERS].concat(ex));
-                ws['!cols'] = XLS_HEADERS.map((h, i) => ({ wch: i === 1 || i === 2 ? 22 : 14 }));
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, XLS_SHEET);
-                XLSX.writeFile(wb, '一畝田匯入範本.xlsx');
-            }).catch(function () { showToast('無法載入 Excel 工具，改為下載 CSV 範本', 'info'); csv(); });
-        }
-
-
-        // ---- 匯出 Excel：與「我的一畝田」同表頭/同順序；範圍＝目前「負責業務」篩選下的全部名單（不受搜尋與其他篩選影響） ----
-        const XLS_STAGE_TEXT = { FRUIT: '01已結果的樹', GROW: '02茁長的樹(有生日)', SAPLING: '03樹苗(可/會接觸)', SEED: '04樹種' };
-        function xlsExportRows() {
-            const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
-            const list = customers.filter(c => c.progress === 'LEAD' && matchAgentFilter(c, fAgent));
-            return list.map(function (c) {
-                const cls = new Set(xlsNormCls(leadClsOf(c)));
-                const b = leadBirth(c);
-                const full = /^(\d{4})-(\d{2})-(\d{2})/.exec(c.birthday || '');
-                let bday = null;   // 完整生日 → 日期儲存格 {y,m,d}；只有月/日（1900 佔位）→ 文字 m/d
-                if (b && b.d) bday = (b.y > 1900 && full) ? { date: [b.y, b.m, b.d] } : { text: b.m + '/' + b.d };
-                return [
-                    c.source || null, String(c.name || '').trim() || null, XLS_STAGE_TEXT[leadStageOf(c)], String(c.notes || '').trim() || null,
-                    c.sendCalendar ? 'K' : null, c.region || null, b ? b.m : null, bday
-                ].concat(XLS_FLAG_ORDER.map(f => cls.has(f) ? f : null));
-            });
-        }
-        function xlsExportStamp() { const d = new Date(); return d.getFullYear() + xlsPad(d.getMonth() + 1) + xlsPad(d.getDate()); }
-        function xlsExport() {
-            const rows = xlsExportRows();
-            if (!rows.length) return showToast('目前範圍內沒有名單可匯出', 'error');
-            const base = '開發名單庫_' + xlsExportStamp();
-            const btn = document.getElementById('xlsExportBtn');
-            if (btn) btn.disabled = true;
-            const csv = function () {
-                const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-                const cell = (v, i) => (v && v.date) ? v.date[0] + '-' + xlsPad(v.date[1]) + '-' + xlsPad(v.date[2]) : (v && v.text) ? v.text : v;
-                const text = '\uFEFF' + [XLS_HEADERS].concat(rows.map(r => r.map(cell))).map(r => r.map(q).join(',')).join('\r\n');
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8;' }));
-                a.download = base + '.csv'; a.click();
-                showToast('無法載入 Excel 工具，已改為匯出 CSV（' + rows.length + ' 筆）', 'info');
-            };
-            xlsLoadLib().then(function (XLSX) {
-                const aoa = [XLS_HEADERS].concat(rows.map(r => r.map(v => (v && (v.date || v.text !== undefined)) ? null : v)));
-                const ws = XLSX.utils.aoa_to_sheet(aoa);
-                rows.forEach(function (r, i) {
-                    const v = r[7]; if (!v) return;
-                    const addr = XLSX.utils.encode_cell({ r: i + 1, c: 7 });
-                    if (v.text) ws[addr] = { t: 's', v: v.text };
-                    else ws[addr] = { t: 'n', v: Date.UTC(v.date[0], v.date[1] - 1, v.date[2]) / 86400000 + 25569, z: 'yyyy/m/d' };
-                });
-                ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: XLS_HEADERS.length - 1 } });
-                ws['!cols'] = XLS_HEADERS.map((h, i) => ({ wch: i === 1 || i === 3 ? 22 : i === 2 ? 20 : 14 }));
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, XLS_SHEET);
-                XLSX.writeFile(wb, base + '.xlsx');
-                showToast('已匯出 ' + rows.length + ' 筆名單（' + base + '.xlsx）', 'success');
-            }).catch(function (err) { console.warn('xlsx export fallback', err); csv(); })
-              .then(function () { if (btn) btn.disabled = false; });
         }
 
         function activateLead(id) {
@@ -1989,8 +1406,6 @@
 
         function deleteLead(id) {
             activeDeleteId = id;
-            // 確認鈕在此自行綁定（原本只在 confirmDeleteCustomer 內綁定，直接從名單庫刪除時可能沒有動作）
-            document.getElementById('confirmDeleteBtn').onclick = () => { customers = customers.filter(c => c.id !== activeDeleteId); recordState(); renderApp(); closeModal('deleteConfirmModal'); showToast('資料已刪除', 'info'); };
             openModal('deleteConfirmModal');
         }
 
@@ -2794,450 +2209,7 @@
             closeModal('addPeriodModal'); populatePeriodFilter(); document.getElementById('globalPeriodFilter').value = np; renderApp(); showToast('已新增月份', 'success');
         }
 
-        // =====================================================================
-        // 一畝田・開發名單庫 (LEADS) —— 新版渲染 / 篩選 / 編輯 / 階段移動
-        // 資料只「加欄位」在 lead 物件上：acreStage, source, region, birthMonth, leadCls（birthday 沿用既有欄位）
-        // 沒有 acreStage 的舊名單在顯示時預設為 03 樹苗，不會改動已儲存的資料，直到使用者編輯/移動階段才寫入。
-        // =====================================================================
-        const LEAD_STAGES = [
-            { key: 'FRUIT',   no: '01', name: '已結果的樹',   hint: '已有成果',     icon: 'fa-apple-whole', ideal: 30, text: 'text-[#8a6d0a]', bg: 'bg-amber-50',   border: 'border-amber-200',  bar: 'bg-[#D4AF37]', ring: 'ring-[#D4AF37]' },
-            { key: 'GROW',    no: '02', name: '茁長的樹',     hint: '有生日',       icon: 'fa-tree',        ideal: 50, text: 'text-[#547360]', bg: 'bg-[#E6ECE8]',  border: 'border-[#D1DED5]',  bar: 'bg-[#547360]', ring: 'ring-[#547360]' },
-            { key: 'SAPLING', no: '03', name: '樹苗',         hint: '可/會接觸',    icon: 'fa-seedling',    ideal: 20, text: 'text-sky-700',   bg: 'bg-sky-50',     border: 'border-sky-200',    bar: 'bg-sky-500',   ring: 'ring-sky-500' },
-            { key: 'SEED',    no: '04', name: '樹種',         hint: '尚待篩選',     icon: 'fa-circle-dot',  ideal: 0,  text: 'text-slate-600', bg: 'bg-slate-100',  border: 'border-slate-300',  bar: 'bg-slate-400', ring: 'ring-slate-400' }
-        ];
-        const LEAD_STAGE_MAP = {}; LEAD_STAGES.forEach(s => { LEAD_STAGE_MAP[s.key] = s; });
-        const LEAD_CLS = [
-            { k: 'A', label: 'A 未來12個月可持續開拓', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', on: 'bg-emerald-600 text-white border-emerald-600' },
-            { k: 'B', label: 'B 高淨值',               cls: 'bg-amber-50 text-[#8a6d0a] border-amber-300',       on: 'bg-[#D4AF37] text-[#1E2E3D] border-[#D4AF37]' },
-            { k: 'C', label: 'C 一般',                 cls: 'bg-slate-50 text-slate-600 border-slate-200',        on: 'bg-slate-600 text-white border-slate-600' },
-            { k: 'D', label: 'D 需移除',               cls: 'bg-rose-50 text-rose-700 border-rose-200',           on: 'bg-rose-600 text-white border-rose-600' },
-            { k: 'E', label: 'E 轉介紹中心',           cls: 'bg-sky-50 text-sky-700 border-sky-200',              on: 'bg-sky-600 text-white border-sky-600' },
-            { k: 'F', label: 'F 可招募(新苗圃)',       cls: 'bg-purple-50 text-purple-700 border-purple-200',     on: 'bg-purple-600 text-white border-purple-600' }
-        ];
-        const LEAD_F_SUBS = [
-            { k: 'F1', label: 'F1 12個月內可加入' },
-            { k: 'F2', label: 'F2 可持續經營' },
-            { k: 'F3', label: 'F3 邀約說明會或面談' },
-            { k: 'F4', label: 'F4 邀約活動' },
-            { k: 'F5', label: 'F5 可移除' }
-        ];
-        const LEAD_DEFAULT_SOURCES = ['家人', '朋友', '同學', '同事', '轉介紹', '陌生開發', '活動'];
-        const LEAD_SORTS = [
-            ['stage', '階段 01→04'], ['new', '最新建檔'], ['old', '最早建檔'], ['name', '姓名'], ['bday', '生日 (月/日)'], ['remind', '下次提醒日']
-        ];
-        let leadUi = { stage: 'ALL', source: 'ALL', region: 'ALL', cls: 'ALL', bmonth: 'ALL', created: 'ALL', sort: 'stage', limit: 60, bdayOpen: true };
-        let leadFormCls = [];
-        let leadFormStage = 'SAPLING';
-
-        function leadStageOf(c) { return LEAD_STAGE_MAP[c.acreStage] ? c.acreStage : 'SAPLING'; }
-        function leadClsOf(c) { return Array.isArray(c.leadCls) ? c.leadCls : []; }
-        function leadBirth(c) {
-            const mt = /^(\d{4})-(\d{2})-(\d{2})/.exec(c.birthday || '');
-            if (mt && +mt[2] >= 1 && +mt[2] <= 12) return { y: +mt[1], m: +mt[2], d: +mt[3] };
-            const bm = parseInt(c.birthMonth, 10);
-            if (bm >= 1 && bm <= 12) return { y: 0, m: bm, d: 0 };
-            return null;
-        }
-        function leadBirthText(c) { const b = leadBirth(c); if (!b) return ''; return b.d ? (b.m + '/' + b.d) : (b.m + '月'); }
-        function leadTodayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-
-        function leadSetFilter(k, v) { leadUi[k] = v; leadUi.limit = 60; renderApp(); }
-        function leadResetFilters() { leadUi.stage = 'ALL'; leadUi.source = leadUi.region = leadUi.cls = leadUi.bmonth = leadUi.created = 'ALL'; leadUi.limit = 60; const si = document.getElementById('searchInput'); if (si) si.value = ''; renderApp(); }
-        function leadMoreRows() { leadUi.limit += 60; renderApp(); }
-        function leadToggleBday() { leadUi.bdayOpen = !leadUi.bdayOpen; renderApp(); }
-
-        function leadMoveStage(id, stage) {
-            const c = customers.find(x => x.id === id);
-            if (!c || !LEAD_STAGE_MAP[stage]) return;
-            if ((c.acreStage || '') === stage) { renderApp(); return; }
-            c.acreStage = stage;
-            recordState(); renderApp();
-            const st = LEAD_STAGE_MAP[stage];
-            const warn = (stage === 'GROW' && !leadBirth(c)) ? '（提醒：尚未填寫生日）' : '';
-            showToast(`${c.name} → ${st.no} ${st.name}${warn}`, warn ? 'info' : 'success');
-        }
-        function leadAdvance(id) {
-            const c = customers.find(x => x.id === id); if (!c) return;
-            const i = LEAD_STAGES.findIndex(s => s.key === leadStageOf(c));
-            if (i > 0) leadMoveStage(id, LEAD_STAGES[i - 1].key);
-        }
-
-        function leadCollect(field, scope) {
-            const m = {};
-            scope.forEach(c => { const v = (c[field] || '').toString().trim(); if (v) m[v] = (m[v] || 0) + 1; });
-            return Object.keys(m).sort((a, b) => a.localeCompare(b, 'zh-Hant')).map(k => [k, m[k]]);
-        }
-
-        function leadMatches(c, f, search) {
-            if (f.stage !== 'ALL' && leadStageOf(c) !== f.stage) return false;
-            if (f.source !== 'ALL') { const v = (c.source || '').trim(); if (f.source === '__NONE__' ? v !== '' : v !== f.source) return false; }
-            if (f.region !== 'ALL') { const v = (c.region || '').trim(); if (f.region === '__NONE__' ? v !== '' : v !== f.region) return false; }
-            if (f.cls !== 'ALL') {
-                const cl = leadClsOf(c);
-                if (f.cls === '__NONE__') { if (cl.length) return false; }
-                else if (f.cls === 'F') { if (!cl.some(x => x === 'F' || /^F\d$/.test(x))) return false; }
-                else if (cl.indexOf(f.cls) < 0) return false;
-            }
-            if (f.bmonth !== 'ALL') { const b = leadBirth(c); if (!b || String(b.m) !== f.bmonth) return false; }
-            if (f.created !== 'ALL' && (c.createdAt || '').substring(0, 7) !== f.created) return false;
-            if (activeTagFilters.length > 0 && !activeTagFilters.some(tid => c.tags && c.tags.includes(tid))) return false;
-            const fLast = document.getElementById('filterLastStage')?.value || 'ALL';
-            if (fLast !== 'ALL' && (c.lastStage || 'NURTURE') !== fLast) return false;
-            if (search) {
-                const hay = [c.name, c.company, c.phone, c.notes, c.source, c.region].join('\u0001').toLowerCase();
-                if (hay.indexOf(search) < 0) return false;
-            }
-            return true;
-        }
-
-        function leadSortList(list, sort) {
-            const nameCmp = (a, b) => (a.name || '').localeCompare(b.name || '', 'zh-Hant');
-            const bkey = c => { const b = leadBirth(c); return b ? b.m * 100 + b.d : 9999; };
-            const stIdx = c => LEAD_STAGES.findIndex(s => s.key === leadStageOf(c));
-            const cr = c => c.createdAt || '';
-            const cmp = {
-                stage: (a, b) => stIdx(a) - stIdx(b) || nameCmp(a, b),
-                new: (a, b) => cr(b).localeCompare(cr(a)) || nameCmp(a, b),
-                old: (a, b) => cr(a).localeCompare(cr(b)) || nameCmp(a, b),
-                name: nameCmp,
-                bday: (a, b) => bkey(a) - bkey(b) || nameCmp(a, b),
-                remind: (a, b) => ((a.nextContactDate || '9999') .localeCompare(b.nextContactDate || '9999')) || nameCmp(a, b)
-            }[sort] || nameCmp;
-            return list.slice().sort(cmp);
-        }
-
-        function leadClsChipsHtml(c) {
-            const cl = leadClsOf(c); if (!cl.length) return '';
-            const out = [];
-            LEAD_CLS.forEach(d => {
-                if (cl.indexOf(d.k) >= 0) out.push(`<span class="px-1.5 py-0.5 rounded border text-[10px] font-bold leading-none ${d.cls}" title="${esc(d.label)}">${d.k}</span>`);
-            });
-            LEAD_F_SUBS.forEach(d => {
-                if (cl.indexOf(d.k) >= 0) out.push(`<span class="px-1.5 py-0.5 rounded border text-[10px] font-bold leading-none bg-purple-50 text-purple-600 border-purple-200" title="${esc(d.label)}">${d.k}</span>`);
-            });
-            return out.join('');
-        }
-
-        function leadRowHtml(c, curMonth) {
-            const sk = leadStageOf(c), st = LEAD_STAGE_MAP[sk];
-            const idx = LEAD_STAGES.findIndex(s => s.key === sk);
-            const nextSt = idx > 0 ? LEAD_STAGES[idx - 1] : null;
-            const id = esc(c.id);
-            const b = leadBirth(c);
-            const bText = leadBirthText(c);
-            const bThis = b && b.m === curMonth;
-            const meta = [];
-            if (c.source) meta.push(`<span class="text-slate-500"><i class="fa-solid fa-diagram-project text-slate-300 mr-0.5"></i>${esc(c.source)}</span>`);
-            if (c.region) meta.push(`<span class="text-slate-500"><i class="fa-solid fa-location-dot text-slate-300 mr-0.5"></i>${esc(c.region)}</span>`);
-            if (bText) meta.push(`<span class="${bThis ? 'text-[#8a6d0a] font-bold' : 'text-slate-500'}" title="${esc(c.birthday || '')}"><i class="fa-solid fa-cake-candles ${bThis ? 'text-[#D4AF37]' : 'text-slate-300'} mr-0.5"></i>${esc(bText)}</span>`);
-            if (c.phone) meta.push(`<span data-phone="${esc(c.phone)}" onclick="copyToClipboard(this.dataset.phone, '電話')" class="text-slate-500 cursor-pointer hover:text-[#1E2E3D]" title="點擊複製"><i class="fa-solid fa-phone text-slate-300 mr-0.5"></i>${esc(c.phone)}</span>`);
-            const tagHtml = (c.tags || []).map(tid => { const t = customTags.find(x => x.id === tid); if (!t) return ''; const tc = tagColors[t.color] || tagColors['slate']; return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${tc.bg}">${esc(t.name)}</span>`; }).join('');
-            const agent = (c.agentName && c.agentName.trim()) ? `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0"><i class="fa-solid fa-user-tie"></i> ${esc(c.agentName)}</span>` : '';
-            const overdue = c.nextContactDate && c.nextContactDate <= leadTodayStr();
-            const stageOpts = LEAD_STAGES.map(s => `<option value="${s.key}" ${s.key === sk ? 'selected' : ''}>${s.no} ${s.name}</option>`).join('');
-            const lastLabel = (stageConfig[c.lastStage || 'NURTURE'] || {}).label || '';
-            return `
-            <div class="lead-row px-3 py-2.5 border-b border-slate-100 hover:bg-slate-50 transition grid grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_9.5rem] gap-x-3 gap-y-1.5 xl:items-center" data-lead-id="${id}">
-                <div class="min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                        <button type="button" onclick="openLeadModal('${id}')" class="font-bold text-slate-800 hover:text-[#1E2E3D] hover:underline text-left">${esc(c.name)}</button>
-                        ${agent}${tagHtml}
-                    </div>
-                    ${meta.length ? `<div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] mt-0.5">${meta.join('')}</div>` : ''}
-                    ${c.notes ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ''}
-                </div>
-                <div class="flex items-center gap-1.5 col-span-2 xl:col-span-1">
-                    <select onchange="leadMoveStage('${id}', this.value)" title="切換一畝田階段" class="lead-stage-sel flex-1 min-w-0 text-xs font-bold px-1.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none ${st.bg} ${st.text} ${st.border}">${stageOpts}</select>
-                    ${nextSt
-                        ? `<button type="button" onclick="leadAdvance('${id}')" class="lead-next flex-shrink-0 w-8 h-8 rounded-lg border ${nextSt.border} ${nextSt.bg} ${nextSt.text} hover:brightness-95 transition text-xs" title="升級至 ${nextSt.no} ${nextSt.name}"><i class="fa-solid fa-arrow-up"></i></button>`
-                        : `<span class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[#D4AF37]" title="已是最高階段"><i class="fa-solid fa-star"></i></span>`}
-                </div>
-                <div class="flex flex-wrap items-center gap-1 min-h-[1.25rem] col-span-2 xl:col-span-1">${leadClsChipsHtml(c) || '<span class="text-[10px] text-slate-300">未分類</span>'}</div>
-                <div class="flex items-center gap-1 col-span-2 xl:col-span-1" title="下次提醒日">
-                        <input type="date" value="${esc(c.nextContactDate || '')}" onchange="updateLeadDate('${id}', this.value)" class="w-[7.6rem] text-xs p-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] bg-white ${overdue ? 'border-rose-300 text-rose-600' : 'border-slate-200 text-slate-600'}">
-                        <button onclick="quickSetLeadDate('${id}', 'tomorrow')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">明</button>
-                        <button onclick="quickSetLeadDate('${id}', 'month')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">下月</button>
-                        <button onclick="quickSetLeadDate('${id}', 'halfYear')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">半年</button>
-                        <button onclick="quickSetLeadDate('${id}', 'year')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">一年</button>
-                    </div>
-                <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
-                        <button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用後進入核心看板：${esc(lastLabel)}">啟用 ➔</button>
-                        <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
-                        <button onclick="deleteLead('${id}')" class="lead-del text-slate-300 hover:text-rose-500 transition px-2 py-1" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-            </div>`;
-        }
-
-        function leadStripHtml(scope) {
-            const total = scope.length;
-            const counts = {}; LEAD_STAGES.forEach(s => counts[s.key] = 0);
-            scope.forEach(c => { counts[leadStageOf(c)]++; });
-            const allActive = leadUi.stage === 'ALL';
-            const cards = LEAD_STAGES.map(s => {
-                const n = counts[s.key];
-                const pct = total ? (n / total * 100) : 0;
-                const diff = pct - s.ideal;
-                let badge;
-                if (!total) badge = `<span class="text-slate-400">—</span>`;
-                else if (Math.abs(diff) <= 5) badge = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> 接近理想</span>`;
-                else if (diff > 0) badge = `<span class="${s.ideal === 0 ? 'text-rose-600' : 'text-amber-600'}"><i class="fa-solid fa-arrow-trend-up"></i> 偏多 +${Math.round(diff)}%</span>`;
-                else badge = `<span class="text-sky-600"><i class="fa-solid fa-arrow-trend-down"></i> 偏少 ${Math.round(diff)}%</span>`;
-                const active = leadUi.stage === s.key;
-                return `
-                <button type="button" onclick="leadSetFilter('stage', '${active ? 'ALL' : s.key}')" data-stage="${s.key}" class="lead-stage-card text-left rounded-xl border p-3 bg-white transition hover:shadow-md relative overflow-hidden ${active ? 'ring-2 ' + s.ring + ' shadow-md ' + s.border : 'border-slate-200'}">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-1.5 text-xs font-bold ${s.text}"><span class="w-6 h-6 rounded-lg flex items-center justify-center ${s.bg} border ${s.border}"><i class="fa-solid ${s.icon} text-[11px]"></i></span><span class="truncate">${s.no} ${s.name}</span></div>
-                            <p class="text-[10px] text-slate-400 mt-0.5 truncate">${s.hint}</p>
-                        </div>
-                        <div class="lead-stage-count text-2xl font-black font-editorial text-slate-800 leading-none">${n}</div>
-                    </div>
-                    <div class="mt-2.5 relative h-2 rounded-full bg-slate-100">
-                        <div class="absolute left-0 top-0 h-2 rounded-full ${s.bar} transition-all" style="width:${Math.min(100, pct).toFixed(1)}%"></div>
-                        ${s.ideal > 0 ? `<div class="absolute -top-1 -bottom-1 w-0.5 bg-[#1E2E3D]" style="left:${s.ideal}%" title="理想 ${s.ideal}%"></div>` : ''}
-                    </div>
-                    <div class="mt-1.5 flex items-center justify-between gap-1 text-[10px] font-bold">
-                        <span class="text-slate-600">實際 <span class="lead-stage-pct">${Math.round(pct)}%</span> <span class="text-slate-300">/</span> <span class="text-slate-400">理想 ${s.ideal}%</span></span>
-                        <span class="lead-stage-flag whitespace-nowrap">${badge}</span>
-                    </div>
-                </button>`;
-            }).join('');
-            return `
-            <div class="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-slate-200 premium-shadow relative overflow-hidden">
-                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#D4AF37]"></div>
-                <div class="pl-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                    <div class="min-w-0">
-                        <h3 class="font-bold font-editorial text-slate-800 flex items-center gap-2"><i class="fa-solid fa-seedling text-[#547360]"></i> 一畝田・開發名單庫</h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">點階段可篩選名單；長條上的黑線是理想比例 30 / 50 / 20 / 0</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" onclick="leadSetFilter('stage','ALL')" id="leadStageAll" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${allActive ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">全部 <span id="leadTotalCount">${total}</span></button>
-                        <button type="button" onclick="openLeadModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4AF37] hover:bg-[#C59B27] text-[#1E2E3D] shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-plus"></i> 新增名單</button>
-                        <button type="button" onclick="downloadCsvTemplate()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition">下載 CSV 範本</button>
-                        <input type="file" id="csvInput" accept=".csv" class="hidden" onchange="handleCsvImport(event)">
-                        <button type="button" onclick="document.getElementById('csvInput').click()" class="px-3 py-1.5 bg-[#1E2E3D] text-white rounded-lg text-xs font-bold hover:bg-[#2C3E50] shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-import"></i> 批次匯入</button>
-                        <button type="button" id="xlsTemplateBtn" onclick="xlsDownloadTemplate()" title="下載與「我的一畝田」表頭相同的 Excel 範本" class="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 transition">匯入範本</button>
-                        <input type="file" id="xlsInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="xlsHandleFile(event)">
-                        <button type="button" id="xlsImportBtn" onclick="document.getElementById('xlsInput').click()" title="讀取「我的一畝田」Excel（或 .csv），先預覽再合併" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-excel"></i> 匯入 Excel</button>
-                        <button type="button" id="xlsExportBtn" onclick="xlsExport()" title="把目前「負責業務」範圍內的全部名單匯出成「我的一畝田」格式 Excel（不受搜尋/篩選影響）" class="px-3 py-1.5 bg-white border border-emerald-600 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-export"></i> 匯出 Excel</button>
-                    </div>
-                </div>
-                <div class="pl-2 grid grid-cols-2 lg:grid-cols-4 gap-2.5" id="leadStageCards">${cards}</div>
-            </div>`;
-        }
-
-        function leadBirthdayHtml(scope, curMonth) {
-            const items = scope.map(c => ({ c, b: leadBirth(c) })).filter(x => x.b && x.b.m === curMonth)
-                .sort((x, y) => (x.b.d || 99) - (y.b.d || 99) || (x.c.name || '').localeCompare(y.c.name || '', 'zh-Hant'));
-            const today = new Date().getDate();
-            const chips = items.map(({ c, b }) => {
-                const st = LEAD_STAGE_MAP[leadStageOf(c)];
-                const isToday = b.d === today;
-                const past = b.d && b.d < today;
-                return `<button type="button" onclick="openLeadModal('${esc(c.id)}')" class="lead-bday-chip flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-left transition hover:shadow-sm ${isToday ? 'bg-[#D4AF37]/15 border-[#D4AF37]' : past ? 'bg-slate-50 border-slate-200 opacity-70' : 'bg-pink-50/60 border-pink-100'}">
-                    <span class="text-xs font-black ${isToday ? 'text-[#8a6d0a]' : 'text-pink-600'} w-9 flex-shrink-0">${b.d ? curMonth + '/' + b.d : '—'}</span>
-                    <span class="text-xs font-bold text-slate-800 truncate">${esc(c.name)}</span>
-                    <span class="text-[9px] font-bold px-1 py-0.5 rounded ${st.bg} ${st.text} flex-shrink-0">${st.no}</span>
-                    ${isToday ? '<span class="text-[9px] font-bold text-[#8a6d0a] flex-shrink-0">今天！</span>' : ''}
-                </button>`;
-            }).join('');
-            return `
-            <div class="bg-white rounded-xl border border-pink-100 shadow-sm premium-shadow overflow-hidden" id="leadBdayBox">
-                <button type="button" onclick="leadToggleBday()" class="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left hover:bg-pink-50/40 transition">
-                    <span class="font-bold text-sm text-slate-800 flex items-center gap-2"><i class="fa-solid fa-cake-candles text-pink-500"></i> 本月生日提醒 <span class="text-xs font-bold text-pink-600 bg-pink-50 border border-pink-100 rounded-full px-2 py-0.5">${curMonth}月 · <span id="leadBdayCount">${items.length}</span> 位</span></span>
-                    <i class="fa-solid ${leadUi.bdayOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
-                </button>
-                ${leadUi.bdayOpen ? `<div class="px-4 pb-3 pt-1 border-t border-pink-50">
-                    ${items.length ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto">${chips}</div>` : '<p class="text-xs text-slate-400 py-2">本月沒有生日的名單</p>'}
-                </div>` : ''}
-            </div>`;
-        }
-
-        function renderLeadsView() {
-            const top = document.getElementById('leadTopArea');
-            const grid = document.getElementById('customerGridContainer'), empty = document.getElementById('emptyState');
-            if (top) top.classList.remove('hidden');
-            if (empty) empty.classList.replace('flex', 'hidden');
-            const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
-            const search = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-            const scope = customers.filter(c => c.progress === 'LEAD' && matchAgentFilter(c, fAgent));
-            const curMonth = new Date().getMonth() + 1;
-
-            // 篩選選項（來自現有資料）；若目前選的值已不存在則回到「全部」
-            const sources = leadCollect('source', scope), regions = leadCollect('region', scope);
-            const months = [...new Set(scope.map(c => (c.createdAt || '').substring(0, 7)).filter(Boolean))].sort().reverse();
-            if (leadUi.source !== 'ALL' && leadUi.source !== '__NONE__' && !sources.some(x => x[0] === leadUi.source)) leadUi.source = 'ALL';
-            if (leadUi.region !== 'ALL' && leadUi.region !== '__NONE__' && !regions.some(x => x[0] === leadUi.region)) leadUi.region = 'ALL';
-            if (leadUi.created !== 'ALL' && months.indexOf(leadUi.created) < 0) leadUi.created = 'ALL';
-
-            if (top) top.innerHTML = `<div class="space-y-3">${leadStripHtml(scope)}${leadBirthdayHtml(scope, curMonth)}</div>`;
-
-            const filtered = leadSortList(scope.filter(c => leadMatches(c, leadUi, search)), leadUi.sort);
-            const shown = filtered.slice(0, leadUi.limit);
-
-            const clsCount = k => scope.filter(c => { const cl = leadClsOf(c); return k === 'F' ? cl.some(x => x === 'F' || /^F\d$/.test(x)) : cl.indexOf(k) >= 0; }).length;
-            const opt = (v, label, cur) => `<option value="${esc(v)}" ${cur === v ? 'selected' : ''}>${esc(label)}</option>`;
-            const sel = (key, label, optsHtml) => `<label class="flex flex-col gap-0.5 min-w-0"><span class="text-[10px] font-bold text-slate-400">${label}</span><select id="leadF-${key}" onchange="leadSetFilter('${key}', this.value)" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] cursor-pointer">${optsHtml}</select></label>`;
-            const srcOpts = opt('ALL', '全部來源', leadUi.source) + sources.map(x => opt(x[0], `${x[0]} (${x[1]})`, leadUi.source)).join('') + opt('__NONE__', '(未填來源)', leadUi.source);
-            const regOpts = opt('ALL', '全部地區', leadUi.region) + regions.map(x => opt(x[0], `${x[0]} (${x[1]})`, leadUi.region)).join('') + opt('__NONE__', '(未填地區)', leadUi.region);
-            const clsOpts = opt('ALL', '全部分類', leadUi.cls) + LEAD_CLS.map(d => opt(d.k, `${d.label} (${clsCount(d.k)})`, leadUi.cls)).join('') +
-                `<optgroup label="F 子分類">` + LEAD_F_SUBS.map(d => opt(d.k, `${d.label} (${clsCount(d.k)})`, leadUi.cls)).join('') + `</optgroup>` + opt('__NONE__', '(未分類)', leadUi.cls);
-            const bmOpts = opt('ALL', '全部生日月', leadUi.bmonth) + Array.from({ length: 12 }, (_, i) => opt(String(i + 1), (i + 1) + '月' + (i + 1 === curMonth ? ' (本月)' : ''), leadUi.bmonth)).join('');
-            const crOpts = opt('ALL', '全部建檔月', leadUi.created) + months.map(m => opt(m, m, leadUi.created)).join('');
-            const sortOpts = LEAD_SORTS.map(s => opt(s[0], s[1], leadUi.sort)).join('');
-            const hasFilter = ['source', 'region', 'cls', 'bmonth', 'created'].some(k => leadUi[k] !== 'ALL') || leadUi.stage !== 'ALL' || !!search;
-            const stLabel = leadUi.stage === 'ALL' ? '全部階段' : `${LEAD_STAGE_MAP[leadUi.stage].no} ${LEAD_STAGE_MAP[leadUi.stage].name}`;
-
-            let listHtml;
-            if (!scope.length) {
-                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-seedling text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">開發名單庫目前沒有名單</p><p class="text-sm mt-1">點「新增名單」或用 CSV 批次匯入。</p></div>`;
-            } else if (!filtered.length) {
-                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-folder-open text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">沒有符合條件的名單</p><p class="text-sm mt-1">請調整篩選條件。</p></div>`;
-            } else {
-                listHtml = `<div class="hidden xl:grid grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_9.5rem] gap-x-3 px-3 py-2 bg-slate-50 border-b text-[11px] font-bold text-slate-500">
-                        <div>姓名 / 來源 · 地區 · 生日</div><div>一畝田階段 (可一鍵升級)</div><div>分類</div><div>下次提醒日</div><div class="text-right">操作</div></div>`
-                    + safeMap(shown, c => leadRowHtml(c, curMonth)).join('')
-                    + (filtered.length > shown.length ? `<div class="p-3 text-center"><button type="button" onclick="leadMoreRows()" id="leadMoreBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">顯示更多（還有 ${filtered.length - shown.length} 位）</button></div>` : '');
-            }
-
-            grid.innerHTML = `
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-3 p-3">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 items-end">
-                        ${sel('source', '準客戶來源', srcOpts)}${sel('region', '地區', regOpts)}${sel('cls', '分類 (A–F)', clsOpts)}${sel('bmonth', '生日月', bmOpts)}${sel('created', '建檔月', crOpts)}${sel('sort', '排序', sortOpts)}
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 bg-white">
-                        <span class="text-xs text-slate-500"><span class="font-bold text-slate-700">${stLabel}</span> · 符合 <span id="leadMatchCount" class="font-bold text-[#1E2E3D]">${filtered.length}</span> 位${filtered.length > shown.length ? `（顯示前 ${shown.length} 位）` : ''}</span>
-                        ${hasFilter ? `<button type="button" onclick="leadResetFilters()" id="leadClearBtn" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition"><i class="fa-solid fa-filter-circle-xmark"></i> 清除篩選</button>` : ''}
-                    </div>
-                    ${listHtml}
-                </div>`;
-        }
-
-        // ---------- 新增 / 編輯 彈窗 ----------
-        function leadRenderFormStage() {
-            const box = document.getElementById('leadStageBtns'); if (!box) return;
-            box.innerHTML = LEAD_STAGES.map(s => {
-                const on = leadFormStage === s.key;
-                return `<button type="button" data-stage="${s.key}" onclick="leadFormStage='${s.key}';leadRenderFormStage()" class="px-2 py-2 rounded-lg border text-xs font-bold text-left transition ${on ? s.bg + ' ' + s.text + ' ' + s.border + ' ring-2 ' + s.ring : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}"><i class="fa-solid ${s.icon} mr-1"></i>${s.no} ${s.name}<span class="block text-[9px] font-normal opacity-70">${s.hint}</span></button>`;
-            }).join('');
-        }
-        function leadToggleCls(k) {
-            const i = leadFormCls.indexOf(k);
-            if (i >= 0) {
-                leadFormCls.splice(i, 1);
-                if (k === 'F') leadFormCls = leadFormCls.filter(x => !/^F\d$/.test(x));
-            } else {
-                leadFormCls.push(k);
-                if (/^F\d$/.test(k) && leadFormCls.indexOf('F') < 0) leadFormCls.push('F');
-            }
-            leadRenderFormCls();
-        }
-        function leadRenderFormCls() {
-            const box = document.getElementById('leadClsBox'); if (!box) return;
-            const hasF = leadFormCls.indexOf('F') >= 0;
-            box.innerHTML = `<div class="flex flex-wrap gap-1.5">` + LEAD_CLS.map(d => {
-                const on = leadFormCls.indexOf(d.k) >= 0;
-                return `<button type="button" data-cls="${d.k}" aria-pressed="${on}" onclick="leadToggleCls('${d.k}')" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold transition ${on ? d.on : d.cls + ' hover:brightness-95'}">${esc(d.label)}</button>`;
-            }).join('') + `</div>` + (hasF ? `<div class="flex flex-wrap gap-1.5 mt-2 pl-3 border-l-2 border-purple-200">` + LEAD_F_SUBS.map(d => {
-                const on = leadFormCls.indexOf(d.k) >= 0;
-                return `<button type="button" data-cls="${d.k}" aria-pressed="${on}" onclick="leadToggleCls('${d.k}')" class="px-2 py-1 rounded-lg border text-[11px] font-bold transition ${on ? 'bg-purple-500 text-white border-purple-500' : 'bg-purple-50 text-purple-700 border-purple-200 hover:brightness-95'}">${esc(d.label)}</button>`;
-            }).join('') + `</div>` : '');
-        }
-        function leadSyncBirthUi() {
-            const v = document.getElementById('leadBirthday').value;
-            const sel = document.getElementById('leadBirthMonth');
-            if (v) { sel.value = String(parseInt(v.substring(5, 7), 10)); sel.disabled = true; }
-            else { sel.disabled = false; }
-        }
-        function leadFillDatalists() {
-            const srcs = [...new Set([...leadCollect('source', customers.filter(c => c.source)).map(x => x[0]), ...LEAD_DEFAULT_SOURCES])];
-            const regs = leadCollect('region', customers.filter(c => c.region)).map(x => x[0]);
-            const a = document.getElementById('leadSourceList'), b = document.getElementById('leadRegionList');
-            if (a) a.innerHTML = srcs.map(s => `<option value="${esc(s)}">`).join('');
-            if (b) b.innerHTML = regs.map(s => `<option value="${esc(s)}">`).join('');
-        }
-        function openLeadModal(id) {
-            leadFillDatalists();
-            const c = id ? customers.find(x => x.id === id) : null;
-            if (id && !c) return;
-            const $ = n => document.getElementById(n);
-            $('leadForm').reset();
-            $('leadId').value = c ? c.id : '';
-            $('leadModalTitle').textContent = c ? '編輯名單' : '新增名單';
-            $('leadDeleteBtn').classList.toggle('hidden', !c);
-            if (c) {
-                $('leadName').value = c.name || '';
-                $('leadSource').value = c.source || '';
-                $('leadRegion').value = c.region || '';
-                $('leadBirthday').value = /^\d{4}-\d{2}-\d{2}$/.test(c.birthday || '') ? c.birthday : '';
-                const b = leadBirth(c);
-                $('leadBirthMonth').value = b ? String(b.m) : '';
-                $('leadPhone').value = c.phone || '';
-                $('leadCompany').value = c.company || '';
-                $('leadNotes').value = c.notes || '';
-                $('leadNext').value = c.nextContactDate || '';
-                $('leadLastStage').value = c.lastStage || 'NURTURE';
-                $('leadAgent').value = c.agentName || '';
-                leadFormStage = leadStageOf(c);
-                leadFormCls = leadClsOf(c).slice();
-            } else {
-                $('leadLastStage').value = 'NURTURE';
-                const fAgent = document.getElementById('filterAgent')?.value;
-                $('leadAgent').value = (fAgent && !['ALL', 'PERSONAL', 'TEAM_ONLY'].includes(fAgent)) ? fAgent : '';
-                if (leadUi.source !== 'ALL' && leadUi.source !== '__NONE__') $('leadSource').value = leadUi.source;
-                if (leadUi.region !== 'ALL' && leadUi.region !== '__NONE__') $('leadRegion').value = leadUi.region;
-                leadFormStage = leadUi.stage !== 'ALL' ? leadUi.stage : 'SAPLING';
-                leadFormCls = (leadUi.cls !== 'ALL' && leadUi.cls !== '__NONE__') ? (/^F\d$/.test(leadUi.cls) ? [leadUi.cls, 'F'] : [leadUi.cls]) : [];
-            }
-            leadSyncBirthUi();
-            leadRenderFormStage(); leadRenderFormCls();
-            openModal('leadModal');
-        }
-        function handleLeadSave(e) {
-            e.preventDefault();
-            const $ = n => document.getElementById(n);
-            const name = $('leadName').value.trim();
-            if (!name) return showToast('請填寫姓名', 'error');
-            const id = $('leadId').value;
-            const bday = $('leadBirthday').value;
-            const bm = bday ? parseInt(bday.substring(5, 7), 10) : (parseInt($('leadBirthMonth').value, 10) || 0);
-            const cls = leadFormCls.slice();
-            let c = id ? customers.find(x => x.id === id) : null;
-            if (id && !c) { closeModal('leadModal'); return showToast('找不到這筆名單', 'error'); }
-            const isNew = !c;
-            if (isNew) {
-                c = { id: 'cust-' + Date.now(), category: 'NEW', progress: 'LEAD', createdAt: new Date().toISOString(), tags: [], history: [] };
-            }
-            c.name = name;
-            c.source = $('leadSource').value.trim();
-            c.region = $('leadRegion').value.trim();
-            c.acreStage = leadFormStage;
-            c.birthday = bday;
-            if (bm) c.birthMonth = bm; else delete c.birthMonth;
-            c.leadCls = cls;
-            c.phone = $('leadPhone').value.trim();
-            c.company = $('leadCompany').value.trim();
-            c.notes = $('leadNotes').value.trim();
-            c.nextContactDate = $('leadNext').value;
-            c.lastStage = $('leadLastStage').value || 'NURTURE';
-            c.agentName = $('leadAgent').value.trim();
-            if (isNew) customers.push(c);
-            recordState(); renderApp(); closeModal('leadModal');
-            showToast(isNew ? '名單已新增' : '名單已更新');
-        }
-        function leadDeleteFromModal() {
-            const id = document.getElementById('leadId').value;
-            if (!id) return;
-            closeModal('leadModal');
-            deleteLead(id);
-        }
-
         function renderCustomerGrid() {
-            // 開發名單庫：一畝田新版面（獨立渲染，不經過下方共用的過濾/月份邏輯）
-            if (currentMainTab === 'LEADS') { renderLeadsView(); return; }
-            { const lt = document.getElementById('leadTopArea'); if (lt) lt.classList.add('hidden'); }
             const grid = document.getElementById('customerGridContainer'), empty = document.getElementById('emptyState');
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
             const fCat = document.getElementById('filterCategory')?.value || 'ALL';
@@ -3641,7 +2613,6 @@
         }
 
         function openAddCustomerModal() {
-            if (currentMainTab === 'LEADS') { openLeadModal(); return; } // 開發名單庫使用一畝田專用新增視窗
             document.getElementById('addCustomerForm').reset();
             document.getElementById('addCreatedAt').valueAsDate = new Date();
             
