@@ -33,10 +33,6 @@
         /* 隱藏/展開動畫 */
         .dash-collapsed { max-height: 0; opacity: 0; overflow: hidden; margin-top: 0 !important; margin-bottom: 0 !important; }
         .dash-expanded { max-height: 2000px; opacity: 1; transition: all 0.4s ease-in-out; }
-        .at-addable { cursor: cell; transition: background-color .12s; }
-        .at-addable:hover { background-color: rgba(212,175,55,.10) !important; }
-        .at-chip[draggable="true"] { cursor: grab; }
-        .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -696,13 +692,12 @@
         <div id="airtableDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[55] p-4" onclick="if(event.target===this)closeModal('airtableDetailModal')">
             <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
                 <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center">
-                    <h3 id="airtableDetailTitle" class="font-bold font-editorial flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 跟進紀錄</h3>
+                    <h3 class="font-bold font-editorial flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 跟進紀錄</h3>
                     <button onclick="closeModal('airtableDetailModal')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <div id="airtableDetailBody" class="p-5 space-y-3 text-sm max-h-[60vh] overflow-y-auto"></div>
                 <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
                     <button onclick="closeModal('airtableDetailModal')" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">關閉</button>
-                    <button id="airtableDetailEditBtn" class="px-4 py-2 bg-[#D4AF37] hover:brightness-110 text-white rounded-lg text-sm font-bold"><i class="fa-regular fa-pen-to-square"></i> 編輯</button>
                     <button id="airtableDetailOpenBtn" class="px-4 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-clock-rotate-left"></i> 開啟歷程 / 新增跟進</button>
                 </div>
             </div>
@@ -749,11 +744,7 @@
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-clock text-[#D4AF37]"></i> 時間 <span class="font-normal text-slate-400">(選填)</span></label>
-                                    <input type="time" id="historyTime" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none">
-                                </div>
+                            <div class="grid grid-cols-2 gap-3">
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-comments text-[#D4AF37]"></i> 聯絡方式</label>
                                     <select id="historyMethod" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select>
@@ -855,7 +846,7 @@
                         </div>
                         <div><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><textarea id="leadNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">下次聯絡日 <span class="font-normal text-slate-400">(提醒；顯示在週曆)</span></label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">下次提醒日</label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">按「啟用」後進入</label>
                                 <select id="leadLastStage" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
                                     <option value="NURTURE">經營 🌱(自介)</option><option value="FIRST_VISIT">初訪 🤝</option><option value="KEY_VISIT">關鍵訪 🎯</option>
@@ -863,10 +854,6 @@
                             </div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">負責業務員</label><input type="text" id="leadAgent" list="agentList" autocomplete="off" placeholder="留白 = 個人" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         </div>
-                        <div id="leadContactsRow" class="hidden"><div class="flex items-center justify-between gap-2 border border-rose-200 bg-rose-50/60 rounded-xl px-3 py-2">
-                            <span class="text-xs text-slate-600"><i class="fa-regular fa-comments text-rose-500"></i> 聯絡紀錄：<b id="leadContactsSummary">0 筆</b></span>
-                            <button type="button" id="leadContactsBtn" onclick="openLeadContacts(document.getElementById('leadId').value)" class="px-3 py-1.5 bg-white border border-rose-300 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-50">開啟聯絡紀錄</button>
-                        </div></div>
                     </div>
                     <div class="px-4 sm:px-5 py-3 border-t bg-slate-50 flex items-center justify-between gap-2 flex-shrink-0">
                         <button type="button" id="leadDeleteBtn" onclick="leadDeleteFromModal()" class="hidden px-3 py-2 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold transition"><i class="fa-solid fa-trash-can"></i> 刪除</button>
@@ -876,108 +863,6 @@
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- v8：開發名單「聯絡紀錄」Modal（新增 / 編輯 / 刪除紀錄、設定下次聯絡日） -->
-        <div id="leadContactsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[56] p-3 sm:p-4" onclick="if(event.target===this)lcClose()">
-            <div class="bg-white rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial text-lg flex items-center gap-2 min-w-0"><i class="fa-regular fa-comments text-[#D4AF37]"></i> <span class="flex-shrink-0">聯絡紀錄</span><span id="lcName" class="text-sm font-normal text-white/80 truncate"></span></h3>
-                    <button type="button" onclick="lcClose()" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
-                    <input type="hidden" id="lcLeadId"><input type="hidden" id="lcEditIdx" value="">
-                    <div class="bg-rose-50/60 border border-rose-200 rounded-xl p-3">
-                        <label class="block text-xs font-bold text-rose-700 mb-1"><i class="fa-regular fa-bell"></i> 下次聯絡日 <span class="font-normal text-slate-400">(留白＝不排；會以「下次聯絡」標籤顯示在 Airtable 週曆)</span></label>
-                        <div class="flex flex-wrap items-center gap-1.5">
-                            <input type="date" id="lcNext" onchange="lcSetNext(this.value)" class="px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
-                            <button type="button" onclick="lcQuickNext(1)" class="text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-100 px-2 py-1.5 rounded border border-slate-200">明天</button>
-                            <button type="button" onclick="lcQuickNext(7)" class="text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-100 px-2 py-1.5 rounded border border-slate-200">一週後</button>
-                            <button type="button" onclick="lcQuickNext(30)" class="text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-100 px-2 py-1.5 rounded border border-slate-200">一個月後</button>
-                            <button type="button" id="lcNextClear" onclick="lcSetNext('')" class="text-[11px] font-bold bg-white text-rose-500 hover:bg-rose-50 px-2 py-1.5 rounded border border-rose-200">清除</button>
-                        </div>
-                    </div>
-                    <div class="border border-slate-200 rounded-xl p-3 space-y-2.5" id="lcFormBox">
-                        <p class="text-xs font-bold text-slate-600" id="lcFormTitle">新增聯絡紀錄</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="lcDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
-                            <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                        </div>
-                        <textarea id="lcContent" rows="2" placeholder="聯絡內容…" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea>
-                        <div class="flex justify-end gap-2">
-                            <button type="button" id="lcCancelEdit" onclick="lcResetForm()" class="hidden px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消編輯</button>
-                            <button type="button" id="lcSaveBtn" onclick="lcSave()" class="px-4 py-1.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-slate-600 mb-1.5">紀錄列表 <span id="lcCount" class="font-normal text-slate-400"></span></p>
-                        <div id="lcList" class="space-y-1.5"></div>
-                    </div>
-                </div>
-                <div class="px-4 sm:px-5 py-3 border-t bg-slate-50 flex justify-end flex-shrink-0">
-                    <button type="button" onclick="lcClose()" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold">完成</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- v9：週曆直接編輯 Modal -->
-        <div id="atEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[57] p-3 sm:p-4" onclick="if(event.target===this)closeModal('atEditModal')">
-            <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial flex items-center gap-2"><i class="fa-regular fa-pen-to-square text-[#D4AF37]"></i> <span id="atEdTitle">編輯紀錄</span></h3>
-                    <button type="button" onclick="closeModal('atEditModal')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="p-4 sm:p-5 overflow-y-auto space-y-3 text-sm">
-                    <div id="atEdWho" class="flex items-center gap-2 flex-wrap min-w-0"></div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atEdDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div id="atEdMore" class="contents">
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atEdTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atEdMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"></select></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atEdEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                            <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2 flex-shrink-0">
-                    <button type="button" id="atEdDelete" onclick="atEditDelete()" class="px-3 py-2 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-sm font-bold"><i class="fa-solid fa-trash-can"></i> 刪除</button>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="closeModal('atEditModal')" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消</button>
-                        <button type="button" id="atEdSave" onclick="atEditSave()" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold">儲存</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- v9：週曆「點空白格快速新增」Modal（可搜尋選客戶／名單） -->
-        <div id="atAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[57] p-3 sm:p-4" onclick="if(event.target===this)closeModal('atAddModal')">
-            <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial flex items-center gap-2"><i class="fa-solid fa-plus text-[#D4AF37]"></i> 新增紀錄</h3>
-                    <button type="button" onclick="closeModal('atAddModal')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="p-4 sm:p-5 overflow-y-auto space-y-3 text-sm">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 mb-1">客戶 / 開發名單 <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">(輸入姓名、公司、電話或業務員搜尋)</span></label>
-                        <input type="text" id="atAddSearch" autocomplete="off" placeholder="搜尋…" oninput="atAddRender()" onkeydown="if(event.key==='Enter'){event.preventDefault();atAddPickFirst()}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]">
-                        <div id="atAddList" role="listbox" class="mt-1 border border-slate-200 rounded-lg max-h-40 overflow-y-auto bg-white"></div>
-                        <p id="atAddPicked" class="text-xs mt-1"></p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atAddContent" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
-                    </div>
-                </div>
-                <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
-                    <button type="button" onclick="closeModal('atAddModal')" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消</button>
-                    <button type="button" id="atAddSaveBtn" onclick="atAddSave()" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-check"></i> 新增</button>
-                </div>
             </div>
         </div>
 
@@ -1413,7 +1298,7 @@
             const lsLabel = document.getElementById('lastStageLabel'); if (lsLabel) lsLabel.textContent = isLeadsTab ? '啟用後階段：' : '階段：';
             const lsSel = document.getElementById('filterLastStage'); if (lsSel && lsSel.options[0]) lsSel.options[0].text = isLeadsTab ? '啟用後階段(全部)' : '所有階段';
             const searchEl = document.getElementById('searchInput');
-            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : (isAirtableTab ? '搜尋客戶／開發名單姓名、聯絡方式、紀錄內容...' : '搜尋姓名、電話、商品、保單、備註...');
+            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : (isAirtableTab ? '搜尋客戶姓名、聯絡方式、紀錄內容...' : '搜尋姓名、電話、商品、保單、備註...');
 
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
@@ -1730,8 +1615,6 @@
         const XLS_CDN = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
         const XLS_SHEET = '我的一畝田';
         const XLS_HEADERS = ['準客戶來源', '姓名', '一畝田', '備註', '日曆📆', '地區', '生日月', '生日', 'A未來12個月可持續開拓', 'B高淨值', 'C一般', 'D需移除', 'E轉介紹 中心', 'F可招募(新苗圃)', 'F1.12個月內可加入', 'F2.可持續經營', 'F3.邀約說明會或面談', 'F4.邀約活動', 'F5.可移除'];
-        // v8：匯出多兩欄（最右邊）；匯入範本與舊版匯入檔仍是上面 19 欄，有沒有這兩欄都能匯入
-        const XLS_HEADERS_EXPORT = XLS_HEADERS.concat(['最近聯絡日', '下次聯絡日']);
         const XLS_FLAG_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'F1', 'F2', 'F3', 'F4', 'F5'];
         let xlsPlan = null;
 
@@ -1757,8 +1640,7 @@
                 '姓名': 'name', '名字': 'name', '準客戶來源': 'source', '來源': 'source',
                 '一畝田': 'stage', '一畝田階段': 'stage', '階段': 'stage', '備註': 'notes', '其他備註': 'notes',
                 '地區': 'region', '生日月': 'bmonth', '生日': 'birthday', '聯絡電話': 'phone', '電話': 'phone', '手機': 'phone',
-                '公司或職稱': 'company', '公司': 'company', '職稱': 'company', '分類': 'clsText', '分類標籤': 'clsText',
-                '最近聯絡日': 'lastContact', '最近聯絡': 'lastContact', '最後聯絡日': 'lastContact', '下次聯絡日': 'nextContact', '下次聯絡': 'nextContact', '下次提醒日': 'nextContact'
+                '公司或職稱': 'company', '公司': 'company', '職稱': 'company', '分類': 'clsText', '分類標籤': 'clsText'
             };
             if (exact[n]) return exact[n];
             if (n.indexOf('日曆') === 0) return 'cal';
@@ -1769,18 +1651,6 @@
             return null;
         }
 
-        // 日期字串 → YYYY-MM-DD；認不得回傳 ''（呼叫端另外判斷「有填但看不懂」）
-        function xlsParseDate(v) {
-            v = String(v == null ? '' : v).trim();
-            if (!v) return '';
-            let y, mo, d, m;
-            if ((m = /^(\d{4})\s*[-\/.年]\s*(\d{1,2})\s*[-\/.月]\s*(\d{1,2})/.exec(v))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
-            else if (/^\d{5}(\.\d+)?$/.test(v) && +v > 30000 && +v < 80000) { const dt = new Date(Math.round((+v - 25569) * 86400000)); y = dt.getUTCFullYear(); mo = dt.getUTCMonth() + 1; d = dt.getUTCDate(); }
-            else return '';
-            const t = new Date(y, mo - 1, d);
-            if (t.getFullYear() !== y || t.getMonth() !== mo - 1 || t.getDate() !== d) return '';
-            return y + '-' + xlsPad(mo) + '-' + xlsPad(d);
-        }
         // 2D 陣列（儲存格已轉為字串）→ 記錄
         function xlsRowsToRecords(rows) {
             let hi = -1;
@@ -1798,7 +1668,7 @@
             const hasFlagCols = Object.keys(flagCols).length > 0 || col.clsText !== undefined;
             const get = (r, k) => (col[k] !== undefined && r[col[k]] != null ? String(r[col[k]]) : '').trim();
             const blankish = v => /^[?？\-－—.]*$/.test(v) ? '' : v;
-            const recs = []; let noName = 0, badDates = 0;
+            const recs = []; let noName = 0;
             for (let i = hi + 1; i < rows.length; i++) {
                 const r = rows[i] || [];
                 if (!r.some(x => String(x == null ? '' : x).trim() !== '')) continue;
@@ -1815,19 +1685,15 @@
                 }
                 const bi = leadParseBirth(get(r, 'birthday'), get(r, 'bmonth'));
                 const stageTxt = get(r, 'stage');
-                const lastTxt = get(r, 'lastContact'), nextTxt = get(r, 'nextContact');
-                const lastD = xlsParseDate(lastTxt), nextD = xlsParseDate(nextTxt);
-                if ((lastTxt && !lastD) || (nextTxt && !nextD)) badDates++;
                 recs.push({
                     row: i + 1, name: name, key: xlsNameKey(name),
                     source: blankish(get(r, 'source')), region: blankish(get(r, 'region')),
                     stageTxt: stageTxt, stage: leadParseStage(stageTxt),
                     notes: get(r, 'notes'), phone: get(r, 'phone'), company: get(r, 'company'),
-                    cal: get(r, 'cal') !== '', birthday: bi.birthday, bmonth: bi.month, cls: cls,
-                    last: lastD, next: nextD
+                    cal: get(r, 'cal') !== '', birthday: bi.birthday, bmonth: bi.month, cls: cls
                 });
             }
-            return { recs: recs, ignoredCols: ignored, noName: noName, hasFlagCols: hasFlagCols, badDates: badDates };
+            return { recs: recs, ignoredCols: ignored, noName: noName, hasFlagCols: hasFlagCols };
         }
 
         function xlsCellStr(cell, XLSX) {
@@ -1894,7 +1760,7 @@
         }
 
         // ---- 比對 / 產生計畫（純計算，不改資料） ----
-        const XLS_FIELD_LABEL = { source: '準客戶來源', region: '地區', acreStage: '一畝田階段', notes: '備註', sendCalendar: '送月曆', birthday: '生日', leadCls: '分類', phone: '電話', company: '公司', nextContactDate: '下次聯絡日', lastContact: '最近聯絡日' };
+        const XLS_FIELD_LABEL = { source: '準客戶來源', region: '地區', acreStage: '一畝田階段', notes: '備註', sendCalendar: '送月曆', birthday: '生日', leadCls: '分類', phone: '電話', company: '公司' };
         function xlsStageText(k) { const st = LEAD_STAGE_MAP[k]; return st ? (st.no + ' ' + st.name) : ''; }
         function xlsBirthText(bd, bm) {
             if (bd) return bd.indexOf('1900-') === 0 ? (+bd.substr(5, 2) + '/' + +bd.substr(8, 2)) : bd;
@@ -1918,20 +1784,12 @@
                 if (!nb && ob && om === nm) { nb = ob; }            // 只有月份、且與系統生日同月 → 保留完整生日
                 if (nb !== ob || nm !== om) ch.push({ field: 'birthday', old: xlsBirthText(ob, om), neu: xlsBirthText(nb, nm), set: () => { c.birthday = nb; if (nm) c.birthMonth = nm; else delete c.birthMonth; } });
             }
-            // v8：下次聯絡日有填且不同 → 更新 nextContactDate；空白保留系統值
-            if (rec.next && leadValidDate(c.nextContactDate) !== rec.next) ch.push({ field: 'nextContactDate', old: c.nextContactDate || '', neu: rec.next, set: () => { c.nextContactDate = rec.next; } });
-            // v8：最近聯絡日只在「晚於所有現有紀錄」時才補一筆「(匯入)」聯絡紀錄（方式＝未註明）；否則忽略；絕不刪除既有紀錄
-            if (rec.last) {
-                const cur = leadLastContact(c);
-                if (!cur || rec.last > cur) ch.push({ field: 'lastContact', old: cur || '(無紀錄)', neu: rec.last + '（新增聯絡紀錄「(匯入)」）', set: () => { if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(xlsImportContact(rec.last)); } });
-            }
             if (rec.cls) {
                 const oc = leadClsOf(c).slice(), same = xlsNormCls(oc).join() === xlsNormCls(rec.cls).join();
                 if (!same) ch.push({ field: 'leadCls', old: oc.join(' ') || '(無)', neu: rec.cls.join(' '), set: () => { c.leadCls = rec.cls.slice(); } });
             }
             return ch;
         }
-        function xlsImportContact(date) { return { id: leadNewContactId(), date: date, method: '未註明', content: '(匯入)' }; }
         function xlsNewLead(rec, i, stamp) {
             const lead = {
                 id: 'cust-' + stamp + '-x' + i + '-' + Math.random().toString(36).slice(2, 7),
@@ -1943,8 +1801,6 @@
             };
             if (rec.bmonth) lead.birthMonth = rec.bmonth;
             if (rec.cal) lead.sendCalendar = true;
-            if (rec.next) lead.nextContactDate = rec.next;
-            if (rec.last) lead.contacts = [xlsImportContact(rec.last)];
             return lead;
         }
 
@@ -1954,7 +1810,7 @@
             leads.forEach(c => { const k = xlsNameKey(c.name); if (k) (byKey[k] = byKey[k] || []).push(c); });
             const cnt = {};
             parsed.recs.forEach(r => { cnt[r.key] = (cnt[r.key] || 0) + 1; });
-            const plan = { sheet: sheetName, ignoredCols: parsed.ignoredCols, badDates: parsed.badDates || 0, noName: parsed.noName, hasFlagCols: parsed.hasFlagCols, total: parsed.recs.length, items: [] };
+            const plan = { sheet: sheetName, ignoredCols: parsed.ignoredCols, noName: parsed.noName, hasFlagCols: parsed.hasFlagCols, total: parsed.recs.length, items: [] };
             parsed.recs.forEach(function (r) {
                 const ex = byKey[r.key] || [];
                 const conflict = ex.length > 1 || cnt[r.key] > 1;
@@ -2015,7 +1871,6 @@
                 (ev.same.length ? `；另有 <b>${ev.same.length}</b> 筆與系統資料相同、無需變更` : '') +
                 (plan.noName ? `；<b>${plan.noName}</b> 列沒有姓名已忽略` : '') +
                 (plan.ignoredCols ? `；${plan.ignoredCols} 個不認得的欄位已忽略` : '') +
-                (plan.badDates ? `；<b>${plan.badDates}</b> 個聯絡日欄位看不懂日期格式，已忽略` : '') +
                 (plan.hasFlagCols ? '' : '；此檔沒有分類欄位，分類不會變動') + '。系統內不在檔案裡的人不會被更動或刪除。</p>';
 
             // 更新
@@ -2122,11 +1977,10 @@
                 const full = /^(\d{4})-(\d{2})-(\d{2})/.exec(c.birthday || '');
                 let bday = null;   // 完整生日 → 日期儲存格 {y,m,d}；只有月/日（1900 佔位）→ 文字 m/d
                 if (b && b.d) bday = (b.y > 1900 && full) ? { date: [b.y, b.m, b.d] } : { text: b.m + '/' + b.d };
-                const dcell = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? { date: [+m[1], +m[2], +m[3]] } : null; };
                 return [
                     c.source || null, String(c.name || '').trim() || null, XLS_STAGE_TEXT[leadStageOf(c)], String(c.notes || '').trim() || null,
                     c.sendCalendar ? 'K' : null, c.region || null, b ? b.m : null, bday
-                ].concat(XLS_FLAG_ORDER.map(f => cls.has(f) ? f : null)).concat([dcell(leadLastContact(c)), dcell(leadValidDate(c.nextContactDate))]);   // v8：最右兩欄 最近聯絡日 / 下次聯絡日
+                ].concat(XLS_FLAG_ORDER.map(f => cls.has(f) ? f : null));
             });
         }
         function xlsExportStamp() { const d = new Date(); return d.getFullYear() + xlsPad(d.getMonth() + 1) + xlsPad(d.getDate()); }
@@ -2139,25 +1993,23 @@
             const csv = function () {
                 const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
                 const cell = (v, i) => (v && v.date) ? v.date[0] + '-' + xlsPad(v.date[1]) + '-' + xlsPad(v.date[2]) : (v && v.text) ? v.text : v;
-                const text = '\uFEFF' + [XLS_HEADERS_EXPORT].concat(rows.map(r => r.map(cell))).map(r => r.map(q).join(',')).join('\r\n');
+                const text = '\uFEFF' + [XLS_HEADERS].concat(rows.map(r => r.map(cell))).map(r => r.map(q).join(',')).join('\r\n');
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8;' }));
                 a.download = base + '.csv'; a.click();
                 showToast('無法載入 Excel 工具，已改為匯出 CSV（' + rows.length + ' 筆）', 'info');
             };
             xlsLoadLib().then(function (XLSX) {
-                const aoa = [XLS_HEADERS_EXPORT].concat(rows.map(r => r.map(v => (v && (v.date || v.text !== undefined)) ? null : v)));
+                const aoa = [XLS_HEADERS].concat(rows.map(r => r.map(v => (v && (v.date || v.text !== undefined)) ? null : v)));
                 const ws = XLSX.utils.aoa_to_sheet(aoa);
                 rows.forEach(function (r, i) {
-                    [7, XLS_HEADERS.length, XLS_HEADERS.length + 1].forEach(function (ci) {     // 生日、最近聯絡日、下次聯絡日 → 日期儲存格
-                        const v = r[ci]; if (!v) return;
-                        const addr = XLSX.utils.encode_cell({ r: i + 1, c: ci });
-                        if (v.text) ws[addr] = { t: 's', v: v.text };
-                        else ws[addr] = { t: 'n', v: Date.UTC(v.date[0], v.date[1] - 1, v.date[2]) / 86400000 + 25569, z: 'yyyy/m/d' };
-                    });
+                    const v = r[7]; if (!v) return;
+                    const addr = XLSX.utils.encode_cell({ r: i + 1, c: 7 });
+                    if (v.text) ws[addr] = { t: 's', v: v.text };
+                    else ws[addr] = { t: 'n', v: Date.UTC(v.date[0], v.date[1] - 1, v.date[2]) / 86400000 + 25569, z: 'yyyy/m/d' };
                 });
-                ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: XLS_HEADERS_EXPORT.length - 1 } });
-                ws['!cols'] = XLS_HEADERS_EXPORT.map((h, i) => ({ wch: i === 1 || i === 3 ? 22 : i === 2 ? 20 : 14 }));
+                ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: XLS_HEADERS.length - 1 } });
+                ws['!cols'] = XLS_HEADERS.map((h, i) => ({ wch: i === 1 || i === 3 ? 22 : i === 2 ? 20 : 14 }));
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, XLS_SHEET);
                 XLSX.writeFile(wb, base + '.xlsx');
@@ -2171,11 +2023,10 @@
             if(c) {
                 c.progress = c.lastStage || 'NURTURE'; 
                 c.history = c.history || [];
-                const carried = leadCarryContacts(c);     // v8：名單的聯絡紀錄帶入核心客戶歷程（含聯絡方式），不重複
                 c.history.push({ id:'h-'+Date.now(), date:new Date().toISOString().substring(0,10), content: `從開發名單庫正式啟用跟進`, progress: c.progress });
                 recordState();
                 renderApp();
-                showToast(`已將 ${c.name} 轉入核心看板！` + (carried ? `（已帶入 ${carried} 筆聯絡紀錄）` : ''));
+                showToast(`已將 ${c.name} 轉入核心看板！`);
             }
         }
 
@@ -3123,15 +2974,13 @@
             if (c.region) meta.push(`<span class="text-slate-500"><i class="fa-solid fa-location-dot text-slate-300 mr-0.5"></i>${esc(c.region)}</span>`);
             if (bText) meta.push(`<span class="${bThis ? 'text-[#8a6d0a] font-bold' : 'text-slate-500'}" title="${esc(c.birthday || '')}"><i class="fa-solid fa-cake-candles ${bThis ? 'text-[#D4AF37]' : 'text-slate-300'} mr-0.5"></i>${esc(bText)}</span>`);
             if (c.phone) meta.push(`<span data-phone="${esc(c.phone)}" onclick="copyToClipboard(this.dataset.phone, '電話')" class="text-slate-500 cursor-pointer hover:text-[#1E2E3D]" title="點擊複製"><i class="fa-solid fa-phone text-slate-300 mr-0.5"></i>${esc(c.phone)}</span>`);
-            { const lcd = leadLastContact(c); if (lcd) meta.push(`<span class="lead-lastcontact text-slate-500" title="最近聯絡日 ${esc(lcd)}"><i class="fa-regular fa-comments text-slate-300 mr-0.5"></i>最近聯絡 ${esc(lcd.substring(5, 7) + '/' + lcd.substring(8, 10))}</span>`); }
-            const ctN = leadContacts(c).length;
             const tagHtml = (c.tags || []).map(tid => { const t = customTags.find(x => x.id === tid); if (!t) return ''; const tc = tagColors[t.color] || tagColors['slate']; return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${tc.bg}">${esc(t.name)}</span>`; }).join('');
             const agent = (c.agentName && c.agentName.trim()) ? `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0"><i class="fa-solid fa-user-tie"></i> ${esc(c.agentName)}</span>` : '';
             const overdue = c.nextContactDate && c.nextContactDate <= leadTodayStr();
             const stageOpts = LEAD_STAGES.map(s => `<option value="${s.key}" ${s.key === sk ? 'selected' : ''}>${s.no} ${s.name}</option>`).join('');
             const lastLabel = (stageConfig[c.lastStage || 'NURTURE'] || {}).label || '';
             return `
-            <div class="lead-row px-3 py-2.5 border-b border-slate-100 hover:bg-slate-50 transition grid grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_12rem] gap-x-3 gap-y-1.5 xl:items-center" data-lead-id="${id}">
+            <div class="lead-row px-3 py-2.5 border-b border-slate-100 hover:bg-slate-50 transition grid grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_9.5rem] gap-x-3 gap-y-1.5 xl:items-center" data-lead-id="${id}">
                 <div class="min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" onclick="openLeadModal('${id}')" class="font-bold text-slate-800 hover:text-[#1E2E3D] hover:underline text-left">${esc(c.name)}</button>
@@ -3147,7 +2996,7 @@
                         : `<span class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[#D4AF37]" title="已是最高階段"><i class="fa-solid fa-star"></i></span>`}
                 </div>
                 <div class="flex flex-wrap items-center gap-1 min-h-[1.25rem] col-span-2 xl:col-span-1">${leadClsChipsHtml(c) || '<span class="text-[10px] text-slate-300">未分類</span>'}</div>
-                <div class="flex items-center gap-1 col-span-2 xl:col-span-1" title="下次聯絡日（提醒）">
+                <div class="flex items-center gap-1 col-span-2 xl:col-span-1" title="下次提醒日">
                         <input type="date" value="${esc(c.nextContactDate || '')}" onchange="updateLeadDate('${id}', this.value)" class="w-[7.6rem] text-xs p-1 border rounded focus:outline-none focus:ring-1 focus:ring-[#1E2E3D] bg-white ${overdue ? 'border-rose-300 text-rose-600' : 'border-slate-200 text-slate-600'}">
                         <button onclick="quickSetLeadDate('${id}', 'tomorrow')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">明</button>
                         <button onclick="quickSetLeadDate('${id}', 'month')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">下月</button>
@@ -3155,7 +3004,6 @@
                         <button onclick="quickSetLeadDate('${id}', 'year')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">一年</button>
                     </div>
                 <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
-                        <button onclick="openLeadContacts('${id}')" class="lead-contacts text-rose-500 hover:text-rose-700 transition px-1.5 py-1 text-xs font-bold whitespace-nowrap" title="聯絡紀錄（${ctN} 筆）"><i class="fa-regular fa-comments"></i>${ctN ? ' ' + ctN : ''}</button>
                         <button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用後進入核心看板：${esc(lastLabel)}">啟用 ➔</button>
                         <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                         <button onclick="deleteLead('${id}')" class="lead-del text-slate-300 hover:text-rose-500 transition px-2 py-1" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
@@ -3214,7 +3062,7 @@
                         <button type="button" id="xlsTemplateBtn" onclick="xlsDownloadTemplate()" title="下載與「我的一畝田」表頭相同的 Excel 範本" class="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 transition">匯入範本</button>
                         <input type="file" id="xlsInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="xlsHandleFile(event)">
                         <button type="button" id="xlsImportBtn" onclick="document.getElementById('xlsInput').click()" title="讀取「我的一畝田」Excel（或 .csv），先預覽再合併" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-excel"></i> 匯入 Excel</button>
-                        <button type="button" id="xlsExportBtn" onclick="xlsExport()" title="把目前「負責業務」範圍內的全部名單匯出成「我的一畝田」格式 Excel（不受搜尋/篩選影響；最右側多「最近聯絡日」「下次聯絡日」兩欄）" class="px-3 py-1.5 bg-white border border-emerald-600 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-export"></i> 匯出 Excel</button>
+                        <button type="button" id="xlsExportBtn" onclick="xlsExport()" title="把目前「負責業務」範圍內的全部名單匯出成「我的一畝田」格式 Excel（不受搜尋/篩選影響）" class="px-3 py-1.5 bg-white border border-emerald-600 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-export"></i> 匯出 Excel</button>
                     </div>
                 </div>
                 <div class="pl-2 grid grid-cols-2 lg:grid-cols-4 gap-2.5" id="leadStageCards">${cards}</div>
@@ -3289,8 +3137,8 @@
             } else if (!filtered.length) {
                 listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-folder-open text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">沒有符合條件的名單</p><p class="text-sm mt-1">請調整篩選條件。</p></div>`;
             } else {
-                listHtml = `<div class="hidden xl:grid grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_12rem] gap-x-3 px-3 py-2 bg-slate-50 border-b text-[11px] font-bold text-slate-500">
-                        <div>姓名 / 來源 · 地區 · 生日</div><div>一畝田階段 (可一鍵升級)</div><div>分類</div><div>下次聯絡日</div><div class="text-right">操作</div></div>`
+                listHtml = `<div class="hidden xl:grid grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_9.5rem] gap-x-3 px-3 py-2 bg-slate-50 border-b text-[11px] font-bold text-slate-500">
+                        <div>姓名 / 來源 · 地區 · 生日</div><div>一畝田階段 (可一鍵升級)</div><div>分類</div><div>下次提醒日</div><div class="text-right">操作</div></div>`
                     + safeMap(shown, c => leadRowHtml(c, curMonth)).join('')
                     + (filtered.length > shown.length ? `<div class="p-3 text-center"><button type="button" onclick="leadMoreRows()" id="leadMoreBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">顯示更多（還有 ${filtered.length - shown.length} 位）</button></div>` : '');
             }
@@ -3362,8 +3210,6 @@
             $('leadId').value = c ? c.id : '';
             $('leadModalTitle').textContent = c ? '編輯名單' : '新增名單';
             $('leadDeleteBtn').classList.toggle('hidden', !c);
-            $('leadContactsRow').classList.toggle('hidden', !c);
-            if (c) { const n = leadContacts(c).length, lc = leadLastContact(c); $('leadContactsSummary').textContent = n + ' 筆' + (lc ? '（最近 ' + lc + '）' : ''); }
             if (c) {
                 $('leadName').value = c.name || '';
                 $('leadSource').value = c.source || '';
@@ -3430,113 +3276,6 @@
             closeModal('leadModal');
             deleteLead(id);
         }
-
-        // ---- v8：開發名單「聯絡紀錄」Modal 邏輯 ----
-        function lcLead() { const c = customers.find(x => x.id === document.getElementById('lcLeadId').value); return c || null; }
-        function openLeadContacts(id) {
-            const c = customers.find(x => x.id === id); if (!c) return;
-            document.getElementById('lcLeadId').value = c.id;
-            document.getElementById('lcName').textContent = '— ' + (c.name || '');
-            lcResetForm();
-            lcRender();
-            openModal('leadContactsModal');
-        }
-        function lcClose() { closeModal('leadContactsModal'); }
-        function lcResetForm() {
-            document.getElementById('lcEditIdx').value = '';
-            document.getElementById('lcDate').value = leadTodayStr();
-            document.getElementById('lcMethod').innerHTML = LEAD_CT_METHODS.map(m => '<option value="' + m + '">' + m + '</option>').join('');
-            document.getElementById('lcMethod').value = 'Line';
-            document.getElementById('lcEndDate').value = ''; document.getElementById('lcTime').value = '';
-            document.getElementById('lcContent').value = '';
-            document.getElementById('lcFormTitle').textContent = '新增聯絡紀錄';
-            document.getElementById('lcSaveBtn').innerHTML = '<i class="fa-solid fa-plus"></i> 新增紀錄';
-            document.getElementById('lcCancelEdit').classList.add('hidden');
-        }
-        function lcRender() {
-            const c = lcLead(); if (!c) return;
-            document.getElementById('lcNext').value = leadValidDate(c.nextContactDate);
-            const raw = Array.isArray(c.contacts) ? c.contacts : [];
-            const items = [];
-            raw.forEach(function (ct, i) { if (ct && typeof ct === 'object') items.push({ ct: ct, i: i, d: leadCtDate(ct) }); });
-            items.sort((a, b) => { const ta = atValidTime(a.ct.time), tb = atValidTime(b.ct.time); return a.d < b.d ? 1 : a.d > b.d ? -1 : (ta < tb ? 1 : ta > tb ? -1 : b.i - a.i); });
-            const hist = (Array.isArray(c.history) ? c.history : []).filter(h => h && leadValidDate(h.date)).sort((a, b) => (a.date < b.date ? 1 : -1));
-            document.getElementById('lcCount').textContent = '(' + items.length + ' 筆' + (hist.length ? '，另有 ' + hist.length + ' 筆舊歷程' : '') + ')';
-            let h = '';
-            if (!items.length) h += '<p class="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-200 rounded-lg">還沒有聯絡紀錄。上方填好日期與內容後按「新增紀錄」。</p>';
-            items.forEach(function (o) {
-                const ct = o.ct, m = atMethodOf(ct), color = AT_METHODS[m] || '#64748B', end = leadValidDate(ct.endDate);
-                h += '<div class="lc-item flex items-start gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs" style="border-left:4px solid ' + color + '" data-lc-idx="' + o.i + '">' +
-                    '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono font-bold text-slate-700">' + esc(o.d || String(ct.date || '(無日期)')) + (atValidTime(ct.time) ? ' ' + atValidTime(ct.time) : '') + (end && end > o.d ? ' ~ ' + esc(end) : '') + '</span>' +
-                    '<span class="px-1.5 rounded text-[10px] font-bold ' + (m === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (m === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(m) + '</span></div>' +
-                    '<div class="text-slate-600 whitespace-pre-wrap break-words mt-0.5">' + esc(ct.content || '') + '</div></div>' +
-                    '<button type="button" class="lc-edit text-slate-400 hover:text-[#1E2E3D] px-1.5 py-1" title="編輯" onclick="lcEdit(' + o.i + ')"><i class="fa-regular fa-pen-to-square"></i></button>' +
-                    '<button type="button" class="lc-del text-slate-300 hover:text-rose-500 px-1.5 py-1" title="刪除" onclick="lcDelete(' + o.i + ')"><i class="fa-solid fa-trash-can"></i></button></div>';
-            });
-            if (hist.length) {
-                h += '<details class="mt-2"><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（唯讀，共 ' + hist.length + ' 筆；同樣會顯示在週曆）</summary><div class="space-y-1 mt-1">' +
-                    hist.map(x => '<div class="text-[11px] text-slate-500 bg-slate-50 rounded px-2 py-1"><span class="font-mono">' + esc(String(x.date).substring(0, 10)) + '</span> ' + (x.method ? '<b>' + esc(x.method) + '</b> ' : '') + esc(x.content || '') + '</div>').join('') + '</div></details>';
-            }
-            document.getElementById('lcList').innerHTML = h;
-        }
-        function lcAfterChange(msg) {
-            recordState(); renderApp(); lcRender();
-            if (msg) showToast(msg);
-        }
-        function lcSave() {
-            const c = lcLead(); if (!c) return;
-            const date = document.getElementById('lcDate').value;
-            if (!atParse(date)) return showToast('請選擇聯絡日期', 'error');
-            let method = document.getElementById('lcMethod').value; if (!method) method = 'Line';
-            const end = document.getElementById('lcEndDate').value;
-            const time = atValidTime(document.getElementById('lcTime').value);
-            const content = document.getElementById('lcContent').value.trim();
-            const idxStr = document.getElementById('lcEditIdx').value;
-            if (!Array.isArray(c.contacts)) c.contacts = [];
-            if (idxStr !== '' && c.contacts[+idxStr]) {
-                const ct = c.contacts[+idxStr];
-                ct.date = date; ct.method = method; ct.content = content;
-                if (atParse(end) && end > date) ct.endDate = end; else delete ct.endDate;
-                if (time) ct.time = time; else delete ct.time;
-                if (!ct.id) ct.id = leadNewContactId();
-                lcResetForm(); lcAfterChange('聯絡紀錄已更新');
-            } else {
-                const ct = { id: leadNewContactId(), date: date, method: method, content: content };
-                if (atParse(end) && end > date) ct.endDate = end;
-                if (time) ct.time = time;
-                c.contacts.push(ct);
-                lcResetForm(); lcAfterChange('聯絡紀錄已新增');
-            }
-        }
-        function lcEdit(i) {
-            const c = lcLead(); const ct = c && Array.isArray(c.contacts) ? c.contacts[i] : null; if (!ct) return;
-            const sel = document.getElementById('lcMethod'), m = ct.method ? String(ct.method) : '未註明';
-            sel.innerHTML = LEAD_CT_METHODS.concat(LEAD_CT_METHODS.indexOf(m) < 0 ? [m] : []).map(x => '<option value="' + esc(x) + '">' + esc(x) + '</option>').join('');
-            sel.value = m;
-            document.getElementById('lcEditIdx').value = String(i);
-            document.getElementById('lcDate').value = leadCtDate(ct);
-            document.getElementById('lcEndDate').value = leadValidDate(ct.endDate); document.getElementById('lcTime').value = atValidTime(ct.time);
-            document.getElementById('lcContent').value = ct.content || '';
-            document.getElementById('lcFormTitle').textContent = '編輯聯絡紀錄';
-            document.getElementById('lcSaveBtn').innerHTML = '<i class="fa-solid fa-check"></i> 儲存修改';
-            document.getElementById('lcCancelEdit').classList.remove('hidden');
-        }
-        function lcDelete(i) {
-            const c = lcLead(); if (!c || !Array.isArray(c.contacts) || !c.contacts[i]) return;
-            if (!window.confirm('確定刪除這筆聯絡紀錄？（可按「還原」復原）')) return;
-            c.contacts.splice(i, 1);
-            if (!c.contacts.length) delete c.contacts;
-            lcResetForm(); lcAfterChange('聯絡紀錄已刪除');
-        }
-        function lcSetNext(val) {
-            const c = lcLead(); if (!c) return;
-            val = val ? leadValidDate(val) : '';
-            c.nextContactDate = val;
-            const ln = document.getElementById('leadNext');
-            if (ln && document.getElementById('leadId').value === c.id) ln.value = val;   // 名單編輯視窗同時開著時保持同步
-            lcAfterChange(val ? '已設定下次聯絡日' : '已清除下次聯絡日');
-        }
-        function lcQuickNext(days) { const d = new Date(); d.setDate(d.getDate() + days); lcSetNext(atFmt(d)); }
 
         function renderCustomerGrid() {
             // 開發名單庫：一畝田新版面（獨立渲染，不經過下方共用的過濾/月份邏輯）
@@ -4190,7 +3929,6 @@
             if(!name) { switchTab('edit', 'basic'); return showToast('請填寫客戶姓名', 'error'); }
 
             const cat = document.getElementById('editCategory').value;
-            const wasLead = c.progress === 'LEAD';
             
             let realCat = cat;
             let progressVal = '';
@@ -4206,7 +3944,6 @@
             } else if (cat === 'NEW') {
                 progressVal = document.getElementById('editProgress').value;
             }
-            if (wasLead && progressVal !== 'LEAD') leadCarryContacts(c);     // v8：從編輯視窗把名單改成核心客戶，也帶入聯絡紀錄
 
             c.createdAt = new Date(document.getElementById('editCreatedAt').value+'T12:00:00Z').toISOString();
             c.name = name; c.birthday = document.getElementById('editBirthday').value; c.nextContactDate = document.getElementById('editNextContact').value;
@@ -4292,216 +4029,6 @@
         // ================= Airtable 模式：聯絡行事曆（週檢視） =================
         // 資料來源：即時讀取所有客戶的 c.history（不另存副本、不改雲端格式）。
         // 選填欄位：h.method（聯絡方式）、h.endDate（跨日結束日）；舊紀錄沒有 → 以「未註明」顯示、單日顯示。
-        // ---- v8：開發名單聯絡紀錄 / 下次聯絡 → 週曆 ----
-        // 資料全部存在「名單物件本身」：lead.contacts（選填陣列）＋ 既有的 lead.nextContactDate（＝名單庫「下次提醒日」，這裡正名為「下次聯絡日」）。
-        // 雲端 payload 的頂層鍵不變；舊名單沒有 contacts 照常運作。
-        let atKind = 'ALL'; // ALL / LEAD / CORE
-        const LEAD_CT_METHODS = ['Line', '電話', '面談', '其他'];
-        function leadContacts(c) { return (c && Array.isArray(c.contacts)) ? c.contacts.filter(function (x) { return x && typeof x === 'object'; }) : []; }
-        function leadCtDate(x) { const d = String((x && x.date) || '').substring(0, 10); return atParse(d) ? d : ''; }
-        function leadValidDate(v) { const d = String(v || '').substring(0, 10); return atParse(d) ? d : ''; }
-        // 名單的所有「聯絡紀錄」日期＝ contacts ＋（舊的）history；供「最近聯絡日」使用
-        function leadLastContact(c) {
-            let best = '';
-            leadContacts(c).forEach(function (x) { const d = leadCtDate(x); if (d > best) best = d; });
-            (c && Array.isArray(c.history) ? c.history : []).forEach(function (h) { const d = leadValidDate(h && h.date); if (d > best) best = d; });
-            return best;
-        }
-        function leadNewContactId() { return 'lc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6); }
-        // 啟用 / 轉入核心時：把名單的聯絡紀錄搬進 history（保留 method / endDate，附 srcContactId 避免重複），搬完從 contacts 移除，因此重複執行也不會重複。
-        function leadCarryContacts(c) {
-            const list = Array.isArray(c.contacts) ? c.contacts : [];
-            if (!list.length) return 0;
-            c.history = Array.isArray(c.history) ? c.history : [];
-            const have = new Set(), ids = new Set();
-            c.history.forEach(function (h) { if (h && h.srcContactId) have.add(h.srcContactId); if (h && h.id) ids.add(h.id); });
-            const keep = []; let n = 0, seq = Date.now() - list.length - 5;
-            list.forEach(function (ct) {
-                if (!ct || typeof ct !== 'object') return;
-                const d = leadCtDate(ct);
-                if (ct.id && have.has(ct.id)) return;                 // 已搬過 → 不重複
-                if (!d) { keep.push(ct); return; }                    // 日期壞掉的原樣保留，不丟資料
-                let hid; do { hid = 'h-' + (seq++); } while (ids.has(hid)); ids.add(hid);
-                const h = { id: hid, date: d, content: String(ct.content || ''), progress: '' };
-                if (ct.method) h.method = String(ct.method);
-                const e = leadValidDate(ct.endDate); if (e && e > d) h.endDate = e;
-                if (atValidTime(ct.time)) h.time = atValidTime(ct.time);
-                if (ct.id) { h.srcContactId = ct.id; have.add(ct.id); }
-                c.history.push(h); n++;
-            });
-            if (keep.length) c.contacts = keep; else delete c.contacts;
-            return n;
-        }
-        // ---- v9：時間欄位 + 週曆直接編輯 / 點空白新增 / 拖曳移動 ----
-        // 新增的選填欄位都在紀錄物件內：customer.history[].time、lead.contacts[].time（'HH:MM'）；雲端頂層鍵不變。
-        const AT_H0 = 8, AT_H1 = 23;     // 時間格：08:00 ~ 23:00（每小時一列）
-        function atValidTime(v) { const m = /^(\d{1,2}):(\d{2})/.exec(String(v == null ? '' : v).trim()); if (!m) return ''; const h = +m[1], mi = +m[2]; if (h > 23 || mi > 59) return ''; return atPad(h) + ':' + atPad(mi); }
-        function atHourOf(t) { return Math.min(AT_H1, Math.max(AT_H0, +String(t).substring(0, 2))); }
-        function atRecOf(c, src, idx) {
-            if (!c) return null;
-            if (src === 'n') return leadValidDate(c.nextContactDate) ? { date: c.nextContactDate } : null;
-            if (src === 'c') return Array.isArray(c.contacts) ? (c.contacts[idx] || null) : null;
-            return Array.isArray(c.history) ? (c.history[idx] || null) : null;
-        }
-        function atSaved(msg) { recordState(); renderApp(); if (msg) showToast(msg); }
-        const AT_FIELD_CLS = 'w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white';
-
-        // ---- 編輯 ----
-        let atEditRef = null;
-        function atOpenEdit(cid, src, idx) {
-            const c = customers.find(function (x) { return x.id === cid; }); const r = atRecOf(c, src, idx);
-            if (!c || !r) return;
-            atEditRef = { cid: cid, src: src, idx: idx };
-            const $ = function (n) { return document.getElementById(n); };
-            const isLead = c.progress === 'LEAD', isNext = src === 'n';
-            $('atEdWho').innerHTML = '<span class="font-bold text-[#1E2E3D] text-base truncate">' + esc(c.name) + '</span>' +
-                (isLead ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>' : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>') +
-                (isNext ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>' : '');
-            $('atEdTitle').textContent = isNext ? '調整下次聯絡日' : (isLead ? '編輯聯絡紀錄' : '編輯跟進紀錄');
-            $('atEdDate').value = leadValidDate(r.date);
-            $('atEdMore').classList.toggle('hidden', isNext);
-            $('atEdDelete').innerHTML = isNext ? '<i class="fa-solid fa-eraser"></i> 清除日期' : '<i class="fa-solid fa-trash-can"></i> 刪除';
-            if (!isNext) {
-                $('atEdTime').value = atValidTime(r.time);
-                $('atEdEnd').value = leadValidDate(r.endDate);
-                $('atEdContent').value = r.content || '';
-                const m = r.method ? String(r.method) : '';
-                const sel = $('atEdMethod');
-                sel.innerHTML = LEAD_CT_METHODS.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join('') +
-                    (LEAD_CT_METHODS.indexOf(m) < 0 ? '<option value="' + esc(m) + '">' + esc(m || '未註明') + '</option>' : '');
-                sel.value = m;
-            }
-            openModal('atEditModal');
-        }
-        function atEditSave() {
-            const ref = atEditRef; if (!ref) return;
-            const c = customers.find(function (x) { return x.id === ref.cid; }); const r = atRecOf(c, ref.src, ref.idx); if (!c || !r) return closeModal('atEditModal');
-            const $ = function (n) { return document.getElementById(n); };
-            const date = $('atEdDate').value;
-            if (!atParse(date)) return showToast('請選擇日期', 'error');
-            if (ref.src === 'n') c.nextContactDate = date;
-            else {
-                r.date = date;
-                const t = atValidTime($('atEdTime').value); if (t) r.time = t; else delete r.time;
-                const m = $('atEdMethod').value; if (m) r.method = m; else delete r.method;
-                const end = $('atEdEnd').value; if (atParse(end) && end > date) r.endDate = end; else delete r.endDate;
-                const ct = $('atEdContent').value; if (ct.trim() !== String(r.content || '').trim()) r.content = ct.trim();
-            }
-            closeModal('atEditModal'); atEditRef = null; atSaved('已儲存修改');
-        }
-        function atEditDelete() {
-            const ref = atEditRef; if (!ref) return;
-            const c = customers.find(function (x) { return x.id === ref.cid; }); const r = atRecOf(c, ref.src, ref.idx); if (!c || !r) return closeModal('atEditModal');
-            if (ref.src === 'n') {
-                if (!window.confirm('清除「下次聯絡日」？（可按「還原」復原）')) return;
-                c.nextContactDate = '';
-            } else {
-                if (!window.confirm('確定刪除這筆紀錄？（可按「還原」復原）')) return;
-                if (ref.src === 'c') { c.contacts.splice(ref.idx, 1); if (!c.contacts.length) delete c.contacts; }
-                else c.history.splice(ref.idx, 1);
-            }
-            closeModal('atEditModal'); atEditRef = null; atSaved('已刪除');
-        }
-
-        // ---- 點空白格新增 ----
-        let atAddPick = null;
-        function atAddRender() {
-            const q = (document.getElementById('atAddSearch').value || '').trim().toLowerCase();
-            let list = customers.filter(function (c) {
-                if (!q) return true;
-                return ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + (c.agentName || '')).toLowerCase().indexOf(q) >= 0;
-            });
-            list.sort(function (a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant'); });
-            const total = list.length; list = list.slice(0, 40);
-            document.getElementById('atAddList').innerHTML = list.length ? list.map(function (c) {
-                const lead = c.progress === 'LEAD';
-                return '<button type="button" role="option" class="at-add-opt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-amber-50 border-b border-slate-100 text-sm' + (atAddPick === c.id ? ' bg-amber-50' : '') + '" data-id="' + esc(c.id) + '" onclick="atAddPickPerson(this.dataset.id)">' +
-                    '<span class="font-bold text-[#1E2E3D] truncate">' + esc(c.name) + '</span>' +
-                    (lead ? '<span class="px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200 flex-shrink-0">開發名單</span>' : '<span class="px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300 flex-shrink-0">核心客戶</span>') +
-                    (c.agentName ? '<span class="text-[10px] text-indigo-600 flex-shrink-0">' + esc(c.agentName) + '</span>' : '') +
-                    (c.company ? '<span class="text-[10px] text-slate-400 truncate">' + esc(c.company) + '</span>' : '') + '</button>';
-            }).join('') + (total > 40 ? '<p class="text-[11px] text-slate-400 px-2.5 py-1">還有 ' + (total - 40) + ' 位，請輸入更多關鍵字</p>' : '') : '<p class="text-xs text-slate-400 px-2.5 py-3">找不到符合的客戶／名單</p>';
-            const pc = customers.find(function (x) { return x.id === atAddPick; });
-            document.getElementById('atAddPicked').innerHTML = pc ? '已選擇：<b class="text-[#1E2E3D]">' + esc(pc.name) + '</b> ' + (pc.progress === 'LEAD' ? '<span class="text-rose-600 font-bold">（開發名單 → 存成聯絡紀錄）</span>' : '<span class="text-slate-500 font-bold">（核心客戶 → 存成跟進紀錄）</span>') : '<span class="text-slate-400">尚未選擇（請在上方搜尋並點選）</span>';
-        }
-        function atAddPickPerson(id) { atAddPick = id; atAddRender(); }
-        function atAddPickFirst() { const b = document.querySelector('#atAddList .at-add-opt'); if (b) atAddPickPerson(b.dataset.id); }
-        function atOpenAdd(date, time, presetId) {
-            const $ = function (n) { return document.getElementById(n); };
-            atAddPick = presetId || null;
-            $('atAddSearch').value = '';
-            $('atAddDate').value = leadValidDate(date) || atToday();
-            $('atAddTime').value = atValidTime(time);
-            $('atAddMethod').value = 'Line'; $('atAddEnd').value = ''; $('atAddContent').value = '';
-            atAddRender();
-            openModal('atAddModal');
-            setTimeout(function () { try { $('atAddSearch').focus(); } catch (e) {} }, 30);
-        }
-        function atAddSave() {
-            const $ = function (n) { return document.getElementById(n); };
-            const c = customers.find(function (x) { return x.id === atAddPick; });
-            if (!c) return showToast('請先選擇客戶或名單', 'error');
-            const date = $('atAddDate').value; if (!atParse(date)) return showToast('請選擇日期', 'error');
-            const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = $('atAddContent').value.trim();
-            if (c.progress === 'LEAD') {
-                const r = { id: leadNewContactId(), date: date, method: method, content: content };
-                if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
-                if (!Array.isArray(c.contacts)) c.contacts = [];
-                c.contacts.push(r);
-            } else {
-                c.history = Array.isArray(c.history) ? c.history : [];
-                const ids = new Set(c.history.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
-                const r = { id: hid, date: date, content: content, progress: c.progress || '', method: method };
-                if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
-                c.history.push(r);
-            }
-            closeModal('atAddModal'); atAddPick = null; atSaved('已新增 ' + c.name + ' 的' + (c.progress === 'LEAD' ? '聯絡紀錄' : '跟進紀錄'));
-        }
-        function atCellClick(e, el) {
-            if (e.target.closest && e.target.closest('.at-chip')) return;
-            const h = el.getAttribute('data-hour');
-            atOpenAdd(el.getAttribute('data-date'), h ? atPad(+h) + ':00' : '');
-        }
-
-        // ---- 拖曳移動（桌機；HTML5 drag & drop）----
-        function atMove(cid, src, idx, date, hour) {
-            const c = customers.find(function (x) { return x.id === cid; }); const r = atRecOf(c, src, idx);
-            if (!c || !r || !atParse(date)) return;
-            const before = [r.date, r.time, r.endDate, c.nextContactDate].join('|');
-            if (src === 'n') c.nextContactDate = date;
-            else {
-                const od = leadValidDate(r.date), oe = leadValidDate(r.endDate), multi = !!(oe && oe > od);
-                const delta = Math.round((atParse(date) - atParse(od)) / 86400000);
-                r.date = date;
-                if (multi) r.endDate = atAdd(oe, delta);
-                if (hour == null || hour === '') { if (!multi) delete r.time; }                 // 丟到「未定時間」帶 → 變成沒有時間
-                else { const t = atValidTime(r.time); if (!t || atHourOf(t) !== +hour) r.time = atPad(+hour) + ':00'; }   // 同一小時內保留原分鐘
-            }
-            if ([r.date, r.time, r.endDate, c.nextContactDate].join('|') === before) return;
-            atSaved('已移動：' + c.name + ' → ' + date.substring(5).replace('-', '/') + (src !== 'n' && r.time ? ' ' + r.time : ''));
-        }
-        function atBindDnd(area) {
-            if (area._atDnd) return; area._atDnd = true;
-            let drag = null;
-            const clr = function () { area.querySelectorAll('.at-drop-hl').forEach(function (x) { x.classList.remove('at-drop-hl'); }); };
-            area.addEventListener('dragstart', function (e) {
-                const el = e.target.closest && e.target.closest('.at-chip[data-src]'); if (!el) return;
-                drag = { cid: el.getAttribute('data-cid'), src: el.getAttribute('data-src'), idx: +el.getAttribute('data-hi') };
-                e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', JSON.stringify(drag)); } catch (x) {}
-                setTimeout(function () { el.classList.add('opacity-40'); }, 0);
-            });
-            area.addEventListener('dragend', function () { drag = null; clr(); area.querySelectorAll('.opacity-40').forEach(function (x) { x.classList.remove('opacity-40'); }); });
-            area.addEventListener('dragover', function (e) {
-                if (!drag) return; const cell = e.target.closest && e.target.closest('[data-drop]'); if (!cell) return;
-                e.preventDefault(); e.dataTransfer.dropEffect = 'move';
-                if (!cell.classList.contains('at-drop-hl')) { clr(); cell.classList.add('at-drop-hl'); }
-            });
-            area.addEventListener('drop', function (e) {
-                if (!drag) return; const cell = e.target.closest && e.target.closest('[data-drop]'); if (!cell) return;
-                e.preventDefault(); const d = drag; drag = null; clr();
-                atMove(d.cid, d.src, d.idx, cell.getAttribute('data-date'), cell.getAttribute('data-hour'));
-            });
-        }
         let atWeekStart = null; // 目前顯示週的「週日」，格式 YYYY-MM-DD
         const AT_DOW = ['日', '一', '二', '三', '四', '五', '六'];
         const AT_METHODS = {
@@ -4531,88 +4058,52 @@
             const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
             const search = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
             const out = [];
-            const hit = function (c, method, content) {
-                if (!search) return true;
-                const hay = ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + method + ' ' + (content || '')).toLowerCase();
-                return hay.indexOf(search) >= 0;
-            };
             customers.forEach(function (c) {
-                if (!matchAgentFilter(c, fAgent)) return;                     // 負責業務：名單與客戶都用 agentName
+                if (!matchAgentFilter(c, fAgent)) return;
                 if (activeTagFilters.length > 0 && !activeTagFilters.some(function (tid) { return c.tags && c.tags.includes(tid); })) return;
-                const isLead = c.progress === 'LEAD', kind = isLead ? 'LEAD' : 'CORE';
-                if (atKind === 'LEAD' && !isLead) return;
-                if (atKind === 'CORE' && isLead) return;
-                const hist = Array.isArray(c.history) ? c.history : [];
-                hist.forEach(function (h, idx) {
+                (c.history || []).forEach(function (h, idx) {
                     if (!h) return;
                     const ds = String(h.date || '').substring(0, 10);
                     if (!atParse(ds)) return;
                     let end = String(h.endDate || '').substring(0, 10);
                     if (!atParse(end) || end < ds) end = ds;
                     const method = atMethodOf(h);
-                    if (!hit(c, method, h.content)) return;
-                    const ts = /^h-(\d+)/.exec(h.id || '');
-                    out.push({ c: c, h: h, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, kind: kind, src: 'h', time: atValidTime(h.time) });
+                    if (search) {
+                        const hay = ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + method + ' ' + (h.content || '')).toLowerCase();
+                        if (hay.indexOf(search) < 0) return;
+                    }
+                    const ts = /^h-(\d+)/.exec(h.id || ''); 
+                    out.push({ c: c, h: h, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0 });
                 });
-                // 聯絡紀錄（lead.contacts）；已搬進 history 的（srcContactId）不重複顯示
-                const moved = new Set(); hist.forEach(function (h) { if (h && h.srcContactId) moved.add(h.srcContactId); });
-                (Array.isArray(c.contacts) ? c.contacts : []).forEach(function (ct, idx) {
-                    if (!ct || typeof ct !== 'object') return;
-                    if (ct.id && moved.has(ct.id)) return;
-                    const ds = leadCtDate(ct); if (!ds) return;
-                    let end = leadValidDate(ct.endDate); if (!end || end < ds) end = ds;
-                    const method = atMethodOf(ct);
-                    if (!hit(c, method, ct.content)) return;
-                    const ts = /^lc-(\d+)/.exec(ct.id || '');
-                    out.push({ c: c, h: ct, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0, kind: kind, src: 'c', time: atValidTime(ct.time) });
-                });
-                // 下次聯絡日（名單的 nextContactDate）→ 獨立樣式的「下次聯絡」chip
-                if (isLead) {
-                    const nd = leadValidDate(c.nextContactDate);
-                    if (nd && hit(c, '下次聯絡', '下次聯絡 開發名單')) out.push({ c: c, h: { date: nd, content: '' }, idx: -1, start: nd, end: nd, method: '下次聯絡', ts: 9e15, kind: 'LEAD', src: 'n', time: '' });
-                }
             });
-            out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : (a.time < b.time ? -1 : a.time > b.time ? 1 : 0) || (a.ts - b.ts) || String(a.c.name).localeCompare(String(b.c.name), 'zh-Hant'); });
+            out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : (a.ts - b.ts) || String(a.c.name).localeCompare(String(b.c.name), 'zh-Hant'); });
             return out;
         }
         function atEvTitle(ev) {
-            const tag = ev.src === 'n' ? '開發名單' : (ev.kind === 'LEAD' ? '開發名單' : '核心客戶');
-            return ev.start + (ev.time ? ' ' + ev.time : '') + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + tag + '｜' + ev.method + '\n' + (ev.h.content || '');
+            return ev.start + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + ev.method + '\n' + (ev.h.content || '');
         }
-        const AT_LEAD_COLOR = '#E11D48';   // 開發名單／下次聯絡 的識別色（玫瑰紅）；核心客戶沿用深藍
-        function atKindPill(ev) {
-            if (ev.src === 'n') return '<span class="at-kind at-kind-next flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>';
-            if (ev.kind === 'LEAD') return '<span class="at-kind at-kind-lead flex-shrink-0 px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>';
-            return '<span class="at-kind at-kind-core flex-shrink-0 px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>';
-        }
-        function atChipAttrs(ev) {
-            return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-kind="' + ev.kind + '" data-time="' + esc(ev.time || '') + '" draggable="true" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
-        }
-        function atChipHtml(ev, dayStr, mode) {
-            const isNext = ev.src === 'n', isLead = ev.kind === 'LEAD';
-            const color = isNext ? AT_LEAD_COLOR : (AT_METHODS[ev.method] || '#64748B');
+        function atChipHtml(ev, dayStr) {
+            const color = AT_METHODS[ev.method] || '#64748B';
             const multi = ev.end !== ev.start;
-            let dateTxt = mode === 'hour' ? (ev.time || '') : ((ev.time ? ev.time + ' ' : '') + atMD(ev.start) + (multi ? '~' + atMD(ev.end) : ''));
+            let dateTxt = atMD(ev.start) + (multi ? '~' + atMD(ev.end) : '');
             let dayHint = '';
             if (multi && dayStr) { const n = Math.round((atParse(dayStr) - atParse(ev.start)) / 86400000) + 1, tot = Math.round((atParse(ev.end) - atParse(ev.start)) / 86400000) + 1; dayHint = ' <span class="text-slate-400">(第' + n + '/' + tot + '天)</span>'; }
             const unknown = ev.method === '未註明';
-            const skin = isNext ? 'bg-white border border-dashed border-rose-400 hover:border-rose-600' : (isLead ? 'bg-rose-50/70 border border-rose-200 hover:border-rose-400' : 'bg-white border border-slate-200 hover:border-[#D4AF37]');
-            const right = isNext ? '' : '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + color + '"') + '>' + esc(ev.method) + '</span>';
-            const body = isNext ? '<div class="text-rose-700">預定下次聯絡' + (ev.c.agentName ? '・' + esc(ev.c.agentName) : '') + '</div>'
-                : '<div class="text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(String(ev.h.content || '').substring(0, 160)) + '</div>';
-            return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isLead ? 'lead' : 'core')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + '" ' + atChipAttrs(ev) + '>' +
-                '<div class="flex items-center gap-1 min-w-0 flex-wrap"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
-                '<span class="font-bold text-[#1E2E3D] truncate">' + esc(ev.c.name) + '</span>' + right + '</div>' +
-                '<div class="mt-0.5">' + atKindPill(ev) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
+            return '<button type="button" class="at-chip block w-full text-left rounded-md bg-white border border-slate-200 hover:border-[#D4AF37] hover:shadow-md transition px-2 py-1 text-[11px] leading-snug" style="border-left:4px solid ' + color + '" ' +
+                'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)">' +
+                '<div class="flex items-center gap-1 min-w-0"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
+                '<span class="font-bold text-[#1E2E3D] truncate">' + esc(ev.c.name) + '</span>' +
+                '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + color + '"') + '>' + esc(ev.method) + '</span></div>' +
+                '<div class="text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(String(ev.h.content || '').substring(0, 160)) + '</div>' + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
                 '</button>';
         }
         function atBarHtml(ev, colStart, colEnd, lane, weekStart, weekEnd) {
-            const isLead = ev.kind === 'LEAD';
             const color = AT_METHODS[ev.method] || '#64748B';
             const clipL = ev.start < weekStart, clipR = ev.end > weekEnd;
-            return '<button type="button" class="at-chip at-bar at-chip-' + (isLead ? 'lead' : 'core') + ' text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
-                'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2' + (isLead ? ';box-shadow:inset 0 -3px 0 ' + AT_LEAD_COLOR : '') + '" ' + atChipAttrs(ev) + '>' +
-                (clipL ? '◀ ' : '') + (isLead ? '[開發名單] ' : '') + (ev.time ? ev.time + ' ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80)) + (clipR ? ' ▶' : '') + '</button>';
+            return '<button type="button" class="at-chip at-bar text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
+                'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2" ' +
+                'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)">' +
+                (clipL ? '◀ ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80)) + (clipR ? ' ▶' : '') + '</button>';
         }
         function renderAirtableCalendar() {
             const area = document.getElementById('airtableArea');
@@ -4634,10 +4125,7 @@
                 (lanes[li] = lanes[li] || []).push({ e: e, cs: cs, ce: ce });
             });
             const custCount = new Set(inWeek.map(function (e) { return e.c.id; })).size;
-            const recWeek = inWeek.filter(function (e) { return e.src !== 'n'; }), nextCnt = inWeek.length - recWeek.length;
-            const leadRec = recWeek.filter(function (e) { return e.kind === 'LEAD'; }).length, coreRec = recWeek.length - leadRec;
-            const unknownCnt = recWeek.filter(function (e) { return e.method === '未註明'; }).length;
-            const kindBtn = function (k, label, cls) { return '<button type="button" id="atKind' + k + '" data-kind="' + k + '" onclick="atSetKind(\'' + k + '\')" aria-pressed="' + (atKind === k) + '" class="at-kind-btn px-2.5 py-1.5 text-xs font-bold border-l first:border-l-0 border-slate-200 transition ' + (atKind === k ? cls : 'bg-white text-slate-500 hover:bg-slate-100') + '">' + label + '</button>'; };
+            const unknownCnt = inWeek.filter(function (e) { return e.method === '未註明'; }).length;
             const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 0 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
 
             // ---- 工具列 ----
@@ -4659,60 +4147,41 @@
                     '</div>' +
                 '</div>' +
                 '<div class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">' +
-                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + recWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (leadRec ? '（開發名單紀錄 ' + leadRec + ' ／ 核心客戶紀錄 ' + coreRec + '）' : '') + (nextCnt ? ' · ' + nextCnt + ' 個下次聯絡' : '') + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
-                    '<div id="atKindFilter" class="flex items-center border border-slate-200 rounded-lg overflow-hidden" role="group" aria-label="顯示範圍">' + kindBtn('ALL', '全部', 'bg-[#1E2E3D] text-white') + kindBtn('LEAD', '只看開發名單', 'bg-rose-600 text-white') + kindBtn('CORE', '只看核心客戶', 'bg-[#1E2E3D] text-white') + '</div>' +
-                    '<span class="flex items-center gap-1"><span class="at-kind px-1 rounded text-[9px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span><span class="at-kind px-1 rounded text-[9px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span><span class="at-kind px-1 rounded text-[9px] font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span></span>' +
+                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + inWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
                     Object.keys(AT_METHODS).map(function (m) { return '<span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:' + AT_METHODS[m] + '"></span>' + m + '</span>'; }).join('') +
-                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上</span>' +
+                    '<span class="ml-auto hidden sm:inline">點選紀錄可看全文</span>' +
                 '</div></div>';
 
             // ---- 桌機：7 欄週格 ----
             const gridRows = lanes.length;
-            html += '<div id="atDesktop" class="hidden md:block bg-white rounded-xl border border-slate-200 premium-shadow overflow-hidden">' +
-                '<div class="flex"><div class="at-gutter flex-shrink-0 border-r border-b border-slate-200 bg-slate-50 flex flex-col justify-end" style="width:3.5rem"><div class="text-[10px] font-bold text-slate-400 text-center leading-tight px-0.5" style="min-height:64px;padding-top:8px">未定時間<br>跨日</div></div>' +
-                '<div class="flex-1 min-w-0"><div class="grid" id="atGrid" style="grid-template-columns:repeat(7,minmax(0,1fr))">';
+            html += '<div id="atDesktop" class="hidden md:block bg-white rounded-xl border border-slate-200 premium-shadow overflow-hidden"><div class="grid grid-cols-7" id="atGrid">';
             days.forEach(function (d, i) {
                 const dd = atParse(d);
                 html += '<div class="at-dayhead px-2 py-2 border-b border-r border-slate-200 last:border-r-0 text-center ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-600') + '" style="grid-row:1;grid-column:' + (i + 1) + '" data-date="' + d + '">' +
                     '<div class="text-xs font-bold">週' + AT_DOW[i] + '</div><div class="text-xl font-black font-editorial leading-none mt-0.5 ' + (d === today ? 'text-[#D4AF37]' : '') + '">' + (dd.getMonth() + 1) + '/' + dd.getDate() + '</div></div>';
             });
             lanes.forEach(function (lane, li) {
-                for (let i = 0; i < 7; i++) html += '<div class="at-addable border-r border-slate-100 ' + dayBg(days[i], i) + '" style="grid-row:' + (li + 2) + ';grid-column:' + (i + 1) + ';height:28px" data-drop="1" data-date="' + days[i] + '" onclick="atCellClick(event,this)"></div>';
+                for (let i = 0; i < 7; i++) html += '<div class="border-r border-slate-100 ' + dayBg(days[i], i) + '" style="grid-row:' + (li + 2) + ';grid-column:' + (i + 1) + ';height:28px"></div>';
                 lane.forEach(function (o) { html += atBarHtml(o.e, o.cs, o.ce, li, ws, we); });
             });
             days.forEach(function (d, i) {
-                const evs = single.filter(function (e) { return e.start === d && !e.time; });      // 沒有時間 → 「未定時間」帶
-                html += '<div class="at-daycell at-addable border-r border-b border-slate-200 p-1.5 space-y-1 ' + dayBg(d, i) + '" style="grid-row:' + (gridRows + 2) + ';grid-column:' + (i + 1) + ';min-height:64px" data-drop="1" data-date="' + d + '" onclick="atCellClick(event,this)">' +
-                    evs.map(function (e) { return atChipHtml(e, null); }).join('') + (evs.length ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
+                const evs = single.filter(function (e) { return e.start === d; });
+                html += '<div class="at-daycell border-r border-slate-200 p-1.5 space-y-1 ' + dayBg(d, i) + '" style="grid-row:' + (gridRows + 2) + ';grid-column:' + (i + 1) + ';min-height:300px" data-date="' + d + '">' +
+                    evs.map(function (e) { return atChipHtml(e, null); }).join('') + '</div>';
             });
-            html += '</div></div></div>';
-            // ---- 時間格：08:00 ~ 23:00，每小時一列；12:00 與 17:00 列上緣為粗線（上午｜下午｜晚上）----
-            html += '<div id="atTimeGrid" class="grid" style="grid-template-columns:3.5rem repeat(7,minmax(0,1fr))">';
-            for (let hr = AT_H0; hr <= AT_H1; hr++) {
-                const thick = (hr === 12 || hr === 17);
-                const topSt = thick ? 'border-top:3px solid #1E2E3D' : 'border-top:1px solid #e2e8f0';
-                const part = hr === AT_H0 ? '上午' : hr === 12 ? '下午' : hr === 17 ? '晚上' : '';
-                html += '<div class="at-hourlabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-1" data-hour="' + hr + '" style="' + topSt + ';min-height:46px"><div class="text-[11px] font-mono font-bold text-slate-500 leading-none">' + atPad(hr) + ':00</div>' + (part ? '<div class="text-[9px] font-bold text-[#8a6d0a] leading-tight mt-0.5">' + part + '</div>' : '') + '</div>';
-                days.forEach(function (d, i) {
-                    const evs = single.filter(function (e) { return e.start === d && e.time && atHourOf(e.time) === hr; });
-                    html += '<div class="at-hourcell at-addable border-r border-slate-100 p-1 space-y-1 ' + dayBg(d, i) + (thick ? ' at-thick' : '') + '" style="' + topSt + ';min-height:46px" data-drop="1" data-date="' + d + '" data-hour="' + hr + '" onclick="atCellClick(event,this)">' +
-                        evs.map(function (e) { return atChipHtml(e, null, 'hour'); }).join('') + (evs.length ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
-                });
-            }
             html += '</div></div>';
 
             // ---- 手機：逐日堆疊 ----
             html += '<div id="atMobile" class="md:hidden space-y-2">';
             days.forEach(function (d, i) {
-                const evs = inWeek.filter(function (e) { return e.start <= d && e.end >= d; }).sort(function (a, b) { return a.time < b.time ? -1 : a.time > b.time ? 1 : 0; });   // 未定時間在前，其餘依時間
+                const evs = inWeek.filter(function (e) { return e.start <= d && e.end >= d; });
                 const dd = atParse(d);
                 html += '<div class="at-mday bg-white rounded-xl border ' + (d === today ? 'border-[#D4AF37]' : 'border-slate-200') + ' overflow-hidden" data-date="' + d + '">' +
-                    '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="flex items-center gap-2"><span class="text-xs opacity-80">' + evs.length + ' 筆</span><button type="button" class="at-madd px-2 py-0.5 rounded-md text-xs font-bold bg-[#D4AF37] text-white" onclick="atOpenAdd(\'' + d + '\', \'\')" title="在這天新增紀錄"><i class="fa-solid fa-plus"></i> 新增</button></span></div>' +
+                    '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="text-xs opacity-80">' + evs.length + ' 筆</span></div>' +
                     '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div></div>';
             });
             html += '</div>';
             area.innerHTML = html;
-            atBindDnd(area);
         }
         function atNav(n) { if (!atWeekStart) atWeekStart = atSunday(atToday()); atWeekStart = atAdd(atWeekStart, 7 * n); renderAirtableCalendar(); }
         function atGoToday() { atWeekStart = atSunday(atToday()); renderAirtableCalendar(); }
@@ -4722,56 +4191,22 @@
             if (!(y >= 1900 && y <= 2200) || !(w >= 1 && w <= 53)) { showToast('請輸入正確的年份與週次 (1–53)', 'error'); return; }
             atWeekStart = atSundayOfYearWeek(y, w); renderAirtableCalendar();
         }
-        function atSetKind(k) { atKind = (k === 'LEAD' || k === 'CORE') ? k : 'ALL'; renderAirtableCalendar(); }
         function atOpenDetail(el) {
             const c = customers.find(function (x) { return x.id === el.getAttribute('data-cid'); });
-            if (!c) return;
-            const src = el.getAttribute('data-src') || 'h', hi = +el.getAttribute('data-hi');
-            const isLead = c.progress === 'LEAD';
-            let h = null;
-            if (src === 'n') { const nd = leadValidDate(c.nextContactDate); h = nd ? { date: nd, content: '' } : null; }
-            else if (src === 'c') h = Array.isArray(c.contacts) ? c.contacts[hi] : null;
-            else h = c.history ? c.history[hi] : null;
-            if (!h) return;
-            const method = src === 'n' ? '下次聯絡' : atMethodOf(h), color = src === 'n' ? AT_LEAD_COLOR : (AT_METHODS[method] || '#64748B'), end = (h.endDate && h.endDate > h.date) ? h.endDate : '';
-            const kindBadge = isLead ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">開發名單</span>' : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-[#1E2E3D] border border-slate-300">核心客戶</span>';
-            const methodBadge = src === 'n'
-                ? '<span class="px-2 py-0.5 rounded text-xs font-bold text-white" style="background:' + AT_LEAD_COLOR + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>'
-                : '<span class="px-2 py-0.5 rounded text-xs font-bold ' + (method === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (method === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(method) + '</span>';
-            const ttl = document.getElementById('airtableDetailTitle');
-            if (ttl) ttl.innerHTML = '<i class="fa-solid ' + (isLead ? 'fa-seedling' : 'fa-clipboard-list') + ' text-[#D4AF37]"></i> ' + (isLead ? (src === 'n' ? '開發名單｜下次聯絡' : '開發名單｜聯絡紀錄') : '跟進紀錄');
-            let extra = '';
-            if (isLead) {
-                const st = LEAD_STAGE_MAP[leadStageOf(c)];
-                extra = (st ? '<div><span class="font-bold">一畝田：</span>' + esc(st.no + ' ' + st.name) + '</div>' : '') +
-                    (c.source ? '<div><span class="font-bold">來源：</span>' + esc(c.source) + '</div>' : '') +
-                    (c.region ? '<div><span class="font-bold">地區：</span>' + esc(c.region) + '</div>' : '') +
-                    (src !== 'n' && leadValidDate(c.nextContactDate) ? '<div><span class="font-bold">下次聯絡日：</span>' + esc(leadValidDate(c.nextContactDate)) + '</div>' : '') +
-                    '<div><span class="font-bold">最近聯絡：</span>' + (leadLastContact(c) ? esc(leadLastContact(c)) : '尚無紀錄') + '</div>';
-            }
+            const h = c && c.history ? c.history[+el.getAttribute('data-hi')] : null;
+            if (!c || !h) return;
+            const method = atMethodOf(h), color = AT_METHODS[method] || '#64748B', end = (h.endDate && h.endDate > h.date) ? h.endDate : '';
             document.getElementById('airtableDetailBody').innerHTML =
-                '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D] flex items-center gap-2 min-w-0"><span class="truncate">' + esc(c.name) + '</span>' + kindBadge + '</p>' + methodBadge + '</div>' +
+                '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D]">' + esc(c.name) + '</p>' +
+                '<span class="px-2 py-0.5 rounded text-xs font-bold ' + (method === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (method === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(method) + '</span></div>' +
                 '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
-                    '<div><span class="font-bold">' + (src === 'n' ? '下次聯絡日：' : '日期：') + '</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
-                    (src !== 'n' && atValidTime(h.time) ? '<div><span class="font-bold">時間：</span>' + esc(atValidTime(h.time)) + '</div>' : '') +
-                    (src === 'h' && h.progress ? '<div><span class="font-bold">狀態：</span>' + esc(atProgLabel(h.progress)) + '</div>' : '') +
-                    '<div><span class="font-bold">負責業務：</span>' + (c.agentName ? esc(c.agentName) : '個人') + '</div>' +
-                    (c.phone ? '<div><span class="font-bold">電話：</span>' + esc(c.phone) + '</div>' : '') + extra +
+                    '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
+                    (h.progress ? '<div><span class="font-bold">狀態：</span>' + esc(atProgLabel(h.progress)) + '</div>' : '') +
+                    (c.agentName ? '<div><span class="font-bold">負責業務：</span>' + esc(c.agentName) + '</div>' : '') +
+                    (c.phone ? '<div><span class="font-bold">電話：</span>' + esc(c.phone) + '</div>' : '') +
                 '</div>' +
-                (src === 'n'
-                    ? '<div id="atDetailContent" class="bg-rose-50 border border-dashed border-rose-300 rounded-xl p-3 text-rose-700">這是名單設定的「下次聯絡日」提醒，不是已發生的聯絡紀錄。</div>'
-                    : '<div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 whitespace-pre-wrap break-words">' + esc(h.content || '') + '</div>');
-            const ebtn = document.getElementById('airtableDetailEditBtn');
-            ebtn.innerHTML = src === 'n' ? '<i class="fa-regular fa-calendar-check"></i> 調整日期' : '<i class="fa-regular fa-pen-to-square"></i> 編輯';
-            ebtn.onclick = function () { closeModal('airtableDetailModal'); atOpenEdit(c.id, src, hi); };
-            const btn = document.getElementById('airtableDetailOpenBtn');
-            if (isLead) {
-                btn.innerHTML = '<i class="fa-regular fa-comments"></i> 開啟聯絡紀錄';
-                btn.onclick = function () { closeModal('airtableDetailModal'); openLeadContacts(c.id); };
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> 開啟歷程 / 新增跟進';
-                btn.onclick = function () { closeModal('airtableDetailModal'); openFollowUpModal(c.id); };
-            }
+                '<div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 whitespace-pre-wrap break-words">' + esc(h.content || '') + '</div>';
+            document.getElementById('airtableDetailOpenBtn').onclick = function () { closeModal('airtableDetailModal'); openFollowUpModal(c.id); };
             openModal('airtableDetailModal');
         }
 
@@ -4843,7 +4278,7 @@
 
             const tc = document.getElementById('timelineContainer');
             if (!c.history || c.history.length===0) tc.innerHTML = '<p class="text-xs text-slate-400">尚無跟進歷程記錄</p>';
-            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date}${atValidTime(h.time)?' '+atValidTime(h.time):''}${h.endDate?' ~ '+esc(h.endDate):''}${h.method?` <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">${esc(h.method)}</span>`:''} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
+            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date}${h.endDate?' ~ '+esc(h.endDate):''}${h.method?` <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">${esc(h.method)}</span>`:''} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
             openModal('followUpModal');
         }
 
@@ -4855,7 +4290,6 @@
                 const mEl = document.getElementById('historyMethod'), eEl = document.getElementById('historyEndDate');
                 if (mEl && mEl.value) h.method = mEl.value;
                 if (eEl && eEl.value && h.date && eEl.value > h.date) h.endDate = eEl.value;
-                const tEl = document.getElementById('historyTime'); if (tEl && atValidTime(tEl.value)) h.time = atValidTime(tEl.value);   // v9：選填時間
             }
             c.nextContactDate = document.getElementById('historyNextContact').value;
 
