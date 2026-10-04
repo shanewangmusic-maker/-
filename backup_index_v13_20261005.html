@@ -134,7 +134,7 @@
                     <i class="fa-solid fa-address-book"></i> 一畝田
                 </button>
                 <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-calendar-week"></i> 週行程
+                    <i class="fa-solid fa-calendar-week"></i> Airtable 模式
                 </button>
                 <button onclick="switchMainTab('RECRUIT')" id="mainTab-RECRUIT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-user-tie"></i> 引薦招募庫
@@ -334,7 +334,7 @@
                 <p class="text-lg font-bold font-editorial text-slate-600">目前尚無符合條件的名單</p>
                 <p class="text-sm mt-1 text-slate-400">請嘗試調整過濾條件，或點擊右上角新增資料。</p>
             </div>
-            <!-- 週行程：週曆（內容由 renderAirtableCalendar 即時由所有客戶的 history 產生） -->
+            <!-- Airtable 模式：週曆（內容由 renderAirtableCalendar 即時由所有客戶的 history 產生） -->
             <div id="airtableArea" class="hidden"></div>
             </div><!-- /crmBody -->
 
@@ -696,7 +696,7 @@
         </div>
 
         <!-- 3. 客戶追蹤歷程 Modal -->
-<!-- 週行程：紀錄詳情小視窗 -->
+<!-- Airtable 模式：紀錄詳情小視窗 -->
         <div id="airtableDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[55] p-4" onclick="if(event.target===this)closeModal('airtableDetailModal')">
             <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
                 <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center">
@@ -859,7 +859,7 @@
                         </div>
                         <div><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><textarea id="leadNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">下次聯絡日 <span class="font-normal text-slate-400">(提醒；顯示在週行程)</span></label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">下次聯絡日 <span class="font-normal text-slate-400">(提醒；顯示在週曆)</span></label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">按「啟用」後進入</label>
                                 <select id="leadLastStage" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
                                     <option value="NURTURE">經營 🌱(自介)</option><option value="FIRST_VISIT">初訪 🤝</option><option value="KEY_VISIT">關鍵訪 🎯</option>
@@ -893,7 +893,7 @@
                 <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
                     <input type="hidden" id="lcLeadId"><input type="hidden" id="lcEditIdx" value="">
                     <div class="bg-rose-50/60 border border-rose-200 rounded-xl p-3">
-                        <label class="block text-xs font-bold text-rose-700 mb-1"><i class="fa-regular fa-bell"></i> 下次聯絡日 <span class="font-normal text-slate-400">(留白＝不排；會以「下次聯絡」標籤顯示在週行程)</span></label>
+                        <label class="block text-xs font-bold text-rose-700 mb-1"><i class="fa-regular fa-bell"></i> 下次聯絡日 <span class="font-normal text-slate-400">(留白＝不排；會以「下次聯絡」標籤顯示在 Airtable 週曆)</span></label>
                         <div class="flex flex-wrap items-center gap-1.5">
                             <input type="date" id="lcNext" onchange="lcSetNext(this.value)" class="px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
                             <button type="button" onclick="lcQuickNext(1)" class="text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-100 px-2 py-1.5 rounded border border-slate-200">明天</button>
@@ -904,7 +904,6 @@
                     </div>
                     <div class="border border-slate-200 rounded-xl p-3 space-y-2.5" id="lcFormBox">
                         <p class="text-xs font-bold text-slate-600" id="lcFormTitle">新增聯絡紀錄</p>
-                        <div id="lcDealRow" class="hidden flex items-center gap-2 bg-emerald-50/60 border border-emerald-200 rounded-lg px-2.5 py-1.5"><label for="lcDeal" class="text-[11px] font-bold text-emerald-700 flex-shrink-0"><i class="fa-solid fa-link"></i> 記到哪一單</label><select id="lcDeal" class="flex-1 min-w-0 px-2 py-1 border border-slate-200 bg-white rounded-lg text-xs font-bold text-[#1E2E3D] outline-none"></select></div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="lcDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
@@ -1113,35 +1112,6 @@
                         <button type="button" id="xlsConfirmBtn" onclick="xlsConfirm()" class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">確認匯入</button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- ===== v14：同步補齊（核心客戶 → 一畝田）預覽 ===== -->
-        <div id="leadSyncModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60] p-3 sm:p-4">
-            <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial text-lg flex items-center gap-2"><i class="fa-solid fa-link text-[#D4AF37]"></i> 同步補齊・核心客戶 → 一畝田</h3>
-                    <button type="button" onclick="leadSyncCancel()" aria-label="關閉" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div id="leadSyncBody" class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3 text-sm"></div>
-                <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
-                    <p class="text-[11px] text-slate-500">確認前不會寫入任何資料；同步後可按上方「還原」一步回到同步前。</p>
-                    <div class="flex gap-2">
-                        <button type="button" id="leadSyncCancelBtn" onclick="leadSyncCancel()" class="px-4 py-2 rounded-lg text-sm font-bold bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 transition">取消</button>
-                        <button type="button" id="leadSyncConfirmBtn" onclick="leadSyncConfirm()" class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">確認同步</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== v15：一人多單 → 選要看哪一單 ===== -->
-        <div id="leadDealModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[57] p-3 sm:p-4" onclick="if(event.target===this)closeModal('leadDealModal')">
-            <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
-                    <h3 class="font-bold font-editorial text-base flex items-center gap-2 min-w-0"><i class="fa-solid fa-link text-[#D4AF37]"></i> <span id="leadDealTitle" class="truncate">選擇要查看的單</span></h3>
-                    <button type="button" onclick="closeModal('leadDealModal')" aria-label="關閉" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div id="leadDealList" class="p-4 overflow-y-auto space-y-2"></div>
             </div>
         </div>
 
@@ -1362,7 +1332,7 @@
         const ALL_TABS = [
             { key: 'PIPELINE', name: '核心業績看板' },
             { key: 'LEADS', name: '一畝田' },
-            { key: 'AIRTABLE', name: '週行程' },
+            { key: 'AIRTABLE', name: 'Airtable 模式' },
             { key: 'RECRUIT', name: '引薦招募庫' },
             { key: 'ARCHIVE', name: '待定與流失' }
         ];
@@ -2009,7 +1979,7 @@
             // v8：最近聯絡日只在「晚於所有現有紀錄」時才補一筆「(匯入)」聯絡紀錄（方式＝未註明）；否則忽略；絕不刪除既有紀錄
             if (rec.last) {
                 const cur = leadLastContact(c);
-                if (!cur || rec.last > cur) ch.push({ field: 'lastContact', old: cur || '(無紀錄)', neu: rec.last + '（新增聯絡紀錄「(匯入)」）', set: () => { const K = customers.indexOf(c) >= 0 ? leadDefaultDeal(c) : null; if (K) { K.history = Array.isArray(K.history) ? K.history : []; const ic = xlsImportContact(rec.last); K.history.push({ id: 'h-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: ic.date, content: ic.content, progress: K.progress || '', method: ic.method }); } else { if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(xlsImportContact(rec.last)); } } });
+                if (!cur || rec.last > cur) ch.push({ field: 'lastContact', old: cur || '(無紀錄)', neu: rec.last + '（新增聯絡紀錄「(匯入)」）', set: () => { const K = customers.indexOf(c) >= 0 ? leadCoreOf(c) : null; if (K) { K.history = Array.isArray(K.history) ? K.history : []; const ic = xlsImportContact(rec.last); K.history.push({ id: 'h-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: ic.date, content: ic.content, progress: K.progress || '', method: ic.method }); } else { if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(xlsImportContact(rec.last)); } } });
             }
             if (rec.cls) {
                 const oc = leadClsOf(c).slice(), same = xlsNormCls(oc).join() === xlsNormCls(rec.cls).join();
@@ -2255,15 +2225,14 @@
         function leadNewCoreId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
         function leadMakeCore(L) {
             const C = JSON.parse(JSON.stringify(L));
-            ['acreStage', 'leadCls', 'contacts', 'coreId', 'coreIds', 'history', 'sendCalendar'].forEach(function (k) { delete C[k]; });
+            ['acreStage', 'leadCls', 'contacts', 'coreId', 'history', 'sendCalendar'].forEach(function (k) { delete C[k]; });
             C.id = leadNewCoreId(); C.category = 'NEW'; C.progress = L.lastStage || 'NURTURE'; C.history = []; C.leadId = L.id;
             if (!C.createdAt) C.createdAt = new Date().toISOString();
             return C;
         }
         // 把名單連到核心客戶：雙向 id ＋ 聯絡紀錄併進 customer.history（srcContactId 去重）＋ 舊 lead.history 一併搬入
         function leadLinkCore(L, C) {
-            leadAddDeal(L, C);
-            const first = leadDeals(L).length <= 1;
+            L.coreId = C.id; C.leadId = L.id;
             const n = leadCarryContacts(L, C);
             if (Array.isArray(L.history) && L.history.length) {
                 C.history = Array.isArray(C.history) ? C.history : [];
@@ -2271,75 +2240,48 @@
                 L.history.forEach(function (h) { if (h && !(h.id && ids.has(h.id))) C.history.push(h); });
                 L.history = [];
             }
-            // 下次聯絡日：每人一個。第一單連結時沿用 v12 規則（單有就以單為準）；已有其他單時，名單既有的日期不被新的單蓋掉
             if (!leadValidDate(C.nextContactDate) && leadValidDate(L.nextContactDate)) C.nextContactDate = L.nextContactDate;
-            else if (leadValidDate(C.nextContactDate) && (first || !leadValidDate(L.nextContactDate))) L.nextContactDate = C.nextContactDate;
+            if (leadValidDate(C.nextContactDate)) L.nextContactDate = C.nextContactDate;
             return n;
         }
         function activateLead(id) {
             const L = customers.find(x => x.id === id);
             if (!L || L.progress !== 'LEAD') return;
-            const deals = leadDeals(L);
-            if (deals.length) {                                                                  // v15：已有單 → 另外再新增一單（需確認）
-                if (!window.confirm('「' + L.name + '」在核心看板已有 ' + deals.length + ' 單（' + leadDealSummary(L) + '）。\n要再新增一單核心客戶並連結到這位名單嗎？\n（確定＝新增一單；取消＝什麼都不做）')) return;
-                atEnsureUndoBase();
-                const C2 = leadMakeCore(L); customers.push(C2); leadLinkCore(L, C2);
-                C2.history.push({ id: 'h-' + Date.now(), date: new Date().toISOString().substring(0, 10), content: '從一畝田再新增一單跟進', progress: C2.progress, sys: true });
-                recordState(); renderApp();
-                return showToast('已為 ' + L.name + ' 新增第 ' + (deals.length + 1) + ' 單核心客戶（一畝田仍是同一列）');
-            }
-            const nm = String(L.name || '').trim();
-            const own = customers.filter(x => x.progress !== 'LEAD' && x.leadId === L.id && !coreLeadOf(x));       // 單邊連結（只有客戶端記得）→ 補回雙向
-            const same = customers.filter(x => x.progress !== 'LEAD' && x !== L && nm && String(x.name || '').trim() === nm && own.indexOf(x) < 0);
-            const free = same.filter(x => !coreLeadOf(x));
-            let targets = own.slice(), created = false;
-            if (free.length) {
-                if (!window.confirm('核心看板已有 ' + free.length + ' 單同名客戶「' + nm + '」，要把它們全部連結到這位名單嗎？\n（確定＝連結、不新增；取消＝什麼都不做）')) return;
-                targets = targets.concat(free);
-            } else if (!targets.length && same.length) {
-                if (!window.confirm('核心看板已有同名客戶「' + nm + '」且已連結其他名單。仍要另外新增一位核心客戶嗎？')) return;
+            let C = leadCoreOf(L);
+            if (C) { showToast(L.name + ' 已在核心看板', 'info'); return leadViewCore(id); }          // 不重複啟用
+            C = customers.find(x => x.progress !== 'LEAD' && x.leadId === L.id) || null;          // 單邊連結（只有客戶端記得）→ 補回雙向
+            let created = false;
+            if (!C) {
+                const nm = String(L.name || '').trim();
+                const same = customers.filter(x => x.progress !== 'LEAD' && x !== L && String(x.name || '').trim() === nm && nm);
+                const free = same.filter(x => !coreLeadOf(x));
+                if (free.length) {
+                    if (!window.confirm('核心看板已有同名客戶「' + nm + '」，要把這位名單連結到那位客戶嗎？\n（確定＝連結、不新增；取消＝什麼都不做）')) return;
+                    C = free[0];
+                } else if (same.length) {
+                    if (!window.confirm('核心看板已有同名客戶「' + nm + '」且已連結其他名單。仍要另外新增一位核心客戶嗎？')) return;
+                }
             }
             atEnsureUndoBase();                                                                  // 第一次操作也能「還原」
-            if (!targets.length) { const C = leadMakeCore(L); customers.push(C); targets = [C]; created = true; }
-            let carried = 0;
-            targets.forEach(function (C) { carried += leadLinkCore(L, C); });
-            if (created) targets[0].history.push({ id: 'h-' + Date.now(), date: new Date().toISOString().substring(0, 10), content: '從一畝田正式啟用跟進', progress: targets[0].progress, sys: true });
+            if (!C) { C = leadMakeCore(L); customers.push(C); created = true; }
+            const carried = leadLinkCore(L, C);
+            if (created) C.history.push({ id: 'h-' + Date.now(), date: new Date().toISOString().substring(0, 10), content: '從一畝田正式啟用跟進', progress: C.progress, sys: true });
             recordState();
             renderApp();
-            showToast(`已將 ${L.name} 加入核心看板（一畝田仍保留）` + (targets.length > 1 ? `（連結 ${targets.length} 單）` : '') + (carried ? `（已帶入 ${carried} 筆聯絡紀錄）` : ''));
+            showToast(`已將 ${L.name} 加入核心看板（一畝田仍保留）` + (carried ? `（已帶入 ${carried} 筆聯絡紀錄）` : ''));
         }
         function leadViewCore(id) {
-            const L = customers.find(x => x.id === id), deals = leadDeals(L);
-            if (!deals.length) return showToast('這位名單目前不在核心看板', 'error');
-            if (deals.length === 1) return openFollowUpModal(deals[0].id);
-            leadDealChooser(L);                                                                  // v15：多單 → 先選要看哪一單
+            const L = customers.find(x => x.id === id), C = leadCoreOf(L);
+            if (!C) return showToast('這位名單目前不在核心看板', 'error');
+            openFollowUpModal(C.id);
         }
-        function leadDealChooser(L) {
-            const deals = leadDeals(L);
-            document.getElementById('leadDealTitle').textContent = '「' + (L.name || '') + '」在核心看板有 ' + deals.length + ' 單';
-            document.getElementById('leadDealList').innerHTML = deals.map(function (d, i) {
-                const n = (Array.isArray(d.history) ? d.history : []).filter(function (h) { return h && !h.sys; }).length;
-                let last = ''; (Array.isArray(d.history) ? d.history : []).forEach(function (h) { if (h && !h.sys) { const x = leadValidDate(h.date); if (x > last) last = x; } });
-                return '<button type="button" class="lead-deal-opt w-full text-left px-3 py-2.5 border border-slate-200 rounded-xl hover:border-[#D4AF37] hover:bg-amber-50 transition flex items-center gap-2" data-cid="' + esc(d.id) + '" onclick="leadDealOpen(\'' + esc(d.id) + '\')">' +
-                    '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-[#1E2E3D] text-white flex-shrink-0">單' + (i + 1) + '</span>' +
-                    '<span class="font-bold text-slate-800">' + esc(leadDealStatus(d)) + '</span>' +
-                    '<span class="text-[11px] text-slate-500 ml-auto text-right">' + esc(String(d.createdAt || '').substring(0, 10)) + ' 建立・' + n + ' 筆紀錄' + (last ? '・最近 ' + esc(last.substring(5)) : '') + '</span></button>';
-            }).join('');
-            openModal('leadDealModal');
-        }
-        function leadDealOpen(cid) { closeModal('leadDealModal'); openFollowUpModal(cid); }
         // 刪除時的連結處理：
         //  · 刪核心客戶 → 名單留在一畝田，清掉 coreId；客戶歷程複製回 lead.contacts（系統自動紀錄不複製），下次聯絡日一併帶回
         //  · 刪一畝田名單 → 核心客戶留著，清掉 leadId（紀錄本來就在客戶歷程裡）
         function leadDetachOnDelete(id) {
             const X = customers.find(x => x.id === id); if (!X) return { restored: 0, lead: null };
-            if (X.progress === 'LEAD') { const ds = leadDeals(X); ds.forEach(function (K) { delete K.leadId; }); return { restored: 0, lead: null, core: ds[0] || null, cores: ds.length }; }
+            if (X.progress === 'LEAD') { const K = leadCoreOf(X); if (K) delete K.leadId; return { restored: 0, lead: null, core: K }; }
             const L = coreLeadOf(X); if (!L) return { restored: 0, lead: null };
-            const others = leadDeals(L).filter(function (d) { return d !== X; });
-            leadRemoveDeal(L, X);
-            // v15：還有其他單 → 只解除這一單的連結，這一單自己的紀錄跟著這一單一起刪（其他單、名單不受影響）；
-            //       這是最後一單 → 沿用 v12：名單留著，這一單的紀錄複製回 lead.contacts（系統自動紀錄不複製）、下次聯絡日帶回
-            if (others.length) return { restored: 0, lead: L, remaining: others.length };
             const have = new Set(leadContacts(L).map(function (c) { return c.id; }));
             let n = 0, seq = Date.now();
             (Array.isArray(X.history) ? X.history : []).forEach(function (h) {
@@ -2358,7 +2300,8 @@
                 L.contacts.push(ct); n++;
             });
             if (leadValidDate(X.nextContactDate)) L.nextContactDate = X.nextContactDate;
-            return { restored: n, lead: L, remaining: 0 };
+            delete L.coreId;
+            return { restored: n, lead: L };
         }
         function leadDoDelete(id) {
             atEnsureUndoBase();
@@ -2366,18 +2309,14 @@
             const r = leadDetachOnDelete(id);
             customers = customers.filter(c => c.id !== id);
             recordState(); renderApp(); closeModal('deleteConfirmModal');
-            showToast(r.lead ? ('已刪除核心客戶' + (r.remaining ? '（只刪這一單，還剩 ' + r.remaining + ' 單）' : '') + '；「' + r.lead.name + '」仍保留在一畝田' + (r.restored ? '（' + r.restored + ' 筆聯絡紀錄已帶回）' : '')) : (wasLead && r.core ? '已從一畝田刪除；核心看板的客戶仍保留' : '資料已刪除'), 'info');
+            showToast(r.lead ? ('已刪除核心客戶；「' + r.lead.name + '」仍保留在一畝田' + (r.restored ? '（' + r.restored + ' 筆聯絡紀錄已帶回）' : '')) : (wasLead && r.core ? '已從一畝田刪除；核心看板的客戶仍保留' : '資料已刪除'), 'info');
         }
 
         function leadDeleteNote(id) {
             const X = customers.find(c => c.id === id), el = document.getElementById('deleteLinkNote'); if (!el) return;
             let t = '';
-            if (X && X.progress === 'LEAD' && leadDeals(X).length) t = '這位在核心看板有 ' + leadDeals(X).length + ' 單客戶：只會從一畝田刪除，核心客戶與其紀錄會保留。';
-            else if (X && X.progress !== 'LEAD' && coreLeadOf(X)) {
-                const n = leadDeals(coreLeadOf(X)).length;
-                t = n > 1 ? ('這位在一畝田有一列（核心共 ' + n + ' 單）：只會刪除這一單，一畝田與其他單都會保留；這一單自己的聯絡紀錄會跟著刪除。')
-                          : '這位在一畝田也有一筆：刪除核心客戶後，一畝田會保留此人，聯絡紀錄會帶回一畝田。';
-            }
+            if (X && X.progress === 'LEAD' && leadCoreOf(X)) t = '這位在核心看板也有一筆客戶：只會從一畝田刪除，核心客戶與其紀錄會保留。';
+            else if (X && X.progress !== 'LEAD' && coreLeadOf(X)) t = '這位在一畝田也有一筆：刪除核心客戶後，一畝田會保留此人，聯絡紀錄會帶回一畝田。';
             el.textContent = t; el.classList.toggle('hidden', !t);
         }
         function deleteLead(id) {
@@ -3325,8 +3264,8 @@
             if (bText) meta.push(`<span class="${bThis ? 'text-[#8a6d0a] font-bold' : 'text-slate-500'}" title="${esc(c.birthday || '')}"><i class="fa-solid fa-cake-candles ${bThis ? 'text-[#D4AF37]' : 'text-slate-300'} mr-0.5"></i>${esc(bText)}</span>`);
             if (c.phone) meta.push(`<span data-phone="${esc(c.phone)}" onclick="copyToClipboard(this.dataset.phone, '電話')" class="text-slate-500 cursor-pointer hover:text-[#1E2E3D]" title="點擊複製"><i class="fa-solid fa-phone text-slate-300 mr-0.5"></i>${esc(c.phone)}</span>`);
             { const lcd = leadLastContact(c); if (lcd) meta.push(`<span class="lead-lastcontact text-slate-500" title="最近聯絡日 ${esc(lcd)}"><i class="fa-regular fa-comments text-slate-300 mr-0.5"></i>最近聯絡 ${esc(lcd.substring(5, 7) + '/' + lcd.substring(8, 10))}</span>`); }
-            const dealsC = leadDeals(c), coreC = dealsC.length ? dealsC[0] : null;
-            const ctN = leadRecFlat(c).filter(x => x.ct && typeof x.ct === 'object').length;     // v15：已連結時＝所有單的 history 合計
+            const coreC = leadCoreOf(c);
+            const ctN = (leadRecArr(c) || []).filter(x => x && typeof x === 'object').length;     // v12：已連結時＝核心客戶的 history（同一份）
             const tagHtml = (c.tags || []).map(tid => { const t = customTags.find(x => x.id === tid); if (!t) return ''; const tc = tagColors[t.color] || tagColors['slate']; return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-slate-200 ${tc.bg}">${esc(t.name)}</span>`; }).join('');
             const agent = (c.agentName && c.agentName.trim()) ? `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0"><i class="fa-solid fa-user-tie"></i> ${esc(c.agentName)}</span>` : '';
             const overdue = c.nextContactDate && c.nextContactDate <= leadTodayStr();
@@ -3337,7 +3276,7 @@
                 <div class="min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" onclick="openLeadModal('${id}')" class="font-bold text-slate-800 hover:text-[#1E2E3D] hover:underline text-left">${esc(c.name)}</button>
-                        ${agent}${tagHtml}${coreC ? '<span class="lead-corebadge px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0" title="這位已加入核心業績看板（一畝田仍保留）：' + esc(leadDealSummary(c)) + '"><i class="fa-solid fa-link"></i> 核心 ' + dealsC.length + ' 單<span class="lead-dealsum font-normal text-emerald-600"> ' + esc(leadDealSummary(c)) + '</span></span>' : ''}
+                        ${agent}${tagHtml}${coreC ? '<span class="lead-corebadge px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0" title="這位已加入核心業績看板（一畝田仍保留）"><i class="fa-solid fa-link"></i> 已在核心看板</span>' : ''}
                     </div>
                     ${meta.length ? `<div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] mt-0.5">${meta.join('')}</div>` : ''}
                     ${c.notes ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ''}
@@ -3358,7 +3297,7 @@
                     </div>
                 <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
                         <button onclick="openLeadContacts('${id}')" class="lead-contacts text-rose-500 hover:text-rose-700 transition px-1.5 py-1 text-xs font-bold whitespace-nowrap" title="聯絡紀錄（${ctN} 筆）"><i class="fa-regular fa-comments"></i>${ctN ? ' ' + ctN : ''}</button>
-                        ${coreC ? `<button onclick="leadViewCore('${id}')" class="lead-viewcore bg-slate-50 text-[#1E2E3D] border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-[#1E2E3D] hover:text-white transition shadow-sm whitespace-nowrap" title="開啟核心看板中的這位客戶（多單時先選哪一單）">查看核心客戶</button><button onclick="activateLead('${id}')" class="lead-adddeal bg-white text-emerald-700 border border-emerald-200 px-1.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition whitespace-nowrap" title="再為這位新增一單核心客戶（會先確認）">＋單</button>` : `<button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用＝加入核心看板（一畝田仍保留）：${esc(lastLabel)}">啟用 ➔</button>`}
+                        ${coreC ? `<button onclick="leadViewCore('${id}')" class="lead-viewcore bg-slate-50 text-[#1E2E3D] border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-[#1E2E3D] hover:text-white transition shadow-sm whitespace-nowrap" title="開啟核心看板中的這位客戶">查看核心客戶</button>` : `<button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用＝加入核心看板（一畝田仍保留）：${esc(lastLabel)}">啟用 ➔</button>`}
                         <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                         <button onclick="deleteLead('${id}')" class="lead-del text-slate-300 hover:text-rose-500 transition px-2 py-1" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
@@ -3405,6 +3344,7 @@
                 <div class="pl-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div class="min-w-0">
                         <h3 class="font-bold font-editorial text-slate-800 flex items-center gap-2"><i class="fa-solid fa-seedling text-[#547360]"></i> 一畝田・全部人脈</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">一畝田＝你整個職涯的人脈；核心業績看板是其中正在積極經營的一部分（「啟用」只是加入核心看板，人仍留在這裡）。點階段可篩選名單；長條上的黑線是理想比例 30 / 50 / 20 / 0</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" onclick="leadSetFilter('stage','ALL')" id="leadStageAll" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${allActive ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">全部 <span id="leadTotalCount">${total}</span></button>
@@ -3416,7 +3356,6 @@
                         <input type="file" id="xlsInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="xlsHandleFile(event)">
                         <button type="button" id="xlsImportBtn" onclick="document.getElementById('xlsInput').click()" title="讀取「我的一畝田」Excel（或 .csv），先預覽再合併" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-excel"></i> 匯入 Excel</button>
                         <button type="button" id="xlsExportBtn" onclick="xlsExport()" title="把目前「負責業務」範圍內的全部名單匯出成「我的一畝田」格式 Excel（不受搜尋/篩選影響；最右側多「最近聯絡日」「下次聯絡日」兩欄）" class="px-3 py-1.5 bg-white border border-emerald-600 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-export"></i> 匯出 Excel</button>
-                        ${leadSyncBtnHtml()}
                     </div>
                 </div>
                 <div class="pl-2 grid grid-cols-2 lg:grid-cols-4 gap-2.5" id="leadStageCards">${cards}</div>
@@ -3565,7 +3504,7 @@
             $('leadModalTitle').textContent = c ? '編輯名單' : '新增名單';
             $('leadDeleteBtn').classList.toggle('hidden', !c);
             $('leadContactsRow').classList.toggle('hidden', !c);
-            if (c) { const n = leadRecFlat(c).filter(function (x) { return x.ct && typeof x.ct === 'object'; }).length, lc = leadLastContact(c); $('leadContactsSummary').textContent = n + ' 筆' + (lc ? '（最近 ' + lc + '）' : ''); }
+            if (c) { const n = leadContacts(c).length, lc = leadLastContact(c); $('leadContactsSummary').textContent = n + ' 筆' + (lc ? '（最近 ' + lc + '）' : ''); }
             if (c) {
                 $('leadName').value = c.name || '';
                 $('leadSource').value = c.source || '';
@@ -3620,7 +3559,7 @@
             c.company = $('leadCompany').value.trim();
             c.notes = $('leadNotes').value.trim();
             nxtSet(c, $('leadNext').value);
-            leadDeals(c).forEach(function (d) { d.name = c.name; });      // v15：改名字＝同一個人的所有單一併改名
+            { const _p = pairOf(c); if (_p) _p.name = c.name; }      // v12：已連結時姓名一併同步
             c.lastStage = $('leadLastStage').value || 'NURTURE';
             c.agentName = $('leadAgent').value.trim();
             if (isNew) customers.push(c);
@@ -3655,33 +3594,31 @@
             document.getElementById('lcFormTitle').textContent = '新增聯絡紀錄';
             document.getElementById('lcSaveBtn').innerHTML = '<i class="fa-solid fa-plus"></i> 新增紀錄';
             document.getElementById('lcCancelEdit').classList.add('hidden');
-            { const ds = document.getElementById('lcDeal'); if (ds) ds.disabled = false; }
         }
         function lcRender() {
             const c = lcLead(); if (!c) return;
             document.getElementById('lcNext').value = leadValidDate(c.nextContactDate);
-            const deals = leadDeals(c), C = deals[0] || null, multi = deals.length > 1;
-            const items = [];                                    // v15：已連結 → 所有單的 history 合併（各自留在自己那一單）；未連結 → lead.contacts
-            leadRecFlat(c).forEach(function (o) { if (o.ct && typeof o.ct === 'object') items.push({ ct: o.ct, i: o.gi, d: leadCtDate(o.ct), deal: o.deal }); });
-            lcFillDeals(c, deals);
+            const C = leadCoreOf(c);
+            const raw = leadRecArr(c) || [];                    // v12：已連結 → 讀核心客戶的 history（同一份紀錄）；未連結 → lead.contacts
+            const items = [];
+            raw.forEach(function (ct, i) { if (ct && typeof ct === 'object') items.push({ ct: ct, i: i, d: leadCtDate(ct) }); });
             items.sort((a, b) => { const ta = atValidTime(a.ct.time), tb = atValidTime(b.ct.time); return a.d < b.d ? 1 : a.d > b.d ? -1 : (ta < tb ? 1 : ta > tb ? -1 : b.i - a.i); });
             const hist = C ? [] : (Array.isArray(c.history) ? c.history : []).filter(h => h && leadValidDate(h.date)).sort((a, b) => (a.date < b.date ? 1 : -1));
             document.getElementById('lcCount').textContent = '(' + items.length + ' 筆' + (hist.length ? '，另有 ' + hist.length + ' 筆舊歷程' : '') + ')';
             let h = '';
-            if (C && !multi) h += '<p id="lcLinkedNote" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-link"></i> 已在核心看板：這裡的紀錄與核心客戶「' + esc(C.name) + '」的跟進歷程是<b>同一份</b>，兩邊新增／修改／刪除都會同步。</p>';
-            if (multi) h += '<p id="lcLinkedNote" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-link"></i> 核心看板共 ' + deals.length + ' 單（' + esc(leadDealSummary(c)) + '）：下面把<b>每一單各自的紀錄</b>合併顯示，標籤是它屬於哪一單；新增紀錄時請在上方選要記到哪一單。</p>';
+            if (C) h += '<p id="lcLinkedNote" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-link"></i> 已在核心看板：這裡的紀錄與核心客戶「' + esc(C.name) + '」的跟進歷程是<b>同一份</b>，兩邊新增／修改／刪除都會同步。</p>';
             if (!items.length) h += '<p class="text-xs text-slate-400 py-3 text-center border border-dashed border-slate-200 rounded-lg">還沒有聯絡紀錄。上方填好日期與內容後按「新增紀錄」。</p>';
             items.forEach(function (o) {
                 const ct = o.ct, m = atMethodOf(ct), color = AT_METHODS[m] || '#64748B', end = leadValidDate(ct.endDate);
                 h += '<div class="lc-item flex items-start gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs" style="border-left:4px solid ' + color + '" data-lc-idx="' + o.i + '">' +
                     '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono font-bold text-slate-700">' + esc(o.d || String(ct.date || '(無日期)')) + (atValidTime(ct.time) ? ' ' + atValidTime(ct.time) : '') + (end && end > o.d ? ' ~ ' + esc(end) : '') + '</span>' +
-                    '<span class="px-1.5 rounded text-[10px] font-bold ' + (m === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (m === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(m) + '</span>' + (multi && o.deal ? '<span class="lc-dealtag px-1.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">' + esc(leadDealLabel(c, o.deal)) + '</span>' : '') + '</div>' +
+                    '<span class="px-1.5 rounded text-[10px] font-bold ' + (m === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (m === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(m) + '</span></div>' +
                     '<div class="text-slate-600 whitespace-pre-wrap break-words mt-0.5">' + esc(ct.content || '') + '</div></div>' +
                     '<button type="button" class="lc-edit text-slate-400 hover:text-[#1E2E3D] px-1.5 py-1" title="編輯" onclick="lcEdit(' + o.i + ')"><i class="fa-regular fa-pen-to-square"></i></button>' +
                     '<button type="button" class="lc-del text-slate-300 hover:text-rose-500 px-1.5 py-1" title="刪除" onclick="lcDelete(' + o.i + ')"><i class="fa-solid fa-trash-can"></i></button></div>';
             });
             if (hist.length) {
-                h += '<details class="mt-2"><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（唯讀，共 ' + hist.length + ' 筆；同樣會顯示在週行程）</summary><div class="space-y-1 mt-1">' +
+                h += '<details class="mt-2"><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（唯讀，共 ' + hist.length + ' 筆；同樣會顯示在週曆）</summary><div class="space-y-1 mt-1">' +
                     hist.map(x => '<div class="text-[11px] text-slate-500 bg-slate-50 rounded px-2 py-1"><span class="font-mono">' + esc(String(x.date).substring(0, 10)) + '</span> ' + (x.method ? '<b>' + esc(x.method) + '</b> ' : '') + esc(x.content || '') + '</div>').join('') + '</div></details>';
             }
             document.getElementById('lcList').innerHTML = h;
@@ -3689,14 +3626,6 @@
         function lcAfterChange(msg) {
             recordState(); renderApp(); lcRender();
             if (msg) showToast(msg);
-        }
-        function lcFillDeals(c, deals) {
-            const row = document.getElementById('lcDealRow'), sel = document.getElementById('lcDeal'); if (!row || !sel) return;
-            if (deals.length < 2) { row.classList.add('hidden'); sel.innerHTML = ''; return; }
-            const prev = sel.value, def = leadDefaultDeal(c);
-            sel.innerHTML = deals.map(function (d, i) { return '<option value="' + esc(d.id) + '">單' + (i + 1) + '・' + esc(leadDealStatus(d)) + '（' + esc(String(d.createdAt || '').substring(0, 10)) + '）</option>'; }).join('');
-            sel.value = deals.some(function (d) { return d.id === prev; }) ? prev : (def ? def.id : deals[deals.length - 1].id);
-            row.classList.remove('hidden');
         }
         function lcSave() {
             const c = lcLead(); if (!c) return;
@@ -3707,33 +3636,28 @@
             const time = atValidTime(document.getElementById('lcTime').value);
             const content = document.getElementById('lcContent').value.trim();
             const idxStr = document.getElementById('lcEditIdx').value;
-            const deals = leadDeals(c), flat = leadRecFlat(c, true);
-            const tgt = idxStr !== '' ? flat.find(function (o) { return o.gi === +idxStr; }) : null;
-            if (tgt && tgt.ct) {
-                const ct = tgt.ct;
+            const C = leadCoreOf(c), arr = leadRecArr(c, true);
+            if (idxStr !== '' && arr[+idxStr]) {
+                const ct = arr[+idxStr];
                 ct.date = date; ct.method = method; ct.content = content;
                 if (atParse(end) && end > date) ct.endDate = end; else delete ct.endDate;
                 if (time) ct.time = time; else { delete ct.time; delete ct.endTime; }
-                if (!ct.id) ct.id = tgt.deal ? ('h-' + Date.now()) : leadNewContactId();
+                if (!ct.id) ct.id = C ? ('h-' + Date.now()) : leadNewContactId();
                 lcResetForm(); lcAfterChange('聯絡紀錄已更新');
             } else {
-                let C = null;
-                if (deals.length === 1) C = deals[0];
-                else if (deals.length > 1) { const sv = document.getElementById('lcDeal').value; C = deals.find(function (d) { return d.id === sv; }) || leadDefaultDeal(c); }
-                let ct, arr;
+                let ct;
                 if (C) {
-                    arr = Array.isArray(C.history) ? C.history : (C.history = []);
                     const ids = new Set(arr.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
                     ct = { id: hid, date: date, content: content, progress: C.progress || '', method: method };
-                } else { arr = Array.isArray(c.contacts) ? c.contacts : (c.contacts = []); ct = { id: leadNewContactId(), date: date, method: method, content: content }; }
+                } else ct = { id: leadNewContactId(), date: date, method: method, content: content };
                 if (atParse(end) && end > date) ct.endDate = end;
                 if (time) ct.time = time;
                 arr.push(ct);
-                lcResetForm(); lcAfterChange('聯絡紀錄已新增' + (deals.length > 1 ? '（記在 ' + leadDealLabel(c, C) + '）' : ''));
+                lcResetForm(); lcAfterChange('聯絡紀錄已新增');
             }
         }
         function lcEdit(i) {
-            const c = lcLead(); const o = c ? leadRecFlat(c).find(function (x) { return x.gi === i; }) : null; const ct = o ? o.ct : null; if (!ct) return;
+            const c = lcLead(); const arr = c ? leadRecArr(c) : null; const ct = arr ? arr[i] : null; if (!ct) return;
             const sel = document.getElementById('lcMethod'), m = ct.method ? String(ct.method) : '未註明';
             sel.innerHTML = LEAD_CT_METHODS.concat(LEAD_CT_METHODS.indexOf(m) < 0 ? [m] : []).map(x => '<option value="' + esc(x) + '">' + esc(x) + '</option>').join('');
             sel.value = m;
@@ -3741,16 +3665,15 @@
             document.getElementById('lcDate').value = leadCtDate(ct);
             document.getElementById('lcEndDate').value = leadValidDate(ct.endDate); document.getElementById('lcTime').value = atValidTime(ct.time);
             document.getElementById('lcContent').value = ct.content || '';
-            { const ds = document.getElementById('lcDeal'); if (ds && o.deal && !document.getElementById('lcDealRow').classList.contains('hidden')) { ds.value = o.deal.id; ds.disabled = true; } }
             document.getElementById('lcFormTitle').textContent = '編輯聯絡紀錄';
             document.getElementById('lcSaveBtn').innerHTML = '<i class="fa-solid fa-check"></i> 儲存修改';
             document.getElementById('lcCancelEdit').classList.remove('hidden');
         }
         function lcDelete(i) {
-            const c = lcLead(); const o = c ? leadRecFlat(c).find(function (x) { return x.gi === i; }) : null; if (!o) return;
+            const c = lcLead(); const arr = c ? leadRecArr(c) : null; if (!arr || !arr[i]) return;
             if (!window.confirm('確定刪除這筆聯絡紀錄？（可按「還原」復原）')) return;
-            o.arr.splice(o.li, 1);
-            if (!o.deal && !o.arr.length) delete c.contacts;
+            arr.splice(i, 1);
+            if (!leadCoreOf(c) && !arr.length) delete c.contacts;
             lcResetForm(); lcAfterChange('聯絡紀錄已刪除');
         }
         function lcSetNext(val) {
@@ -4290,9 +4213,7 @@
                 nc.dealDate = document.getElementById('addDealDate').value; nc.submitDate = document.getElementById('addSubmitDate').value;
                 nc.history.push({ id:'h-'+Date.now(), date:cDate, content:`直接建檔成交(${nc.productType} - ${nc.policyName})`, progress:'WON' });
             }
-            atEnsureUndoBase();      // v14：第一次操作也能「還原」（新客戶＋一畝田名單一起還原）
-            customers.push(nc); const _ls = leadAutoForCore(nc);      // v14：同時加入一畝田（雙向連結）
-            recordState(); renderApp(); closeModal('addCustomerModal'); showToast('資料已新增' + (_ls ? (_ls.mode === 'link' ? '，並已連結一畝田的同名名單' : '，並已同步加入一畝田') : ''));
+            customers.push(nc); recordState(); renderApp(); closeModal('addCustomerModal'); showToast('資料已新增');
         }
 
         function openEditModal(id) {
@@ -4436,7 +4357,7 @@
             if (wasLead && progressVal !== 'LEAD') leadCarryContacts(c);     // v8：從編輯視窗把名單改成核心客戶，也帶入聯絡紀錄
 
             c.createdAt = new Date(document.getElementById('editCreatedAt').value+'T12:00:00Z').toISOString();
-            c.name = name; c.birthday = document.getElementById('editBirthday').value; leadOnRename(c); nxtSet(c, document.getElementById('editNextContact').value);
+            c.name = name; c.birthday = document.getElementById('editBirthday').value; nxtSet(c, document.getElementById('editNextContact').value); { const _p = pairOf(c); if (_p) _p.name = name; }
             c.category = realCat; c.progress = progressVal; c.tags = [...tempSelectedTags]; 
             c.lastStage = document.getElementById('editLastStage').value || 'NURTURE';
             c.agentName = document.getElementById('editAgentName').value.trim();
@@ -4516,153 +4437,7 @@
             recordState(); renderApp(); closeModal('quickWonModal'); showToast('案件已成交！', 'success');
         }
 
-        // ---- v14/v15：核心看板新增的客戶 → 自動加入一畝田（雙向連結）。v15：一人多單，同名的單全部連到同一位名單，不另開第二列 ----
-        // 只加欄位、不動雲端頂層鍵；聯絡紀錄各單各自保留（customer.history）。刪一單只解除那一單的連結（見 leadDetachOnDelete）。
-        // 階段預設：有任何一單已成交(WON)→ 01 已結果的樹；全部都是流失(LOST)→ 04 樹種；其他（跟進中／待定）→ 02 茁長的樹。
-        function leadNewLeadId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
-        function leadAcreStageForDeals(ds) {
-            if (ds.some(function (C) { return C.category === 'WON'; })) return 'FRUIT';
-            return ds.every(function (C) { return C.progress === 'LOST'; }) ? 'SEED' : 'GROW';
-        }
-        function leadAcreStageForCore(C) { return leadAcreStageForDeals([C]); }
-        function leadCoreSyncable(C) { return !!C && C.progress !== 'LEAD' && C.category !== 'RECRUIT' && !!String(C.name || '').trim(); }
-        function leadMakeFromCore(C) {
-            const prog = (['HOLD', 'LOST', 'LEAD', ''].indexOf(C.progress || '') >= 0 ? C.lastStage : C.progress) || 'NURTURE';
-            const L = {
-                id: leadNewLeadId(), name: String(C.name || '').trim(), phone: C.phone || '', company: C.company || '', notes: C.notes || '',
-                agentName: C.agentName || '', category: 'NEW', progress: 'LEAD', lastStage: prog, createdAt: C.createdAt || new Date().toISOString(),
-                tags: Array.isArray(C.tags) ? C.tags.slice() : [], history: [], acreStage: leadAcreStageForCore(C), source: '', region: '',
-                birthday: C.birthday || '', leadCls: []
-            };
-            if (leadValidDate(C.nextContactDate)) L.nextContactDate = C.nextContactDate;
-            return L;
-        }
-        // 依姓名（trim 後完全相同）找名單：恰好一位 → 連結；多位同名時，只有一位已有單 → 連結那位；否則無法判斷 → 新增（並標示）
-        function leadPickByName(nm) {
-            const same = customers.filter(function (x) { return x.progress === 'LEAD' && String(x.name || '').trim() === nm; });
-            if (same.length === 1) return { mode: 'link', lead: same[0] };
-            if (same.length > 1) {
-                const wd = same.filter(function (x) { return leadDeals(x).length > 0; });
-                if (wd.length === 1) return { mode: 'link', lead: wd[0] };
-                return { mode: 'new', multi: true };
-            }
-            return { mode: 'new' };
-        }
-        function leadMatchFor(C) {
-            const own = C.leadId ? customers.find(function (x) { return x.id === C.leadId && x.progress === 'LEAD'; }) : null;      // 客戶記得、名單斷線 → 補回
-            if (own) return { mode: 'link', lead: own, repair: true };
-            return leadPickByName(String(C.name || '').trim());
-        }
-        function leadLinkFill(L, C) {
-            const n = leadLinkCore(L, C);
-            if (!L.phone && C.phone) L.phone = C.phone; if (!L.company && C.company) L.company = C.company;
-            if (!L.agentName && C.agentName) L.agentName = C.agentName; if (!L.birthday && C.birthday) L.birthday = C.birthday;
-            return n;
-        }
-        // 單筆自動加入（新增客戶表單呼叫）；回傳 { mode, lead } 或 null（不需要／已連結）
-        function leadAutoForCore(C) {
-            if (!leadCoreSyncable(C) || coreLeadOf(C)) return null;
-            const m = leadMatchFor(C);
-            if (m.mode === 'link') { leadLinkFill(m.lead, C); return { mode: 'link', lead: m.lead }; }
-            const L = leadMakeFromCore(C); customers.push(L); leadLinkCore(L, C);
-            return { mode: 'new', lead: L };
-        }
-        // 改核心客戶姓名：只有一單 → 名單跟著改名；多單 → 這一單改叫別的名字，就從原本那位名單分出去，依新名字重新歸戶（有同名名單就連過去，沒有就新增）
-        function leadOnRename(c) {
-            if (c.progress === 'LEAD') { leadDeals(c).forEach(function (d) { d.name = c.name; }); return; }
-            const L = coreLeadOf(c); if (!L) return;
-            if (String(L.name || '').trim() === String(c.name || '').trim()) return;
-            if (leadDeals(L).length <= 1) { L.name = c.name; return; }
-            leadRemoveDeal(L, c);
-            leadAutoForCore(c);
-        }
-        // ---- 「同步補齊」：把既有、還沒在一畝田的核心客戶補進來。同名的單歸成一個人（N 單 → 1 人）。預覽 → 勾選 → 確認；可「還原」----
-        let leadSyncPlan = null;
-        function leadSyncCandidates() {
-            const fAgent = (document.getElementById('filterAgent') || {}).value || 'ALL';
-            return customers.filter(function (c) { return leadCoreSyncable(c) && !coreLeadOf(c) && matchAgentFilter(c, fAgent); });
-        }
-        function leadSyncBtnHtml() {
-            const n = leadSyncCandidates().length;
-            return '<button type="button" id="leadSyncBtn" onclick="leadSyncOpen()" title="把核心業績看板裡、還沒出現在一畝田的客戶（單）補進來；同名的單會歸成同一個人（先預覽、確認後才寫入，可還原）" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1 ' + (n ? 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50') + '"><i class="fa-solid fa-link"></i> 同步補齊' + (n ? ' <span id="leadSyncN" class="px-1.5 rounded-full bg-amber-500 text-white text-[10px]">' + n + '</span>' : '') + '</button>';
-        }
-        function leadSyncStatusTxt(C) { return leadDealStatus(C); }
-        function leadSyncBuild() {
-            const cands = leadSyncCandidates(), groups = [], idx = Object.create(null);
-            cands.forEach(function (C) {
-                const nm = String(C.name).trim(); let g = idx[nm];
-                if (!g) { g = idx[nm] = { name: nm, deals: [] }; groups.push(g); }
-                g.deals.push(C);
-            });
-            return groups.map(function (g) {
-                let m = null;
-                for (let i = 0; i < g.deals.length && !m; i++) { const mm = leadMatchFor(g.deals[i]); if (mm.repair) m = mm; }
-                if (!m) m = leadPickByName(g.name);
-                return {
-                    cid: g.deals[0].id, cids: g.deals.map(function (d) { return d.id; }), name: g.name, n: g.deals.length,
-                    mode: m.mode, leadId: m.lead ? m.lead.id : '', repair: !!m.repair, multi: !!m.multi, existing: m.lead ? leadDeals(m.lead).length : 0,
-                    stage: leadAcreStageForDeals(g.deals), status: g.deals.map(leadDealStatus).join('・'), agent: g.deals[0].agentName || '', checked: !m.multi
-                };
-            });
-        }
-        function leadSyncOpen() {
-            if (!leadSyncCandidates().length) return showToast('核心看板的客戶都已在一畝田，不需要補齊', 'info');
-            leadSyncPlan = { rows: leadSyncBuild() };
-            leadSyncRender();
-            openModal('leadSyncModal');
-        }
-        function leadSyncRender() {
-            const P = leadSyncPlan; if (!P) return;
-            const body = document.getElementById('leadSyncBody'); if (!body) return;
-            const nDeals = P.rows.reduce(function (s, r) { return s + r.n; }, 0);
-            const nNew = P.rows.filter(function (r) { return r.mode === 'new'; }).length, nLink = P.rows.length - nNew, nMulti = P.rows.filter(function (r) { return r.multi; }).length;
-            const stName = function (k) { const s = LEAD_STAGE_MAP[k]; return s ? s.no + ' ' + s.name : k; };
-            body.innerHTML =
-                '<p class="text-slate-700">核心業績看板有 <b>' + nDeals + '</b> 單還沒對應到一畝田，同名的單歸成同一個人，共 <b>' + P.rows.length + '</b> 人：預計<b class="text-emerald-700">新增 ' + nNew + ' 位名單</b>、<b class="text-sky-700">連結既有名單 ' + nLink + ' 位</b>' + (nMulti ? '，<b class="text-amber-700">' + nMulti + ' 位一畝田有多位同名、需你確認（預設不勾選）</b>' : '') + '。</p>' +
-                '<p class="text-[11px] text-slate-500">一畝田一個人只有一列；每一單仍各自保留自己的聯絡紀錄（不複製）。新增的名單階段：有成交單→01 已結果的樹、全部流失→04 樹種、其他→02 茁長的樹；姓名／電話／公司／負責業務／生日從第一單帶入。</p>' +
-                '<div class="flex gap-2 text-xs"><button type="button" onclick="leadSyncAll(true)" class="px-2 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 font-bold text-slate-600">全選</button><button type="button" onclick="leadSyncAll(false)" class="px-2 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 font-bold text-slate-600">全不選</button></div>' +
-                '<div class="border border-slate-200 rounded-lg overflow-hidden"><div class="max-h-[46vh] overflow-y-auto divide-y divide-slate-100">' +
-                P.rows.map(function (r, i) {
-                    const act = r.mode === 'link'
-                        ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">連結既有名單</span>' + (r.existing ? ' <span class="text-[10px] text-slate-500">（它已有 ' + r.existing + ' 單 → 共 ' + (r.existing + r.n) + ' 單）</span>' : '') + (r.repair ? ' <span class="text-[10px] text-slate-400">（補回斷掉的連結）</span>' : '')
-                        : '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">新增名單</span> <span class="text-[10px] text-slate-500">→ ' + esc(stName(r.stage)) + '</span>';
-                    const cnt = '<span class="lead-sync-count px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">' + r.n + ' 單 → 1 人</span>';
-                    const note = r.multi ? '<div class="text-[10px] text-amber-700">一畝田有多位同名名單，無法自動判斷歸給誰；請先在一畝田整理，或確定要另開一位再勾選</div>' : '';
-                    return '<label class="lead-sync-row flex items-start gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer" data-cid="' + esc(r.cid) + '" data-name="' + esc(r.name) + '"><input type="checkbox" class="lead-sync-chk mt-1" ' + (r.checked ? 'checked' : '') + ' onchange="leadSyncToggle(' + i + ', this.checked)"><div class="min-w-0 flex-1"><div class="flex items-center gap-2 flex-wrap"><b class="text-slate-800">' + esc(r.name) + '</b>' + cnt + '<span class="text-[10px] text-slate-500">' + esc(r.status) + (r.agent ? '・' + esc(r.agent) : '') + '</span>' + act + '</div>' + note + '</div></label>';
-                }).join('') + '</div></div>';
-            leadSyncUpdateBtn();
-        }
-        function leadSyncUpdateBtn() {
-            const b = document.getElementById('leadSyncConfirmBtn'); if (!b || !leadSyncPlan) return;
-            const ck = leadSyncPlan.rows.filter(function (r) { return r.checked; }), n = ck.length, d = ck.reduce(function (s, r) { return s + r.n; }, 0);
-            b.textContent = '確認同步（' + n + ' 位' + (d !== n ? '・' + d + ' 單' : '') + '）'; b.disabled = !n; b.classList.toggle('opacity-50', !n);
-        }
-        function leadSyncToggle(i, v) { if (leadSyncPlan && leadSyncPlan.rows[i]) { leadSyncPlan.rows[i].checked = !!v; leadSyncUpdateBtn(); } }
-        function leadSyncAll(v) { if (!leadSyncPlan) return; leadSyncPlan.rows.forEach(function (r) { r.checked = !!v; }); leadSyncRender(); }
-        function leadSyncCancel() { leadSyncPlan = null; closeModal('leadSyncModal'); }
-        function leadSyncConfirm() {
-            const P = leadSyncPlan; if (!P) return;
-            const rows = P.rows.filter(function (r) { return r.checked; });
-            if (!rows.length) return showToast('沒有勾選任何客戶', 'error');
-            atEnsureUndoBase();                                                        // 第一次操作也能「還原」
-            let nNew = 0, nLink = 0, nDeals = 0, skip = 0;
-            rows.forEach(function (r) {
-                const ds = r.cids.map(function (id) { return customers.find(function (x) { return x.id === id; }); }).filter(function (C) { return C && leadCoreSyncable(C) && !coreLeadOf(C); });
-                if (!ds.length) { skip++; return; }
-                if (r.mode === 'link') {
-                    const L = customers.find(function (x) { return x.id === r.leadId; });
-                    if (!L || L.progress !== 'LEAD') { skip++; return; }
-                    ds.forEach(function (C) { leadLinkFill(L, C); nDeals++; }); nLink++;
-                    return;
-                }
-                const L = leadMakeFromCore(ds[0]); L.acreStage = leadAcreStageForDeals(ds); customers.push(L);
-                ds.forEach(function (C) { leadLinkFill(L, C); nDeals++; }); nNew++;
-            });
-            leadSyncPlan = null; closeModal('leadSyncModal');
-            recordState(); renderApp();
-            showToast('已同步補齊：新增 ' + nNew + ' 位、連結 ' + nLink + ' 位（共 ' + nDeals + ' 單）' + (skip ? '、略過 ' + skip + ' 位' : '') + '（可按「還原」一步復原）', 'success');
-        }
-        // ================= 週行程（內部代號 AIRTABLE，舊名 Airtable 模式）：聯絡行事曆（週檢視） =================
+        // ================= Airtable 模式：聯絡行事曆（週檢視） =================
         // 資料來源：即時讀取所有客戶的 c.history（不另存副本、不改雲端格式）。
         // 選填欄位：h.method（聯絡方式）、h.endDate（跨日結束日）；舊紀錄沒有 → 以「未註明」顯示、單日顯示。
         // ---- v8：開發名單聯絡紀錄 / 下次聯絡 → 週曆 ----
@@ -4672,109 +4447,40 @@
         function leadContacts(c) { return (c && Array.isArray(c.contacts)) ? c.contacts.filter(function (x) { return x && typeof x === 'object'; }) : []; }
         function leadCtDate(x) { const d = String((x && x.date) || '').substring(0, 10); return atParse(d) ? d : ''; }
         function leadValidDate(v) { const d = String(v || '').substring(0, 10); return atParse(d) ? d : ''; }
-        // ---- v12：一畝田 ↔ 核心看板 雙向連結（v15 起改為一人多單，見下方 v15 區塊）----
+        // ---- v12：一畝田 ↔ 核心看板 雙向連結（加法式欄位：lead.coreId / customer.leadId；雲端頂層鍵不變）----
         // 啟用不再「搬走」名單：名單留在一畝田，另建（或連結）一位核心客戶；聯絡紀錄只有一份（連結後以 customer.history 為準）。
-
-        // ---- v15：一人多單。核心看板的「客戶」＝一單（可同一人多單）；一畝田＝一個姓名一列。----
-        // 欄位（都在紀錄物件內，雲端頂層鍵不變）：customer.leadId（這一單屬於哪位名單）、lead.coreIds（這位名單的所有單的 id）。
-        // 相容舊資料（v12/v14 的 lead.coreId 單一欄位）：讀取時一律合併 coreIds ∪ coreId，不改動舊資料；之後第一次連結／解除連結時才寫入 coreIds，並讓 lead.coreId 同步指向第一單。
-        function leadDealIds(L) {
-            const s = [];
-            if (L && Array.isArray(L.coreIds)) L.coreIds.forEach(function (id) { if (id && s.indexOf(id) < 0) s.push(id); });
-            if (L && L.coreId && s.indexOf(L.coreId) < 0) s.push(L.coreId);
-            return s;
+        function leadCoreOf(L) {
+            if (!L || L.progress !== 'LEAD' || !L.coreId) return null;
+            const C = customers.find(function (x) { return x.id === L.coreId; });
+            return (C && C.progress !== 'LEAD' && C.leadId === L.id) ? C : null;      // 雙向都對得上才算連結（斷掉的 id 視為未連結）
         }
-        // 這位名單的所有「單」（雙向都對得上才算：客戶的 leadId 指回來，名單的 coreIds/coreId 有它）
-        function leadDeals(L) {
-            if (!L || L.progress !== 'LEAD') return [];
-            const out = [];
-            leadDealIds(L).forEach(function (id) {
-                const C = customers.find(function (x) { return x.id === id; });
-                if (C && C.progress !== 'LEAD' && C.leadId === L.id && out.indexOf(C) < 0) out.push(C);
-            });
-            return out;
-        }
-        function leadCoreOf(L) { const d = leadDeals(L); return d.length ? d[0] : null; }          // 第一單（相容舊呼叫）
         function coreLeadOf(C) {
             if (!C || C.progress === 'LEAD' || !C.leadId) return null;
             const L = customers.find(function (x) { return x.id === C.leadId; });
-            return (L && L.progress === 'LEAD' && leadDealIds(L).indexOf(C.id) >= 0) ? L : null;
+            return (L && L.progress === 'LEAD' && L.coreId === C.id) ? L : null;
         }
         function pairOf(c) { return c ? (c.progress === 'LEAD' ? leadCoreOf(c) : coreLeadOf(c)) : null; }
-        function leadAddDeal(L, C) {
-            const ids = leadDeals(L).map(function (x) { return x.id; });
-            if (ids.indexOf(C.id) < 0) ids.push(C.id);
-            L.coreIds = ids; L.coreId = ids[0]; C.leadId = L.id;
-        }
-        function leadRemoveDeal(L, C) {
-            const ids = leadDeals(L).map(function (x) { return x.id; }).filter(function (id) { return id !== C.id; });
-            if (ids.length) { L.coreIds = ids; L.coreId = ids[0]; } else { delete L.coreIds; delete L.coreId; }
-            delete C.leadId;
-        }
-        function leadDealStatus(C) {
-            if (C.category === 'WON') return '已成交';
-            const m = { HOLD: '待定', LOST: '流失', NURTURE: '經營', FIRST_VISIT: '初訪', KEY_VISIT: '關鍵訪', CONTACT: '接觸' };
-            return m[C.progress] || C.progress || '跟進中';
-        }
-        function leadDealLabel(L, C) { const i = leadDeals(L).indexOf(C); return '單' + (i + 1) + '・' + leadDealStatus(C); }
-        function leadDealSummary(L) {
-            const cnt = {}, order = [];
-            leadDeals(L).forEach(function (d) { const k = leadDealStatus(d); if (!cnt[k]) { cnt[k] = 0; order.push(k); } cnt[k]++; });
-            return order.map(function (k) { return k + (cnt[k] > 1 ? '×' + cnt[k] : ''); }).join('・');
-        }
-        // 預設新增紀錄的那一單：最近有紀錄的單；都沒有紀錄 → 最晚建立（排最後）的單
-        function leadDefaultDeal(L) {
-            const deals = leadDeals(L); if (!deals.length) return null;
-            let best = null, bk = '';
-            deals.forEach(function (d, i) {
-                let last = '';
-                (Array.isArray(d.history) ? d.history : []).forEach(function (h) { if (h && !h.sys) { const x = leadValidDate(h.date); if (x > last) last = x; } });
-                const k = last + '|' + String(d.createdAt || '').substring(0, 19) + '|' + String(i).padStart(4, '0');
-                if (!best || k > bk) { best = d; bk = k; }
-            });
-            return best;
-        }
-        // 下次聯絡日：每個「人」一個（存在名單上），同時寫到名單與它所有的單（只對真實物件同步；Excel 預覽用的複本不會動到對方）
+        // 下次聯絡日：兩邊各存一份，寫入時同步（只對真實物件同步；Excel 預覽用的複本不會動到對方）
         function nxtSet(c, v) {
             c.nextContactDate = v;
             if (customers.indexOf(c) < 0) return;
-            const L = c.progress === 'LEAD' ? c : coreLeadOf(c); if (!L) return;
-            if (L !== c) L.nextContactDate = v;
-            leadDeals(L).forEach(function (d) { if (d !== c) d.nextContactDate = v; });
+            const o = pairOf(c); if (o) o.nextContactDate = v;
         }
-        // 名單的「聯絡紀錄」平面清單：已連結 → 所有單的 history 依序串起來（gi＝全域索引；只有 1 單時＝該單 history 的索引，和 v12 相同）；未連結 → lead.contacts
-        function leadRecFlat(L, create) {
-            const deals = leadDeals(L), out = [];
-            if (!deals.length) {
-                if (create && !Array.isArray(L.contacts)) L.contacts = [];
-                (Array.isArray(L.contacts) ? L.contacts : []).forEach(function (ct, i) { out.push({ ct: ct, arr: L.contacts, deal: null, li: i, gi: i }); });
-                return out;
-            }
-            let g = 0;
-            deals.forEach(function (d) {
-                if (create && !Array.isArray(d.history)) d.history = [];
-                const arr = Array.isArray(d.history) ? d.history : [];
-                arr.forEach(function (ct, i) { out.push({ ct: ct, arr: arr, deal: d, li: i, gi: g + i }); });
-                g += arr.length;
-            });
-            return out;
-        }
-        function leadRecArr(L, create) {            // 相容舊呼叫：已連結 → 預設那一單的 history；未連結 → lead.contacts
-            const C = leadDefaultDeal(L);
+        // 名單的「聯絡紀錄」正本：已連結 → 核心客戶的 history；未連結 → lead.contacts
+        function leadRecArr(L, create) {
+            const C = leadCoreOf(L);
             if (C) { if (create && !Array.isArray(C.history)) C.history = []; return Array.isArray(C.history) ? C.history : null; }
             if (create && !Array.isArray(L.contacts)) L.contacts = [];
             return Array.isArray(L.contacts) ? L.contacts : null;
         }
-        // 最近聯絡日＝名單自己的 contacts / 舊 history ＋ 所有單的 history（系統自動寫的啟用紀錄不算）
+        // 名單的所有「聯絡紀錄」日期＝ contacts ＋（舊的）history ＋（已連結時）核心客戶的 history；供「最近聯絡日」使用（系統自動寫的啟用紀錄不算）
         function leadLastContact(c) {
             let best = '';
+            const C = leadCoreOf(c);
             leadContacts(c).forEach(function (x) { const d = leadCtDate(x); if (d > best) best = d; });
-            let hs = Array.isArray(c && c.history) ? c.history.slice() : [];
-            leadDeals(c).forEach(function (d) { if (Array.isArray(d.history)) hs = hs.concat(d.history); });
-            hs.forEach(function (h) { if (h && h.sys) return; const d = leadValidDate(h && h.date); if (d > best) best = d; });
+            (c && Array.isArray(c.history) ? c.history : []).concat(C && Array.isArray(C.history) ? C.history : []).forEach(function (h) { if (h && h.sys) return; const d = leadValidDate(h && h.date); if (d > best) best = d; });
             return best;
         }
-
         function leadNewContactId() { return 'lc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6); }
         // 啟用 / 轉入核心時：把名單的聯絡紀錄搬進 history（保留 method / endDate，附 srcContactId 避免重複），搬完從 contacts 移除，因此重複執行也不會重複。
         // v12：多一個可選參數 target＝搬進「另一個物件」（連結的核心客戶）的 history；不給就和 v8 一樣搬進自己的 history。
@@ -4889,7 +4595,7 @@
         function atAddRender() {
             const q = (document.getElementById('atAddSearch').value || '').trim().toLowerCase();
             let list = customers.filter(function (c) {
-                if (c.progress === 'LEAD' && leadDeals(c).length) return false;          // v12：已連結的名單不重複列出（用核心客戶那一單）
+                if (c.progress === 'LEAD' && leadCoreOf(c)) return false;          // v12：已連結的名單不重複列出（用核心客戶那一筆）
                 if (!q) return true;
                 return ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + (c.agentName || '')).toLowerCase().indexOf(q) >= 0;
             });
@@ -4899,7 +4605,6 @@
                 const lead = c.progress === 'LEAD';
                 return '<button type="button" role="option" class="at-add-opt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-amber-50 border-b border-slate-100 text-sm' + (atAddPick === c.id ? ' bg-amber-50' : '') + '" data-id="' + esc(c.id) + '" onclick="atAddPickPerson(this.dataset.id)">' +
                     '<span class="font-bold text-[#1E2E3D] truncate">' + esc(c.name) + '</span>' +
-                    ((!lead && coreLeadOf(c) && leadDeals(coreLeadOf(c)).length > 1) ? '<span class="at-deal text-[10px] px-1 rounded bg-slate-100 text-slate-600 border border-slate-300 flex-shrink-0">' + esc(leadDealLabel(coreLeadOf(c), c)) + '</span>' : '') +
 
                     (c.agentName ? '<span class="text-[10px] text-indigo-600 flex-shrink-0">' + esc(c.agentName) + '</span>' : '') +
                     (c.company ? '<span class="text-[10px] text-slate-400 truncate">' + esc(c.company) + '</span>' : '') + '</button>';
@@ -4936,7 +4641,7 @@
                 closeModal('atAddModal'); atAddPick = null; return atSaved('已新增個人行程');
             }
             const c0 = customers.find(function (x) { return x.id === atAddPick; });
-            const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;      // v12：已連結的名單 → 寫進核心客戶的 history（同一份）
+            const c = (c0 && c0.progress === 'LEAD' && leadCoreOf(c0)) || c0;      // v12：已連結的名單 → 寫進核心客戶的 history（同一份）
             if (!c) return showToast('請先選擇客戶或名單', 'error');
             const date = $('atAddDate').value; if (!atParse(date)) return showToast('請選擇日期', 'error');
             const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = $('atAddContent').value.trim();
@@ -5230,11 +4935,7 @@
         }
         function atPhMatches(title) {
             const t = String(title || '').trim(); if (!t) return [];
-            return customers.filter(function (c) {
-                if (String(c.name || '').trim() !== t) return false;
-                if (c.progress === 'LEAD') return !leadDeals(c).length;                    // 已連結的名單不重複列出
-                const L = coreLeadOf(c); return !(L && leadDeals(L).length > 1 && leadDefaultDeal(L) !== c);       // v15：一人多單 → 只列預設那一單（一個人一個候選）
-            });
+            return customers.filter(function (c) { return String(c.name || '').trim() === t && !(c.progress === 'LEAD' && leadCoreOf(c)); });
         }
         function atPhRefreshRow(r) {
             r.matches = atPhMatches(r.title).map(function (c) { return c.id; });
@@ -5424,7 +5125,7 @@
                 if (r.cat) rec.cat = r.cat; if (r.visit) rec.visitType = r.visit;
                 rec.by = me; rec.src = 'photo';
                 const c0 = r.link ? customers.find(function (x) { return x.id === r.link; }) : null;
-                const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;
+                const c = (c0 && c0.progress === 'LEAD' && leadCoreOf(c0)) || c0;
                 if (c && c.progress === 'LEAD') { rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
                 else if (c) { rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); nLinked++; }
                 else { rec.id = 'pe-' + nid(''); rec.agent = agent; rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
@@ -5499,10 +5200,8 @@
             customers.forEach(function (c) {
                 if (!matchAgentFilter(c, fAgent)) return;                     // 負責業務：名單與客戶都用 agentName
                 if (activeTagFilters.length > 0 && !activeTagFilters.some(function (tid) { return c.tags && c.tags.includes(tid); })) return;
-                const isLead = c.progress === 'LEAD', Lk = isLead ? c : coreLeadOf(c), linked = isLead && leadDeals(c).length > 0;
-                // v15：「人」的鍵＝名單 id（一人多單全算同一人）；沒連結的同名者也算同一人（以姓名為鍵）
-                const pk = Lk ? Lk.id : (String(c.name || '').trim() ? 'n:' + String(c.name).trim() : c.id);
-                // v12：已連結的名單，紀錄以核心客戶的 history 為準（由各單顯示，每筆紀錄只出現一次）；名單這邊只留「下次聯絡」chip → 每個人只出現一次
+                const isLead = c.progress === 'LEAD', P = pairOf(c), linked = isLead && !!P, pk = (isLead && P) ? P.id : c.id;
+                // v12：已連結的名單，紀錄以核心客戶的 history 為準（由核心客戶那一筆顯示）；名單這邊只留「下次聯絡」chip → 每個人只出現一次
                 const hist = linked ? [] : (Array.isArray(c.history) ? c.history : []);
                 hist.forEach(function (h, idx) {
                     if (!h) return;
@@ -5556,12 +5255,6 @@
             return ev.start + (ev.time ? ' ' + ev.time : '') + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + (ev.src === 'e' ? '個人行程｜' : '') + ev.method + (ev.xcat ? '｜' + ev.xcat : '') + (atVisitOf(ev.h) ? '｜' + atVisitOf(ev.h) : '') + '\n' + (ev.h.content || '');
         }
         function atNextColor() { return (typeof AT_CATS !== 'undefined' && AT_CATS['客戶']) || '#2563EB'; }      // 下次聯絡 chip 跟「客戶」同一個藍
-        // v15：同一個人有多單時，chip 上標示這筆紀錄屬於哪一單的狀態
-        function atDealPill(ev) {
-            if (ev.src !== 'h' || !ev.c || ev.c.progress === 'LEAD') return '';
-            const L = coreLeadOf(ev.c); if (!L || leadDeals(L).length < 2) return '';
-            return '<span class="at-deal flex-shrink-0 px-1 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-300" title="這個人在核心看板有 ' + leadDeals(L).length + ' 單">' + esc(leadDealStatus(ev.c)) + '</span>';
-        }
         function atKindPill(ev) {
             if (ev.src === 'e') return '<span class="at-kind at-kind-evt flex-shrink-0 px-1 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-300">個人行程</span>';
             if (ev.src === 'n') return '<span class="at-kind at-kind-next flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>';
@@ -5586,7 +5279,7 @@
             return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isEvt ? 'evt' : 'rec')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev) + '>' +
                 '<div class="flex items-center gap-1 min-w-0 flex-wrap"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
                 '<span class="font-bold text-[#1E2E3D] ' + (isEvt ? 'break-words' : 'truncate') + '">' + esc(ev.c.name) + '</span>' + right + '</div>' +
-                '<div class="mt-0.5 flex items-center gap-1 flex-wrap">' + atKindPill(ev) + atDealPill(ev) + atCatPills(ev.h) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
+                '<div class="mt-0.5 flex items-center gap-1 flex-wrap">' + atKindPill(ev) + atCatPills(ev.h) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
                 '</button>';
         }
         function atBarHtml(ev, colStart, colEnd, lane, weekStart, weekEnd) {
