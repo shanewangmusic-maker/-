@@ -125,9 +125,6 @@
                 <button onclick="switchMainTab('LEADS')" id="mainTab-LEADS" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-address-book"></i> 開發名單庫
                 </button>
-                <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-calendar-week"></i> Airtable 模式
-                </button>
                 <button onclick="switchMainTab('RECRUIT')" id="mainTab-RECRUIT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-user-tie"></i> 引薦招募庫
                 </button>
@@ -326,8 +323,6 @@
                 <p class="text-lg font-bold font-editorial text-slate-600">目前尚無符合條件的名單</p>
                 <p class="text-sm mt-1 text-slate-400">請嘗試調整過濾條件，或點擊右上角新增資料。</p>
             </div>
-            <!-- Airtable 模式：週曆（內容由 renderAirtableCalendar 即時由所有客戶的 history 產生） -->
-            <div id="airtableArea" class="hidden"></div>
             </div><!-- /crmBody -->
 
         </main>
@@ -688,22 +683,6 @@
         </div>
 
         <!-- 3. 客戶追蹤歷程 Modal -->
-<!-- Airtable 模式：紀錄詳情小視窗 -->
-        <div id="airtableDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[55] p-4" onclick="if(event.target===this)closeModal('airtableDetailModal')">
-            <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-                <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center">
-                    <h3 class="font-bold font-editorial flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 跟進紀錄</h3>
-                    <button onclick="closeModal('airtableDetailModal')" class="text-white/80 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div id="airtableDetailBody" class="p-5 space-y-3 text-sm max-h-[60vh] overflow-y-auto"></div>
-                <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-                    <button onclick="closeModal('airtableDetailModal')" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">關閉</button>
-                    <button id="airtableDetailOpenBtn" class="px-4 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-clock-rotate-left"></i> 開啟歷程 / 新增跟進</button>
-                </div>
-            </div>
-        </div>
-
-
         <div id="followUpModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col h-[90vh] max-h-[800px] animate-in fade-in zoom-in duration-200 overflow-hidden">
                 <div class="bg-[#1E2E3D] text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
@@ -744,17 +723,6 @@
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-comments text-[#D4AF37]"></i> 聯絡方式</label>
-                                    <select id="historyMethod" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select>
-                                </div>
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-calendar-plus text-[#D4AF37]"></i> 結束日期 <span class="font-normal text-slate-400">(選填，跨多日才填)</span></label>
-                                    <input type="date" id="historyEndDate" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none">
-                                </div>
-                            </div>
-
                             <!-- 歷程動態輸入 (Sales) -->
                             <div id="historyKeyVisitFields" class="hidden bg-rose-50/50 rounded-xl p-4 border border-rose-200 space-y-3">
                                 <p class="text-xs font-bold text-rose-700 mb-1">關鍵訪規劃：</p>
@@ -1161,7 +1129,6 @@
         const ALL_TABS = [
             { key: 'PIPELINE', name: '核心業績看板' },
             { key: 'LEADS', name: '開發名單庫' },
-            { key: 'AIRTABLE', name: 'Airtable 模式' },
             { key: 'RECRUIT', name: '引薦招募庫' },
             { key: 'ARCHIVE', name: '待定與流失' }
         ];
@@ -1269,9 +1236,9 @@
 
             const crmBody = document.getElementById('crmBody');
             // 已移除的分頁 (PNL / SCHED / ACT) 若被呼叫，一律退回核心業績看板
-            if (['PIPELINE', 'LEADS', 'AIRTABLE', 'ARCHIVE', 'RECRUIT'].indexOf(tab) < 0) { tab = 'PIPELINE'; currentMainTab = tab; }
+            if (['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT'].indexOf(tab) < 0) { tab = 'PIPELINE'; currentMainTab = tab; }
 
-            const tabs = ['PIPELINE', 'LEADS', 'AIRTABLE', 'ARCHIVE', 'RECRUIT'];
+            const tabs = ['PIPELINE', 'LEADS', 'ARCHIVE', 'RECRUIT'];
             tabs.forEach(t => {
                 const el = document.getElementById(`mainTab-${t}`);
                 if (el) {
@@ -1287,18 +1254,14 @@
 
             // 開發名單庫改用一畝田版面：隱藏不適用的全域控制項（年月統整卡、商品種類、共用排序），搜尋框改提示
             const isLeadsTab = (tab === 'LEADS');
-            const isAirtableTab = (tab === 'AIRTABLE');
             ['periodCard', 'productTypeLabel', 'filterProductType', 'sortByWrap'].forEach(function (eid) {
-                const el = document.getElementById(eid); if (el) el.style.display = (isLeadsTab || isAirtableTab) ? 'none' : '';
+                const el = document.getElementById(eid); if (el) el.style.display = isLeadsTab ? 'none' : '';
             });
-            { const gridEl = document.getElementById('customerGridContainer'); if (gridEl) gridEl.style.display = isAirtableTab ? 'none' : ''; }
-            { const atEl = document.getElementById('airtableArea'); if (atEl) atEl.classList.toggle('hidden', !isAirtableTab); }
-            if (isAirtableTab) { const em = document.getElementById('emptyState'); if (em) { em.classList.remove('flex'); em.classList.add('hidden'); } }
             const leadTop = document.getElementById('leadTopArea'); if (leadTop && !isLeadsTab) leadTop.classList.add('hidden');
             const lsLabel = document.getElementById('lastStageLabel'); if (lsLabel) lsLabel.textContent = isLeadsTab ? '啟用後階段：' : '階段：';
             const lsSel = document.getElementById('filterLastStage'); if (lsSel && lsSel.options[0]) lsSel.options[0].text = isLeadsTab ? '啟用後階段(全部)' : '所有階段';
             const searchEl = document.getElementById('searchInput');
-            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : (isAirtableTab ? '搜尋客戶姓名、聯絡方式、紀錄內容...' : '搜尋姓名、電話、商品、保單、備註...');
+            if (searchEl) searchEl.placeholder = isLeadsTab ? '搜尋姓名、來源、地區、電話、備註...' : '搜尋姓名、電話、商品、保單、備註...';
 
             const dashboard = document.getElementById('dashboardSection');
             if(dashboard) dashboard.style.display = (tab === 'PIPELINE') ? 'block' : 'none';
@@ -1309,13 +1272,7 @@
             const recruitStageFilter = document.getElementById('filterRecruitStageContainer');
             const archiveStatusFilter = document.getElementById('filterArchiveStatusContainer');
             
-            if (tab === 'AIRTABLE') {
-                if(catContainer) catContainer.style.display = 'none';
-                if(viewToggle) viewToggle.style.display = 'none';
-                if(recruitStageFilter) recruitStageFilter.style.display = 'none';
-                if(lastStageFilter) lastStageFilter.style.display = 'none';
-                if(archiveStatusFilter) archiveStatusFilter.style.display = 'none';
-            } else if(tab === 'LEADS') {
+            if(tab === 'LEADS') {
                 if(catContainer) catContainer.style.display = 'none';
                 if(viewToggle) viewToggle.style.display = 'none';
                 if(recruitStageFilter) recruitStageFilter.style.display = 'none';
@@ -3280,7 +3237,6 @@
         function renderCustomerGrid() {
             // 開發名單庫：一畝田新版面（獨立渲染，不經過下方共用的過濾/月份邏輯）
             if (currentMainTab === 'LEADS') { renderLeadsView(); return; }
-            if (currentMainTab === 'AIRTABLE') { renderAirtableCalendar(); return; }
             { const lt = document.getElementById('leadTopArea'); if (lt) lt.classList.add('hidden'); }
             const grid = document.getElementById('customerGridContainer'), empty = document.getElementById('emptyState');
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -4026,190 +3982,6 @@
             recordState(); renderApp(); closeModal('quickWonModal'); showToast('案件已成交！', 'success');
         }
 
-        // ================= Airtable 模式：聯絡行事曆（週檢視） =================
-        // 資料來源：即時讀取所有客戶的 c.history（不另存副本、不改雲端格式）。
-        // 選填欄位：h.method（聯絡方式）、h.endDate（跨日結束日）；舊紀錄沒有 → 以「未註明」顯示、單日顯示。
-        let atWeekStart = null; // 目前顯示週的「週日」，格式 YYYY-MM-DD
-        const AT_DOW = ['日', '一', '二', '三', '四', '五', '六'];
-        const AT_METHODS = {
-            'Line': '#10B981', '電話': '#3B82F6', '面談': '#D4AF37', '其他': '#865E8A', '未註明': '#94A3B8'
-        };
-        function atPad(n) { return (n < 10 ? '0' : '') + n; }
-        function atFmt(d) { return d.getFullYear() + '-' + atPad(d.getMonth() + 1) + '-' + atPad(d.getDate()); }
-        function atParse(str) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || ''); if (!m) return null; const d = new Date(+m[1], +m[2] - 1, +m[3]); return (d.getFullYear() === +m[1] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[3]) ? d : null; }
-        function atAdd(str, n) { const d = atParse(str); d.setDate(d.getDate() + n); return atFmt(d); }
-        function atToday() { return atFmt(new Date()); }
-        function atSunday(str) { const d = atParse(str) || new Date(); d.setDate(d.getDate() - d.getDay()); return atFmt(d); }
-        function atMD(str) { return str.substring(5, 7) + '/' + str.substring(8, 10); }
-        // 週次：含 1/1 的那週為第 1 週（週日起算，與日曆 日~六 一致），年份以該週週六所屬年為準
-        function atWeekInfo(sundayStr) {
-            const sat = atParse(atAdd(sundayStr, 6)); const y = sat.getFullYear();
-            const doy = Math.round((new Date(y, sat.getMonth(), sat.getDate()) - new Date(y, 0, 1)) / 86400000) + 1;
-            return { year: y, week: Math.floor((doy - 1) / 7) + 1 };
-        }
-        function atSundayOfYearWeek(y, w) { const j = new Date(y, 0, 1); j.setDate(j.getDate() - j.getDay() + 7 * (w - 1)); return atFmt(j); }
-        function atMethodOf(h) { const m = (h && h.method != null) ? String(h.method).trim() : ''; return m || '未註明'; }
-        function atProgLabel(p) {
-            if (!p) return '';
-            if (p === 'WON') return '成交'; if (p === 'HOLD') return '待定'; if (p === 'LOST') return '流失'; if (p === 'LEAD') return '開發名單';
-            return stageConfig[p] ? stageConfig[p].label : p;
-        }
-        function atCollectEvents() {
-            const fAgent = document.getElementById('filterAgent')?.value || 'ALL';
-            const search = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-            const out = [];
-            customers.forEach(function (c) {
-                if (!matchAgentFilter(c, fAgent)) return;
-                if (activeTagFilters.length > 0 && !activeTagFilters.some(function (tid) { return c.tags && c.tags.includes(tid); })) return;
-                (c.history || []).forEach(function (h, idx) {
-                    if (!h) return;
-                    const ds = String(h.date || '').substring(0, 10);
-                    if (!atParse(ds)) return;
-                    let end = String(h.endDate || '').substring(0, 10);
-                    if (!atParse(end) || end < ds) end = ds;
-                    const method = atMethodOf(h);
-                    if (search) {
-                        const hay = ((c.name || '') + ' ' + (c.company || '') + ' ' + (c.phone || '') + ' ' + method + ' ' + (h.content || '')).toLowerCase();
-                        if (hay.indexOf(search) < 0) return;
-                    }
-                    const ts = /^h-(\d+)/.exec(h.id || ''); 
-                    out.push({ c: c, h: h, idx: idx, start: ds, end: end, method: method, ts: ts ? +ts[1] : 0 });
-                });
-            });
-            out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : (a.ts - b.ts) || String(a.c.name).localeCompare(String(b.c.name), 'zh-Hant'); });
-            return out;
-        }
-        function atEvTitle(ev) {
-            return ev.start + (ev.end !== ev.start ? ' ~ ' + ev.end : '') + '｜' + (ev.c.name || '') + '｜' + ev.method + '\n' + (ev.h.content || '');
-        }
-        function atChipHtml(ev, dayStr) {
-            const color = AT_METHODS[ev.method] || '#64748B';
-            const multi = ev.end !== ev.start;
-            let dateTxt = atMD(ev.start) + (multi ? '~' + atMD(ev.end) : '');
-            let dayHint = '';
-            if (multi && dayStr) { const n = Math.round((atParse(dayStr) - atParse(ev.start)) / 86400000) + 1, tot = Math.round((atParse(ev.end) - atParse(ev.start)) / 86400000) + 1; dayHint = ' <span class="text-slate-400">(第' + n + '/' + tot + '天)</span>'; }
-            const unknown = ev.method === '未註明';
-            return '<button type="button" class="at-chip block w-full text-left rounded-md bg-white border border-slate-200 hover:border-[#D4AF37] hover:shadow-md transition px-2 py-1 text-[11px] leading-snug" style="border-left:4px solid ' + color + '" ' +
-                'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)">' +
-                '<div class="flex items-center gap-1 min-w-0"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
-                '<span class="font-bold text-[#1E2E3D] truncate">' + esc(ev.c.name) + '</span>' +
-                '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + color + '"') + '>' + esc(ev.method) + '</span></div>' +
-                '<div class="text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(String(ev.h.content || '').substring(0, 160)) + '</div>' + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
-                '</button>';
-        }
-        function atBarHtml(ev, colStart, colEnd, lane, weekStart, weekEnd) {
-            const color = AT_METHODS[ev.method] || '#64748B';
-            const clipL = ev.start < weekStart, clipR = ev.end > weekEnd;
-            return '<button type="button" class="at-chip at-bar text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
-                'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2" ' +
-                'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)">' +
-                (clipL ? '◀ ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80)) + (clipR ? ' ▶' : '') + '</button>';
-        }
-        function renderAirtableCalendar() {
-            const area = document.getElementById('airtableArea');
-            if (!area) return;
-            if (!atWeekStart) atWeekStart = atSunday(atToday());
-            const ws = atWeekStart, we = atAdd(ws, 6), today = atToday();
-            const info = atWeekInfo(ws);
-            const days = []; for (let i = 0; i < 7; i++) days.push(atAdd(ws, i));
-            const all = atCollectEvents();
-            const inWeek = all.filter(function (e) { return e.start <= we && e.end >= ws; });
-            const multi = inWeek.filter(function (e) { return e.end > e.start; });
-            const single = inWeek.filter(function (e) { return e.end === e.start; });
-            // 跨日 bar 分車道
-            const lanes = [];
-            multi.forEach(function (e) {
-                const cs = Math.max(0, Math.round((atParse(e.start < ws ? ws : e.start) - atParse(ws)) / 86400000));
-                const ce = Math.min(6, Math.round((atParse(e.end > we ? we : e.end) - atParse(ws)) / 86400000));
-                let li = 0; while (lanes[li] && lanes[li].some(function (o) { return !(ce < o.cs || cs > o.ce); })) li++;
-                (lanes[li] = lanes[li] || []).push({ e: e, cs: cs, ce: ce });
-            });
-            const custCount = new Set(inWeek.map(function (e) { return e.c.id; })).size;
-            const unknownCnt = inWeek.filter(function (e) { return e.method === '未註明'; }).length;
-            const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 0 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
-
-            // ---- 工具列 ----
-            let html = '<div class="bg-white rounded-xl border border-slate-200 premium-shadow p-3 md:p-4 mb-3">' +
-                '<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">' +
-                    '<div class="flex items-center gap-2 flex-wrap">' +
-                        '<div class="flex items-center border border-slate-200 rounded-lg overflow-hidden">' +
-                            '<button id="atPrev" type="button" onclick="atNav(-1)" class="px-3 py-2 hover:bg-slate-100 text-[#1E2E3D]" title="上一週"><i class="fa-solid fa-chevron-left"></i></button>' +
-                            '<button id="atNext" type="button" onclick="atNav(1)" class="px-3 py-2 hover:bg-slate-100 text-[#1E2E3D] border-l border-slate-200" title="下一週"><i class="fa-solid fa-chevron-right"></i></button>' +
-                        '</div>' +
-                        '<button id="atToday" type="button" onclick="atGoToday()" class="px-3 py-2 rounded-lg text-sm font-bold border border-[#D4AF37] text-[#8a6d0a] bg-amber-50 hover:bg-amber-100 transition"><i class="fa-solid fa-location-crosshairs mr-1"></i>今天 / 本週</button>' +
-                        '<div class="ml-1"><h2 id="atTitle" class="font-bold font-editorial text-lg text-slate-800 leading-tight">' + ws.replace(/-/g, '/') + ' – ' + atMD(we) + '</h2>' +
-                        '<p id="atWeekNo" class="text-xs text-slate-500">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
-                    '</div>' +
-                    '<div class="flex items-center gap-2 flex-wrap text-xs text-slate-500">' +
-                        '<label class="flex items-center gap-1 font-bold">跳至日期 <input id="atJumpDate" type="date" value="' + ws + '" onchange="atJumpDate(this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700"></label>' +
-                        '<span class="flex items-center gap-1 font-bold"><input id="atJumpYear" type="number" min="2000" max="2100" value="' + info.year + '" class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 年 第 <input id="atJumpWeekNo" type="number" min="1" max="53" value="' + info.week + '" class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 週 ' +
-                        '<button id="atJumpWeekBtn" type="button" onclick="atJumpWeek()" class="px-2.5 py-1.5 bg-[#1E2E3D] text-white rounded-lg font-bold">前往</button></span>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">' +
-                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + inWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
-                    Object.keys(AT_METHODS).map(function (m) { return '<span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:' + AT_METHODS[m] + '"></span>' + m + '</span>'; }).join('') +
-                    '<span class="ml-auto hidden sm:inline">點選紀錄可看全文</span>' +
-                '</div></div>';
-
-            // ---- 桌機：7 欄週格 ----
-            const gridRows = lanes.length;
-            html += '<div id="atDesktop" class="hidden md:block bg-white rounded-xl border border-slate-200 premium-shadow overflow-hidden"><div class="grid grid-cols-7" id="atGrid">';
-            days.forEach(function (d, i) {
-                const dd = atParse(d);
-                html += '<div class="at-dayhead px-2 py-2 border-b border-r border-slate-200 last:border-r-0 text-center ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-600') + '" style="grid-row:1;grid-column:' + (i + 1) + '" data-date="' + d + '">' +
-                    '<div class="text-xs font-bold">週' + AT_DOW[i] + '</div><div class="text-xl font-black font-editorial leading-none mt-0.5 ' + (d === today ? 'text-[#D4AF37]' : '') + '">' + (dd.getMonth() + 1) + '/' + dd.getDate() + '</div></div>';
-            });
-            lanes.forEach(function (lane, li) {
-                for (let i = 0; i < 7; i++) html += '<div class="border-r border-slate-100 ' + dayBg(days[i], i) + '" style="grid-row:' + (li + 2) + ';grid-column:' + (i + 1) + ';height:28px"></div>';
-                lane.forEach(function (o) { html += atBarHtml(o.e, o.cs, o.ce, li, ws, we); });
-            });
-            days.forEach(function (d, i) {
-                const evs = single.filter(function (e) { return e.start === d; });
-                html += '<div class="at-daycell border-r border-slate-200 p-1.5 space-y-1 ' + dayBg(d, i) + '" style="grid-row:' + (gridRows + 2) + ';grid-column:' + (i + 1) + ';min-height:300px" data-date="' + d + '">' +
-                    evs.map(function (e) { return atChipHtml(e, null); }).join('') + '</div>';
-            });
-            html += '</div></div>';
-
-            // ---- 手機：逐日堆疊 ----
-            html += '<div id="atMobile" class="md:hidden space-y-2">';
-            days.forEach(function (d, i) {
-                const evs = inWeek.filter(function (e) { return e.start <= d && e.end >= d; });
-                const dd = atParse(d);
-                html += '<div class="at-mday bg-white rounded-xl border ' + (d === today ? 'border-[#D4AF37]' : 'border-slate-200') + ' overflow-hidden" data-date="' + d + '">' +
-                    '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="text-xs opacity-80">' + evs.length + ' 筆</span></div>' +
-                    '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div></div>';
-            });
-            html += '</div>';
-            area.innerHTML = html;
-        }
-        function atNav(n) { if (!atWeekStart) atWeekStart = atSunday(atToday()); atWeekStart = atAdd(atWeekStart, 7 * n); renderAirtableCalendar(); }
-        function atGoToday() { atWeekStart = atSunday(atToday()); renderAirtableCalendar(); }
-        function atJumpDate(v) { if (!atParse(v)) return; atWeekStart = atSunday(v); renderAirtableCalendar(); }
-        function atJumpWeek() {
-            const y = parseInt(document.getElementById('atJumpYear').value, 10), w = parseInt(document.getElementById('atJumpWeekNo').value, 10);
-            if (!(y >= 1900 && y <= 2200) || !(w >= 1 && w <= 53)) { showToast('請輸入正確的年份與週次 (1–53)', 'error'); return; }
-            atWeekStart = atSundayOfYearWeek(y, w); renderAirtableCalendar();
-        }
-        function atOpenDetail(el) {
-            const c = customers.find(function (x) { return x.id === el.getAttribute('data-cid'); });
-            const h = c && c.history ? c.history[+el.getAttribute('data-hi')] : null;
-            if (!c || !h) return;
-            const method = atMethodOf(h), color = AT_METHODS[method] || '#64748B', end = (h.endDate && h.endDate > h.date) ? h.endDate : '';
-            document.getElementById('airtableDetailBody').innerHTML =
-                '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D]">' + esc(c.name) + '</p>' +
-                '<span class="px-2 py-0.5 rounded text-xs font-bold ' + (method === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (method === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(method) + '</span></div>' +
-                '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
-                    '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
-                    (h.progress ? '<div><span class="font-bold">狀態：</span>' + esc(atProgLabel(h.progress)) + '</div>' : '') +
-                    (c.agentName ? '<div><span class="font-bold">負責業務：</span>' + esc(c.agentName) + '</div>' : '') +
-                    (c.phone ? '<div><span class="font-bold">電話：</span>' + esc(c.phone) + '</div>' : '') +
-                '</div>' +
-                '<div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 whitespace-pre-wrap break-words">' + esc(h.content || '') + '</div>';
-            document.getElementById('airtableDetailOpenBtn').onclick = function () { closeModal('airtableDetailModal'); openFollowUpModal(c.id); };
-            openModal('airtableDetailModal');
-        }
-
         function openFollowUpModal(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
             document.getElementById('historyCustomerId').value = c.id; document.getElementById('followUpCustomerName').innerHTML = `<span class="text-white font-bold font-editorial">${esc(c.name)}</span>`;
@@ -4278,7 +4050,7 @@
 
             const tc = document.getElementById('timelineContainer');
             if (!c.history || c.history.length===0) tc.innerHTML = '<p class="text-xs text-slate-400">尚無跟進歷程記錄</p>';
-            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date}${h.endDate?' ~ '+esc(h.endDate):''}${h.method?` <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">${esc(h.method)}</span>`:''} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
+            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
             openModal('followUpModal');
         }
 
@@ -4286,11 +4058,6 @@
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('historyCustomerId').value);
             const pSel = document.getElementById('historyProgress').value;
             const h = { id: 'h-'+Date.now(), date: document.getElementById('historyDate').value, content: document.getElementById('historyContent').value, progress: pSel==='KEEP'?c.progress:pSel };
-            { // 選填新欄位（加法式）：聯絡方式 method、結束日期 endDate（需晚於起日才記錄）
-                const mEl = document.getElementById('historyMethod'), eEl = document.getElementById('historyEndDate');
-                if (mEl && mEl.value) h.method = mEl.value;
-                if (eEl && eEl.value && h.date && eEl.value > h.date) h.endDate = eEl.value;
-            }
             c.nextContactDate = document.getElementById('historyNextContact').value;
 
             if (pSel === 'WON') {
