@@ -964,7 +964,7 @@
                     <div id="atPhPreview" class="hidden p-3 sm:p-5 space-y-3">
                         <div id="atPhInfo" class="space-y-2"></div>
                         <div id="atPhRows" class="space-y-1.5"></div>
-                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-[#D4AF37]"></i> 每日地點備註（附加到「<span id="atPhNoteWho">你自己</span>」當天的備注，不會覆蓋原有內容）</h4><div id="atPhLocs" class="space-y-1.5"></div></div>
+                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-[#D4AF37]"></i> 每日地點備註（附加到「你自己」當天的備注，不會覆蓋原有內容）</h4><div id="atPhLocs" class="space-y-1.5"></div></div>
                         <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-regular fa-square-check text-[#D4AF37]"></i> 待辦事項（預設不寫入）</h4><div id="atPhTodos" class="space-y-1.5"></div></div>
                     </div>
                 </div>
@@ -5018,63 +5018,8 @@
         const AT_NOTE_MAX = 2000;
         const AT_NOTE_LEGACY = '_legacy';                              // 擁有者那份裡的標記（非日期鍵）：舊的共用備注已複製過
         function atIsPlain(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
-        // v17：備注跟著「業務員」選擇器走。鍵的規則同 v16：登入 email（小寫）；尚未取得登入身分時用 '_local'。
-        //   · 管理者（isAdmin()，含擁有者）可在 週行程 上方選擇任一位業務員 → 只顯示、也只編輯那個人的 goals.dayNotesBy[他的鍵]
-        //   · 非管理者無法切換：不論選擇器狀態為何，一律只讀寫自己（這裡強制，不只是把選擇器藏起來）
-        //   · 預設＝自己。選擇是畫面狀態（不存雲端、不進還原堆疊）；換了登入者就自動回到自己
-        let atNoteViewKey = '', atNoteViewBy = '';
-        function atMeKey() { return myEmail() || '_local'; }
-        function atNoteCanSwitch() { return isAdmin(); }
-        function atNoteTarget() {
-            const me = atMeKey();
-            if (!atNoteViewKey || !atNoteCanSwitch()) return me;
-            if (atNoteViewBy !== me) { atNoteViewKey = ''; atNoteViewBy = ''; return me; }
-            return atNoteViewKey;
-        }
-        function atNoteUser() { return atNoteTarget(); }
-        function atNoteIsMine() { return atNoteTarget() === atMeKey(); }
-        function atNoteLegacyMine() { const k = atNoteTarget(); return k === OWNER_EMAIL || (k === '_local' && !myEmail()); }   // 舊的共用備注只在「看擁有者的備注」時出現（沒有登入身分時的 _local 視同擁有者）
-        function atNoteKeyName(k) {
-            if (k === '_local') return '本機（未登入）';
-            const m = findMember(k);
-            if (m && m.name && String(m.name).toLowerCase() !== k) return String(m.name);
-            if (k === OWNER_EMAIL) return '擁有者';
-            return k;
-        }
-        // 可選的業務員清單：自己、擁有者、所有有 Email 的成員、以及 dayNotesBy 裡已經有資料但不在名單上的鍵；沒有 Email 的成員列出但不能選（沒有鍵可存）
-        function atNoteUsers() {
-            const out = [], seen = {}, me = atMeKey();
-            const add = function (key, label, dis) { if (!dis) { if (seen[key]) return; seen[key] = 1; } out.push({ key: key, label: label, disabled: !!dis }); };
-            add(me, '我自己（' + atNoteKeyName(me) + (atNoteKeyName(me) !== me && me !== '_local' ? '・' + me : '') + '）');
-            if (me !== OWNER_EMAIL) add(OWNER_EMAIL, atNoteKeyName(OWNER_EMAIL) + (atNoteKeyName(OWNER_EMAIL) !== OWNER_EMAIL ? '・' + OWNER_EMAIL : '・' + OWNER_EMAIL));
-            teamMembers.forEach(function (m) {
-                const e = String((m && m.email) || '').trim().toLowerCase(), nm = String((m && m.name) || '').trim();
-                if (!e) { if (nm) add('', nm + '（沒有 Email，無法記備注）', true); return; }
-                add(e, (nm && nm.toLowerCase() !== e ? nm + '・' : '') + e);
-            });
-            const by = atNotesBy();
-            if (by) Object.keys(by).forEach(function (k) { if (k && k !== '__proto__' && !seen[k]) add(k, atNoteKeyName(k) + (k === '_local' ? '' : '（不在成員名單）')); });
-            return out;
-        }
-        function atSetNoteUser(k) {
-            const ae = document.activeElement;
-            if (ae && ae.classList && ae.classList.contains('at-note')) { atNoteSave(ae); try { ae.blur(); } catch (x) {} }          // 切換前，先把輸入到一半的存到「原本那個人」並離開欄位（否則重繪的草稿保留機制會把草稿帶進新對象的欄位）
-            k = String(k || '');
-            if (!atNoteCanSwitch() || !k || k === atMeKey() || k === '__proto__' || !atNoteUsers().some(function (u) { return u.key === k && !u.disabled; })) { atNoteViewKey = ''; atNoteViewBy = ''; }
-            else { atNoteViewKey = k; atNoteViewBy = atMeKey(); }
-            renderAirtableCalendar();
-        }
-        function atNoteWhoHtml() {            // 工具列：業務員選擇器（只有管理者看得到）＋「正在查看／編輯 XXX 的備注」提示
-            if (!atNoteCanSwitch()) return '';
-            const t = atNoteTarget();
-            return '<label class="flex items-center gap-1 font-bold"><i class="fa-solid fa-user-tie text-indigo-400"></i> 業務員 <select id="atNoteUser" onchange="atSetNoteUser(this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700 bg-indigo-50/50 max-w-[14rem]" title="備注會跟著這個業務員：只顯示、也只編輯他的備注">' +
-                atNoteUsers().map(function (u) { return '<option value="' + esc(u.key) + '"' + (u.disabled ? ' disabled' : '') + (u.key === t && !u.disabled ? ' selected' : '') + '>' + esc(u.label) + '</option>'; }).join('') + '</select></label>';
-        }
-        function atNoteBannerHtml() {
-            if (atNoteIsMine()) return '';
-            return '<div id="atNoteWho" class="mt-3 px-3 py-2 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs font-bold flex flex-wrap items-center gap-2"><i class="fa-solid fa-user-pen"></i><span>正在查看／編輯 ' + esc(atNoteKeyName(atNoteTarget())) + ' 的備注</span><span class="font-normal text-amber-700">（下方 備注 列與「上傳手寫週計畫」寫入的地點備註都屬於他；其他行程資料不受影響）</span><button type="button" onclick="atSetNoteUser(\'\')" class="ml-auto px-2 py-1 rounded-md bg-white border border-amber-300 text-amber-800 font-bold hover:bg-amber-100">回到我自己的備注</button></div>';
-        }
-        function atNoteWhoText() { return atNoteIsMine() ? '你自己' : atNoteKeyName(atNoteTarget()) + '（你代他編輯）'; }
+        function atNoteUser() { return myEmail() || '_local'; }        // 身分＝登入 email（小寫）；尚未取得登入身分時用 '_local'
+        function atNoteLegacyMine() { const e = myEmail(); return !e || e === OWNER_EMAIL; }   // 舊的共用備注只給擁有者
         function atLegacyObj() { const o = annualGoals && annualGoals.dayNotes; return atIsPlain(o) ? o : null; }          // 舊的共用備注（唯讀、保留）
         function atNotesBy() { const o = annualGoals && annualGoals.dayNotesBy; return atIsPlain(o) ? o : null; }
         function atNotesObj() { const by = atNotesBy(); const o = by && Object.prototype.hasOwnProperty.call(by, atNoteUser()) ? by[atNoteUser()] : null; return atIsPlain(o) ? o : null; }   // 我自己的那一份
@@ -5147,10 +5092,10 @@
             });
             if (el.value !== saved) { el.value = saved; }
             atNoteFit(el);
-            showToast(atNoteIsMine() ? '備注已儲存' : '已儲存 ' + atNoteKeyName(atNoteTarget()) + ' 的備注', 'info');
+            showToast('備注已儲存', 'info');
         }
         function atNoteHtml(d, mobile) {
-            return '<textarea class="at-note block w-full resize-none overflow-hidden rounded-md border ' + (atNoteIsMine() ? 'border-slate-200 bg-white/90' : 'border-amber-300 bg-amber-50') + ' px-2 py-1.5 text-[12px] leading-snug text-slate-700 placeholder-slate-300 outline-none focus:ring-2 focus:ring-[#D4AF37]" rows="2" style="min-height:56px" maxlength="' + AT_NOTE_MAX + '" placeholder="備注…" aria-label="' + d + ' 備注" data-date="' + d + '"' + (mobile ? ' data-mobile="1"' : '') +
+            return '<textarea class="at-note block w-full resize-none overflow-hidden rounded-md border border-slate-200 bg-white/90 px-2 py-1.5 text-[12px] leading-snug text-slate-700 placeholder-slate-300 outline-none focus:ring-2 focus:ring-[#D4AF37]" rows="2" style="min-height:56px" maxlength="' + AT_NOTE_MAX + '" placeholder="備注…" aria-label="' + d + ' 備注" data-date="' + d + '"' + (mobile ? ' data-mobile="1"' : '') +
                 ' oninput="atNoteFit(this)" onchange="atNoteSave(this)" onblur="atNoteSave(this)">' + esc(atDayNote(d)) + '</textarea>';
         }
         window.addEventListener('resize', function () { if (document.getElementById('atTimeGrid')) atFitNotes(); });
@@ -5208,7 +5153,6 @@
             atPhEl('atPhUrl').value = (localStorage.getItem('crm_ai_worker_url') || '');
             atPhEl('atPhSecret').value = (localStorage.getItem('crm_ai_secret') || '');
             atPhEl('atPhErr').textContent = '';
-            { const w = document.getElementById('atPhNoteWho'); if (w) { w.textContent = atNoteWhoText(); w.className = atNoteIsMine() ? '' : 'text-amber-700 font-bold'; } }
             atPhStage('pick'); openModal('atPhotoModal');
         }
         function atPhSaveCfg() {
@@ -5424,7 +5368,6 @@
                 '<button type="button" class="self-center px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-md text-xs font-bold" data-f="del" onclick="atPhDel(' + i + ')" title="刪除這一列"><i class="fa-solid fa-trash-can"></i></button></div>';
         }
         function atPhRender() {
-            { const w = document.getElementById('atPhNoteWho'); if (w) { w.textContent = atNoteWhoText(); w.className = atNoteIsMine() ? '' : 'text-amber-700 font-bold'; } }
             const i = atPh.info || {}, ws = atWeekStart || atMonday(atToday());
             const ok = atPhWeekOk();
             let warn = '';
@@ -5437,7 +5380,7 @@
                     '<button type="button" class="text-rose-600 px-1" data-f="ldel" onclick="atPhDelLoc(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有地點備註。</p>';
             const first = i.weekStart ? atMonday(i.weekStart) : ws;
-            atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天，週一）' + esc(atNoteIsMine() ? '你自己' : atNoteKeyName(atNoteTarget())) + '的備注。</p>' + atPh.todos.map(function (t, k) {
+            atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天，週一）的備注。</p>' + atPh.todos.map(function (t, k) {
                 return '<div class="at-phtodo flex items-center gap-2 text-xs" data-k="' + k + '"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="tcheck"' + (t.check ? ' checked' : '') + ' onchange="atPhField(this)"><input type="text" data-f="ttext" value="' + esc(t.text) + '" maxlength="200" class="' + AT_PH_SEL + ' flex-1" onchange="atPhField(this)"><button type="button" class="text-rose-600 px-1" onclick="atPhDelTodo(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有待辦事項。</p>';
             atPhCount();
@@ -5727,13 +5670,11 @@
                         '<p id="atWeekNo" class="text-xs text-slate-500">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 flex-wrap text-xs text-slate-500">' +
-                        atNoteWhoHtml() +
                         '<label class="flex items-center gap-1 font-bold">跳至日期 <input id="atJumpDate" type="date" value="' + ws + '" onchange="atJumpDate(this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700"></label>' +
                         '<span class="flex items-center gap-1 font-bold"><input id="atJumpYear" type="number" min="2000" max="2100" value="' + info.year + '" class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 年 第 <input id="atJumpWeekNo" type="number" min="1" max="53" value="' + info.week + '" class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 週 ' +
                         '<button id="atJumpWeekBtn" type="button" onclick="atJumpWeek()" class="px-2.5 py-1.5 bg-[#1E2E3D] text-white rounded-lg font-bold">前往</button></span>' +
                     '</div>' +
                 '</div>' +
-                atNoteBannerHtml() +
                 '<div class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">' +
                     '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + recWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (evtRec ? '（含個人行程 ' + evtRec + ' 筆）' : '') + (nextCnt ? ' · ' + nextCnt + ' 個下次聯絡' : '') + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
 
@@ -5777,7 +5718,7 @@
                 });
             }
             // ---- v10：每日備注列（23:00 列之下，每天一格）----
-            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div>' + (atNoteIsMine() ? '<div class="text-[9px] text-slate-400 leading-tight mt-0.5" title="每個人只看得到、也只改得到自己的備注">僅自己</div>' : '<div class="at-notewho text-[9px] font-bold text-amber-700 leading-tight mt-0.5">' + esc(atNoteKeyName(atNoteTarget())) + ' 的</div>') + '</div>';
+            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div><div class="text-[9px] text-slate-400 leading-tight mt-0.5" title="每個人只看得到、也只改得到自己的備注">僅自己</div></div>';
             days.forEach(function (d, i) {
                 html += '<div class="at-notecell border-r border-slate-100 p-1 ' + dayBg(d, i) + '" style="border-top:2px solid #94a3b8" data-date="' + d + '">' + atNoteHtml(d, false) + '</div>';
             });
@@ -5791,7 +5732,7 @@
                 html += '<div class="at-mday bg-white rounded-xl border ' + (d === today ? 'border-[#D4AF37]' : 'border-slate-200') + ' overflow-hidden" data-date="' + d + '">' +
                     '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="flex items-center gap-2"><span class="text-xs opacity-80">' + evs.length + ' 筆</span><button type="button" class="at-madd px-2 py-0.5 rounded-md text-xs font-bold bg-[#D4AF37] text-white" onclick="atOpenAdd(\'' + d + '\', \'\')" title="在這天新增紀錄"><i class="fa-solid fa-plus"></i> 新增</button></span></div>' +
                     '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div>' +
-                    '<div class="at-mnote px-2 pb-2"><div class="text-[10px] font-bold text-slate-400 mb-0.5">備注 ' + (atNoteIsMine() ? '<span class="font-normal">（僅自己看得到）</span>' : '<span class="font-bold text-amber-700">（' + esc(atNoteKeyName(atNoteTarget())) + ' 的，你正在代為編輯）</span>') + '</div>' + atNoteHtml(d, true) + '</div></div>';
+                    '<div class="at-mnote px-2 pb-2"><div class="text-[10px] font-bold text-slate-400 mb-0.5">備注 <span class="font-normal">（僅自己看得到）</span></div>' + atNoteHtml(d, true) + '</div></div>';
             });
             html += '</div>';
             atNoteMute = true;
