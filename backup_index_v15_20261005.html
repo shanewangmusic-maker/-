@@ -964,7 +964,7 @@
                     <div id="atPhPreview" class="hidden p-3 sm:p-5 space-y-3">
                         <div id="atPhInfo" class="space-y-2"></div>
                         <div id="atPhRows" class="space-y-1.5"></div>
-                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-[#D4AF37]"></i> 每日地點備註（附加到「你自己」當天的備注，不會覆蓋原有內容）</h4><div id="atPhLocs" class="space-y-1.5"></div></div>
+                        <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-solid fa-location-dot text-[#D4AF37]"></i> 每日地點備註（附加到當天「備注」，不會覆蓋原有內容）</h4><div id="atPhLocs" class="space-y-1.5"></div></div>
                         <div class="rounded-xl border border-slate-200 p-3 space-y-1.5"><h4 class="text-xs font-bold text-slate-600"><i class="fa-regular fa-square-check text-[#D4AF37]"></i> 待辦事項（預設不寫入）</h4><div id="atPhTodos" class="space-y-1.5"></div></div>
                     </div>
                 </div>
@@ -5008,30 +5008,12 @@
             });
         }
         // ---- v10：每日備注（每個日曆日一則自由文字）----
-        // v16：備注改為「每人各自一份」。存放位置：既有雲端鍵 goals（annualGoals）底下的子物件
-        //   goals.dayNotesBy = { '<登入者 email（小寫，與 myEmail() / 成員名單同一套身分）>': { 'YYYY-MM-DD': '備注文字' } }
-        // 雲端頂層鍵不變。每個人只讀寫自己那一份；其他人的備注不會出現在畫面上（但雲端資料本身團隊成員技術上仍讀得到）。
-        // 舊版（v10~v15）全團隊共用的 goals.dayNotes「保留不刪、不改」：只對擁有者帳號（OWNER_EMAIL；未取得登入身分時視同擁有者）
-        // 顯示為他的初始備注（讀取時疊上去）；擁有者第一次編輯任何備注時，才把舊備注整批複製進他自己的那一份（並記下 _legacy 標記，
-        // 之後刪掉的舊備注不會再冒出來）。其他人不會看到舊的共用備注。
-        // 空白 = 不存（鍵會被刪掉；某人的備注全空時移除他那份；全部都空時連 dayNotesBy 一起移除）。
+        // 存放位置：既有雲端鍵 goals（annualGoals）底下的子物件 goals.dayNotes = { 'YYYY-MM-DD': '備注文字' }。
+        // goals 原本只以「年份」為鍵（goals['2026'] = {fyc, comm}），舊版程式只讀 goals[年份]，不會碰到 dayNotes；雲端頂層鍵不變，全團隊共用。
+        // 空白 = 不存（鍵會被刪掉；全空時連 dayNotes 一起移除）。
         const AT_NOTE_MAX = 2000;
-        const AT_NOTE_LEGACY = '_legacy';                              // 擁有者那份裡的標記（非日期鍵）：舊的共用備注已複製過
-        function atIsPlain(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
-        function atNoteUser() { return myEmail() || '_local'; }        // 身分＝登入 email（小寫）；尚未取得登入身分時用 '_local'
-        function atNoteLegacyMine() { const e = myEmail(); return !e || e === OWNER_EMAIL; }   // 舊的共用備注只給擁有者
-        function atLegacyObj() { const o = annualGoals && annualGoals.dayNotes; return atIsPlain(o) ? o : null; }          // 舊的共用備注（唯讀、保留）
-        function atNotesBy() { const o = annualGoals && annualGoals.dayNotesBy; return atIsPlain(o) ? o : null; }
-        function atNotesObj() { const by = atNotesBy(); const o = by && Object.prototype.hasOwnProperty.call(by, atNoteUser()) ? by[atNoteUser()] : null; return atIsPlain(o) ? o : null; }   // 我自己的那一份
-        function atDayNote(d) {
-            const o = atNotesObj();
-            if (o && Object.prototype.hasOwnProperty.call(o, d)) return typeof o[d] === 'string' ? o[d] : '';
-            if (atNoteLegacyMine() && !(o && o[AT_NOTE_LEGACY])) {      // 擁有者尚未接手舊備注 → 讀取時疊上舊的共用備注（不寫入）
-                const g = atLegacyObj(); const v = (g && Object.prototype.hasOwnProperty.call(g, d)) ? g[d] : '';
-                return typeof v === 'string' ? v : '';
-            }
-            return '';
-        }
+        function atNotesObj() { const o = annualGoals && annualGoals.dayNotes; return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null; }
+        function atDayNote(d) { const o = atNotesObj(); const v = (o && Object.prototype.hasOwnProperty.call(o, d)) ? o[d] : ''; return typeof v === 'string' ? v : ''; }
         // 只改記憶體資料，回傳是否有變動（呼叫端負責 recordState）
         function atNormNote(text) {
             let t = String(text == null ? '' : text).replace(/\r\n?/g, '\n').slice(0, AT_NOTE_MAX).replace(/\s+$/, '');
@@ -5054,21 +5036,12 @@
             const cur = atDayNote(d);
             if (t === cur) return false;
             if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {};
-            const u = atNoteUser();
-            if (!atNotesBy()) annualGoals.dayNotesBy = {};
-            const by = annualGoals.dayNotesBy;
-            if (!atIsPlain(by[u])) by[u] = {};
-            const mine = by[u];
-            if (atNoteLegacyMine() && !mine[AT_NOTE_LEGACY]) {            // 擁有者第一次編輯：把舊的共用備注整批複製成自己的（舊的 goals.dayNotes 原封不動）
-                const g = atLegacyObj(); let copied = 0;
-                if (g) Object.keys(g).forEach(function (k) { if (atParse(k) && typeof g[k] === 'string' && g[k].trim()) { copied++; if (!Object.prototype.hasOwnProperty.call(mine, k)) mine[k] = g[k]; } });
-                if (copied) mine[AT_NOTE_LEGACY] = 1;                  // 只有真的有舊備注可接手才記標記（沒有就不留任何殘餘）
-            }
-            if (t) mine[d] = t;
-            else {
-                delete mine[d];
-                if (!Object.keys(mine).length) delete by[u];
-                if (!Object.keys(by).length) delete annualGoals.dayNotesBy;
+            if (t) {
+                if (!atNotesObj()) annualGoals.dayNotes = {};
+                annualGoals.dayNotes[d] = t;
+            } else {
+                const o = atNotesObj();
+                if (o) { delete o[d]; if (!Object.keys(o).length) delete annualGoals.dayNotes; }
             }
             return true;
         }
@@ -5186,7 +5159,7 @@
         }
         // --- 提示詞 ---
         function atPhPrompt() {
-            const ws = atWeekStart || atMonday(atToday()), we = atAdd(ws, 6);
+            const ws = atWeekStart || atSunday(atToday()), we = atAdd(ws, 6);
             const sys = '你是「手寫週計畫」辨識助手。使用者會給你一張照片：手寫在印刷週曆上的一週行程。請只輸出一個 JSON 物件（不要 markdown、不要任何說明文字），格式：\n' +
                 '{"week":{"start":"YYYY-MM-DD","end":"YYYY-MM-DD"},' +
                 '"events":[{"date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","title":"手寫的文字","ink":"red|blue|green|black|other","mark":"經|關|初|檢|none","locationNote":""}],' +
@@ -5303,13 +5276,13 @@
             const todos = (Array.isArray(data.todos) ? data.todos : []).map(function (t) { return String(t == null ? '' : (typeof t === 'object' ? (t.text || t.title || '') : t)).replace(/\s+/g, ' ').trim().slice(0, 200); }).filter(Boolean).map(function (t) { return { check: false, text: t }; });
             let ps = wsGuess, pe = atPhDate(wk.end, ref);
             const ds = rows.map(function (r) { return r.date; }).filter(Boolean).sort();
-            if (!ps && ds.length) ps = atMonday(ds[0]);
+            if (!ps && ds.length) ps = atSunday(ds[0]);
             if (!pe && ps) pe = atAdd(ps, 6);
             return { rows: rows, locs: locs, todos: todos, skipped: skipped, weekStart: ps || '', weekEnd: pe || '' };
         }
         function atPhWeekOk() {
             const i = atPh.info; if (!i || !i.weekStart) return true;
-            const ws = atWeekStart || atMonday(atToday()), we = atAdd(ws, 6);
+            const ws = atWeekStart || atSunday(atToday()), we = atAdd(ws, 6);
             return i.weekStart <= we && (i.weekEnd || atAdd(i.weekStart, 6)) >= ws;
         }
         // --- 流程 ---
@@ -5328,7 +5301,7 @@
                 if (tok !== atPhTok) return;
                 let data;
                 try { data = atPhJson(txt); } catch (e) { throw new Error('AI 回傳的內容不是有效的 JSON，沒有寫入任何資料（可再試一次或換一張更清楚的照片）'); }
-                const info = atPhNormalize(data, atWeekStart || atMonday(atToday()));
+                const info = atPhNormalize(data, atWeekStart || atSunday(atToday()));
                 atPh.rows = info.rows; atPh.locs = info.locs; atPh.todos = info.todos; atPh.info = info;
                 atPhStage('preview'); atPhRender();
             } catch (e) {
@@ -5368,7 +5341,7 @@
                 '<button type="button" class="self-center px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-md text-xs font-bold" data-f="del" onclick="atPhDel(' + i + ')" title="刪除這一列"><i class="fa-solid fa-trash-can"></i></button></div>';
         }
         function atPhRender() {
-            const i = atPh.info || {}, ws = atWeekStart || atMonday(atToday());
+            const i = atPh.info || {}, ws = atWeekStart || atSunday(atToday());
             const ok = atPhWeekOk();
             let warn = '';
             if (!ok) warn = '<div id="atPhWarn" class="rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs p-2.5 flex flex-wrap items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i><span>照片上的週（' + esc(i.weekStart) + ' ~ ' + esc(i.weekEnd) + '）與目前行事曆顯示的週（' + ws + ' ~ ' + atAdd(ws, 6) + '）不同。預設依照片上的日期寫入；若照片其實是這一週，可按右邊按鈕平移。</span><button type="button" id="atPhShift" onclick="atPhShiftToWeek()" class="px-2.5 py-1 bg-amber-600 text-white rounded-md font-bold">平移到目前顯示的週</button></div>';
@@ -5379,8 +5352,8 @@
                     '<input type="text" data-f="ltext" value="' + esc(l.text) + '" maxlength="100" class="' + AT_PH_SEL + ' flex-1 min-w-[8rem]" onchange="atPhField(this)">' + (l.exists ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">已在備注</span>' : '<span class="text-[10px] text-slate-400">→ 附加到當天備注</span>') +
                     '<button type="button" class="text-rose-600 px-1" data-f="ldel" onclick="atPhDelLoc(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有地點備註。</p>';
-            const first = i.weekStart ? atMonday(i.weekStart) : ws;
-            atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天，週一）的備注。</p>' + atPh.todos.map(function (t, k) {
+            const first = i.weekStart ? atSunday(i.weekStart) : ws;
+            atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天）的備注。</p>' + atPh.todos.map(function (t, k) {
                 return '<div class="at-phtodo flex items-center gap-2 text-xs" data-k="' + k + '"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="tcheck"' + (t.check ? ' checked' : '') + ' onchange="atPhField(this)"><input type="text" data-f="ttext" value="' + esc(t.text) + '" maxlength="200" class="' + AT_PH_SEL + ' flex-1" onchange="atPhField(this)"><button type="button" class="text-rose-600 px-1" onclick="atPhDelTodo(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有待辦事項。</p>';
             atPhCount();
@@ -5423,7 +5396,7 @@
         function atPhDelTodo(k) { atPh.todos.splice(k, 1); atPhRender(); }
         function atPhShiftToWeek() {
             const i = atPh.info; if (!i || !i.weekStart) return;
-            const ws = atWeekStart || atMonday(atToday()), off = Math.round((atParse(ws) - atParse(atMonday(i.weekStart))) / 86400000);
+            const ws = atWeekStart || atSunday(atToday()), off = Math.round((atParse(ws) - atParse(atSunday(i.weekStart))) / 86400000);
             const sh = function (d) { return atParse(d) ? atAdd(d, off) : d; };
             atPh.rows.forEach(function (r) { r.date = sh(r.date); r.exists = atPhExists(r.date, r.start, r.title); r.check = !r.exists && !!atParse(r.date); });
             atPh.locs.forEach(function (l) { l.date = sh(l.date); l.exists = atDayNote(l.date).indexOf(l.text) >= 0; l.check = !l.exists; });
@@ -5461,12 +5434,12 @@
             locs.forEach(function (l) { const cur = atDayNote(l.date); if (cur.indexOf(l.text) >= 0) return; atSetDayNote(l.date, cur ? cur + '\n' + l.text : l.text); nLoc++; if (!minDate || l.date < minDate) minDate = l.date; });
             let nTodo = 0;
             if (todos.length) {
-                const first = (atPh.info && atPh.info.weekStart) ? atMonday(atPh.info.weekStart) : (minDate ? atMonday(minDate) : (atWeekStart || atMonday(atToday())));
+                const first = (atPh.info && atPh.info.weekStart) ? atSunday(atPh.info.weekStart) : (minDate ? atSunday(minDate) : (atWeekStart || atSunday(atToday())));
                 let cur = atDayNote(first);
                 todos.forEach(function (t) { const line = '☐ ' + t.text; if (cur.indexOf(line) >= 0) return; cur = cur ? cur + '\n' + line : line; nTodo++; });
                 atSetDayNote(first, cur); if (!minDate || first < minDate) minDate = first;
             }
-            if (minDate) atWeekStart = atMonday(minDate);
+            if (minDate) atWeekStart = atSunday(minDate);
             recordState(); renderApp(); closeModal('atPhotoModal');
             showToast('已寫入 ' + (nLinked + nSolo) + ' 筆行程（連結客戶 ' + nLinked + '、獨立行程 ' + nSolo + '）' + (nLoc ? '、' + nLoc + ' 則地點備註' : '') + (nTodo ? '、' + nTodo + ' 則待辦' : '') + '；可按「還原」一次復原');
         }
@@ -5489,8 +5462,8 @@
             document.getElementById('airtableDetailOpenBtn').style.display = 'none';
             openModal('airtableDetailModal');
         }
-        let atWeekStart = null; // 目前顯示週的「週一」（v16 起週一～週日），格式 YYYY-MM-DD
-        const AT_DOW = ['一', '二', '三', '四', '五', '六', '日'];            // v16：欄位順序＝週一…週日
+        let atWeekStart = null; // 目前顯示週的「週日」，格式 YYYY-MM-DD
+        const AT_DOW = ['日', '一', '二', '三', '四', '五', '六'];
         const AT_METHODS = {
             'Line': '#10B981', '電話': '#3B82F6', '面談': '#D4AF37', '其他': '#865E8A', '未註明': '#94A3B8'
         };
@@ -5499,15 +5472,15 @@
         function atParse(str) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || ''); if (!m) return null; const d = new Date(+m[1], +m[2] - 1, +m[3]); return (d.getFullYear() === +m[1] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[3]) ? d : null; }
         function atAdd(str, n) { const d = atParse(str); d.setDate(d.getDate() + n); return atFmt(d); }
         function atToday() { return atFmt(new Date()); }
-        function atMonday(str) { const d = atParse(str) || new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return atFmt(d); }   // 該日所在週的週一
+        function atSunday(str) { const d = atParse(str) || new Date(); d.setDate(d.getDate() - d.getDay()); return atFmt(d); }
         function atMD(str) { return str.substring(5, 7) + '/' + str.substring(8, 10); }
-        // 週次（v16，ISO 8601）：週一起算；含 1/4 的那週為第 1 週（＝該年第一個含週四的週）；週的年份以該週週四所屬年為準。
-        function atWeekInfo(mondayStr) {
-            const thu = atParse(atAdd(mondayStr, 3)); const y = thu.getFullYear();     // ISO 8601：週的年份＝該週週四所屬年
-            const doy = Math.round((new Date(y, thu.getMonth(), thu.getDate()) - new Date(y, 0, 1)) / 86400000) + 1;
+        // 週次：含 1/1 的那週為第 1 週（週日起算，與日曆 日~六 一致），年份以該週週六所屬年為準
+        function atWeekInfo(sundayStr) {
+            const sat = atParse(atAdd(sundayStr, 6)); const y = sat.getFullYear();
+            const doy = Math.round((new Date(y, sat.getMonth(), sat.getDate()) - new Date(y, 0, 1)) / 86400000) + 1;
             return { year: y, week: Math.floor((doy - 1) / 7) + 1 };
         }
-        function atMondayOfYearWeek(y, w) { const j = new Date(y, 0, 4); j.setDate(j.getDate() - ((j.getDay() + 6) % 7) + 7 * (w - 1)); return atFmt(j); }
+        function atSundayOfYearWeek(y, w) { const j = new Date(y, 0, 1); j.setDate(j.getDate() - j.getDay() + 7 * (w - 1)); return atFmt(j); }
         function atMethodOf(h) { const m = (h && h.method != null) ? String(h.method).trim() : ''; return m || '未註明'; }
         function atProgLabel(p) {
             if (!p) return '';
@@ -5632,7 +5605,7 @@
                 const kd = ae.getAttribute('data-date');
                 if (ae.value !== atDayNote(kd)) keepNote = { date: kd, mobile: !!ae.getAttribute('data-mobile'), val: ae.value, s: ae.selectionStart, e: ae.selectionEnd };
             }
-            if (!atWeekStart) atWeekStart = atMonday(atToday());
+            if (!atWeekStart) atWeekStart = atSunday(atToday());
             const ws = atWeekStart, we = atAdd(ws, 6), today = atToday();
             const info = atWeekInfo(ws);
             const days = []; for (let i = 0; i < 7; i++) days.push(atAdd(ws, i));
@@ -5654,7 +5627,7 @@
             const unknownCnt = recWeek.filter(function (e) { return e.method === '未註明'; }).length;
 
             const catBtn = function (k, label, color) { return '<button type="button" id="atCat' + (k === 'ALL' ? 'All' : k === '公事' ? 'Biz' : k === '客戶' ? 'Cust' : k === '個人' ? 'Pers' : 'Part') + '" data-cat="' + k + '" onclick="atSetCat(\'' + k + '\')" aria-pressed="' + (atCat === k) + '" class="at-cat-btn px-2.5 py-1.5 text-xs font-bold border-l first:border-l-0 border-slate-200 transition ' + (atCat === k ? 'text-white' : 'bg-white text-slate-500 hover:bg-slate-100') + '"' + (atCat === k ? ' style="background:' + color + '"' : '') + '>' + (k === 'ALL' ? '' : '<span class="inline-block w-2 h-2 rounded-full mr-1 align-middle" style="background:' + (atCat === k ? '#fff' : color) + '"></span>') + label + '</button>'; };
-            const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 5 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
+            const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 0 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
 
             // ---- 工具列 ----
             let html = '<div class="bg-white rounded-xl border border-slate-200 premium-shadow p-3 md:p-4 mb-3">' +
@@ -5681,7 +5654,7 @@
                     '<div id="atCatFilter" class="flex items-center border border-slate-200 rounded-lg overflow-hidden" role="group" aria-label="分類">' + catBtn('ALL', '全部分類', '#1E2E3D') + catBtn('公事', '公事', AT_CATS['公事']) + catBtn('客戶', '客戶', AT_CATS['客戶']) + catBtn('夥伴', '夥伴', AT_CATS['夥伴']) + catBtn('個人', '個人', AT_CATS['個人']) + '</div>' +
                     '<span class="flex items-center gap-1"><span class="at-kind px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span></span>' +
                     Object.keys(AT_METHODS).map(function (m) { return '<span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:' + AT_METHODS[m] + '"></span>' + m + '</span>'; }).join('') +
-                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上；每天最下方可寫備注（每人各自一份，僅自己看得到）；紅＝公事、藍＝客戶、綠＝夥伴、黑＝個人</span>' +
+                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上；每天最下方可寫備注；紅＝公事、藍＝客戶、綠＝夥伴、黑＝個人</span>' +
                 '</div></div>';
 
             // ---- 桌機：7 欄週格 ----
@@ -5718,7 +5691,7 @@
                 });
             }
             // ---- v10：每日備注列（23:00 列之下，每天一格）----
-            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div><div class="text-[9px] text-slate-400 leading-tight mt-0.5" title="每個人只看得到、也只改得到自己的備注">僅自己</div></div>';
+            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div></div>';
             days.forEach(function (d, i) {
                 html += '<div class="at-notecell border-r border-slate-100 p-1 ' + dayBg(d, i) + '" style="border-top:2px solid #94a3b8" data-date="' + d + '">' + atNoteHtml(d, false) + '</div>';
             });
@@ -5732,7 +5705,7 @@
                 html += '<div class="at-mday bg-white rounded-xl border ' + (d === today ? 'border-[#D4AF37]' : 'border-slate-200') + ' overflow-hidden" data-date="' + d + '">' +
                     '<div class="px-3 py-2 flex items-center justify-between ' + (d === today ? 'bg-[#1E2E3D] text-white' : 'bg-slate-100 text-slate-700') + '"><span class="font-bold">' + (dd.getMonth() + 1) + '/' + dd.getDate() + ' 週' + AT_DOW[i] + (d === today ? ' <span class="text-[#D4AF37]">· 今天</span>' : '') + '</span><span class="flex items-center gap-2"><span class="text-xs opacity-80">' + evs.length + ' 筆</span><button type="button" class="at-madd px-2 py-0.5 rounded-md text-xs font-bold bg-[#D4AF37] text-white" onclick="atOpenAdd(\'' + d + '\', \'\')" title="在這天新增紀錄"><i class="fa-solid fa-plus"></i> 新增</button></span></div>' +
                     '<div class="p-2 space-y-1.5">' + (evs.length ? evs.map(function (e) { return atChipHtml(e, d); }).join('') : '<p class="text-xs text-slate-300 px-1">無紀錄</p>') + '</div>' +
-                    '<div class="at-mnote px-2 pb-2"><div class="text-[10px] font-bold text-slate-400 mb-0.5">備注 <span class="font-normal">（僅自己看得到）</span></div>' + atNoteHtml(d, true) + '</div></div>';
+                    '<div class="at-mnote px-2 pb-2"><div class="text-[10px] font-bold text-slate-400 mb-0.5">備注</div>' + atNoteHtml(d, true) + '</div></div>';
             });
             html += '</div>';
             atNoteMute = true;
@@ -5745,15 +5718,13 @@
                 if (ta) { ta.value = keepNote.val; atNoteFit(ta); try { ta.focus(); ta.setSelectionRange(keepNote.s, keepNote.e); } catch (x) {} }
             }
         }
-        function atNav(n) { if (!atWeekStart) atWeekStart = atMonday(atToday()); atWeekStart = atAdd(atWeekStart, 7 * n); renderAirtableCalendar(); }
-        function atGoToday() { atWeekStart = atMonday(atToday()); renderAirtableCalendar(); }
-        function atJumpDate(v) { if (!atParse(v)) return; atWeekStart = atMonday(v); renderAirtableCalendar(); }
+        function atNav(n) { if (!atWeekStart) atWeekStart = atSunday(atToday()); atWeekStart = atAdd(atWeekStart, 7 * n); renderAirtableCalendar(); }
+        function atGoToday() { atWeekStart = atSunday(atToday()); renderAirtableCalendar(); }
+        function atJumpDate(v) { if (!atParse(v)) return; atWeekStart = atSunday(v); renderAirtableCalendar(); }
         function atJumpWeek() {
             const y = parseInt(document.getElementById('atJumpYear').value, 10), w = parseInt(document.getElementById('atJumpWeekNo').value, 10);
             if (!(y >= 1900 && y <= 2200) || !(w >= 1 && w <= 53)) { showToast('請輸入正確的年份與週次 (1–53)', 'error'); return; }
-            const mon = atMondayOfYearWeek(y, w);
-            if (atWeekInfo(mon).year !== y) { showToast(y + ' 年只有 ' + (w - 1) + ' 週（ISO 週次）', 'error'); return; }
-            atWeekStart = mon; renderAirtableCalendar();
+            atWeekStart = atSundayOfYearWeek(y, w); renderAirtableCalendar();
         }
         function atOpenDetail(el) {
             if (el.getAttribute('data-src') === 'e') return atOpenEvtDetail(el);
