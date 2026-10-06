@@ -41,8 +41,6 @@
         .at-chip.at-personal .at-visit { border-color: #fff !important; }
         .at-chip.at-personal .at-cat-pers { box-shadow: inset 0 0 0 1px rgba(255,255,255,.75); }
         .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
-        /* v19：搜尋框改為 type="search"（減少瀏覽器自動填入），隱藏 Chrome 內建清除鈕，外觀維持 v18 */
-        #searchInput::-webkit-search-cancel-button, #atAddSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -212,7 +210,7 @@
                     <div class="w-full lg:w-2/3 flex flex-col sm:flex-row gap-2 md:gap-3">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="search" id="searchInput" name="crm-search-main" autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" autocapitalize="off" spellcheck="false" oninput="renderApp()" placeholder="搜尋姓名、電話、商品、保單、備註..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E2E3D] font-medium text-sm transition">
+                            <input type="text" id="searchInput" oninput="renderApp()" placeholder="搜尋姓名、電話、商品、保單、備註..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E2E3D] font-medium text-sm transition">
                         </div>
                         <div class="flex gap-2 w-full sm:w-auto" id="filterCategoryContainer">
                             <select id="filterCategory" onchange="renderApp()" class="w-1/2 sm:w-40 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E2E3D] text-sm font-bold text-slate-700 bg-white cursor-pointer transition">
@@ -375,7 +373,7 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label>
-                                    <input autocomplete="off" type="text" id="addName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                    <input type="text" id="addName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium">
                                 </div>
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">狀態歸類分類 <span class="text-rose-500">*</span></label>
@@ -418,13 +416,13 @@
                                     <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-cake-candles text-rose-400"></i> 生日</label>
                                     <input type="date" id="addBirthday" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium">
                                 </div>
-                                <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="tel" id="addPhone" placeholder="聯絡電話" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none mt-5"></div>
-                                <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addCompany" placeholder="公司/職稱" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none mt-5"></div>
+                                <div class="col-span-2 sm:col-span-1"><input type="tel" id="addPhone" placeholder="聯絡電話" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none mt-5"></div>
+                                <div class="col-span-2 sm:col-span-1"><input type="text" id="addCompany" placeholder="公司/職稱" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none mt-5"></div>
                                 
                                 <!-- 負責業務員 (團隊管理) -->
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-indigo-500 mb-1"><i class="fa-solid fa-user-tie"></i> 負責業務 <span class="text-slate-400 font-normal">(留空代表您個人的業績)</span></label>
-                                    <input autocomplete="off" type="text" id="addAgentName" list="agentList" placeholder="輸入或選擇業務員..." class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/30 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <input type="text" id="addAgentName" list="agentList" placeholder="輸入或選擇業務員..." class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/30 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 mt-4">
@@ -435,7 +433,7 @@
                                 <div id="addTagsContainer" class="flex flex-wrap gap-2.5 min-h-[30px] pt-1"></div>
                                 <div id="addTagFormInline" class="hidden bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
                                     <div class="flex gap-1.5">
-                                        <input autocomplete="off" type="text" id="addNewTagName" placeholder="標籤名稱" class="flex-1 px-2 py-1 text-xs border rounded-lg outline-none">
+                                        <input type="text" id="addNewTagName" placeholder="標籤名稱" class="flex-1 px-2 py-1 text-xs border rounded-lg outline-none">
                                         <select id="addNewTagColor" class="px-1.5 py-1 text-xs border rounded-lg font-bold text-slate-600">
                                             <option value="indigo">藍紫</option><option value="blue">水藍</option><option value="emerald">綠色</option><option value="amber">黃色</option><option value="rose">紅色</option><option value="purple">粉紫</option><option value="slate">灰色</option>
                                         </select>
@@ -443,7 +441,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div><textarea autocomplete="off" id="addNotes" rows="3" placeholder="備註背景" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
+                            <div><textarea id="addNotes" rows="3" placeholder="備註背景" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
                         </div>
 
                         <!-- TAB 2 (Sales Pipeline) -->
@@ -466,24 +464,24 @@
                             <div id="addKeyVisitFields" class="hidden bg-rose-50/40 rounded-xl p-4 border border-rose-200/60 space-y-3 mt-4">
                                 <h4 class="text-sm font-bold text-rose-800 font-editorial flex items-center gap-1 mb-1"><i class="fa-solid fa-diagram-project"></i> 關鍵訪提案設定</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1">
                                         <select id="addPlannedProductType" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none">
                                             <option value="" disabled selected>預計商品種類</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option>
                                         </select>
                                     </div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addPlannedInsuranceCompany" placeholder="預計保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addPlannedPolicyName" placeholder="預計保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addPlannedPremium" oninput="calcComm('addPlanned')" placeholder="預估首期保費 (元)" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="addPlannedCommissionRate" oninput="calcComm('addPlanned')" placeholder="代理率 (%)" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addPlannedFyc" readonly class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm bg-rose-100/60 font-bold text-slate-500 outline-none" placeholder="預計 FYC(自動)"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addPlannedInsuranceCompany" placeholder="預計保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addPlannedPolicyName" placeholder="預計保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addPlannedPremium" oninput="calcComm('addPlanned')" placeholder="預估首期保費 (元)" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="addPlannedCommissionRate" oninput="calcComm('addPlanned')" placeholder="代理率 (%)" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addPlannedFyc" readonly class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm bg-rose-100/60 font-bold text-slate-500 outline-none" placeholder="預計 FYC(自動)"></div>
                                     <div class="col-span-2 sm:col-span-1">
                                         <select id="addPlannedRankRate" onchange="calcComm('addPlanned')" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm font-bold text-rose-800 outline-none">
                                             <option value="" disabled selected>預計職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option>
                                         </select>
                                     </div>
-                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-rose-200 flex justify-between items-center"><span class="text-xs font-bold text-rose-800">預估實領佣金 (元)</span><input autocomplete="off" type="text" id="addPlannedCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-base font-black text-rose-800 outline-none" placeholder="0"></div>
-                                    <div class="col-span-2"><textarea autocomplete="off" id="addPlannedOutline" rows="3" placeholder="預計規劃大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
+                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-rose-200 flex justify-between items-center"><span class="text-xs font-bold text-rose-800">預估實領佣金 (元)</span><input type="text" id="addPlannedCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-base font-black text-rose-800 outline-none" placeholder="0"></div>
+                                    <div class="col-span-2"><textarea id="addPlannedOutline" rows="3" placeholder="預計規劃大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
                                 </div>
                             </div>
                         </div>
@@ -493,16 +491,16 @@
                             <div class="bg-emerald-50/40 rounded-xl p-4 border border-emerald-200/60 space-y-3">
                                 <h4 class="text-sm font-bold text-emerald-800 font-editorial flex items-center gap-1 mb-2"><i class="fa-solid fa-file-signature"></i> 成交保單與扣款明細</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2"><input autocomplete="off" type="text" id="addPolicyName" placeholder="保單名稱 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addInsuranceCompany" placeholder="保險公司 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2"><input type="text" id="addPolicyName" placeholder="保單名稱 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addInsuranceCompany" placeholder="保險公司 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1">
                                         <select id="addProductType" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none font-medium">
                                             <option value="" disabled selected>商品種類 *</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option>
                                         </select>
                                     </div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addPremium" oninput="calcComm('add')" placeholder="首期保費 (元) *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="addCommissionRate" oninput="calcComm('add')" placeholder="代理率(%) *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="addFyc" readonly class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 font-bold outline-none" placeholder="預估 FYC(元)"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addPremium" oninput="calcComm('add')" placeholder="首期保費 (元) *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="addCommissionRate" oninput="calcComm('add')" placeholder="代理率(%) *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="addFyc" readonly class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 font-bold outline-none" placeholder="預估 FYC(元)"></div>
                                     <div class="col-span-2 sm:col-span-1">
                                         <select id="addRankRate" onchange="calcComm('add')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm font-bold text-emerald-800 outline-none">
                                             <option value="" disabled selected>職階類別 *</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option>
@@ -524,7 +522,7 @@
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-700 mb-0.5">送件日期 *</label><input type="date" id="addSubmitDate" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 bg-white p-2 rounded-lg border border-emerald-200 flex justify-between items-center mt-1">
                                         <span class="text-xs font-bold text-emerald-800">實領佣金 (元)</span>
-                                        <input autocomplete="off" type="text" id="addCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-lg font-black text-emerald-800 outline-none" placeholder="0">
+                                        <input type="text" id="addCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-lg font-black text-emerald-800 outline-none" placeholder="0">
                                     </div>
                                 </div>
                             </div>
@@ -559,7 +557,7 @@
                         <!-- TAB 1 -->
                         <div id="edit-tab-basic" class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="col-span-2 sm:col-span-1"><label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label><input autocomplete="off" type="text" id="editName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 font-medium"></div>
+                                <div class="col-span-2 sm:col-span-1"><label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label><input type="text" id="editName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 font-medium"></div>
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">狀態歸類分類 <span class="text-rose-500">*</span></label>
                                     <select id="editCategory" onchange="syncCategoryAndFields('edit')" class="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm bg-blue-50 font-bold text-blue-900 outline-none cursor-pointer">
@@ -595,13 +593,13 @@
 
                                 <div class="col-span-2 sm:col-span-1"><label class="block text-xs font-bold text-slate-500 mb-1">建檔日期 <span class="text-rose-500">*</span></label><input type="date" id="editCreatedAt" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none font-medium"></div>
                                 <div class="col-span-2 sm:col-span-1"><label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-cake-candles text-rose-400"></i> 生日</label><input type="date" id="editBirthday" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none font-medium"></div>
-                                <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="tel" id="editPhone" placeholder="電話" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mt-5"></div>
-                                <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editCompany" placeholder="公司/職稱" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mt-5"></div>
+                                <div class="col-span-2 sm:col-span-1"><input type="tel" id="editPhone" placeholder="電話" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mt-5"></div>
+                                <div class="col-span-2 sm:col-span-1"><input type="text" id="editCompany" placeholder="公司/職稱" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none mt-5"></div>
                                 
                                 <!-- 負責業務員 (團隊管理) -->
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-indigo-500 mb-1"><i class="fa-solid fa-user-tie"></i> 負責業務 <span class="text-slate-400 font-normal">(留空代表您個人的業績)</span></label>
-                                    <input autocomplete="off" type="text" id="editAgentName" list="agentList" placeholder="輸入或選擇業務員..." class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/30 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <input type="text" id="editAgentName" list="agentList" placeholder="輸入或選擇業務員..." class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/30 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 mt-4">
@@ -611,16 +609,16 @@
                                 </div>
                                 <div id="editTagsContainer" class="flex flex-wrap gap-2.5 min-h-[30px] pt-1"></div>
                                 <div id="editTagFormInline" class="hidden bg-white p-2.5 rounded-lg border border-slate-200 space-y-2">
-                                    <div class="flex gap-1.5"><input autocomplete="off" type="text" id="editNewTagName" placeholder="標籤名稱" class="flex-1 px-2 py-1 text-xs border rounded-lg outline-none"><select id="editNewTagColor" class="px-1.5 py-1 text-xs border rounded-lg font-bold text-slate-600"><option value="indigo">藍紫</option><option value="blue">水藍</option><option value="emerald">綠色</option><option value="amber">黃色</option><option value="rose">紅色</option><option value="purple">粉紫</option><option value="slate">灰色</option></select><button type="button" onclick="submitNewTag('edit')" class="px-3 py-1 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm">新增</button></div>
+                                    <div class="flex gap-1.5"><input type="text" id="editNewTagName" placeholder="標籤名稱" class="flex-1 px-2 py-1 text-xs border rounded-lg outline-none"><select id="editNewTagColor" class="px-1.5 py-1 text-xs border rounded-lg font-bold text-slate-600"><option value="indigo">藍紫</option><option value="blue">水藍</option><option value="emerald">綠色</option><option value="amber">黃色</option><option value="rose">紅色</option><option value="purple">粉紫</option><option value="slate">灰色</option></select><button type="button" onclick="submitNewTag('edit')" class="px-3 py-1 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm">新增</button></div>
                                 </div>
                             </div>
-                            <div><textarea autocomplete="off" id="editNotes" rows="3" placeholder="備註背景" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
+                            <div><textarea id="editNotes" rows="3" placeholder="備註背景" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
                             <div class="border-t border-slate-100 pt-3">
                                 <label class="block text-xs font-bold text-slate-500 mb-2"><i class="fa-solid fa-link text-[#1E2E3D]"></i> 相關連結 / 附件（貼雲端網址：PPT、建議書等）</label>
                                 <div id="editLinksList" class="space-y-1.5 mb-2"></div>
                                 <div class="flex flex-col sm:flex-row gap-1.5">
-                                    <input autocomplete="off" type="text" id="editLinkName" placeholder="名稱（如：退休規劃簡報）" class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
-                                    <input autocomplete="off" type="text" id="editLinkUrl" placeholder="貼上雲端網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="text" id="editLinkName" placeholder="名稱（如：退休規劃簡報）" class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="text" id="editLinkUrl" placeholder="貼上雲端網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
                                     <button type="button" onclick="addEditLink()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm flex-shrink-0">＋ 加入</button>
                                 </div>
                             </div>
@@ -629,8 +627,8 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-paperclip text-indigo-400"></i> 雲端附件連結（PPT／建議書等）</label>
                                 <div class="flex gap-1.5 mb-2">
-                                    <input autocomplete="off" type="text" id="editLinkName" placeholder="名稱（選填）" class="w-2/5 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
-                                    <input autocomplete="off" type="url" id="editLinkUrl" placeholder="貼上雲端分享網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="text" id="editLinkName" placeholder="名稱（選填）" class="w-2/5 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
+                                    <input type="url" id="editLinkUrl" placeholder="貼上雲端分享網址 https://..." class="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-lg outline-none">
                                     <button type="button" onclick="addCustomerLink()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-xs font-bold rounded-lg shadow-sm flex-shrink-0"><i class="fa-solid fa-plus"></i> 新增</button>
                                 </div>
                                 <div id="editLinksList" class="space-y-1.5"></div>
@@ -647,16 +645,16 @@
                             <div id="editKeyVisitFields" class="hidden bg-rose-50/50 rounded-xl p-4 border border-rose-200 space-y-3 mt-4">
                                 <h4 class="text-sm font-bold text-rose-700 font-editorial flex items-center gap-1 mb-1"><i class="fa-solid fa-diagram-project"></i> 關鍵訪規劃與提案設定</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="editPlannedProductType" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"><option value="" disabled>預計商品種類</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editPlannedInsuranceCompany" placeholder="預計保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editPlannedPolicyName" placeholder="預計保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editPlannedPremium" oninput="calcComm('editPlanned')" placeholder="預估保費" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="editPlannedCommissionRate" oninput="calcComm('editPlanned')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editPlannedFyc" readonly class="w-full px-3 py-1.5 border border-rose-100 rounded-lg text-sm bg-rose-100/50 text-slate-500 outline-none font-bold" placeholder="預估 FYC"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editPlannedInsuranceCompany" placeholder="預計保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editPlannedPolicyName" placeholder="預計保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editPlannedPremium" oninput="calcComm('editPlanned')" placeholder="預估保費" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="editPlannedCommissionRate" oninput="calcComm('editPlanned')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editPlannedFyc" readonly class="w-full px-3 py-1.5 border border-rose-100 rounded-lg text-sm bg-rose-100/50 text-slate-500 outline-none font-bold" placeholder="預估 FYC"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="editPlannedRankRate" onchange="calcComm('editPlanned')" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none bg-white font-bold text-rose-800"><option value="" disabled selected>選擇職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
-                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-rose-200 flex justify-between items-center"><span class="text-xs font-bold text-rose-600">預估佣金 (元)</span><input autocomplete="off" type="text" id="editPlannedCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-base font-black text-rose-600 outline-none" placeholder="0"></div>
-                                    <div class="col-span-2"><textarea autocomplete="off" id="editPlannedOutline" rows="3" placeholder="預計規劃大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
+                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-rose-200 flex justify-between items-center"><span class="text-xs font-bold text-rose-600">預估佣金 (元)</span><input type="text" id="editPlannedCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-base font-black text-rose-600 outline-none" placeholder="0"></div>
+                                    <div class="col-span-2"><textarea id="editPlannedOutline" rows="3" placeholder="預計規劃大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-sm outline-none resize-none"></textarea></div>
                                 </div>
                             </div>
                         </div>
@@ -666,12 +664,12 @@
                             <div class="bg-emerald-50/40 rounded-xl p-4 border border-emerald-200/60 space-y-3">
                                 <h4 class="text-sm font-bold text-emerald-800 font-editorial flex items-center gap-1 mb-2"><i class="fa-solid fa-file-signature"></i> 成交保單明細</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2"><input autocomplete="off" type="text" id="editPolicyName" placeholder="保單名稱 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editInsuranceCompany" placeholder="保險公司 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2"><input type="text" id="editPolicyName" placeholder="保單名稱 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editInsuranceCompany" placeholder="保險公司 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="editProductType" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"><option value="" disabled selected>商品種類 *</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editPremium" oninput="calcComm('edit')" placeholder="首期保費 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="editCommissionRate" oninput="calcComm('edit')" placeholder="代理率% *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="editFyc" readonly placeholder="FYC(自動)" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 font-bold outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editPremium" oninput="calcComm('edit')" placeholder="首期保費 *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="editCommissionRate" oninput="calcComm('edit')" placeholder="代理率% *" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="editFyc" readonly placeholder="FYC(自動)" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 font-bold outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="editRankRate" onchange="calcComm('edit')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-sm outline-none font-bold text-emerald-850 bg-white"><option value="" disabled selected>職階 *</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">扣款日</label><input type="date" id="editDeductionDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">扣款頻率</label><select id="editDeductionFrequency" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option><option value="一次性">一次性</option></select></div>
@@ -679,7 +677,7 @@
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-600 mb-0.5">配息頻率</label><select id="editDividendFrequency" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white font-bold text-violet-800"><option value="">（無）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">成交日期 *</label><input type="date" id="editDealDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-emerald-600 mb-0.5">送件日期 *</label><input type="date" id="editSubmitDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
-                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-emerald-200 flex justify-between items-center mt-1"><span class="text-xs font-bold text-emerald-800">佣金(元)</span><input autocomplete="off" type="text" id="editCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-lg font-black text-emerald-800 outline-none"></div>
+                                    <div class="col-span-2 bg-white p-2 rounded-lg border border-emerald-200 flex justify-between items-center mt-1"><span class="text-xs font-bold text-emerald-800">佣金(元)</span><input type="text" id="editCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-lg font-black text-emerald-800 outline-none"></div>
                                 </div>
                             </div>
                         </div>
@@ -774,16 +772,16 @@
                             <div id="historyKeyVisitFields" class="hidden bg-rose-50/50 rounded-xl p-4 border border-rose-200 space-y-3">
                                 <p class="text-xs font-bold text-rose-700 mb-1">關鍵訪規劃：</p>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyCsSupervisor" placeholder="CS主管姓名" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyPlannedProductType" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"><option value="" disabled selected>商品種類</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPlannedInsuranceCompany" placeholder="保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPlannedPolicyName" placeholder="保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPlannedPremium" oninput="calcComm('historyPlanned')" placeholder="預估保費" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="historyPlannedCommissionRate" oninput="calcComm('historyPlanned')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPlannedFyc" readonly placeholder="預計FYC" class="w-full px-3 py-1.5 border border-rose-100 rounded-lg text-xs bg-rose-100/50 text-slate-500 outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyPlannedInsuranceCompany" placeholder="保險公司" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyPlannedPolicyName" placeholder="保單名稱" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyPlannedPremium" oninput="calcComm('historyPlanned')" placeholder="預估保費" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="historyPlannedCommissionRate" oninput="calcComm('historyPlanned')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyPlannedFyc" readonly placeholder="預計FYC" class="w-full px-3 py-1.5 border border-rose-100 rounded-lg text-xs bg-rose-100/50 text-slate-500 outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyPlannedRankRate" onchange="calcComm('historyPlanned')" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none font-bold text-rose-800"><option value="" disabled selected>職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
-                                    <div class="col-span-2 bg-white p-1 rounded border border-rose-200 flex justify-between items-center"><span class="text-[10px] font-bold text-rose-600">預估佣金</span><input autocomplete="off" type="text" id="historyPlannedCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-rose-600 outline-none"></div>
-                                    <div class="col-span-2"><textarea autocomplete="off" id="historyPlannedOutline" rows="2" placeholder="內容大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none resize-none"></textarea></div>
+                                    <div class="col-span-2 bg-white p-1 rounded border border-rose-200 flex justify-between items-center"><span class="text-[10px] font-bold text-rose-600">預估佣金</span><input type="text" id="historyPlannedCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-rose-600 outline-none"></div>
+                                    <div class="col-span-2"><textarea id="historyPlannedOutline" rows="2" placeholder="內容大綱..." class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs outline-none resize-none"></textarea></div>
                                 </div>
                             </div>
                             
@@ -791,12 +789,12 @@
                             <div id="historyWonFields" class="hidden bg-emerald-50/40 rounded-xl p-4 border border-emerald-200 space-y-3">
                                 <p class="text-xs font-bold text-emerald-700 mb-1">成交與扣款明細：</p>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2"><input autocomplete="off" type="text" id="historyPolicyName" placeholder="保單名稱" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyInsuranceCompany" placeholder="保險公司" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2"><input type="text" id="historyPolicyName" placeholder="保單名稱" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyInsuranceCompany" placeholder="保險公司" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyProductType" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"><option value="" disabled selected>商品種類</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPremium" oninput="calcComm('history')" placeholder="保費" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="historyCommissionRate" oninput="calcComm('history')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyFyc" readonly placeholder="FYC" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-100 font-bold outline-none cursor-not-allowed"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyPremium" oninput="calcComm('history')" placeholder="保費" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="historyCommissionRate" oninput="calcComm('history')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
+                                    <div class="col-span-2 sm:col-span-1"><input type="text" id="historyFyc" readonly placeholder="FYC" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-100 font-bold outline-none cursor-not-allowed"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyRankRate" onchange="calcComm('history')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none font-bold text-emerald-800"><option value="" disabled selected>職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><input type="date" id="historyDeductionDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white" placeholder="扣款日"></div>
                                     <div class="col-span-2 sm:col-span-1"><select id="historyDeductionFrequency" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option><option value="一次性">一次性</option></select></div>
@@ -804,11 +802,11 @@
                                     <div class="col-span-2 sm:col-span-1"><select id="historyDividendFrequency" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white font-bold text-violet-800"><option value="">（無配息）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">成交日期</label><input type="date" id="historyDealDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
                                     <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">送件日期</label><input type="date" id="historySubmitDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
-                                    <div class="col-span-2 bg-white p-1 rounded border flex justify-between items-center"><span class="text-[10px] font-bold text-emerald-600">佣金</span><input autocomplete="off" type="text" id="historyCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-emerald-600 outline-none"></div>
+                                    <div class="col-span-2 bg-white p-1 rounded border flex justify-between items-center"><span class="text-[10px] font-bold text-emerald-600">佣金</span><input type="text" id="historyCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-emerald-600 outline-none"></div>
                                 </div>
                             </div>
                             
-                            <div><textarea autocomplete="off" id="historyContent" required rows="3" placeholder="紀錄內容..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none bg-white"></textarea></div>
+                            <div><textarea id="historyContent" required rows="3" placeholder="紀錄內容..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none bg-white"></textarea></div>
                             
                             <div class="flex justify-end pt-4"><button type="submit" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-sm">送出紀錄</button></div>
                         </form>
@@ -833,7 +831,7 @@
                     <input type="hidden" id="leadId">
                     <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label><input autocomplete="off" type="text" id="leadName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] font-medium"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">姓名 <span class="text-rose-500">*</span></label><input type="text" id="leadName" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] font-medium"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">準客戶來源 <span class="font-normal text-slate-400">(可自由輸入，亦可選擇既有)</span></label><input type="text" id="leadSource" list="leadSourceList" autocomplete="off" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
                         <div>
@@ -856,10 +854,10 @@
                             <div id="leadClsBox"></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">聯絡電話</label><input autocomplete="off" type="text" id="leadPhone" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1">公司或職稱</label><input autocomplete="off" type="text" id="leadCompany" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">聯絡電話</label><input type="text" id="leadPhone" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">公司或職稱</label><input type="text" id="leadCompany" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
-                        <div><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><textarea autocomplete="off" id="leadNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">備註</label><textarea id="leadNotes" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">下次聯絡日 <span class="font-normal text-slate-400">(提醒；顯示在週行程)</span></label><input type="date" id="leadNext" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">按「啟用」後進入</label>
@@ -913,7 +911,7 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
-                        <textarea autocomplete="off" id="lcContent" rows="2" placeholder="聯絡內容…" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea>
+                        <textarea id="lcContent" rows="2" placeholder="聯絡內容…" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea>
                         <div class="flex justify-end gap-2">
                             <button type="button" id="lcCancelEdit" onclick="lcResetForm()" class="hidden px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消編輯</button>
                             <button type="button" id="lcSaveBtn" onclick="lcSave()" class="px-4 py-1.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
@@ -950,8 +948,8 @@
                             <summary class="cursor-pointer text-xs font-bold text-slate-600">⚙️ AI 連線設定（與「AI 排程」相同的 Cloudflare Worker）</summary>
                             <div class="mt-3 space-y-2">
                                 <p class="text-[11px] text-slate-500 leading-relaxed">網址與密語只存在這台裝置的瀏覽器（localStorage），不會寫進網頁原始碼、也不會同步給團隊。圖片會縮小到長邊 1600px 後，經你的 Worker 送給 AI 服務辨識；Worker 需支援圖片（見 worker_vision_patch.js）。</p>
-                                <label class="block text-[11px] font-bold text-slate-500">Worker 網址<input id="atPhUrl" type="text" name="crm-ai-endpoint" autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" autocapitalize="off" spellcheck="false" inputmode="url" placeholder="https://crm-ai.xxx.workers.dev" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
-                                <label class="block text-[11px] font-bold text-slate-500">通關密語（APP_SECRET）<input id="atPhSecret" type="password" name="crm-ai-passphrase" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-form-type="other" autocapitalize="off" spellcheck="false" placeholder="你在 Cloudflare 設的那串" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
+                                <label class="block text-[11px] font-bold text-slate-500">Worker 網址<input id="atPhUrl" type="text" placeholder="https://crm-ai.xxx.workers.dev" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
+                                <label class="block text-[11px] font-bold text-slate-500">通關密語（APP_SECRET）<input id="atPhSecret" type="password" autocomplete="off" placeholder="你在 Cloudflare 設的那串" class="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white outline-none"></label>
                                 <button type="button" id="atPhSaveCfg" onclick="atPhSaveCfg()" class="px-3 py-1.5 bg-[#1E2E3D] text-white rounded-lg text-xs font-bold">儲存設定</button>
                             </div>
                         </details>
@@ -995,7 +993,7 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atEdEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">分類</label><select id="atEdCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤</label><select id="atEdVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="關鍵訪">關鍵訪</option><option value="初訪">初訪</option><option value="定期檢視">定期檢視</option></select></div>
-                            <div class="col-span-2"><label id="atEdLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                            <div class="col-span-2"><label id="atEdLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                         </div>
                     </div>
                 </div>
@@ -1019,7 +1017,7 @@
                 <div class="p-4 sm:p-5 overflow-y-auto space-y-3 text-sm">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 mb-1">客戶 / 一畝田 <span class="text-rose-500">*</span> <span class="font-normal text-slate-400">(輸入姓名、公司、電話或業務員搜尋)</span></label>
-                        <input type="search" id="atAddSearch" name="crm-search-schedule-add" autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other" autocapitalize="off" spellcheck="false" placeholder="搜尋…" oninput="atAddRender()" onkeydown="if(event.key==='Enter'){event.preventDefault();atAddPickFirst()}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]">
+                        <input type="text" id="atAddSearch" autocomplete="off" placeholder="搜尋…" oninput="atAddRender()" onkeydown="if(event.key==='Enter'){event.preventDefault();atAddPickFirst()}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]">
                         <div id="atAddList" role="listbox" class="mt-1 border border-slate-200 rounded-lg max-h-40 overflow-y-auto bg-white"></div>
                         <p id="atAddPicked" class="text-xs mt-1"></p>
                     </div>
@@ -1029,7 +1027,7 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
-                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atAddContent" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea id="atAddContent" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
                     </div>
                 </div>
                 <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
@@ -1070,14 +1068,14 @@
                     <input type="hidden" id="quickWonId">
                     <div class="p-6 overflow-y-auto flex-1">
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="col-span-2"><input autocomplete="off" type="text" id="quickWonPolicyName" placeholder="保單名稱 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
-                            <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="quickWonInsuranceCompany" placeholder="保險公司 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2"><input type="text" id="quickWonPolicyName" placeholder="保單名稱 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><input type="text" id="quickWonInsuranceCompany" placeholder="保險公司 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
                             <div class="col-span-2 sm:col-span-1">
                                 <select id="quickWonProductType" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"><option value="" disabled selected>種類 *</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select>
                             </div>
-                            <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="quickWonPremium" oninput="calcComm('quickWon')" placeholder="保費 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
-                            <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="quickWonCommissionRate" oninput="calcComm('quickWon')" placeholder="代理率% *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
-                            <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="quickWonFyc" readonly placeholder="FYC(自動)" class="w-full px-3 py-2 border bg-slate-100 rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><input type="text" id="quickWonPremium" oninput="calcComm('quickWon')" placeholder="保費 *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><input type="number" step="0.1" id="quickWonCommissionRate" oninput="calcComm('quickWon')" placeholder="代理率% *" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
+                            <div class="col-span-2 sm:col-span-1"><input type="text" id="quickWonFyc" readonly placeholder="FYC(自動)" class="w-full px-3 py-2 border bg-slate-100 rounded-lg text-sm outline-none"></div>
                             <div class="col-span-2 sm:col-span-1"><select id="quickWonRankRate" onchange="calcComm('quickWon')" required class="w-full px-3 py-2 border rounded-lg text-sm font-bold text-emerald-800 outline-none"><option value="" disabled selected>職階 *</option><option value="78">副總</option><option value="58">襄理</option><option value="40">代表</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><input type="date" id="quickWonDealDate" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
                             <div class="col-span-2 sm:col-span-1"><input type="date" id="quickWonSubmitDate" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none"></div>
@@ -1087,7 +1085,7 @@
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[10px] font-bold text-violet-700 mb-0.5">配息頻率</label><select id="quickWonDividendFrequency" class="w-full px-3 py-2 border rounded-lg text-sm outline-none font-bold text-violet-800"><option value="">（無）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
                             <div class="col-span-2 bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex justify-between items-center mt-2">
                                 <span class="text-xs font-bold text-emerald-800">實領佣金 (元)</span>
-                                <input autocomplete="off" type="text" id="quickWonCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-xl font-black text-emerald-800 outline-none">
+                                <input type="text" id="quickWonCommission" readonly class="w-32 px-2 py-1 text-right bg-transparent text-xl font-black text-emerald-800 outline-none">
                             </div>
                         </div>
                     </div>
@@ -1148,7 +1146,7 @@
         </div>
 
         <div id="addPeriodModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-2xl w-full max-w-sm p-6"><form id="addPeriodForm" onsubmit="handleAddPeriod(event)"><input autocomplete="off" type="number" id="addPeriodYear" class="w-full px-3 py-2 mb-3 border rounded-lg" placeholder="年份"><select id="addPeriodMonth" class="w-full px-3 py-2 border rounded-lg mb-4 bg-white"><option value="01">1月</option><option value="02">2月</option><option value="03">3月</option><option value="04">4月</option><option value="05">5月</option><option value="06">6月</option><option value="07">7月</option><option value="08">8月</option><option value="09">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select><div class="flex justify-end gap-2"><button type="button" onclick="closeModal('addPeriodModal')" class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">取消</button><button type="submit" class="px-4 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">新增</button></div></form></div>
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6"><form id="addPeriodForm" onsubmit="handleAddPeriod(event)"><input type="number" id="addPeriodYear" class="w-full px-3 py-2 mb-3 border rounded-lg" placeholder="年份"><select id="addPeriodMonth" class="w-full px-3 py-2 border rounded-lg mb-4 bg-white"><option value="01">1月</option><option value="02">2月</option><option value="03">3月</option><option value="04">4月</option><option value="05">5月</option><option value="06">6月</option><option value="07">7月</option><option value="08">8月</option><option value="09">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select><div class="flex justify-end gap-2"><button type="button" onclick="closeModal('addPeriodModal')" class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold">取消</button><button type="submit" class="px-4 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold">新增</button></div></form></div>
         </div>
 
         <!-- 7. 設定目標 Modal -->
@@ -1158,9 +1156,9 @@
                     <input type="hidden" id="goalYearInput">
                     <h3 id="goalYearDisplay" class="font-bold font-editorial text-center mb-4 text-[#1E2E3D]"></h3>
                     <label class="block text-xs font-bold text-slate-500 mb-1">FYC 年度目標 (C)</label>
-                    <input autocomplete="off" type="number" step="0.1" id="goalTargetFyc" class="w-full px-3 py-2 mb-3 border border-slate-200 rounded-lg text-sm outline-none" required>
+                    <input type="number" step="0.1" id="goalTargetFyc" class="w-full px-3 py-2 mb-3 border border-slate-200 rounded-lg text-sm outline-none" required>
                     <label class="block text-xs font-bold text-slate-500 mb-1">實領薪水/佣金 目標 (萬)</label>
-                    <input autocomplete="off" type="number" step="0.1" id="goalTargetComm" class="w-full px-3 py-2 mb-4 border border-slate-200 rounded-lg text-sm outline-none" required>
+                    <input type="number" step="0.1" id="goalTargetComm" class="w-full px-3 py-2 mb-4 border border-slate-200 rounded-lg text-sm outline-none" required>
                     <div class="flex justify-end">
                         <button type="button" onclick="closeModal('goalModal')" class="px-4 py-2 bg-slate-100 rounded-lg text-sm font-bold mr-2">取消</button>
                         <button type="submit" class="px-6 py-2 bg-[#D4AF37] text-[#1E2E3D] rounded-lg text-sm font-bold">儲存目標</button>
@@ -1548,7 +1546,6 @@
                 if (document.getElementById('filterArchiveStatus')) document.getElementById('filterArchiveStatus').value = 'ALL';
             }
             
-            crmAfGuard(true);                                       // v19：切換分頁時清掉被瀏覽器自動填入的搜尋值
             renderApp();
         }
 
@@ -1605,8 +1602,8 @@
                             '<div class="border-t pt-3">' +
                                 '<p class="text-xs font-bold text-slate-500 mb-2">＋ 新增成員（需先在 Firebase 建好該 Email 帳號）</p>' +
                                 '<div class="flex flex-col sm:flex-row gap-2">' +
-                                    '<input autocomplete="off" id="newMemberEmail" type="text" placeholder="登入 Email" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
-                                    '<input autocomplete="off" id="newMemberName" type="text" placeholder="顯示名稱（業務員）" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
+                                    '<input id="newMemberEmail" type="text" placeholder="登入 Email" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
+                                    '<input id="newMemberName" type="text" placeholder="顯示名稱（業務員）" class="flex-1 min-w-0 px-2 py-1.5 text-sm border rounded-lg outline-none">' +
                                     '<button onclick="addMember()" class="px-3 py-1.5 bg-[#1E2E3D] text-white text-sm font-bold rounded-lg flex-shrink-0">加入</button>' +
                                 '</div>' +
                             '</div>' +
@@ -5172,7 +5169,7 @@
             showToast(atNoteIsMine() ? '備注已儲存' : '已儲存 ' + atNoteKeyName(atNoteTarget()) + ' 的備注', 'info');
         }
         function atNoteHtml(d, mobile) {
-            return '<textarea autocomplete="off" class="at-note block w-full resize-none overflow-hidden rounded-md border ' + (atNoteIsMine() ? 'border-slate-200 bg-white/90' : 'border-amber-300 bg-amber-50') + ' px-2 py-1.5 text-[12px] leading-snug text-slate-700 placeholder-slate-300 outline-none focus:ring-2 focus:ring-[#D4AF37]" rows="2" style="min-height:56px" maxlength="' + AT_NOTE_MAX + '" placeholder="備注…" aria-label="' + d + ' 備注" data-date="' + d + '"' + (mobile ? ' data-mobile="1"' : '') +
+            return '<textarea class="at-note block w-full resize-none overflow-hidden rounded-md border ' + (atNoteIsMine() ? 'border-slate-200 bg-white/90' : 'border-amber-300 bg-amber-50') + ' px-2 py-1.5 text-[12px] leading-snug text-slate-700 placeholder-slate-300 outline-none focus:ring-2 focus:ring-[#D4AF37]" rows="2" style="min-height:56px" maxlength="' + AT_NOTE_MAX + '" placeholder="備注…" aria-label="' + d + ' 備注" data-date="' + d + '"' + (mobile ? ' data-mobile="1"' : '') +
                 ' oninput="atNoteFit(this)" onchange="atNoteSave(this)" onblur="atNoteSave(this)">' + esc(atDayNote(d)) + '</textarea>';
         }
         window.addEventListener('resize', function () { if (document.getElementById('atTimeGrid')) atFitNotes(); });
@@ -5237,35 +5234,6 @@
             try { localStorage.setItem('crm_ai_worker_url', atPhEl('atPhUrl').value.trim()); localStorage.setItem('crm_ai_secret', atPhEl('atPhSecret').value.trim()); } catch (e) {}
             showToast('AI 連線設定已儲存（只存在這台裝置）', 'info');
         }
-        // ===== v19：瀏覽器自動填入防護 =====
-        // Chrome 曾把 AI Worker 網址或 Gmail 自動填進搜尋框，導致搜尋結果全空。
-        // 只清掉「不是使用者親手輸入」且看起來像 Worker 網址／Email／網址的值；使用者打的字一律保留。
-        const CRM_AF_IDS = ['searchInput', 'atAddSearch'];
-        const crmAfTyped = {};
-        function crmAfLooksAuto(v) {
-            v = (v || '').trim(); if (!v) return false;
-            let w = ''; try { w = (localStorage.getItem('crm_ai_worker_url') || '').trim(); } catch (e) {}
-            if (w && v.toLowerCase() === w.toLowerCase()) return true;
-            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;                              // Email
-            if (/^https?:\/\//i.test(v) || /^(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:\/\S*)?$/i.test(v)) return true;   // 網址 / 網域
-            return false;
-        }
-        function crmAfGuard(noRender) {
-            CRM_AF_IDS.forEach(function (id) {
-                const el = document.getElementById(id); if (!el) return;
-                if (!el.value) { crmAfTyped[id] = false; return; }
-                if (crmAfTyped[id] || !crmAfLooksAuto(el.value)) return;
-                el.value = '';
-                if (noRender) return;
-                try { if (id === 'searchInput') renderApp(); else if (typeof atAddRender === 'function') atAddRender(); } catch (e) {}
-            });
-        }
-        (function () {
-            const mark = function (e) { const id = e.target && e.target.id; if (CRM_AF_IDS.indexOf(id) < 0) return; if (e.type !== 'keydown' || (e.key && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Delete'))) crmAfTyped[id] = true; };
-            ['keydown', 'paste', 'drop', 'compositionstart'].forEach(function (t) { document.addEventListener(t, mark, true); });
-            document.addEventListener('input', function (e) { if (e.target && CRM_AF_IDS.indexOf(e.target.id) >= 0) setTimeout(function () { crmAfGuard(false); }, 0); }, true);
-            window.addEventListener('load', function () { [0, 300, 1000, 2500].forEach(function (ms) { setTimeout(function () { crmAfGuard(false); }, ms); }); });
-        })();
         // --- 圖片縮放（長邊最多 1600px，JPEG）---
         function atPhLoadImage(file) {
             return new Promise(function (resolve, reject) {
@@ -5467,7 +5435,7 @@
                 lab('日期', '<input type="date" data-f="date" value="' + esc(r.date) + '" class="' + AT_PH_SEL + ' w-[8.6rem]" onchange="atPhField(this)">') +
                 lab('開始', '<input type="time" data-f="start" value="' + esc(r.start) + '" class="' + AT_PH_SEL + ' w-[6.2rem]" onchange="atPhField(this)">') +
                 lab('結束', '<input type="time" data-f="end" value="' + esc(r.end) + '" class="' + AT_PH_SEL + ' w-[6.2rem]" onchange="atPhField(this)">') +
-                lab('標題', '<input autocomplete="off" type="text" data-f="title" value="' + esc(r.title) + '" maxlength="200" class="' + AT_PH_SEL + ' w-full" onchange="atPhField(this)">', 'flex-1 min-w-[10rem]') +
+                lab('標題', '<input type="text" data-f="title" value="' + esc(r.title) + '" maxlength="200" class="' + AT_PH_SEL + ' w-full" onchange="atPhField(this)">', 'flex-1 min-w-[10rem]') +
                 lab('分類', '<select data-f="cat" class="' + AT_PH_SEL + '" onchange="atPhField(this)">' + catOpts + '</select>') +
                 lab('標籤', '<select data-f="visit" class="' + AT_PH_SEL + '" onchange="atPhField(this)">' + visOpts + '</select>') +
                 lab('連結對象', '<select data-f="link" class="' + AT_PH_SEL + ' max-w-[11rem]" onchange="atPhField(this)">' + atPhLinkOpts(r) + '</select>') +
@@ -5484,12 +5452,12 @@
             atPhEl('atPhRows').innerHTML = atPh.rows.length ? atPh.rows.map(atPhRowHtml).join('') : '<p class="text-xs text-slate-400 px-1 py-2">沒有辨識到行程。</p>';
             atPhEl('atPhLocs').innerHTML = atPh.locs.length ? atPh.locs.map(function (l, k) {
                 return '<div class="at-phloc flex flex-wrap items-center gap-2 text-xs" data-k="' + k + '"><label class="flex items-center gap-1.5"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="lcheck"' + (l.check ? ' checked' : '') + ' onchange="atPhField(this)"><span class="font-mono">' + esc(l.date) + '</span></label>' +
-                    '<input autocomplete="off" type="text" data-f="ltext" value="' + esc(l.text) + '" maxlength="100" class="' + AT_PH_SEL + ' flex-1 min-w-[8rem]" onchange="atPhField(this)">' + (l.exists ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">已在備注</span>' : '<span class="text-[10px] text-slate-400">→ 附加到當天備注</span>') +
+                    '<input type="text" data-f="ltext" value="' + esc(l.text) + '" maxlength="100" class="' + AT_PH_SEL + ' flex-1 min-w-[8rem]" onchange="atPhField(this)">' + (l.exists ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">已在備注</span>' : '<span class="text-[10px] text-slate-400">→ 附加到當天備注</span>') +
                     '<button type="button" class="text-rose-600 px-1" data-f="ldel" onclick="atPhDelLoc(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有地點備註。</p>';
             const first = i.weekStart ? atMonday(i.weekStart) : ws;
             atPhEl('atPhTodos').innerHTML = atPh.todos.length ? '<p class="text-[11px] text-slate-400 mb-1">待辦預設不寫入；勾選後會附加到 ' + esc(first) + '（該週第一天，週一）' + esc(atNoteIsMine() ? '你自己' : atNoteKeyName(atNoteTarget())) + '的備注。</p>' + atPh.todos.map(function (t, k) {
-                return '<div class="at-phtodo flex items-center gap-2 text-xs" data-k="' + k + '"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="tcheck"' + (t.check ? ' checked' : '') + ' onchange="atPhField(this)"><input autocomplete="off" type="text" data-f="ttext" value="' + esc(t.text) + '" maxlength="200" class="' + AT_PH_SEL + ' flex-1" onchange="atPhField(this)"><button type="button" class="text-rose-600 px-1" onclick="atPhDelTodo(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
+                return '<div class="at-phtodo flex items-center gap-2 text-xs" data-k="' + k + '"><input type="checkbox" class="w-4 h-4 accent-[#1E2E3D]" data-f="tcheck"' + (t.check ? ' checked' : '') + ' onchange="atPhField(this)"><input type="text" data-f="ttext" value="' + esc(t.text) + '" maxlength="200" class="' + AT_PH_SEL + ' flex-1" onchange="atPhField(this)"><button type="button" class="text-rose-600 px-1" onclick="atPhDelTodo(' + k + ')" title="刪除"><i class="fa-solid fa-xmark"></i></button></div>';
             }).join('') : '<p class="text-xs text-slate-400">沒有待辦事項。</p>';
             atPhCount();
         }
@@ -5780,7 +5748,7 @@
                     '</div>' +
                     '<div class="flex items-center gap-2 flex-wrap text-xs text-slate-500">' +
                         '<label class="flex items-center gap-1 font-bold">跳至日期 <input id="atJumpDate" type="date" value="' + ws + '" onchange="atJumpDate(this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700"></label>' +
-                        '<span class="flex items-center gap-1 font-bold"><input autocomplete="off" id="atJumpYear" type="number" min="2000" max="2100" value="' + info.year + '" class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 年 第 <input autocomplete="off" id="atJumpWeekNo" type="number" min="1" max="53" value="' + info.week + '" class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 週 ' +
+                        '<span class="flex items-center gap-1 font-bold"><input id="atJumpYear" type="number" min="2000" max="2100" value="' + info.year + '" class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 年 第 <input id="atJumpWeekNo" type="number" min="1" max="53" value="' + info.week + '" class="w-16 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700" onkeydown="if(event.key===\'Enter\')atJumpWeek()"> 週 ' +
                         '<button id="atJumpWeekBtn" type="button" onclick="atJumpWeek()" class="px-2.5 py-1.5 bg-[#1E2E3D] text-white rounded-lg font-bold">前往</button></span>' +
                     '</div>' +
                 '</div>' +
