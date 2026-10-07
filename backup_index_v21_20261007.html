@@ -2725,26 +2725,10 @@
         function populatePeriodFilter() {
             const filterEl = document.getElementById('globalPeriodFilter'); const currentVal = filterEl.value;
             const now = new Date(); const curY = String(now.getFullYear()); const curM = String(now.getMonth() + 1).padStart(2, '0');
-            const monthCount = {}; const yearCount = {}; const years = new Set([curY]);
-            // 年/月膠囊數字：跟隨「負責業務」；排除一畝田(LEAD)；同名只計一次（月內／年內各一套）。年份列表仍以全部資料為準。不影響其他統計。
+            const monthCount = {}; const years = new Set([curY]);
+            // 月份小數字：跟隨「負責業務」篩選（與客戶列表共用 matchAgentFilter）；年份膠囊仍以全部資料為準
             const fAgentPicker = document.getElementById('filterAgent')?.value || 'ALL';
-            const monthNameSets = {}; const yearNameSets = {};
-            customers.forEach(c => {
-                const p = getPeriod(c);
-                if (!/^\d{4}-\d{2}$/.test(p)) return;
-                const y = p.substring(0, 4);
-                years.add(y); // 年份列表：含一畝田與全部業務
-                if (c.progress === 'LEAD') return; // 排除一畝田名單庫
-                if (!matchAgentFilter(c, fAgentPicker)) return;
-                const nm = String(c.name || '').trim();
-                if (!nm) return;
-                if (!monthNameSets[p]) monthNameSets[p] = new Set();
-                monthNameSets[p].add(nm);
-                if (!yearNameSets[y]) yearNameSets[y] = new Set();
-                yearNameSets[y].add(nm);
-            });
-            Object.keys(monthNameSets).forEach(p => { monthCount[p] = monthNameSets[p].size; });
-            Object.keys(yearNameSets).forEach(y => { yearCount[y] = yearNameSets[y].size; });
+            customers.forEach(c => { const p = getPeriod(c); if (/^\d{4}-\d{2}$/.test(p)) { years.add(p.substring(0, 4)); if (matchAgentFilter(c, fAgentPicker)) monthCount[p] = (monthCount[p] || 0) + 1; } });
             customPeriods.forEach(p => { if (/^\d{4}-\d{2}$/.test(p)) { if (!monthCount[p]) monthCount[p] = 0; years.add(p.substring(0, 4)); } });
             const yearList = Array.from(years).sort();
             let opts = '';
@@ -2755,26 +2739,21 @@
             filterEl.innerHTML = opts;
             const valid = Array.from(filterEl.options).some(o => o.value === currentVal);
             filterEl.value = valid ? currentVal : `${curY}-${curM}`; // 預設：本月
-            renderPeriodPicker(yearList, monthCount, yearCount, curY, curM, fAgentPicker);
+            renderPeriodPicker(yearList, monthCount, curY, curM, fAgentPicker);
         }
 
-        function renderPeriodPicker(yearList, monthCount, yearCount, curY, curM, fAgent) {
+        function renderPeriodPicker(yearList, monthCount, curY, curM, fAgent) {
             fAgent = fAgent || document.getElementById('filterAgent')?.value || 'ALL';
-            yearCount = yearCount || {};
             const val = document.getElementById('globalPeriodFilter').value;
             const isYear = val.startsWith('YEAR_');
             const selYear = isYear ? val.replace('YEAR_', '') : val.split('-')[0];
             const selMonth = isYear ? null : val.split('-')[1];
-            const pillBase = 'px-4 py-1.5 rounded-full text-sm font-bold border transition cursor-pointer leading-tight text-center ';
+            const pillBase = 'px-4 py-1.5 rounded-full text-sm font-bold border transition cursor-pointer ';
             document.getElementById('periodYearPills').innerHTML = yearList.slice().reverse().map(y => {
                 const on = y === selYear;
-                const yCnt = yearCount[y] || 0;
                 const cls = on ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100';
                 const dot = (y === curY) ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#D4AF37] ml-1 align-middle" title="今年"></span>' : '';
-                const yBadge = yCnt > 0
-                    ? `<span class="block text-[10px] ${on ? 'text-slate-200' : 'text-slate-500'} font-normal">${yCnt}</span>`
-                    : '<span class="block text-[10px] opacity-0">0</span>';
-                return `<button type="button" data-year="${y}" data-count="${yCnt}" onclick="selectPeriodYear('${y}')" class="${pillBase}${cls}">${y}年${dot}${yBadge}</button>`;
+                return `<button type="button" data-year="${y}" onclick="selectPeriodYear('${y}')" class="${pillBase}${cls}">${y}年${dot}</button>`;
             }).join('');
             const allBtn = document.getElementById('periodAllYearBtn');
             allBtn.className = 'px-3 py-1.5 rounded-lg text-sm font-bold border transition ' + (isYear ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-[#1E2E3D] border-slate-300 hover:bg-slate-100');
