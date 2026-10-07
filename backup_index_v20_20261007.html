@@ -5026,32 +5026,29 @@
         //   · 管理者（isAdmin()，含擁有者）選了某一位業務員名字 → 顯示／編輯那個人的 goals.dayNotesBy[他的 email]
         //   · 管理者選「全局總覽 / 我的個人業績 / 團隊貢獻總計」或空值 → 只顯示／編輯自己的備注（不做合併總覽）
         //   · 非管理者：不論篩選為何，一律只讀寫自己（這裡強制，不只是 UI）
-        //   · 名字→備注鍵對應：成員 name 精確符合且有 email（且該 email ≠ OWNER_EMAIL）→ 其 email（小寫）；
-        //     擁有者姓名（OWNER_AGENT_NAMES）、擁有者 email 當業務名以外的「王盛嶢」等、沒登入／沒 email／對不到 → v21：'name:<去頭尾空白的名字>'。
-        //     v21 修正：擁有者「我的個人業績」(PERSONAL/ALL/TEAM_ONLY) 仍用 OWNER_EMAIL；篩選明確選「王盛嶢」改走 name:王盛嶢，兩者不再共用備注。
+        //   · 名字→備注鍵對應：成員 name 精確符合且有 email → 其 email（小寫）；擁有者姓名（OWNER_AGENT_NAMES）→ 擁有者鍵；
+        //     其他（沒登入的業務員、成員沒填 email、名字對不到）→ v20：以姓名為鍵 'name:<去頭尾空白的名字>'（空白、可編輯，不再落回自己的備注）
         //   · atNoteViewKey 是畫面狀態快取（不存雲端）；每次重繪前由 filterAgent 同步；切換篩選前若備注欄還在輸入，先存到「切換前那個人」
         let atNoteViewKey = '', atNoteViewBy = '';
-        const AT_NOTE_NAME_PREFIX = 'name:';                         // 沒有獨立登入 email 的業務員（含擁有者顯示名）備注鍵＝'name:' + 名字
-        const OWNER_AGENT_NAMES = ['王盛嶢'];                          // v21：擁有者的業務員顯示名 → name:<名字>（與 PERSONAL 的 OWNER_EMAIL 備注分離）
+        const AT_NOTE_NAME_PREFIX = 'name:';                         // v20：沒有登入 email 的業務員，備注鍵＝'name:' + 名字
+        const OWNER_AGENT_NAMES = ['王盛嶢'];                          // v20：擁有者的業務員姓名 → 擁有者自己的備注鍵（OWNER_EMAIL）
         function atMeKey() { return myEmail() || '_local'; }
         function atNoteCanSwitch() { return isAdmin(); }
-        // 負責業務顯示名 → dayNotesBy 鍵。回傳 '' 表示「沒有對應的別人」→ 呼叫端改用自己（PERSONAL/ALL/TEAM_ONLY）。
+        // 負責業務顯示名 → dayNotesBy 鍵（email）。回傳 '' 表示「沒有對應的別人」→ 呼叫端改用自己。
         function atNoteKeyFromAgentName(name) {
             const nm = String(name == null ? '' : name).trim();
             if (!nm) return '';
-            // 若有人把負責業務寫成擁有者 email 字串，仍對到擁有者鍵（少見；與「顯示名」分離）
-            if (nm.toLowerCase() === OWNER_EMAIL) return OWNER_EMAIL;
-            // 先精確匹配成員姓名：有 email 且不是擁有者帳號 → 用該 email
+            // 先精確匹配成員姓名
             for (let i = 0; i < teamMembers.length; i++) {
                 const m = teamMembers[i]; if (!m) continue;
                 if (String(m.name || '').trim() !== nm) continue;
                 const e = String(m.email || '').trim().toLowerCase();
-                // v21：就算成員名單把「王盛嶢」掛上 OWNER_EMAIL，也不併入個人備注；改走 name: 分離
-                if (e && e !== OWNER_EMAIL) return e;
-                break;                                            // 有名字沒 Email、或 email＝擁有者 → 往下用姓名鍵
+                if (e) return e;
+                break;                                            // v20：有名字沒 Email → 往下用擁有者姓名／姓名鍵
             }
-            // v21：擁有者顯示名與其他無獨立 email 的業務員一律 name:<名字>（不再把 OWNER_AGENT_NAMES 映射到 OWNER_EMAIL）
-            return AT_NOTE_NAME_PREFIX + nm;
+            // 擁有者通常不在成員名單、atMyAgent() 為空白；若有人把負責業務寫成擁有者的 email，也對到擁有者鍵
+            if (nm.toLowerCase() === OWNER_EMAIL || OWNER_AGENT_NAMES.indexOf(nm) >= 0) return OWNER_EMAIL;
+            return AT_NOTE_NAME_PREFIX + nm;                       // v20：對不到有 email 的成員 → 以姓名為鍵（不再回傳 ''＝落回自己的備注）
         }
         function atNoteKeyFromAgentFilter(f) {
             f = String(f == null ? '' : f);
