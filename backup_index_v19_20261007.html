@@ -5024,14 +5024,11 @@
         // v18：備注跟著頁面上方「負責業務」篩選（#filterAgent）走；已移除 v17 的獨立「業務員」選擇器。
         // 鍵的規則同 v16/v17：登入 email（小寫）；尚未取得登入身分時用 '_local'。
         //   · 管理者（isAdmin()，含擁有者）選了某一位業務員名字 → 顯示／編輯那個人的 goals.dayNotesBy[他的 email]
-        //   · 管理者選「全局總覽 / 我的個人業績 / 團隊貢獻總計」或空值 → 只顯示／編輯自己的備注（不做合併總覽）
+        //   · 管理者選「全局總覽 / 我的個人業績 / 團隊貢獻總計」或空值、或名字對不到成員 email → 只顯示／編輯自己的備注（不做合併總覽）
         //   · 非管理者：不論篩選為何，一律只讀寫自己（這裡強制，不只是 UI）
-        //   · 名字→備注鍵對應：成員 name 精確符合且有 email → 其 email（小寫）；擁有者姓名（OWNER_AGENT_NAMES）→ 擁有者鍵；
-        //     其他（沒登入的業務員、成員沒填 email、名字對不到）→ v20：以姓名為鍵 'name:<去頭尾空白的名字>'（空白、可編輯，不再落回自己的備注）
+        //   · 名字→備注鍵對應：成員 name 精確符合 → 其 email（小寫）；對不到或沒有 email → 視為「無法對應」→ 自己的備注
         //   · atNoteViewKey 是畫面狀態快取（不存雲端）；每次重繪前由 filterAgent 同步；切換篩選前若備注欄還在輸入，先存到「切換前那個人」
         let atNoteViewKey = '', atNoteViewBy = '';
-        const AT_NOTE_NAME_PREFIX = 'name:';                         // v20：沒有登入 email 的業務員，備注鍵＝'name:' + 名字
-        const OWNER_AGENT_NAMES = ['王盛嶢'];                          // v20：擁有者的業務員姓名 → 擁有者自己的備注鍵（OWNER_EMAIL）
         function atMeKey() { return myEmail() || '_local'; }
         function atNoteCanSwitch() { return isAdmin(); }
         // 負責業務顯示名 → dayNotesBy 鍵（email）。回傳 '' 表示「沒有對應的別人」→ 呼叫端改用自己。
@@ -5043,12 +5040,11 @@
                 const m = teamMembers[i]; if (!m) continue;
                 if (String(m.name || '').trim() !== nm) continue;
                 const e = String(m.email || '').trim().toLowerCase();
-                if (e) return e;
-                break;                                            // v20：有名字沒 Email → 往下用擁有者姓名／姓名鍵
+                return e || '';                                   // 有名字沒 Email → 無法記備注
             }
             // 擁有者通常不在成員名單、atMyAgent() 為空白；若有人把負責業務寫成擁有者的 email，也對到擁有者鍵
-            if (nm.toLowerCase() === OWNER_EMAIL || OWNER_AGENT_NAMES.indexOf(nm) >= 0) return OWNER_EMAIL;
-            return AT_NOTE_NAME_PREFIX + nm;                       // v20：對不到有 email 的成員 → 以姓名為鍵（不再回傳 ''＝落回自己的備注）
+            if (nm.toLowerCase() === OWNER_EMAIL) return OWNER_EMAIL;
+            return '';
         }
         function atNoteKeyFromAgentFilter(f) {
             f = String(f == null ? '' : f);
@@ -5076,7 +5072,6 @@
         function atNoteLegacyMine() { const k = atNoteTarget(); return k === OWNER_EMAIL || (k === '_local' && !myEmail()); }   // 舊的共用備注只在「看擁有者的備注」時出現（沒有登入身分時的 _local 視同擁有者）
         function atNoteKeyName(k) {
             if (k === '_local') return '本機（未登入）';
-            if (String(k).indexOf(AT_NOTE_NAME_PREFIX) === 0) return String(k).slice(AT_NOTE_NAME_PREFIX.length);   // v20：姓名鍵 → 顯示名字
             const m = findMember(k);
             if (m && m.name && String(m.name).toLowerCase() !== k) return String(m.name);
             if (k === OWNER_EMAIL) return '擁有者';
