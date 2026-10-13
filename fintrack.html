@@ -884,6 +884,7 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 #ftGate .err{color:#b4483a;font-weight:700;font-size:13px}
 #ftGate .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 #ftGate button,#ftGate .linkbtn{border:0;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-flex;align-items:center}
+#ftGate [hidden]{display:none!important}
 #ftGate button.primary{background:#1E2E3D;color:#fff}
 #ftGate .linkbtn{background:transparent;color:#1E2E3D;border:1px solid #d6d1c5}
 #ftVerPanel{position:fixed;top:72px;right:20px;z-index:70;width:min(420px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid #e7e3da;border-radius:16px;box-shadow:0 16px 40px rgba(30,46,61,.18);padding:12px 14px 14px}
@@ -914,13 +915,13 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
       <label for="ftTeam">團隊代碼</label>
       <input id="ftTeam" type="text" autocomplete="off" placeholder="與 CRM 相同" required>
       <p id="ftLoginError" class="err" hidden></p>
-      <div class="row"><button class="primary" type="submit">登入</button><a class="linkbtn" href="index.html">回到 CRM</a></div>
+      <div class="row"><button class="primary" type="submit">登入</button></div>
     </form>
     <form id="ftTeamOnly" hidden>
       <label for="ftTeam2">團隊代碼</label>
       <input id="ftTeam2" type="text" autocomplete="off" required>
       <p id="ftLoginError2" class="err" hidden></p>
-      <div class="row"><button class="primary" type="submit">連線</button><button type="button" id="ftLogoutBtn2">登出</button></div>
+      <div class="row"><button class="primary" type="submit">連線</button></div>
     </form>
     <div class="row" id="ftBack"><a class="linkbtn" href="index.html">回到 CRM</a><button type="button" id="ftLogoutBtn" hidden>登出</button></div>
   </div>
@@ -2525,9 +2526,9 @@ setTab(TAB,false);renderAll();
     const logout = $('ftLogoutBtn');
     if (form) form.hidden = mode !== 'login';
     if (teamOnly) teamOnly.hidden = mode !== 'team';
-    if (logout) logout.hidden = mode !== 'deny';
+    if (logout) logout.hidden = !(email && mode !== 'login');
     const back = $('ftBack');
-    if (back) back.hidden = mode === 'login' || mode === 'ready';
+    if (back) back.hidden = mode === 'ready';
   }
 
   function denyMessage(access, client) {
@@ -2659,8 +2660,6 @@ setTab(TAB,false);renderAll();
     };
     const out = $('ftLogoutBtn');
     if (out) out.onclick = doLogout;
-    const out2 = $('ftLogoutBtn2');
-    if (out2) out2.onclick = doLogout;
     const form = $('ftLogin');
     if (form) form.onsubmit = function (e) { e.preventDefault(); submitLogin(false); };
     const teamForm = $('ftTeamOnly');
