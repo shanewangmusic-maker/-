@@ -900,7 +900,49 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 #ftSaveState.err{color:#ffd0c8;border-style:solid;border-color:#b4483a}
 #ftSaveErr{color:#ffd0c8;font-size:11px;max-width:320px;line-height:1.35}
 #ftSaveErr[hidden]{display:none!important}
-@media print{#ftGate,#ftVerPanel{display:none!important}}
+.ft-mobile-only{display:none}
+.top-actions{display:contents}
+.ft-banner{position:sticky;top:var(--tb-h,64px);z-index:35;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:10px 16px;background:#fff6e8;color:#6b4e16;border-bottom:1px solid #e3c27a;font-size:13.5px;line-height:1.45}
+.ft-banner b{font-weight:700}
+.ft-banner .code{font-size:12px;color:#8a6a24}
+.ft-banner-actions{display:flex;gap:8px;margin-left:auto}
+.ft-banner button{border:1px solid #c7a15a;background:#fff;color:#6b4e16;border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer}
+.ft-banner button.primary{background:#1E2E3D;color:#fff;border-color:#1E2E3D}
+#ftOfflineBanner[hidden],#ftConflictBanner[hidden],#ftLocalBanner[hidden]{display:none!important}
+@media (max-width:640px){
+  body{padding-bottom:72px;overflow-x:hidden}
+  .wrap{padding:16px 12px 28px;max-width:100%}
+  .topbar-in{padding:10px 12px;gap:8px;position:relative}
+  .brand{min-width:0;flex:1 1 140px}
+  .brand .eyebrow{letter-spacing:.04em;font-size:10px}
+  .brand h1{font-size:16px;letter-spacing:.04em}
+  .ft-mobile-only{display:inline-flex}
+  .top-actions{display:none;position:absolute;right:8px;top:calc(100% + 4px);z-index:40;flex-direction:column;align-items:stretch;gap:6px;background:#1E2E3D;border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:8px;min-width:200px;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+  .top-actions.open{display:flex}
+  .top-actions .tbtn{width:100%;text-align:center;justify-content:center}
+  .client-card{grid-template-columns:1fr;padding:16px;gap:12px}
+  .avatar{width:52px;height:52px;font-size:22px}
+  .client-name,.client-in{max-width:100%}
+  .client-name{font-size:22px;width:100%}
+  .client-sub{gap:8px}
+  .meta-grid{grid-template-columns:1fr 1fr;gap:10px 12px;width:100%;justify-content:stretch}
+  .seg{flex-wrap:wrap;max-width:100%}
+  .goals{grid-template-columns:1fr;gap:14px}
+  .goal-in{padding:16px 14px 14px}
+  .g-head{flex-wrap:wrap}
+  .g-deltas{width:100%;align-items:flex-start;flex-direction:row;flex-wrap:wrap}
+  .g-hero{grid-template-columns:1fr;min-height:0}
+  .g-kpirow,.ratios,.fgrid{grid-template-columns:1fr 1fr}
+  .merge,.tbl-wrap,.fh-wrap,.std-panel,.tab-panel,.sec,.card{max-width:100%;min-width:0}
+  .tbl-wrap,.fh-wrap,.std-panel{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabbar{margin-left:0;margin-right:0}
+  #ftVerPanel{top:auto;right:0;bottom:0;left:0;width:100%;max-height:min(78vh,100%);border-radius:16px 16px 0 0;padding:0 14px calc(14px + env(safe-area-inset-bottom));z-index:80}
+  #ftVerPanel .vh{position:sticky;top:0;background:#fff;padding:12px 0 8px;z-index:1}
+  #ftVerClose{min-height:44px;padding:8px 14px;border:1px solid #e7e3da;border-radius:999px;background:#fff;font-weight:700}
+  .undo-bar{left:8px;right:8px;bottom:8px;justify-content:flex-end}
+  .ft-banner{top:var(--tb-h,52px);padding:10px 12px}
+}
+@media print{#ftGate,#ftVerPanel,#ftOfflineBanner,#ftConflictBanner,#ftLocalBanner{display:none!important}}
 </style>
 </head>
 <body>
@@ -932,11 +974,17 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
   <div class="brand"><span class="eyebrow">御謙VIP菁英會 · 顧問工具 · 顧問 王盛嶢</span><h1>財務規劃<em> ・ </em>定期追蹤</h1></div>
   <span id="ftSaveState" class="mock-tag">準備中</span>
   <span id="ftSaveErr" hidden></span>
-  <button type="button" class="tbtn edit-only" id="btnVersions">版本紀錄</button>
-  <a class="tbtn" href="index.html">回到 CRM</a>
-  <button class="tbtn" id="btnPdf" title="匯出完整規劃書（在列印視窗選「另存為 PDF」）">⤓ 匯出 PDF</button>
-  <button class="tbtn gold" id="btnMode">切換為客戶簡報模式</button>
+  <button type="button" class="tbtn ft-mobile-only" id="ftMenuBtn" aria-expanded="false" aria-controls="ftTopActions">選單</button>
+  <div class="top-actions" id="ftTopActions">
+    <button type="button" class="tbtn edit-only" id="btnVersions">版本紀錄</button>
+    <a class="tbtn" href="index.html">回到 CRM</a>
+    <button class="tbtn" id="btnPdf" title="匯出完整規劃書（在列印視窗選「另存為 PDF」）">⤓ 匯出 PDF</button>
+    <button class="tbtn gold" id="btnMode">切換為客戶簡報模式</button>
+  </div>
 </div></div>
+<div id="ftOfflineBanner" class="ft-banner" hidden><b>尚未存到雲端，網路恢復後會自動補存</b><span id="ftOfflineCode" class="code"></span></div>
+<div id="ftConflictBanner" class="ft-banner" hidden><p id="ftConflictText" style="margin:0;flex:1"></p><div class="ft-banner-actions"><button type="button" id="ftLoadLatest" class="primary">載入最新</button><button type="button" id="ftKeepMine">保留我的</button></div></div>
+<div id="ftLocalBanner" class="ft-banner" hidden><b id="ftLocalText">這台裝置有尚未存到雲端的內容。要恢復到畫面上嗎？</b><div class="ft-banner-actions"><button type="button" id="ftLocalRestore" class="primary">恢復</button><button type="button" id="ftLocalSkip">稍後</button></div></div>
 <div id="ftVerPanel" hidden></div>
 
 <div class="wrap">
@@ -1082,6 +1130,13 @@ let S=makeState();
 function gtLife(){return S.gt.fixed.reduce((s,i)=>s+(Number(i.a)||0),0);}
 function selfBase(k,m){return (Number(GOALS[k].start)||0)+[...S.gt.core,...S.gt.sat].filter(i=>tagAt(i,m)===k).reduce((s,i)=>s+(Number(i.a)||0),0);}
 function lastRow(){return S.rows[S.rows.length-1]||null;}
+function reviewDatesISO(){
+  const last=lastRow();const roc=String((last&&last.date)||(BASE&&BASE.date)||'').trim();
+  if(!/^\d{2,3}\.\d{1,2}(\.\d{1,2})?$/.test(roc))return {lastReviewDate:'',nextReviewDate:''};
+  const step=(FREQ[S.freq]&&FREQ[S.freq][1])||1;const next=addMonths(roc,step);
+  const iso=function(s){const p=parseRoc(s);return String(p.y+1911)+'-'+String(p.m).padStart(2,'0')+'-'+String(p.d||1).padStart(2,'0');};
+  return {lastReviewDate:iso(roc),nextReviewDate:iso(next)};
+}
 function refDate(){return (lastRow()&&lastRow().date)||BASE.date||todayRoc();}
 function emptyBox(t,sub,btn){return `<div class="empty-box"><div class="eb-t">${t}</div>${sub?`<div class="eb-s">${sub}</div>`:''}${btn||''}</div>`;}
 function rowsX(){let prev=BASE.netWorth;return S.rows.map((r,i)=>{const ye=+r.ye||0,prem=+r.prem||0,theo=prev+r.income+ye-r.fixed-prem;const o=Object.assign({},r,{invest:(+r.invest||0)+(+r.save||0),save:0,ye,prem,i,m:mIdx(r.date),prev,theo,growth:r.netWorth-prev,extra:theo-r.netWorth});prev=r.netWorth;return o;});}
@@ -2440,7 +2495,7 @@ function ftSeedClient(name,birth){
   if(ch){const prevH=window.__ftHydrating;window.__ftHydrating=true;try{renderAll();}finally{window.__ftHydrating=prevH;}}
   return ch;
 }
-window.__fintrack={ftExportState,ftImportState,ftSeedClient,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,get S(){return S;},renderAll,openModal,setTab};
+window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,get S(){return S;},renderAll,openModal,setTab};
 setTab(TAB,false);renderAll();
 })();
 </script>
@@ -2509,6 +2564,24 @@ setTab(TAB,false);renderAll();
   let email = '';
   let crmClient = null;
   let authApi = null;
+  let loadedRev = 0;
+  let pauseAuto = false;
+  let keepMine = false;
+  let pendingRemote = null;
+  let retryN = 0;
+  let retryTimer = null;
+  let skipLocalOffer = false;
+  const mySession = (function () {
+    const k = 'ft-session';
+    try {
+      let id = sessionStorage.getItem(k);
+      if (!id) {
+        id = 's' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+        sessionStorage.setItem(k, id);
+      }
+      return id;
+    } catch (e) { return 's' + Date.now().toString(36); }
+  })();
 
   function setStatus(kind, text, detail) {
     const el = $('ftSaveState');
@@ -2573,20 +2646,117 @@ setTab(TAB,false);renderAll();
     return (await store.listVersions(teamId, clientId)).slice(0, 20);
   }
 
+  function localKey() { return 'ftunsaved:v1:' + teamId + ':' + clientId; }
+  function writeLocal(snap) {
+    try { localStorage.setItem(localKey(), JSON.stringify({ at: Date.now(), snap: snap, rev: loadedRev })); } catch (e) {}
+  }
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(localKey()) || 'null'); } catch (e) { return null; }
+  }
+  function clearLocal() {
+    try { localStorage.removeItem(localKey()); } catch (e) {}
+  }
+  function browserOffline() {
+    if (window.__ftForceOffline) return true;
+    return typeof navigator !== 'undefined' && navigator.onLine === false;
+  }
+  function showOffline(detail) {
+    const b = $('ftOfflineBanner');
+    if (!b) return;
+    b.hidden = false;
+    const code = $('ftOfflineCode');
+    if (code) code.textContent = detail || '';
+  }
+  function hideOffline() {
+    const b = $('ftOfflineBanner');
+    if (b) { b.hidden = true; }
+    const code = $('ftOfflineCode');
+    if (code) code.textContent = '';
+  }
+  function clockHM(ts) {
+    const d = new Date(ts);
+    if (!ts || isNaN(d.getTime())) return '';
+    const p = function (n) { return String(n).padStart(2, '0'); };
+    return p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function showConflict(doc) {
+    pendingRemote = doc || null;
+    pauseAuto = true;
+    const b = $('ftConflictBanner');
+    if (!b) return;
+    const who = (doc && doc.updatedBy) ? String(doc.updatedBy) : '另一位使用者';
+    const t = $('ftConflictText');
+    if (t) t.textContent = who + ' 剛剛在 ' + clockHM(doc && doc.updatedAt) + ' 更新了這位客戶的資料';
+    b.hidden = false;
+  }
+  function hideConflict() {
+    const b = $('ftConflictBanner');
+    if (b) b.hidden = true;
+  }
+  function showLocalOffer() {
+    const b = $('ftLocalBanner');
+    if (b) b.hidden = false;
+  }
+  function hideLocalOffer() {
+    const b = $('ftLocalBanner');
+    if (b) b.hidden = true;
+  }
+  function scheduleRetry() {
+    clearTimeout(retryTimer);
+    const waits = [2000, 4000, 8000, 16000, 30000];
+    const ms = waits[Math.min(retryN, waits.length - 1)];
+    retryN++;
+    retryTimer = setTimeout(function () { saveNow(); }, ms);
+  }
+  function reviewFields() {
+    try {
+      if (window.__fintrack && window.__fintrack.reviewDates) return window.__fintrack.reviewDates();
+    } catch (e) {}
+    return { lastReviewDate: '', nextReviewDate: '' };
+  }
+  function onRemoteDoc(doc) {
+    if (!doc || hydrating) return;
+    if (doc.sessionId && doc.sessionId === mySession) {
+      if ((doc.rev || 0) > loadedRev) loadedRev = doc.rev;
+      return;
+    }
+    const newer = (doc.rev || 0) > loadedRev || (doc.updatedAt || 0) > (lastSavedAt || 0);
+    if (!newer) return;
+    const otherPerson = !!(doc.updatedBy && doc.updatedBy !== email);
+    const otherSession = !doc.sessionId || doc.sessionId !== mySession;
+    if (otherPerson || otherSession) showConflict(doc);
+  }
+
   async function saveNow() {
     if (!booted || hydrating || !store || !crmClient) return;
+    if (pauseAuto && !keepMine) return;
     if (saving) { pending = true; return; }
     const snap = exportSnap();
     const json = JSON.stringify(snap);
-    if (json === lastJson) {
+    if (json === lastJson && !keepMine) {
       setStatus(lastSavedAt ? 'saved' : '', lastSavedAt ? ('已儲存 ' + clock(lastSavedAt)) : '尚未儲存');
+      hideOffline();
+      return;
+    }
+    if (browserOffline()) {
+      writeLocal(snap);
+      showOffline('offline');
+      setStatus('err', '儲存失敗', 'offline');
+      scheduleRetry();
       return;
     }
     saving = true;
     setStatus('saving', '儲存中');
     try {
       const prev = await store.loadDoc(teamId, clientId);
+      if (prev && (prev.rev || 0) > loadedRev && !keepMine && !(prev.sessionId && prev.sessionId === mySession)) {
+        showConflict(prev);
+        writeLocal(snap);
+        setStatus('err', '儲存失敗', 'conflict');
+        return;
+      }
       const now = Date.now();
+      const dates = reviewFields();
       const data = {
         snap: snap,
         clientId: clientId,
@@ -2596,32 +2766,127 @@ setTab(TAB,false);renderAll();
         clientBirthday: crmClient.birthday || '',
         updatedAt: now,
         updatedBy: email,
+        sessionId: mySession,
+        lastReviewDate: dates.lastReviewDate || '',
+        nextReviewDate: dates.nextReviewDate || '',
         rev: ((prev && prev.rev) || 0) + 1
       };
       await store.saveDoc(teamId, clientId, data);
       await rememberVersion(snap);
+      loadedRev = data.rev;
       lastJson = json;
       lastSavedAt = now;
+      keepMine = false;
+      pauseAuto = false;
+      pendingRemote = null;
+      retryN = 0;
+      clearTimeout(retryTimer);
+      clearLocal();
+      hideOffline();
+      hideConflict();
       setStatus('saved', '已儲存 ' + clock(now));
     } catch (e) {
       console.error(e);
+      writeLocal(snap);
       const code = (e && e.code) ? String(e.code) : '';
       const msg = (e && e.message) ? String(e.message) : '';
       const detail = [code, msg].filter(Boolean).join(' ') || '未知錯誤';
+      showOffline(detail);
       setStatus('err', '儲存失敗', detail);
+      scheduleRetry();
     } finally {
       saving = false;
-      if (pending) { pending = false; scheduleSave(30); }
+      if (pending) { pending = false; if (!(pauseAuto && !keepMine)) scheduleSave(30); }
     }
   }
 
   function scheduleSave(ms) {
     if (!booted || hydrating || window.__ftHydrating) return;
+    try {
+      const snap = exportSnap();
+      if (JSON.stringify(snap) !== lastJson) writeLocal(snap);
+    } catch (e) {}
+    if (pauseAuto && !keepMine) return;
+    if (browserOffline()) {
+      showOffline('offline');
+      setStatus('err', '儲存失敗', 'offline');
+      scheduleRetry();
+      return;
+    }
     setStatus('saving', '儲存中');
     clearTimeout(timer);
     timer = setTimeout(saveNow, ms == null ? SAVE_MS : ms);
   }
   window.__ftAfterRender = function () { scheduleSave(); };
+  window.addEventListener('online', function () {
+    if (!booted) return;
+    window.__ftForceOffline = false;
+    retryN = 0;
+    if (pauseAuto && !keepMine) return;
+    saveNow();
+  });
+  window.addEventListener('offline', function () {
+    if (!booted) return;
+    window.__ftForceOffline = true;
+    try {
+      const snap = exportSnap();
+      if (JSON.stringify(snap) !== lastJson) writeLocal(snap);
+    } catch (e) {}
+    if (JSON.stringify(exportSnap()) !== lastJson) {
+      showOffline('offline');
+      setStatus('err', '儲存失敗', 'offline');
+    }
+  });
+  window.addEventListener('beforeunload', function (e) {
+    if (!booted) return;
+    let dirty = false;
+    try { dirty = JSON.stringify(exportSnap()) !== lastJson; } catch (err) { dirty = true; }
+    const banner = $('ftOfflineBanner');
+    if (dirty || (banner && !banner.hidden)) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  async function loadLatest() {
+    const doc = pendingRemote;
+    if (!doc || !doc.snap) { pauseAuto = false; hideConflict(); return; }
+    window.__ftHydrating = true;
+    hydrating = true;
+    try {
+      window.__fintrack.ftImportState(doc.snap);
+      if (crmClient) window.__fintrack.ftSeedClient(crmClient.name, crmClient.birthday);
+    } finally {
+      hydrating = false;
+      window.__ftHydrating = false;
+    }
+    loadedRev = doc.rev || loadedRev;
+    lastSavedAt = doc.updatedAt || lastSavedAt;
+    lastJson = JSON.stringify(exportSnap());
+    clearLocal();
+    keepMine = false;
+    pauseAuto = false;
+    pendingRemote = null;
+    hideConflict();
+    hideOffline();
+    setStatus(lastSavedAt ? 'saved' : '', lastSavedAt ? ('已儲存 ' + clock(lastSavedAt)) : '尚未儲存');
+  }
+  async function restoreLocal() {
+    const local = readLocal();
+    if (!local || !local.snap) { hideLocalOffer(); return; }
+    window.__ftHydrating = true;
+    hydrating = true;
+    try {
+      window.__fintrack.ftImportState(local.snap);
+      if (crmClient) window.__fintrack.ftSeedClient(crmClient.name, crmClient.birthday);
+    } finally {
+      hydrating = false;
+      window.__ftHydrating = false;
+    }
+    hideLocalOffer();
+    lastJson = '';
+    await saveNow();
+  }
 
   document.addEventListener('input', function (e) {
     if (e.target && e.target.closest && e.target.closest('#ftGate,#ftVerPanel')) return;
@@ -2673,6 +2938,28 @@ setTab(TAB,false);renderAll();
       if (panel && !panel.hidden) { panel.hidden = true; return; }
       openVersions();
     };
+    const menuBtn = $('ftMenuBtn');
+    const actions = $('ftTopActions');
+    if (menuBtn && actions) {
+      menuBtn.onclick = function () {
+        const open = actions.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      actions.addEventListener('click', function () {
+        if (window.matchMedia('(max-width: 640px)').matches) {
+          actions.classList.remove('open');
+          menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+    const loadBtn = $('ftLoadLatest');
+    if (loadBtn) loadBtn.onclick = loadLatest;
+    const keepBtn = $('ftKeepMine');
+    if (keepBtn) keepBtn.onclick = function () { keepMine = true; pauseAuto = false; hideConflict(); saveNow(); };
+    const restoreBtn = $('ftLocalRestore');
+    if (restoreBtn) restoreBtn.onclick = restoreLocal;
+    const skipBtn = $('ftLocalSkip');
+    if (skipBtn) skipBtn.onclick = function () { skipLocalOffer = true; hideLocalOffer(); };
     const out = $('ftLogoutBtn');
     if (out) out.onclick = doLogout;
     const form = $('ftLogin');
@@ -2802,7 +3089,8 @@ setTab(TAB,false);renderAll();
             clientName: crmClient.name,
             clientBirthday: crmClient.birthday || '',
             updatedAt: Date.now(),
-            updatedBy: email
+            updatedBy: email,
+            sessionId: mySession
           }));
         } catch (e) { console.warn('refresh agentName', e); }
       }
@@ -2812,16 +3100,26 @@ setTab(TAB,false);renderAll();
     }
     lastJson = JSON.stringify(exportSnap());
     lastSavedAt = (existing && existing.updatedAt) || 0;
+    loadedRev = (existing && existing.rev) || 0;
     booted = true;
     setStatus(existing ? 'saved' : '', existing ? ('已儲存 ' + clock(existing.updatedAt || Date.now())) : '尚未儲存');
     gate('ready');
+    const local = readLocal();
+    if (!skipLocalOffer && local && local.snap && local.at > lastSavedAt) showLocalOffer();
+    if (store.watchDoc) {
+      try { store.watchDoc(teamId, clientId, onRemoteDoc); } catch (e) {}
+    }
     if (TEST) {
       window.__ftDebug = {
         flush: saveNow,
         listVersions: function () { return store.listVersions(teamId, clientId); },
         exportState: exportSnap,
         canAccess: canAccessClient,
-        checkFirestore: function (value) { assertNoNestedArrays(value, false); }
+        checkFirestore: function (value) { assertNoNestedArrays(value, false); },
+        injectRemote: function (extra) { return store.injectRemote(teamId, clientId, extra); },
+        localUnsaved: readLocal,
+        loadedRev: function () { return loadedRev; },
+        sessionId: function () { return mySession; }
       };
     }
   }
@@ -2872,6 +3170,7 @@ setTab(TAB,false);renderAll();
   }
 
   function sessionStore() {
+    const watchers = [];
     function key(tid, cid) { return 'ftmock:v1:' + tid + ':' + cid; }
     function read(tid, cid) {
       try { return JSON.parse(sessionStorage.getItem(key(tid, cid)) || 'null') || { doc: null, versions: [] }; }
@@ -2907,6 +3206,49 @@ setTab(TAB,false);renderAll();
         const bag = read(tid, cid);
         bag.versions = bag.versions.filter(function (v) { return v.id !== id; });
         write(tid, cid, bag);
+      },
+      watchDoc: function (tid, cid, cb) {
+        watchers.push({ tid: tid, cid: cid, cb: cb });
+        return function () {
+          for (let i = watchers.length - 1; i >= 0; i--) {
+            if (watchers[i].cb === cb) watchers.splice(i, 1);
+          }
+        };
+      },
+      injectRemote: function (tid, cid, extra) {
+        extra = extra || {};
+        const bag = read(tid, cid);
+        const prev = unpackStored(bag.doc) || {};
+        const snap = extra.snap || prev.snap || null;
+        const data = {
+          snap: snap,
+          clientId: cid,
+          teamId: tid,
+          agentName: prev.agentName || '',
+          clientName: prev.clientName || '',
+          clientBirthday: prev.clientBirthday || '',
+          updatedAt: extra.updatedAt || Date.now(),
+          updatedBy: extra.updatedBy || 'other@example.com',
+          sessionId: extra.sessionId || 'remote-session',
+          lastReviewDate: prev.lastReviewDate || '',
+          nextReviewDate: prev.nextReviewDate || '',
+          rev: (prev.rev || 0) + 1
+        };
+        const packed = packStored(data);
+        bag.doc = packed;
+        if (snap) {
+          bag.versions.push(Object.assign({ id: 'vremote' + Date.now().toString(36) }, packStored({
+            savedAt: data.updatedAt,
+            savedBy: data.updatedBy,
+            snap: snap
+          })));
+        }
+        write(tid, cid, bag);
+        const view = unpackStored(packed);
+        watchers.forEach(function (w) {
+          if (w.tid === tid && w.cid === cid) w.cb(view);
+        });
+        return view;
       }
     };
   }
@@ -2974,6 +3316,11 @@ setTab(TAB,false);renderAll();
       },
       deleteVersion: async function (tid, cid, id) {
         await fs.deleteDoc(fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack', cid, 'versions', id));
+      },
+      watchDoc: function (tid, cid, cb) {
+        return fs.onSnapshot(finRef(tid, cid), function (snap) {
+          cb(snap.exists() ? unpackStored(snap.data()) : null);
+        }, function () {});
       }
     };
   }
