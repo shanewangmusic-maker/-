@@ -43,6 +43,7 @@
         .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
         /* v19：搜尋框改為 type="search"（減少瀏覽器自動填入），隱藏 Chrome 內建清除鈕，外觀維持 v18 */
         #searchInput::-webkit-search-cancel-button, #atAddSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+        a.fintrack-open, a.fintrack-open:hover { text-decoration: none; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -544,6 +545,7 @@
             <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col h-[90vh] max-h-[800px] animate-in fade-in zoom-in duration-200 overflow-hidden">
                 <div class="bg-[#1E2E3D] text-white px-6 py-4 flex justify-between items-center rounded-t-2xl flex-shrink-0">
                     <h3 class="font-bold font-editorial text-lg flex items-center gap-2"><i class="fa-solid fa-user-gear text-[#D4AF37]"></i> 編輯資料</h3>
+                    <a id="fintrackEditLink" href="fintrack.html" target="_blank" rel="noopener" class="fintrack-open ml-auto mr-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4AF37] text-[#1E2E3D] hover:bg-[#e3c25a]">財務規劃與追蹤</a>
                     <button onclick="closeModal('editCustomerModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 
@@ -827,6 +829,7 @@
             <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
                 <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0">
                     <h3 class="font-bold font-editorial text-lg flex items-center gap-2"><i class="fa-solid fa-seedling text-[#D4AF37]"></i> <span id="leadModalTitle">新增名單</span></h3>
+                    <a id="leadFintrackLink" href="fintrack.html" target="_blank" rel="noopener" class="fintrack-open hidden ml-auto mr-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4AF37] text-[#1E2E3D] hover:bg-[#e3c25a]">財務規劃與追蹤</a>
                     <button type="button" onclick="closeModal('leadModal')" class="text-white/80 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <form id="leadForm" onsubmit="handleLeadSave(event)" class="flex flex-col flex-1 overflow-hidden">
@@ -3335,6 +3338,13 @@
             return out.join('');
         }
 
+        function fintrackHref(id) {
+            return 'fintrack.html?client=' + encodeURIComponent(id || '');
+        }
+        function fintrackBtn(id) {
+            return '<a href="' + fintrackHref(id) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="fintrack-open inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[#1E2E3D] text-[#1E2E3D] bg-white hover:bg-[#1E2E3D] hover:text-white transition whitespace-nowrap" title="開啟此客戶的財務規劃與追蹤"><i class="fa-solid fa-chart-line"></i> 財務規劃與追蹤</a>';
+        }
+
         function leadRowHtml(c, curMonth) {
             const sk = leadStageOf(c), st = LEAD_STAGE_MAP[sk];
             const idx = LEAD_STAGES.findIndex(s => s.key === sk);
@@ -3381,6 +3391,7 @@
                         <button onclick="quickSetLeadDate('${id}', 'year')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">一年</button>
                     </div>
                 <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
+                        ${fintrackBtn(c.id)}
                         <button onclick="openLeadContacts('${id}')" class="lead-contacts text-rose-500 hover:text-rose-700 transition px-1.5 py-1 text-xs font-bold whitespace-nowrap" title="聯絡紀錄（${ctN} 筆）"><i class="fa-regular fa-comments"></i>${ctN ? ' ' + ctN : ''}</button>
                         ${coreC ? `<button onclick="leadViewCore('${id}')" class="lead-viewcore bg-slate-50 text-[#1E2E3D] border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-[#1E2E3D] hover:text-white transition shadow-sm whitespace-nowrap" title="開啟核心看板中的這位客戶（多單時先選哪一單）">查看核心客戶</button><button onclick="activateLead('${id}')" class="lead-adddeal bg-white text-emerald-700 border border-emerald-200 px-1.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition whitespace-nowrap" title="再為這位新增一單核心客戶（會先確認）">＋單</button>` : `<button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用＝加入核心看板（一畝田仍保留）：${esc(lastLabel)}">啟用 ➔</button>`}
                         <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -3587,6 +3598,11 @@
             $('leadForm').reset();
             $('leadId').value = c ? c.id : '';
             $('leadModalTitle').textContent = c ? '編輯名單' : '新增名單';
+            var leadFt = document.getElementById('leadFintrackLink');
+            if (leadFt) {
+                if (c) { leadFt.href = fintrackHref(c.id); leadFt.classList.remove('hidden'); }
+                else leadFt.classList.add('hidden');
+            }
             $('leadDeleteBtn').classList.toggle('hidden', !c);
             $('leadContactsRow').classList.toggle('hidden', !c);
             if (c) { const n = leadRecFlat(c).filter(function (x) { return x.ct && typeof x.ct === 'object'; }).length, lc = leadLastContact(c); $('leadContactsSummary').textContent = n + ' 筆' + (lc ? '（最近 ' + lc + '）' : ''); }
@@ -3982,6 +3998,7 @@
                                             ` : `<span class="text-xs text-slate-300">- 不適用 -</span>`}
                                         </td>
                                         <td class="p-3 text-center space-x-1">
+                                            ${fintrackBtn(c.id)}
                                             <button onclick="reactivateCustomer('${c.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition shadow-sm">重新啟用</button>
                                             <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600 transition px-2 py-1" title="編輯詳情"><i class="fa-regular fa-pen-to-square"></i></button>
                                             <button onclick="deleteLead('${c.id}')" class="text-slate-300 hover:text-rose-500 transition px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>
@@ -4035,6 +4052,7 @@
                                             </td>
                                             <td class="p-3 text-center">
                                                 <div class="flex justify-center items-center gap-2">
+                                                    ${fintrackBtn(c.id)}
                                                     <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                                                     <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
                                                     ${recruitOrder.indexOf(c.progress) + 1 < recruitOrder.length ? `<button onclick="quickAdvance('${c.id}', '${recruitOrder[recruitOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<span class="text-[10px] text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded">已報聘</span>`}
@@ -4078,7 +4096,7 @@
                                     ${getTagsHtml(c.tags)}
                                     <p class="line-clamp-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200 mt-2">${esc(c.notes || '無備註')}</p>
                                 </div>
-                                <div class="px-5 py-3 bg-slate-50 border-t border-slate-150 flex gap-2"><button onclick="openFollowUpModal('${c.id}')" class="flex-[0.6] py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-200 transition"><i class="fa-solid fa-clock-rotate-left"></i> 歷程</button>${actBtn}</div>
+                                <div class="px-5 py-3 bg-slate-50 border-t border-slate-150 flex gap-2 flex-wrap">${fintrackBtn(c.id)}<button onclick="openFollowUpModal('${c.id}')" class="flex-[0.6] py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-200 transition"><i class="fa-solid fa-clock-rotate-left"></i> 歷程</button>${actBtn}</div>
                             </div>`;
                     }).join('')}</div>`;
                 }
@@ -4126,6 +4144,7 @@
                                         </td>
                                         <td class="p-3 text-center">
                                             <div class="flex justify-center items-center gap-2">
+                                                ${fintrackBtn(c.id)}
                                                 <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                                                 <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
                                                 ${c.category==='NEW' ? (stageOrder.indexOf(c.progress) + 1 < stageOrder.length ? `<button onclick="quickAdvance('${c.id}', '${stageOrder[stageOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<button onclick="openQuickWon('${c.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded hover:bg-emerald-700 transition shadow-sm">轉成交</button>`) : `<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">結案</span>`}
@@ -4188,7 +4207,7 @@
                                 ${getTagsHtml(c.tags)}
                                 ${detHtml}
                             </div>
-                            <div class="px-5 py-3 bg-slate-50 border-t border-slate-150 flex gap-2"><button onclick="openFollowUpModal('${c.id}')" class="flex-[0.6] py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-200 transition"><i class="fa-solid fa-clock-rotate-left"></i> 歷程</button>${actBtn}</div>
+                            <div class="px-5 py-3 bg-slate-50 border-t border-slate-150 flex gap-2 flex-wrap">${fintrackBtn(c.id)}<button onclick="openFollowUpModal('${c.id}')" class="flex-[0.6] py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-200 transition"><i class="fa-solid fa-clock-rotate-left"></i> 歷程</button>${actBtn}</div>
                         </div>`;
                 }).join('')}</div>`;
             }
@@ -4322,6 +4341,8 @@
         function openEditModal(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
             document.getElementById('editId').value = c.id;
+            var ftLink = document.getElementById('fintrackEditLink');
+            if (ftLink) ftLink.href = fintrackHref(c.id);
             tempLinks = Array.isArray(c.links) ? c.links.map(function (l) { return { name: l.name, url: l.url }; }) : [];
             renderEditLinks();
             document.getElementById('editCreatedAt').value = c.createdAt.substring(0,10);
