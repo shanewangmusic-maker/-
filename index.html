@@ -44,6 +44,10 @@
         /* v19：搜尋框改為 type="search"（減少瀏覽器自動填入），隱藏 Chrome 內建清除鈕，外觀維持 v18 */
         #searchInput::-webkit-search-cancel-button, #atAddSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
         a.fintrack-open, a.fintrack-open:hover { text-decoration: none; }
+        .fintrack-pair { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: 100%; vertical-align: middle; }
+        .fintrack-dates { font-size: 10px; line-height: 1.35; color: #64748b; font-weight: 600; white-space: nowrap; }
+        .fintrack-dates.soon { color: #b45309; }
+        @media (max-width: 640px) { .fintrack-dates { white-space: normal; } }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -3341,8 +3345,24 @@
         function fintrackHref(id) {
             return 'fintrack.html?client=' + encodeURIComponent(id || '');
         }
+        function fintrackRoc(iso) {
+            if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+            var p = iso.split('-');
+            return String(Number(p[0]) - 1911) + '.' + p[1] + '.' + p[2];
+        }
+        function fintrackDateNote(id) {
+            var d = (window.fintrackDateMap || {})[id];
+            if (!d || (!d.last && !d.next)) return '';
+            var soon = false;
+            if (d.next && /^\d{4}-\d{2}-\d{2}$/.test(d.next)) {
+                var t = new Date(d.next + 'T00:00:00');
+                var now = new Date(); now.setHours(0, 0, 0, 0);
+                if ((t - now) / 86400000 <= 7) soon = true;
+            }
+            return '<span class="fintrack-dates' + (soon ? ' soon' : '') + '">上次檢視 ' + (fintrackRoc(d.last) || '—') + ' ・ 下次 ' + (fintrackRoc(d.next) || '—') + '</span>';
+        }
         function fintrackBtn(id) {
-            return '<a href="' + fintrackHref(id) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="fintrack-open inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[#1E2E3D] text-[#1E2E3D] bg-white hover:bg-[#1E2E3D] hover:text-white transition whitespace-nowrap" title="開啟此客戶的財務規劃與追蹤"><i class="fa-solid fa-chart-line"></i> 財務規劃與追蹤</a>';
+            return '<span class="fintrack-pair"><a href="' + fintrackHref(id) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="fintrack-open inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[#1E2E3D] text-[#1E2E3D] bg-white hover:bg-[#1E2E3D] hover:text-white transition whitespace-nowrap" title="開啟此客戶的財務規劃與追蹤"><i class="fa-solid fa-chart-line"></i> 財務規劃與追蹤</a>' + fintrackDateNote(id) + '</span>';
         }
 
         function leadRowHtml(c, curMonth) {
@@ -6222,6 +6242,21 @@
 
             // Undo/Redo 與損益儲存共用同一條安全通道
             window.syncToCloudForce = function() { saveToCloud(); };
+            loadFintrackSummaries(teamId);
+        }
+
+        function loadFintrackSummaries(teamId) {
+            var col = collection(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', teamId, 'fintrack');
+            getDocs(col).then(function (snap) {
+                var map = {};
+                snap.forEach(function (d) {
+                    var data = d.data() || {};
+                    if (!data.lastReviewDate && !data.nextReviewDate) return;
+                    map[d.id] = { last: data.lastReviewDate || '', next: data.nextReviewDate || '' };
+                });
+                window.fintrackDateMap = map;
+                try { if (typeof renderApp === 'function') renderApp(); } catch (e) {}
+            }).catch(function (e) { console.warn('fintrack dates', e); });
         }
 
         function loginErrorText(err) {
