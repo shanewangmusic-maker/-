@@ -116,7 +116,7 @@ function firestoreBase_() {
 }
 
 function authHeader_(token) {
-  return { Authorization: 'Bearer ' + token, muteHttpExceptions: true };
+  return { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true };
 }
 
 function readDocument_(token, path) {
