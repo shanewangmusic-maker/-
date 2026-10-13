@@ -898,6 +898,8 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 #ftSaveState.saving{color:#fff;border-style:solid;border-color:#D4AF37}
 #ftSaveState.saved{color:#d7f5e4;border-style:solid;border-color:rgba(215,245,228,.7)}
 #ftSaveState.err{color:#ffd0c8;border-style:solid;border-color:#b4483a}
+#ftSaveErr{color:#ffd0c8;font-size:11px;max-width:320px;line-height:1.35}
+#ftSaveErr[hidden]{display:none!important}
 @media print{#ftGate,#ftVerPanel{display:none!important}}
 </style>
 </head>
@@ -929,6 +931,7 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 <div class="topbar"><div class="topbar-in">
   <div class="brand"><span class="eyebrow">御謙VIP菁英會 · 顧問工具 · 顧問 王盛嶢</span><h1>財務規劃<em> ・ </em>定期追蹤</h1></div>
   <span id="ftSaveState" class="mock-tag">準備中</span>
+  <span id="ftSaveErr" hidden></span>
   <button type="button" class="tbtn edit-only" id="btnVersions">版本紀錄</button>
   <a class="tbtn" href="index.html">回到 CRM</a>
   <button class="tbtn" id="btnPdf" title="匯出完整規劃書（在列印視窗選「另存為 PDF」）">⤓ 匯出 PDF</button>
@@ -2127,7 +2130,6 @@ function renderGoals(P){
           <div class="ratio"><div class="top"><span>自己累積 實際/預期</span><b style="color:${sr<.97?'var(--warn)':'inherit'}">${pct(sr)}</b></div><div class="trk"><div style="width:${clamp(sr/1.2,0,1)*100}%;background:${sr<.97?'#c8742e':g.c}"></div><i></i></div></div></div>
         ${wdBoxHTML(k,null)}<div class="insight">${icon('bulb',16)}<span>${insight(k,v,P)}</span></div></div>
     </div></article>`;}).join('');
-  if(!S.selected.length)$('goals').innerHTML='<div class="goals-empty"><div class="eb-t">先點選客戶在意的需求</div><div class="eb-s">在上方六個需求中點選客戶最放在心上的項目，點選順序就是優先順序；選好後在卡片上填入目標與期初累積。</div></div>';
   const G=$('goals');
   G.querySelectorAll('[data-sugo]').forEach(b=>b.onclick=()=>{const k=b.dataset.sugo,g=GOALS[k];const card=b.closest('.goal');const vals={};card.querySelectorAll('[data-su]').forEach(e=>vals[e.dataset.su]=e.type==='number'?(e.value===''?0:Number(e.value)):e.value.trim());
     if(!(vals.target>0)){$('suMsg-'+k).innerHTML='<b style="color:var(--warn)">請先填入目標金額（大於 0）</b>';return;}
@@ -2446,7 +2448,9 @@ setTab(TAB,false);renderAll();
 /* Per-client persistence. Same Firebase project and login as index.html.
    Doc: artifacts/youtrend-crm/public/data/global_state/{teamId}/fintrack/{clientId}
    Versions: .../fintrack/{clientId}/versions/{id}  (newest 20)
-   Test seam: window.__FT_TEST = { mock:true, ... } uses sessionStorage and never calls Firebase. */
+   Test seam: window.__FT_TEST = { mock:true, ... } uses sessionStorage and never calls Firebase.
+   Snapshots are stored as a snapJson string. Firestore rejects nested arrays, and the
+   exported state contains them (estate rate brackets, family parts, tax steps). */
 (function () {
   const OWNER_EMAIL = 'shanewangmusic@gmail.com';
   const APP_ID = 'youtrend-crm';
@@ -2506,12 +2510,23 @@ setTab(TAB,false);renderAll();
   let crmClient = null;
   let authApi = null;
 
-  function setStatus(kind, text) {
+  function setStatus(kind, text, detail) {
     const el = $('ftSaveState');
     if (!el) return;
     el.classList.remove('saving', 'saved', 'err');
     if (kind) el.classList.add(kind);
     el.textContent = text;
+    const err = $('ftSaveErr');
+    if (err) {
+      if (kind === 'err' && detail) {
+        err.hidden = false;
+        err.textContent = detail;
+      } else {
+        err.hidden = true;
+        err.textContent = '';
+      }
+    }
+    el.title = (kind === 'err' && detail) ? detail : '';
   }
 
   function gate(mode, title, msg) {
@@ -2590,10 +2605,10 @@ setTab(TAB,false);renderAll();
       setStatus('saved', '已儲存 ' + clock(now));
     } catch (e) {
       console.error(e);
-      const code = (e && (e.code || e.message)) || '未知錯誤';
-      setStatus('err', '儲存失敗');
-      const el = $('ftSaveState');
-      if (el) el.title = String(code);
+      const code = (e && e.code) ? String(e.code) : '';
+      const msg = (e && e.message) ? String(e.message) : '';
+      const detail = [code, msg].filter(Boolean).join(' ') || '未知錯誤';
+      setStatus('err', '儲存失敗', detail);
     } finally {
       saving = false;
       if (pending) { pending = false; scheduleSave(30); }
@@ -2805,7 +2820,8 @@ setTab(TAB,false);renderAll();
         flush: saveNow,
         listVersions: function () { return store.listVersions(teamId, clientId); },
         exportState: exportSnap,
-        canAccess: canAccessClient
+        canAccess: canAccessClient,
+        checkFirestore: function (value) { assertNoNestedArrays(value, false); }
       };
     }
   }
@@ -2822,6 +2838,39 @@ setTab(TAB,false);renderAll();
     }
   }
 
+  function assertNoNestedArrays(value, inArray) {
+    if (value == null || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      if (inArray) {
+        const err = new Error('Nested arrays are not supported');
+        err.code = 'invalid-argument';
+        throw err;
+      }
+      value.forEach(function (v) { assertNoNestedArrays(v, true); });
+      return;
+    }
+    Object.keys(value).forEach(function (k) { assertNoNestedArrays(value[k], false); });
+  }
+
+  function packStored(data) {
+    const cloned = JSON.parse(JSON.stringify(data));
+    if (cloned.snap && typeof cloned.snap === 'object') {
+      cloned.snapJson = JSON.stringify(cloned.snap);
+      delete cloned.snap;
+    }
+    assertNoNestedArrays(cloned, false);
+    return cloned;
+  }
+
+  function unpackStored(data) {
+    if (!data) return null;
+    const out = Object.assign({}, data);
+    if (typeof out.snapJson === 'string' && out.snapJson) {
+      try { out.snap = JSON.parse(out.snapJson); } catch (e) {}
+    }
+    return out;
+  }
+
   function sessionStore() {
     function key(tid, cid) { return 'ftmock:v1:' + tid + ':' + cid; }
     function read(tid, cid) {
@@ -2834,19 +2883,25 @@ setTab(TAB,false);renderAll();
         if (TEST.teamId && tid !== String(TEST.teamId).toUpperCase()) return { members: [], cust: [] };
         return { members: (TEST.crm && TEST.crm.members) || [], cust: (TEST.crm && TEST.crm.cust) || [] };
       },
-      loadDoc: async function (tid, cid) { return read(tid, cid).doc; },
+      loadDoc: async function (tid, cid) { return unpackStored(read(tid, cid).doc); },
       saveDoc: async function (tid, cid, data) {
-        const bag = read(tid, cid); bag.doc = JSON.parse(JSON.stringify(data)); write(tid, cid, bag);
+        if (TEST && TEST.failSave) {
+          const spec = TEST.failSave;
+          const err = new Error(spec.message || 'forced save failure');
+          err.code = spec.code || 'invalid-argument';
+          throw err;
+        }
+        const bag = read(tid, cid); bag.doc = packStored(data); write(tid, cid, bag);
       },
       addVersion: async function (tid, cid, version) {
         const bag = read(tid, cid);
         const id = 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        bag.versions.push(Object.assign({ id: id }, JSON.parse(JSON.stringify(version))));
+        bag.versions.push(Object.assign({ id: id }, packStored(version)));
         write(tid, cid, bag);
         return id;
       },
       listVersions: async function (tid, cid) {
-        return read(tid, cid).versions.slice().sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+        return read(tid, cid).versions.slice().sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); }).map(unpackStored);
       },
       deleteVersion: async function (tid, cid, id) {
         const bag = read(tid, cid);
@@ -2900,20 +2955,20 @@ setTab(TAB,false);renderAll();
       },
       loadDoc: async function (tid, cid) {
         const snap = await fs.getDoc(finRef(tid, cid));
-        return snap.exists() ? snap.data() : null;
+        return snap.exists() ? unpackStored(snap.data()) : null;
       },
       saveDoc: async function (tid, cid, data) {
-        await fs.setDoc(finRef(tid, cid), JSON.parse(JSON.stringify(data)));
+        await fs.setDoc(finRef(tid, cid), packStored(data));
       },
       addVersion: async function (tid, cid, version) {
         const ref = fs.doc(verCol(tid, cid));
-        await fs.setDoc(ref, JSON.parse(JSON.stringify(version)));
+        await fs.setDoc(ref, packStored(version));
         return ref.id;
       },
       listVersions: async function (tid, cid) {
         const snap = await fs.getDocs(verCol(tid, cid));
         const rows = [];
-        snap.forEach(function (d) { rows.push(Object.assign({ id: d.id }, d.data())); });
+        snap.forEach(function (d) { rows.push(unpackStored(Object.assign({ id: d.id }, d.data()))); });
         rows.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
         return rows;
       },
