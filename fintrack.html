@@ -2130,7 +2130,6 @@ function renderGoals(P){
           <div class="ratio"><div class="top"><span>自己累積 實際/預期</span><b style="color:${sr<.97?'var(--warn)':'inherit'}">${pct(sr)}</b></div><div class="trk"><div style="width:${clamp(sr/1.2,0,1)*100}%;background:${sr<.97?'#c8742e':g.c}"></div><i></i></div></div></div>
         ${wdBoxHTML(k,null)}<div class="insight">${icon('bulb',16)}<span>${insight(k,v,P)}</span></div></div>
     </div></article>`;}).join('');
-  if(!S.selected.length)$('goals').innerHTML='<div class="goals-empty"><div class="eb-t">先點選客戶在意的需求</div><div class="eb-s">在上方六個需求中點選客戶最放在心上的項目，點選順序就是優先順序；選好後在卡片上填入目標與期初累積。</div></div>';
   const G=$('goals');
   G.querySelectorAll('[data-sugo]').forEach(b=>b.onclick=()=>{const k=b.dataset.sugo,g=GOALS[k];const card=b.closest('.goal');const vals={};card.querySelectorAll('[data-su]').forEach(e=>vals[e.dataset.su]=e.type==='number'?(e.value===''?0:Number(e.value)):e.value.trim());
     if(!(vals.target>0)){$('suMsg-'+k).innerHTML='<b style="color:var(--warn)">請先填入目標金額（大於 0）</b>';return;}
