@@ -6281,7 +6281,15 @@
                 const teamId = localStorage.getItem('crm_team_id');
                 if (teamId) {
                     hideLogin();
-                    document.getElementById('loadingOverlay').classList.remove('hidden');
+                    // 財務規劃與追蹤開新視窗會再初始化 Firebase，這個監聽會再跑一次。
+                    // 工作區已經接上時不要再掀開載入層：hideOverlay 已把透明度設成 0，
+                    // 再拿掉 hidden 會留下一塊看不見、但蓋住整頁的遮罩。
+                    if (cloudAttached) return;
+                    const overlay = document.getElementById('loadingOverlay');
+                    if (overlay) {
+                        overlay.style.opacity = '1';
+                        overlay.classList.remove('hidden');
+                    }
                     attachCloud(teamId);
                 } else {
                     showLogin();
