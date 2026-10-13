@@ -908,7 +908,19 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 .ft-banner-actions{display:flex;gap:8px;margin-left:auto}
 .ft-banner button{border:1px solid #c7a15a;background:#fff;color:#6b4e16;border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer}
 .ft-banner button.primary{background:#1E2E3D;color:#fff;border-color:#1E2E3D}
-#ftOfflineBanner[hidden],#ftConflictBanner[hidden],#ftLocalBanner[hidden]{display:none!important}
+#ftOfflineBanner[hidden],#ftConflictBanner[hidden],#ftLocalBanner[hidden],#ftReviewDlg[hidden],#ftReviewErr[hidden],#btnExportAll[hidden]{display:none!important}
+.ft-dlg{position:fixed;inset:0;z-index:90;background:rgba(30,46,61,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.ft-dlg-card{width:min(420px,100%);max-height:calc(100% - 8px);overflow:auto;background:#fff;color:var(--ink);border-radius:16px;padding:20px 18px;border:1px solid var(--line);box-shadow:0 18px 50px rgba(30,46,61,.28)}
+.ft-dlg-card h3{font-size:20px}
+.ft-dlg-card .hint{margin:8px 0 0;color:var(--ink-2);font-size:13px;line-height:1.5}
+.ft-dlg-card label{display:block;margin-top:14px;font-size:12px;color:var(--muted);font-weight:600}
+.ft-dlg-card input{width:100%;margin-top:6px;border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:16px;color:var(--ink);background:#fff}
+.ft-dlg-card .next{margin:12px 0 0;font-size:14px}
+.ft-dlg-card .err{color:var(--warn);font-size:12.5px;margin:8px 0 0}
+.ft-dlg-card .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.ft-dlg-card button{border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer;border:1px solid var(--line-2);background:#fff;color:var(--ink)}
+.ft-dlg-card button.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+@media print{#ftReviewDlg,#btnExportAll{display:none!important}}
 @media (max-width:640px){
   body{padding-bottom:72px;overflow-x:hidden}
   .wrap{padding:16px 12px 28px;max-width:100%}
@@ -976,6 +988,8 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
   <span id="ftSaveErr" hidden></span>
   <button type="button" class="tbtn ft-mobile-only" id="ftMenuBtn" aria-expanded="false" aria-controls="ftTopActions">選單</button>
   <div class="top-actions" id="ftTopActions">
+    <button type="button" class="tbtn edit-only" id="btnFinishReview">完成本期檢視</button>
+    <button type="button" class="tbtn" id="btnExportAll" hidden>匯出全部備份</button>
     <button type="button" class="tbtn edit-only" id="btnVersions">版本紀錄</button>
     <a class="tbtn" href="index.html">回到 CRM</a>
     <button class="tbtn" id="btnPdf" title="匯出完整規劃書（在列印視窗選「另存為 PDF」）">⤓ 匯出 PDF</button>
@@ -986,6 +1000,18 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
 <div id="ftConflictBanner" class="ft-banner" hidden><p id="ftConflictText" style="margin:0;flex:1"></p><div class="ft-banner-actions"><button type="button" id="ftLoadLatest" class="primary">載入最新</button><button type="button" id="ftKeepMine">保留我的</button></div></div>
 <div id="ftLocalBanner" class="ft-banner" hidden><b id="ftLocalText">這台裝置有尚未存到雲端的內容。要恢復到畫面上嗎？</b><div class="ft-banner-actions"><button type="button" id="ftLocalRestore" class="primary">恢復</button><button type="button" id="ftLocalSkip">稍後</button></div></div>
 <div id="ftVerPanel" hidden></div>
+<div id="ftReviewDlg" class="ft-dlg" hidden>
+  <div class="ft-dlg-card" role="dialog" aria-modal="true" aria-labelledby="ftReviewTitle">
+    <h3 id="ftReviewTitle">完成本期檢視</h3>
+    <p class="hint">會存下本期金三角快照（同一天再按會覆蓋當天那一筆），並更新這位客戶的上次檢視與下次檢視。</p>
+    <label for="ftReviewDate">檢視日期（民國）</label>
+    <input id="ftReviewDate" inputmode="decimal" autocomplete="off" placeholder="例 115.10.13">
+    <p id="ftReviewErr" class="err" hidden></p>
+    <p class="next">追蹤頻率：<b id="ftReviewFreq"></b></p>
+    <p class="next">下次檢視：<b id="ftReviewNext" class="num">—</b></p>
+    <div class="row"><button type="button" id="ftReviewCancel">取消</button><button type="button" class="primary" id="ftReviewOk">確認完成</button></div>
+  </div>
+</div>
 
 <div class="wrap">
   <div class="print-head" id="printHead"></div>
@@ -1062,6 +1088,8 @@ const niceMax=v=>{if(v<=0)return 1;const e=Math.pow(10,Math.floor(Math.log10(v))
 const pct=(x,d=0)=>(x*100).toFixed(d)+'%';
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function parseRoc(s){const p=String(s).split('.').map(Number);return {y:p[0]||114,m:p[1]||1,d:p[2]||1};}
+function normRoc(s){s=String(s||'').trim();if(!/^\d{2,3}\.\d{1,2}(\.\d{1,2})?$/.test(s))return '';const p=parseRoc(s);if(!(p.m>=1&&p.m<=12&&p.d>=1&&p.d<=31))return '';return p.y+'.'+String(p.m).padStart(2,'0')+'.'+String(p.d).padStart(2,'0');}
+function rocToISO(s){const n=normRoc(s);if(!n)return '';const p=parseRoc(n);return String(p.y+1911)+'-'+String(p.m).padStart(2,'0')+'-'+String(p.d).padStart(2,'0');}
 function absM(s){const p=parseRoc(s);return p.y*12+(p.m-1);}
 function todayRoc(){const d=new Date();return (d.getFullYear()-1911)+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');}
 function mIdx(s){return absM(s)-absM(BASE.date||todayRoc());}
@@ -1131,11 +1159,12 @@ function gtLife(){return S.gt.fixed.reduce((s,i)=>s+(Number(i.a)||0),0);}
 function selfBase(k,m){return (Number(GOALS[k].start)||0)+[...S.gt.core,...S.gt.sat].filter(i=>tagAt(i,m)===k).reduce((s,i)=>s+(Number(i.a)||0),0);}
 function lastRow(){return S.rows[S.rows.length-1]||null;}
 function reviewDatesISO(){
+  const mark=S.reviewMark;
+  if(mark&&rocToISO(mark.date)&&rocToISO(mark.next))return {lastReviewDate:rocToISO(mark.date),nextReviewDate:rocToISO(mark.next)};
   const last=lastRow();const roc=String((last&&last.date)||(BASE&&BASE.date)||'').trim();
-  if(!/^\d{2,3}\.\d{1,2}(\.\d{1,2})?$/.test(roc))return {lastReviewDate:'',nextReviewDate:''};
-  const step=(FREQ[S.freq]&&FREQ[S.freq][1])||1;const next=addMonths(roc,step);
-  const iso=function(s){const p=parseRoc(s);return String(p.y+1911)+'-'+String(p.m).padStart(2,'0')+'-'+String(p.d||1).padStart(2,'0');};
-  return {lastReviewDate:iso(roc),nextReviewDate:iso(next)};
+  if(!normRoc(roc))return {lastReviewDate:'',nextReviewDate:''};
+  const step=(FREQ[S.freq]&&FREQ[S.freq][1])||1;const next=addMonths(normRoc(roc),step);
+  return {lastReviewDate:rocToISO(roc),nextReviewDate:rocToISO(next)};
 }
 function refDate(){return (lastRow()&&lastRow().date)||BASE.date||todayRoc();}
 function emptyBox(t,sub,btn){return `<div class="empty-box"><div class="eb-t">${t}</div>${sub?`<div class="eb-s">${sub}</div>`:''}${btn||''}</div>`;}
@@ -1877,8 +1906,15 @@ function wireBd(root){const inp=root.querySelector('[data-bd]'),pick=root.queryS
   inp.onchange=()=>{const v=inp.value.trim();const b=parseBirth(v);if(!v){S.client.birth='';renderAll();return;}if(!b){inp.classList.add('bad');return;}S.client.birth=bdISO(b);renderAll();};
   inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();};
   if(pick)pick.onchange=()=>{const b=parseBirth(pick.value);if(b){S.client.birth=bdISO(b);renderAll();}};}
+function reviewHeaderDates(){
+  const mark=S.reviewMark;
+  if(mark&&normRoc(mark.date)&&normRoc(mark.next))return {last:normRoc(mark.date),next:normRoc(mark.next)};
+  const last=lastRow();const step=(FREQ[S.freq]&&FREQ[S.freq][1])||1;
+  const next=last?addMonths(last.date,step):(BASE.date?addMonths(BASE.date,step):'—');
+  return {last:last?last.date:'—',next:next};
+}
 function renderHeader(){
-  const last=lastRow();const next=last?addMonths(last.date,FREQ[S.freq][1]):(BASE.date?addMonths(BASE.date,FREQ[S.freq][1]):'—');const C=S.client||{};
+  const hd=reviewHeaderDates();const last=lastRow();const C=S.client||{};
   const crm=window.__crmClient||null;
   const shown=(crm&&crm.name)||C.name||'';
   const crmLine=crm?`<div class="lbl" id="crmIdent">CRM：${esc(crm.name||'（未填姓名）')}${crm.birthday?' · 生日 '+esc(crm.birthday):''} · 負責業務 ${esc((crm.agentName&&String(crm.agentName).trim())?crm.agentName:'個人')}</div>`:'';
@@ -1889,8 +1925,8 @@ function renderHeader(){
    <div class="meta-grid">
      <div><div class="lbl">面談日期（民國）</div><input class="client-in v num" data-base="date" value="${esc(BASE.date)}" placeholder="例 ${todayRoc()}" style="width:120px"></div>
      <div><div class="lbl">追蹤頻率</div><div class="seg" id="freqSeg">${Object.entries(FREQ).map(([k,v])=>`<button data-f="${k}" class="${S.freq===k?'on':''}">${v[0]}</button>`).join('')}</div></div>
-     <div><div class="lbl">上次檢視</div><div class="v num">${last?last.date:'—'}</div></div>
-     <div><div class="lbl">下次檢視</div><div class="v num" style="color:var(--gold-ink)">${next}</div></div>
+     <div><div class="lbl">上次檢視</div><div class="v num" id="ftLastReview">${esc(hd.last)}</div></div>
+     <div><div class="lbl">下次檢視</div><div class="v num" id="ftNextReview" style="color:var(--gold-ink)">${esc(hd.next)}</div></div>
    </div>
    <div class="prio-strip"><span class="lbl" style="margin-right:4px">已選需求・優先順序</span>${S.selected.length?"":`<span class="lbl" style="color:var(--gold-ink)">尚未選擇・請到「六大需求」點選客戶在意的需求</span>`}${S.selected.map((k,i)=>`<span class="prio-chip"><i style="background:${GOALS[k].c}">${i+1}</i>${GOALS[k].label}</span>`).join('')}
      <span class="lbl" style="margin-left:auto">${last?`共 ${S.rows.length} 期紀錄 · 已追蹤 ${Math.max(0,mIdx(last.date))} 個月`:'尚無檢視紀錄'}</span></div>`;
@@ -2233,10 +2269,40 @@ function triSVG(){
 }
 function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400);}
 function snapKey(d){const p=parseRoc(d);return (p.y*12+p.m)*100+p.d;}
-function saveSnap(n){const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));G.view=null;n.state=cloneSt(G);Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
-  if(ex>=0){n.label=G.snaps[ex].label;G.snaps[ex]=n;G.cmp=Math.min(G.cmp,G.snaps.length-1);toast('已更新今天的快照');}
-  else{G.snaps.push(n);G.snaps.sort((a,b)=>snapKey(a.date)-snapKey(b.date));toast('已存下金三角快照・'+n.date);}
+function saveSnap(n,opt){const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));G.view=null;n.state=cloneSt(G);Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
+  if(ex>=0){n.label=G.snaps[ex].label;G.snaps[ex]=n;G.cmp=Math.min(G.cmp,G.snaps.length-1);if(!(opt&&opt.quiet))toast('已更新今天的快照');}
+  else{G.snaps.push(n);G.snaps.sort((a,b)=>snapKey(a.date)-snapKey(b.date));if(!(opt&&opt.quiet))toast('已存下金三角快照・'+n.date);}
   renderGT();}
+function nextReviewRoc(date){const step=(FREQ[S.freq]&&FREQ[S.freq][1])||1;return addMonths(date,step);}
+function openFinishReview(){
+  if(S.mode!=='advisor'||document.body.classList.contains('present'))return;
+  const dlg=$('ftReviewDlg');if(!dlg)return;
+  $('ftReviewDate').value=todayRoc();
+  const err=$('ftReviewErr');if(err){err.hidden=true;err.textContent='';}
+  const freq=$('ftReviewFreq');if(freq)freq.textContent=(FREQ[S.freq]&&FREQ[S.freq][0])||'每月';
+  refreshReviewPreview();
+  dlg.hidden=false;
+  const input=$('ftReviewDate');if(input)input.focus();
+}
+function refreshReviewPreview(){
+  const n=normRoc($('ftReviewDate')&&$('ftReviewDate').value);
+  const el=$('ftReviewNext');if(el)el.textContent=n?nextReviewRoc(n):'—';
+}
+function finishReview(roc){
+  const date=normRoc(roc);
+  if(!date)return {ok:false,reason:'date'};
+  if(!(Number(S.gt.income)>0))return {ok:false,reason:'income'};
+  const next=nextReviewRoc(date);
+  S.reviewMark={date:date,next:next};
+  const n=gtNow();
+  n.date=date;
+  n.label=S.gt.snaps.length?date.slice(0,6)+' 檢視':'初次會談';
+  n.needs=S.selected.slice();
+  saveSnap(n,{quiet:true});
+  renderAll();
+  toast('已完成 '+date+' 檢視，下次 '+next);
+  return {ok:true,date:date,next:next};
+}
 function listRows(arr,key,tagged){
   if(!arr.length)return `<div class="list-empty">${key==='fixed'?'尚無固定支出・點「＋新增項目」逐項輸入（房租、孝親費、伙食…）':key==='core'?'尚無核心規劃・可新增既有保單、定期定額等，並標記所屬需求':'尚無衛星規劃・可新增個股、定存等'}</div>`;
   return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}"><input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="金額"><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
@@ -2404,7 +2470,18 @@ window.addEventListener('resize',syncTbH);
 function renderLinked(){const P=periods();renderHeader();renderKPIs(P);renderNW(P);renderRank();renderGoals(P);renderLog(P);if($('tbGoals')&&$('triSvg'))tabBadges();}
 function renderAll(){renderLinked();if(!$('triSvg'))renderGT();else updateGT();renderGapSug();tabBadges();syncTbH();if(window.__ftAfterRender)window.__ftAfterRender();}
 $('btnAdd').onclick=()=>openModal(-1);
-$('btnMode').onclick=()=>{S.mode=S.mode==='advisor'?'client':'advisor';document.body.classList.toggle('present',S.mode==='client');$('btnMode').textContent=S.mode==='client'?'切換為顧問編輯模式':'切換為客戶簡報模式';renderAll();};
+$('btnMode').onclick=()=>{S.mode=S.mode==='advisor'?'client':'advisor';document.body.classList.toggle('present',S.mode==='client');$('btnMode').textContent=S.mode==='client'?'切換為顧問編輯模式':'切換為客戶簡報模式';const dlg=$('ftReviewDlg');if(dlg&&S.mode!=='advisor')dlg.hidden=true;renderAll();};
+if($('btnFinishReview'))$('btnFinishReview').onclick=openFinishReview;
+if($('ftReviewDate'))$('ftReviewDate').oninput=()=>{const err=$('ftReviewErr');if(err)err.hidden=true;refreshReviewPreview();};
+if($('ftReviewCancel'))$('ftReviewCancel').onclick=()=>{$('ftReviewDlg').hidden=true;};
+if($('ftReviewOk'))$('ftReviewOk').onclick=()=>{
+  const date=normRoc($('ftReviewDate').value);
+  const err=$('ftReviewErr');
+  if(!date){if(err){err.hidden=false;err.textContent='日期請用民國，例如 115.10.13';}return;}
+  if(!(Number(S.gt.income)>0)){if(err){err.hidden=false;err.textContent='請先在理財金三角填入月收入，再完成本期檢視。';}return;}
+  $('ftReviewDlg').hidden=true;
+  finishReview(date);
+};
 /* ---- PDF export (print stylesheet + window.print) ---- */
 function pdfName(){let n=(S.client&&S.client.name)||(document.querySelector('.client-name')||{}).textContent||'客戶';n=String(n).replace(/\s+/g,'').replace(/(小姐|先生|女士)$/,'')||'客戶';const d=new Date();const ds=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');return '財務規劃書_'+n.replace(/[\\/:*?"<>|]/g,'')+'_'+ds;}
 let _prevTitle=null;
@@ -2495,7 +2572,7 @@ function ftSeedClient(name,birth){
   if(ch){const prevH=window.__ftHydrating;window.__ftHydrating=true;try{renderAll();}finally{window.__ftHydrating=prevH;}}
   return ch;
 }
-window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,get S(){return S;},renderAll,openModal,setTab};
+window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,finishReview,toast,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,get S(){return S;},renderAll,openModal,setTab};
 setTab(TAB,false);renderAll();
 })();
 </script>
@@ -2960,6 +3037,8 @@ setTab(TAB,false);renderAll();
     if (restoreBtn) restoreBtn.onclick = restoreLocal;
     const skipBtn = $('ftLocalSkip');
     if (skipBtn) skipBtn.onclick = function () { skipLocalOffer = true; hideLocalOffer(); };
+    const exp = $('btnExportAll');
+    if (exp) exp.onclick = function () { exportAllBackup(); };
     const out = $('ftLogoutBtn');
     if (out) out.onclick = doLogout;
     const form = $('ftLogin');
@@ -3104,6 +3183,7 @@ setTab(TAB,false);renderAll();
     booted = true;
     setStatus(existing ? 'saved' : '', existing ? ('已儲存 ' + clock(existing.updatedAt || Date.now())) : '尚未儲存');
     gate('ready');
+    syncExportBtn();
     const local = readLocal();
     if (!skipLocalOffer && local && local.snap && local.at > lastSavedAt) showLocalOffer();
     if (store.watchDoc) {
@@ -3121,6 +3201,46 @@ setTab(TAB,false);renderAll();
         loadedRev: function () { return loadedRev; },
         sessionId: function () { return mySession; }
       };
+    }
+  }
+
+  function syncExportBtn() {
+    const b = $('btnExportAll');
+    if (!b) return;
+    b.hidden = !(booted && email === OWNER_EMAIL);
+  }
+  function downloadJson(filename, obj) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+  async function exportAllBackup() {
+    if (!booted || !store || email !== OWNER_EMAIL) return;
+    try {
+      const globalState = store.loadGlobalState ? await store.loadGlobalState(teamId) : null;
+      const fintrack = store.listFintrack ? await store.listFintrack(teamId) : [];
+      const now = new Date();
+      const p = function (n) { return String(n).padStart(2, '0'); };
+      const stamp = now.getFullYear() + p(now.getMonth() + 1) + p(now.getDate());
+      const payload = {
+        kind: 'crm-fintrack-backup',
+        exportedAt: now.toISOString(),
+        projectId: 'fish-teem',
+        teamId: teamId,
+        global_state: globalState,
+        fintrack: fintrack
+      };
+      downloadJson('CRM備份_' + teamId + '_' + stamp + '.json', payload);
+      if (window.__fintrack && window.__fintrack.toast) window.__fintrack.toast('已匯出全部備份');
+    } catch (e) {
+      console.error(e);
+      if (window.__fintrack && window.__fintrack.toast) window.__fintrack.toast('匯出失敗，請稍後再試');
     }
   }
 
@@ -3181,6 +3301,27 @@ setTab(TAB,false);renderAll();
       loadCrm: async function (tid) {
         if (TEST.teamId && tid !== String(TEST.teamId).toUpperCase()) return { members: [], cust: [] };
         return { members: (TEST.crm && TEST.crm.members) || [], cust: (TEST.crm && TEST.crm.cust) || [] };
+      },
+      loadGlobalState: async function (tid) {
+        if (TEST.globalState) return JSON.parse(JSON.stringify(TEST.globalState));
+        const crm = { members: (TEST.crm && TEST.crm.members) || [], cust: (TEST.crm && TEST.crm.cust) || [] };
+        return crm;
+      },
+      listFintrack: async function (tid) {
+        const prefix = 'ftmock:v1:' + tid + ':';
+        const out = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (!k || k.indexOf(prefix) !== 0) continue;
+          const cid = k.slice(prefix.length);
+          const bag = read(tid, cid);
+          if (!bag.doc) continue;
+          const doc = unpackStored(bag.doc) || {};
+          doc.id = cid;
+          out.push(doc);
+        }
+        out.sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
+        return out;
       },
       loadDoc: async function (tid, cid) { return unpackStored(read(tid, cid).doc); },
       saveDoc: async function (tid, cid, data) {
@@ -3294,6 +3435,22 @@ setTab(TAB,false);renderAll();
         const snap = await fs.getDoc(crmRef(tid));
         const data = snap.exists() ? snap.data() : {};
         return { members: data.members || [], cust: data.cust || [] };
+      },
+      loadGlobalState: async function (tid) {
+        const snap = await fs.getDoc(crmRef(tid));
+        return snap.exists() ? snap.data() : null;
+      },
+      listFintrack: async function (tid) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack');
+        const snap = await fs.getDocs(col);
+        const out = [];
+        snap.forEach(function (d) {
+          const doc = unpackStored(d.data()) || {};
+          doc.id = d.id;
+          out.push(doc);
+        });
+        out.sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
+        return out;
       },
       loadDoc: async function (tid, cid) {
         const snap = await fs.getDoc(finRef(tid, cid));
