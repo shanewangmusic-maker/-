@@ -56,6 +56,38 @@
         .row-actions .row-actions-btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; }
         .row-actions .fintrack-pair { align-items: center; max-width: 100%; }
         .row-actions .fintrack-dates { white-space: normal; text-align: center; }
+        /* 小螢幕清單改卡片。桌面（>=1024）維持原本表格，.m-cards 不佔版面。 */
+        .m-cards { display: none; }
+        #zlk_fab.zlk-fab-hold { display: none !important; }
+        /* 視窗蓋過自來客按鈕（z-index 9998）。載入遮罩仍在最上層。關閉時 display:none，不改變桌面像素。 */
+        body .fixed.inset-0:not(#loadingOverlay):not(#toast) { z-index: 10050 !important; }
+        #loadingOverlay { z-index: 10080 !important; }
+        #zlk_modal { z-index: 10050 !important; }
+        @media (max-width: 1023px) {
+            .desk-table { display: none !important; }
+            .m-cards { display: flex; flex-direction: column; gap: 10px; }
+            .m-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
+            .m-card .m-meta { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475569; }
+            .m-card .m-meta p, .m-card .m-name { overflow-wrap: anywhere; }
+            .m-card .m-acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+            .m-card .m-ft { margin-top: 6px; }
+            .m-card .fintrack-pair { align-items: flex-start; max-width: 100%; }
+            .m-card button, .m-card a.fintrack-open, .m-card input, .m-card select { min-height: 36px; }
+            .m-card button { min-width: 36px; }
+            .lead-namecell { grid-column: 1 / -1 !important; grid-row: auto !important; }
+            .lead-ops { grid-column: 1 / -1 !important; grid-row: auto !important; justify-content: flex-start !important; }
+            .lead-note { display: block; width: 100%; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
+            .lead-row button, .lead-row a.fintrack-open, .lead-row select.lead-stage-sel { min-height: 36px; }
+            .lead-row .lead-ops button, .lead-row button[onclick*="quickSetLeadDate"], .lead-row .lead-next { min-width: 36px; min-height: 36px; }
+            #filterBar { position: static !important; top: auto !important; }
+            .hdr-row { flex-wrap: wrap; }
+            .header-tools { flex-wrap: wrap !important; overflow: visible !important; width: 100% !important; max-width: 100%; }
+            .main-tabs { flex-wrap: wrap !important; overflow: visible !important; row-gap: 0; }
+            #memberAdminList label { min-height: 36px; min-width: 36px; box-sizing: border-box; padding-top: 6px; padding-bottom: 6px; }
+            #memberAdminList label > input[type="checkbox"]:not(.hidden) { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
+            #app { padding-bottom: 88px; }
+            #zlk_fab { padding: 8px 12px !important; font-size: 13px !important; right: 12px !important; bottom: 12px !important; }
+        }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -91,7 +123,7 @@
     <div id="app" class="pb-16 relative">
         <!-- 頂部導航 -->
         <header class="bg-[#1E2E3D] text-white shadow-md relative z-10 border-b border-white/10">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="hdr-row max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
                     <div class="flex items-center gap-3">
                         <div class="bg-white/10 text-white p-2.5 rounded-xl border border-white/20 relative cursor-pointer hover:bg-white/20 transition" onclick="window.logoutTeam()" title="點擊登出 / 切換團隊">
@@ -106,7 +138,7 @@
                     <!-- 手機版登出按鈕 -->
                     <button onclick="window.logoutTeam()" class="md:hidden text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-1 rounded">切換團隊</button>
                 </div>
-                <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                <div class="header-tools flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
                     <button id="undoBtn" onclick="undo()" class="bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white p-2.5 rounded-lg transition duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 flex-shrink-0" title="返回上一步 (Undo)">
                         <i class="fa-solid fa-rotate-left"></i>
                     </button>
@@ -141,7 +173,7 @@
         <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
             
             <!-- 視角切換器：四視角切換 (包含招募) -->
-            <div class="flex gap-6 mb-4 border-b border-slate-200 overflow-x-auto pb-1">
+            <div class="main-tabs flex gap-6 mb-4 border-b border-slate-200 overflow-x-auto pb-1">
                 <button onclick="switchMainTab('PIPELINE')" id="mainTab-PIPELINE" class="pb-3 font-bold text-[#1E2E3D] border-b-2 border-[#1E2E3D] transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-layer-group"></i> 核心業績看板
                 </button>
@@ -3396,13 +3428,13 @@
             const lastLabel = (stageConfig[c.lastStage || 'NURTURE'] || {}).label || '';
             return `
             <div class="lead-row px-3 py-2.5 border-b border-slate-100 hover:bg-slate-50 transition grid grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,1.4fr)_11rem_minmax(0,0.9fr)_17rem_12rem] gap-x-3 gap-y-1.5 xl:items-center" data-lead-id="${id}">
-                <div class="min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
+                <div class="lead-namecell min-w-0 col-start-1 row-start-1 xl:col-auto xl:row-auto">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" onclick="openLeadModal('${id}')" class="font-bold text-slate-800 hover:text-[#1E2E3D] hover:underline text-left">${esc(c.name)}</button>
                         ${agent}${tagHtml}${coreC ? '<span class="lead-corebadge px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex-shrink-0" title="這位已加入核心業績看板（一畝田仍保留）：' + esc(leadDealSummary(c)) + '"><i class="fa-solid fa-link"></i> 核心 ' + dealsC.length + ' 單<span class="lead-dealsum font-normal text-emerald-600"> ' + esc(leadDealSummary(c)) + '</span></span>' : ''}
                     </div>
                     ${meta.length ? `<div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] mt-0.5">${meta.join('')}</div>` : ''}
-                    ${c.notes ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ''}
+                    ${c.notes ? `<p class="lead-note text-[11px] text-slate-400 mt-0.5 truncate" title="${esc(c.notes)}">${esc(c.notes)}</p>` : ''}
                 </div>
                 <div class="flex items-center gap-1.5 col-span-2 xl:col-span-1">
                     <select onchange="leadMoveStage('${id}', this.value)" title="切換一畝田階段" class="lead-stage-sel flex-1 min-w-0 text-xs font-bold px-1.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none ${st.bg} ${st.text} ${st.border}">${stageOpts}</select>
@@ -3917,6 +3949,59 @@
                 return `<span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-100 flex-shrink-0 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-user-tie"></i> ${esc(agentName)}</span>`;
             };
 
+            const mShell = (head, meta, acts, id) => `<article class="m-card"><div class="m-name">${head}</div><div class="m-meta">${meta}</div><div class="m-acts">${acts}</div><div class="m-ft">${fintrackBtn(id)}</div></article>`;
+            const archiveMobileCard = (c) => {
+                const hold = c.progress === 'HOLD';
+                const status = hold
+                    ? `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-[9px] font-bold">⏳ 待定</span>`
+                    : `<span class="bg-slate-200 text-slate-600 border border-slate-300 px-2 py-0.5 rounded text-[9px] font-bold">❌ 流失</span>`;
+                const remind = hold ? `
+                    <input type="date" value="${c.nextContactDate || ''}" onchange="updateLeadDate('${c.id}', this.value)" class="w-full text-xs p-1 border border-amber-200 rounded text-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-amber-50/50">
+                    <div class="flex gap-1 flex-wrap">
+                        <button onclick="quickSetLeadDate('${c.id}', 'month')" class="text-[9px] font-bold bg-white text-slate-500 hover:bg-slate-100 py-1 px-2 rounded border border-slate-200">下月</button>
+                        <button onclick="quickSetLeadDate('${c.id}', 'halfYear')" class="text-[9px] font-bold bg-white text-slate-500 hover:bg-slate-100 py-1 px-2 rounded border border-slate-200">半年</button>
+                        <button onclick="quickSetLeadDate('${c.id}', 'year')" class="text-[9px] font-bold bg-white text-slate-500 hover:bg-slate-100 py-1 px-2 rounded border border-slate-200">一年</button>
+                    </div>` : `<span class="text-xs text-slate-300">- 不適用 -</span>`;
+                return mShell(
+                    `<span class="font-bold ${hold ? 'text-amber-900' : 'text-slate-600'}">${esc(c.name)}</span> ${getAgentBadge(c.agentName)}`,
+                    `${status}<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-blue-600"><i class="fa-solid fa-phone text-slate-400"></i> ${esc(c.phone || '-')}</span><span>${esc(c.company || '-')}</span><span class="bg-slate-100 px-2 py-1 rounded text-[10px] font-bold border border-slate-200 text-slate-600 w-max">${stageConfig[c.lastStage || 'NURTURE']?.label || '經營 🌱(自介)'}</span>${getTagsHtml(c.tags)}<span>${esc(c.notes || '-')}</span>${remind}`,
+                    `<button onclick="reactivateCustomer('${c.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition shadow-sm">重新啟用</button><button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600 transition px-2 py-1" title="編輯詳情"><i class="fa-regular fa-pen-to-square"></i></button><button onclick="deleteLead('${c.id}')" class="text-slate-300 hover:text-rose-500 transition px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>`,
+                    c.id
+                );
+            };
+            const recruitMobileCard = (c) => {
+                const adv = recruitOrder.indexOf(c.progress) + 1 < recruitOrder.length
+                    ? `<button onclick="quickAdvance('${c.id}', '${recruitOrder[recruitOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>`
+                    : `<span class="text-[10px] text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded">已報聘</span>`;
+                return mShell(
+                    `<span class="font-bold text-slate-800">${esc(c.name)}</span> ${getAgentBadge(c.agentName)}`,
+                    `<span>${esc(c.company || '-')}</span><span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-purple-600"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone || '-')}</span><span class="px-2 py-1 rounded text-xs font-bold border w-max ${stageConfig[c.progress]?.bg} ${stageConfig[c.progress]?.color} ${stageConfig[c.progress]?.border}">${stageConfig[c.progress]?.label || ''}</span>${getTagsHtml(c.tags)}<input type="date" value="${c.nextContactDate || ''}" onchange="updateLeadDate('${c.id}', this.value)" class="w-full text-xs p-1.5 border border-slate-200 rounded text-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white">`,
+                    `<button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button><button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>${adv}`,
+                    c.id
+                );
+            };
+            const pipelineMobileCard = (c) => {
+                const fycWan = (() => { const v = Number(c.category==='WON'?c.fyc:c.plannedFyc||0)/10000; return v%1===0 ? v : v.toFixed(2); })();
+                const comm = Number(c.category==='WON'?c.commission:c.plannedCommission||0).toLocaleString();
+                const stage = c.category==='WON'
+                    ? `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded text-xs font-bold border border-emerald-200 w-max">已成交</span>`
+                    : `<span class="bg-slate-100 px-2 py-1 rounded text-xs font-bold border border-slate-200 text-slate-600 w-max">${stageConfig[c.progress]?.label || ''}</span>`;
+                const product = c.category==='WON'
+                    ? `<span class="font-bold text-slate-700">${esc(c.policyName)}</span><span class="text-slate-400">${esc(c.productType || '')}</span>`
+                    : `<span>${esc(c.plannedPolicyName || c.notes || '-')}</span>`;
+                const adv = c.category==='NEW'
+                    ? (stageOrder.indexOf(c.progress) + 1 < stageOrder.length
+                        ? `<button onclick="quickAdvance('${c.id}', '${stageOrder[stageOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>`
+                        : `<button onclick="openQuickWon('${c.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded hover:bg-emerald-700 transition shadow-sm">轉成交</button>`)
+                    : `<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">結案</span>`;
+                return mShell(
+                    `<span class="font-bold text-slate-800">${esc(c.name)}</span> ${getAgentBadge(c.agentName)}`,
+                    `<span>${esc(c.company || '-')}</span>${getTagsHtml(c.tags)}<span onclick="copyToClipboard('${c.phone}', '電話')" class="cursor-pointer hover:text-blue-600"><i class="fa-solid fa-copy text-[10px] text-slate-300"></i> ${esc(c.phone || '-')}</span>${stage}${product}<span>FYC ${fycWan} C</span><span class="${c.category==='WON'?'text-emerald-600':'text-rose-600'} font-bold">佣金 $${comm}</span>`,
+                    `<button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button><button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>${adv}`,
+                    c.id
+                );
+            };
+
             // ===== 獨立渲染：冷名單庫視圖 =====
             if (currentMainTab === 'LEADS') {
                 grid.innerHTML = `
@@ -3987,7 +4072,7 @@
                             <p class="text-xs text-slate-500 mt-1">存放暫停跟進或失效的名單。待定狀態可設定未來提醒，時機成熟時點擊「重新啟用」即可轉回正式看板。</p>
                         </div>
                     </div>
-                    <div class="w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="desk-table w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-50 text-slate-500 border-b">
                                 <tr><th class="p-3">姓名 / 狀態</th><th class="p-3">聯絡資訊 / 公司</th><th class="p-3 text-center">停留階段</th><th class="p-3">自訂標籤</th><th class="p-3">備註</th><th class="p-3 w-40 text-center">下次提醒 (僅待定適用)</th><th class="p-3 text-center">操作</th></tr>
@@ -4040,6 +4125,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="m-cards">${safeMap(filtered, archiveMobileCard).join('')}</div>
                 `;
                 return; 
             }
@@ -4057,7 +4143,7 @@
                             <h3 class="font-bold text-purple-900 flex items-center gap-1"><i class="fa-solid fa-user-tie text-purple-500"></i> 引薦招募庫</h3>
                             <p class="text-xs text-purple-700/70 mt-1">專屬增員漏斗。此處名單不干擾銷售業績統計，但擁有獨立的招募階段（接觸 ➔ 面談 ➔ 報聘）及提醒功能。</p>
                         </div>
-                        <div class="w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
+                        <div class="desk-table w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
                             <table class="w-full text-left text-sm whitespace-nowrap">
                                 <thead class="bg-slate-50 text-slate-500 border-b">
                                     <tr><th class="p-3">姓名/來源</th><th class="p-3">聯絡資訊</th><th class="p-3">招募進度</th><th class="p-3">自訂標籤</th><th class="p-3 text-center">下次提醒設定</th><th class="p-3 text-center">操作</th></tr>
@@ -4097,6 +4183,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="m-cards">${safeMap(filtered, recruitMobileCard).join('')}</div>
                     `;
                 } else {
                     grid.innerHTML = `<div class="mb-4 bg-purple-50/50 p-4 rounded-xl border border-purple-100 gap-3">
@@ -4145,7 +4232,7 @@
 
             if (viewMode === 'list') {
                 grid.innerHTML = `
-                    <div class="w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="desk-table w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-50 text-slate-500 border-b">
                                 <tr><th class="p-3">姓名/公司</th><th class="p-3">聯絡資訊</th><th class="p-3">階段狀態</th><th class="p-3">商品/企劃</th><th class="p-3 text-right">預估/實領 FYC</th><th class="p-3 text-right">預估/實領佣金</th><th class="p-3 text-center">操作</th></tr>
@@ -4191,6 +4278,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="m-cards">${safeMap(filtered, pipelineMobileCard).join('')}</div>
                 `;
             } else {
                 grid.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${safeMap(filtered, c => {
@@ -6478,13 +6566,28 @@
         }
         function zlk_stop(){ if(zlk_unsub){ zlk_unsub(); zlk_unsub=null; } }
 
+        let zlkFabOpen = null;
+        function syncZlkFab(){
+            const fab = document.getElementById('zlk_fab');
+            if (!fab) return;
+            let open = false;
+            document.querySelectorAll('.fixed.inset-0, #zlk_modal').forEach(el => {
+                if (open || el.id === 'loadingOverlay' || el.id === 'toast') return;
+                const cs = getComputedStyle(el);
+                if (cs.display !== 'none' && cs.visibility !== 'hidden') open = true;
+            });
+            if (zlkFabOpen === open) return;
+            zlkFabOpen = open;
+            fab.classList.toggle('zlk-fab-hold', open);
+        }
         function zlk_open(){
             const m=document.getElementById('zlk_modal'); if(!m) return;
             m.style.display='flex';
+            syncZlkFab();
             if (!auth.currentUser){ const el=document.getElementById('zlk_list'); if(el) el.innerHTML='<p style="padding:28px;text-align:center;color:#64748b;">請先登入 CRM。</p>'; return; }
             zlk_start(); zlk_render();
         }
-        function zlk_close(){ const m=document.getElementById('zlk_modal'); if(m) m.style.display='none'; }
+        function zlk_close(){ const m=document.getElementById('zlk_modal'); if(m) m.style.display='none'; syncZlkFab(); }
 
         function zlk_inject(){
             if (document.getElementById('zlk_fab')) return;
@@ -6510,6 +6613,11 @@
             modal.addEventListener('click', e=>{ if(e.target===modal) zlk_close(); });
             document.getElementById('zlk_x').onclick=zlk_close;
             document.getElementById('zlk_refresh').onclick=()=>{ zlk_stop(); zlk_start(); };
+            if (!window.__zlkFabObs) {
+                window.__zlkFabObs = new MutationObserver(syncZlkFab);
+                window.__zlkFabObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+            }
+            syncZlkFab();
         }
         zlk_inject();
 
