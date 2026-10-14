@@ -48,6 +48,14 @@
         .fintrack-dates { font-size: 10px; line-height: 1.35; color: #64748b; font-weight: 600; white-space: nowrap; }
         .fintrack-dates.soon { color: #b45309; }
         @media (max-width: 640px) { .fintrack-dates { white-space: normal; } }
+        /* 列表列的財務規劃按鈕另起一行，避免蓋住右側的日期快捷鍵與操作鈕 */
+        .lead-ops { max-width: 100%; }
+        .lead-fintrack { min-width: 0; }
+        .lead-fintrack .fintrack-pair { align-items: flex-end; max-width: 100%; }
+        .row-actions { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 100%; }
+        .row-actions .row-actions-btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; }
+        .row-actions .fintrack-pair { align-items: center; max-width: 100%; }
+        .row-actions .fintrack-dates { white-space: normal; text-align: center; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -3410,13 +3418,13 @@
                         <button onclick="quickSetLeadDate('${id}', 'halfYear')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">半年</button>
                         <button onclick="quickSetLeadDate('${id}', 'year')" class="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-1.5 py-1 rounded border border-slate-200">一年</button>
                     </div>
-                <div class="flex items-center gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto xl:justify-end">
-                        ${fintrackBtn(c.id)}
+                <div class="lead-ops flex flex-wrap items-center justify-end gap-0.5 col-start-2 row-start-1 xl:col-auto xl:row-auto min-w-0">
                         <button onclick="openLeadContacts('${id}')" class="lead-contacts text-rose-500 hover:text-rose-700 transition px-1.5 py-1 text-xs font-bold whitespace-nowrap" title="聯絡紀錄（${ctN} 筆）"><i class="fa-regular fa-comments"></i>${ctN ? ' ' + ctN : ''}</button>
                         ${coreC ? `<button onclick="leadViewCore('${id}')" class="lead-viewcore bg-slate-50 text-[#1E2E3D] border border-slate-300 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-[#1E2E3D] hover:text-white transition shadow-sm whitespace-nowrap" title="開啟核心看板中的這位客戶（多單時先選哪一單）">查看核心客戶</button><button onclick="activateLead('${id}')" class="lead-adddeal bg-white text-emerald-700 border border-emerald-200 px-1.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition whitespace-nowrap" title="再為這位新增一單核心客戶（會先確認）">＋單</button>` : `<button onclick="activateLead('${id}')" class="lead-activate bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition shadow-sm whitespace-nowrap" title="啟用＝加入核心看板（一畝田仍保留）：${esc(lastLabel)}">啟用 ➔</button>`}
                         <button onclick="openLeadModal('${id}')" class="lead-edit text-slate-400 hover:text-[#1E2E3D] transition px-2 py-1" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
                         <button onclick="deleteLead('${id}')" class="lead-del text-slate-300 hover:text-rose-500 transition px-2 py-1" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
+                <div class="lead-fintrack col-span-2 xl:col-span-5 flex justify-end min-w-0">${fintrackBtn(c.id)}</div>
             </div>`;
         }
 
@@ -4017,11 +4025,15 @@
                                                 </div>
                                             ` : `<span class="text-xs text-slate-300">- 不適用 -</span>`}
                                         </td>
-                                        <td class="p-3 text-center space-x-1">
-                                            ${fintrackBtn(c.id)}
-                                            <button onclick="reactivateCustomer('${c.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition shadow-sm">重新啟用</button>
-                                            <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600 transition px-2 py-1" title="編輯詳情"><i class="fa-regular fa-pen-to-square"></i></button>
-                                            <button onclick="deleteLead('${c.id}')" class="text-slate-300 hover:text-rose-500 transition px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>
+                                        <td class="p-3 text-center">
+                                            <div class="row-actions">
+                                                <div class="row-actions-btns">
+                                                    <button onclick="reactivateCustomer('${c.id}')" class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition shadow-sm">重新啟用</button>
+                                                    <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600 transition px-2 py-1" title="編輯詳情"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                    <button onclick="deleteLead('${c.id}')" class="text-slate-300 hover:text-rose-500 transition px-2 py-1"><i class="fa-solid fa-trash-can"></i></button>
+                                                </div>
+                                                ${fintrackBtn(c.id)}
+                                            </div>
                                         </td>
                                     </tr>
                                 `).join('')}
@@ -4071,11 +4083,13 @@
                                                 <input type="date" value="${c.nextContactDate || ''}" onchange="updateLeadDate('${c.id}', this.value)" class="w-full text-xs p-1.5 border border-slate-200 rounded text-slate-600 mb-1 focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white">
                                             </td>
                                             <td class="p-3 text-center">
-                                                <div class="flex justify-center items-center gap-2">
+                                                <div class="row-actions">
+                                                    <div class="row-actions-btns">
+                                                        <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                        <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                                                        ${recruitOrder.indexOf(c.progress) + 1 < recruitOrder.length ? `<button onclick="quickAdvance('${c.id}', '${recruitOrder[recruitOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<span class="text-[10px] text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded">已報聘</span>`}
+                                                    </div>
                                                     ${fintrackBtn(c.id)}
-                                                    <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
-                                                    <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-purple-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                                                    ${recruitOrder.indexOf(c.progress) + 1 < recruitOrder.length ? `<button onclick="quickAdvance('${c.id}', '${recruitOrder[recruitOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<span class="text-[10px] text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded">已報聘</span>`}
                                                 </div>
                                             </td>
                                         </tr>
@@ -4163,11 +4177,13 @@
                                             $${Number(c.category==='WON'?c.commission:c.plannedCommission||0).toLocaleString()}
                                         </td>
                                         <td class="p-3 text-center">
-                                            <div class="flex justify-center items-center gap-2">
+                                            <div class="row-actions">
+                                                <div class="row-actions-btns">
+                                                    <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
+                                                    <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                                                    ${c.category==='NEW' ? (stageOrder.indexOf(c.progress) + 1 < stageOrder.length ? `<button onclick="quickAdvance('${c.id}', '${stageOrder[stageOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<button onclick="openQuickWon('${c.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded hover:bg-emerald-700 transition shadow-sm">轉成交</button>`) : `<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">結案</span>`}
+                                                </div>
                                                 ${fintrackBtn(c.id)}
-                                                <button onclick="openEditModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="編輯"><i class="fa-regular fa-pen-to-square"></i></button>
-                                                <button onclick="openFollowUpModal('${c.id}')" class="text-slate-400 hover:text-blue-600" title="歷程"><i class="fa-solid fa-clock-rotate-left"></i></button>
-                                                ${c.category==='NEW' ? (stageOrder.indexOf(c.progress) + 1 < stageOrder.length ? `<button onclick="quickAdvance('${c.id}', '${stageOrder[stageOrder.indexOf(c.progress) + 1]}')" class="bg-slate-800 text-white text-[10px] px-2 py-1 rounded hover:bg-slate-900 transition shadow-sm">推進</button>` : `<button onclick="openQuickWon('${c.id}')" class="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded hover:bg-emerald-700 transition shadow-sm">轉成交</button>`) : `<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">結案</span>`}
                                             </div>
                                         </td>
                                     </tr>
