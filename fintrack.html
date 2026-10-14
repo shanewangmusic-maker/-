@@ -798,7 +798,8 @@ body.pdfm .gt-poster input,body.pdfm .gt-poster textarea,body.pdfm .gt-poster se
 body.pdfm .gt-notes textarea{min-height:40px!important}
 body.pdfm .list-row,body.pdfm .list-row.tagged{grid-template-columns:1fr 92px!important}
 body.pdfm .tl button{pointer-events:none}
-body.pdfm .tbl-wrap{overflow:visible!important}
+body.pdfm .tbl-wrap{display:block!important;overflow:visible!important}
+body.pdfm .log-cards{display:none!important}
 body.pdfm table.log{font-size:11px;width:100%}
 body.pdfm table.log td,body.pdfm table.log th{padding-top:5px!important;padding-bottom:5px!important}
 body.pdfm .kpis{grid-template-columns:repeat(4,1fr)!important}
@@ -836,7 +837,8 @@ body.pdfm .footer{margin-top:10px!important;padding:6px 12px!important;font-size
 .gt-notes textarea{min-height:40px!important}
 .list-row,.list-row.tagged{grid-template-columns:1fr 92px!important}
 .tl button{pointer-events:none}
-.tbl-wrap{overflow:visible!important}
+.tbl-wrap{display:block!important;overflow:visible!important}
+.log-cards{display:none!important}
 table.log{font-size:11px;width:100%}
 table.log td,table.log th{padding-top:5px!important;padding-bottom:5px!important}
 .footer{margin-top:10px!important;padding:6px 12px!important;font-size:10px!important;background:none!important;color:#5b6570!important;border-top:1.5px solid #D4AF37}
@@ -955,6 +957,27 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
   .ft-banner{top:var(--tb-h,52px);padding:10px 12px}
 }
 @media print{#ftGate,#ftVerPanel,#ftOfflineBanner,#ftConflictBanner,#ftLocalBanner{display:none!important}}
+.log-cards{display:none}
+.lc-item{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.lc-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:8px 0 0}
+.lc-grid dt{font-size:11px;color:var(--muted);font-weight:600}
+.lc-grid dd{margin:0;font-size:14px;font-weight:700;overflow-wrap:anywhere}
+.lc-wide{grid-column:1 / -1}
+.lc-acts{margin-top:8px}
+.lc-acts .edit-btn{min-height:36px;min-width:36px;padding:6px 12px}
+.lc-alloc-txt{margin-top:4px;font-size:12px;font-weight:600;color:var(--ink-2);white-space:normal}
+@media (max-width:1023px){
+  .tbl-wrap{display:none!important}
+  .log-cards{display:flex;flex-direction:column;gap:10px}
+  #freqSeg button{min-height:36px}
+  .help-q{width:36px;height:36px;line-height:34px}
+  .undo-bar .btn{min-height:36px}
+}
+@media print{
+  .tbl-wrap{display:block!important}
+  .log-cards{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -1067,6 +1090,7 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
     <div class="card log-card">
       <div class="feed-bar edit-only" id="feedBar"></div>
       <div class="tbl-wrap"><table class="log" id="logTbl"></table></div>
+      <div class="log-cards" id="logCards"></div>
     </div>
   </section>
   </div>
@@ -2394,10 +2418,35 @@ function updateGT(){
 
 /* ============ review log ============ */
 function allocBar(a){const t=KEYS.reduce((s,k)=>s+a[k],0)||1;return `<div class="alloc-w"><div class="alloc" title="${KEYS.map(k=>GOALS[k].label+' '+fmt(a[k])).join('\n')}">${S.selected.concat(KEYS.filter(k=>!S.selected.includes(k))).map(k=>`<div style="width:${a[k]/t*100}%;background:${GOALS[k].c};${S.selected.includes(k)?'':'opacity:.35'}"></div>`).join('')}</div><span class="gap-tag">${KEYS.slice().sort((x,y)=>a[y]-a[x]).filter(k=>a[k]>0).slice(0,3).map(k=>GOALS[k].label.slice(0,2)+' '+fmtW(a[k])).join('・')}</span></div>`;}
+function logAllocText(a){if(!a)return '—';const parts=KEYS.filter(k=>a[k]>0).map(k=>GOALS[k].label+' '+fmt(a[k]));return parts.length?parts.join('、'):'—';}
+function renderLogCards(P){
+  const box=$('logCards'); if(!box) return;
+  const editable=S.freq==='m';
+  const emptyHtml=emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAddCard">＋ 新增第一筆檢視紀錄</button>');
+  if(!P.length){box.innerHTML=emptyHtml;const b=$('firstAddCard');if(b)b.onclick=()=>openModal(-1);return;}
+  const field=(lb,val,wide)=>`<div class="${wide?'lc-wide':''}"><dt>${lb}</dt><dd>${val}</dd></div>`;
+  const item=(title,sub,fields,edit)=>`<article class="lc-item"><div class="lc-h"><b>${title}</b>${sub?`<span class="gap-tag">${sub}</span>`:''}</div><dl class="lc-grid">${fields}</dl>${edit?`<div class="lc-acts">${edit}</div>`:''}</article>`;
+  const editBtn=i=>editable?`<button class="edit-btn" data-edit="${i}">編輯</button>`:'<span class="gap-tag">切換每月編輯</span>';
+  const cards=P.slice().reverse().map(p=>{
+    const notes=Object.keys(p.notes||{});
+    const pi=p.first?p.first.i:(p.i||0);
+    const nd=pi>0?needDiff(S.rows[pi-1].needs,p.last.needs):{add:[],rm:[]};
+    const noteHtml=(notes.map(n=>`<span class="note-chip">${esc(n)}</span>`).join(' ')||'—')+(nd.add.length||nd.rm.length?`<div style="margin-top:4px">${needChips(nd)}</div>`:'');
+    return item(esc(p.label), p.n>1?`・${p.n}期`:'',
+      field('開始日',esc(p.label))+field('收入',fmt(p.income))+field('固定支出',fmt(p.fixed))+field('核心＋衛星',fmt(p.invest))+field('資產淨值','<b>'+fmt(p.netWorth)+'</b>')+field('理論淨值',fmt(p.theo))+field('淨增長',(p.growth<0?'−':'')+fmt(Math.abs(p.growth)))+field('額外支出',fmt(p.extra))+field('備註',noteHtml,true)+field('分配到六大需求',allocBar(p.alloc)+'<div class="lc-alloc-txt">'+logAllocText(p.alloc)+'</div>',true),
+      editBtn(p.last.i));
+  }).join('');
+  const base=item('面談','期初', field('開始日',esc(BASE.date||'—'))+field('資產淨值',fmt(BASE.netWorth))+field('備註','期初淨值（金三角初次會談）',true), '');
+  const rows=rowsX(); const T=k=>rows.reduce((s,r)=>s+r[k],0); const ta={}; KEYS.forEach(k=>ta[k]=rows.reduce((s,r)=>s+(r.alloc[k]||0),0));
+  const L=rows[rows.length-1];
+  const foot=L?item('累計','', field('收入',fmt(T('income')))+field('固定支出',fmt(T('fixed')))+field('核心＋衛星',fmt(T('invest')))+field('資產淨值',fmt(L.netWorth))+field('淨增長',fmt(L.netWorth-BASE.netWorth))+field('額外支出',fmt(T('extra')))+field('分配到六大需求',allocBar(ta)+'<div class="lc-alloc-txt">'+logAllocText(ta)+'</div>',true), ''):'';
+  box.innerHTML=cards+base+foot;
+  box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(+b.dataset.edit));
+}
 function renderLog(P){
   const editable=S.freq==='m';
   const head=`<thead><tr><th class="l">開始日 <span class="sort-tag">新→舊</span></th><th>收入</th><th>固定支出</th><th>核心＋衛星</th><th>資產淨值</th><th>理論淨值</th><th>淨增長</th><th class="extra">額外支出</th><th class="l">備註</th><th class="l">分配到六大需求 <span style="font-weight:400;color:var(--muted)">(${S.selected.map(k=>`<i class="dot" style="background:${GOALS[k].c}"></i>`).join('')})</span></th><th class="edit-only"></th></tr></thead>`;
-  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="12" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);}
+  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="12" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);renderLogCards(P);}
   else{
   const base=`<tr style="color:var(--muted)"><td class="l num">${BASE.date||'—'}<span class="gap-tag"> 面談</span></td><td colspan="4"></td><td class="num">${fmt(BASE.netWorth)}</td><td colspan="5" class="l gap-tag">期初淨值（金三角初次會談）</td><td class="edit-only"></td></tr>`;
   const body=P.slice().reverse().map(p=>{const notes=Object.keys(p.notes);const pi=p.first.i;const nd=pi>0?needDiff(S.rows[pi-1].needs,p.last.needs):{add:[],rm:[]};return `<tr><td class="l num">${esc(p.label)}${p.n>1?`<span class="gap-tag"> ・${p.n}期</span>`:''}</td><td class="num">${fmt(p.income)}</td><td class="num">${fmt(p.fixed)}</td><td class="num">${fmt(p.invest)}</td>
@@ -2409,7 +2458,7 @@ function renderLog(P){
   const foot=`<tfoot><tr><td class="l">累計</td><td class="num">${fmt(T('income'))}</td><td class="num">${fmt(T('fixed'))}</td><td class="num">${fmt(T('invest'))}</td><td class="num">${fmt(L.netWorth)}</td><td class="num"></td><td class="num">${fmt(L.netWorth-BASE.netWorth)}</td><td class="num extra">${fmt(T('extra'))}</td><td></td><td class="l">${allocBar(ta)}</td><td class="edit-only"></td></tr></tfoot>`;
   $('logTbl').innerHTML=head+'<tbody>'+body+base+'</tbody>'+foot;
   {let h=$('theoHow');if(!h){h=document.createElement('details');h.id='theoHow';h.className='theo-how';$('logTbl').closest('.tbl-wrap,div').after(h);}const Lp=P[P.length-1];const op=h.open;h.innerHTML=Lp?`<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div><div class="th-n num">${esc(Lp.label)}：${theoFormula(Lp)}</div><div class="th-d">與實際差異 ＝ 理論淨值 － 資產淨值（實際）＝ ${fmt(Lp.theo)} － ${fmt(Lp.netWorth)} ＝ ${Lp.extra<0?'−':''}${fmt(Math.abs(Lp.extra))}</div><div class="th-s">保費優先取自「保障」頁的年保費÷12；未填保單時可於檢視紀錄手動輸入。</div>`:'<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div>';h.open=op;}
-  $('logTbl').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(+b.dataset.edit));}
+  $('logTbl').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(+b.dataset.edit)); renderLogCards(P);}
   const L=lastRow();
   const G=S.gt,inv=Number(G.invest)||0;
   $('feedBar').innerHTML=`<b>金三角帶入・本期草稿</b>${Number(S.gt.income)>0?'':'<span class="lbl">（尚未建立金三角，可直接手動輸入）</span>'}<div class="f"><span>收入 <strong class="num">${fmt(G.income)}</strong></span><span>固定支出 <strong class="num">${fmt(gtLife())}</strong></span><span>保費 <strong class="num">${fmt(premDefault())}</strong></span><span>核心＋衛星 <strong class="num">${fmt(inv)}</strong></span><span>下次檢視 <strong class="num">${L?addMonths(L.date,FREQ[S.freq][1]):'—'}</strong></span>${!L?'':(()=>{const d=needDiff(L.needs,S.selected);return d.add.length||d.rm.length?`<span>需求變更 ${needChips(d)}</span>`:'';})()}</div><button class="btn sm primary" style="margin-left:auto" id="feedAdd">以此新增本期檢視</button>`;
