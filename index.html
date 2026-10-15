@@ -650,6 +650,7 @@
                                     <input autocomplete="off" type="text" id="editAgentName" list="agentList" placeholder="輸入或選擇業務員..." class="w-full px-3 py-2 border border-indigo-200 bg-indigo-50/30 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                                 </div>
                             </div>
+                            <div id="editPersonLinkBox" class="border border-slate-200 rounded-xl p-3"></div>
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 mt-4">
                                 <div class="flex justify-between items-center">
                                     <label class="text-xs font-bold text-slate-500 flex items-center gap-1"><i class="fa-solid fa-tags text-[#1E2E3D]"></i> 自訂標籤 (複選)</label>
@@ -916,6 +917,7 @@
                             </div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-1">負責業務員</label><input type="text" id="leadAgent" list="agentList" autocomplete="off" placeholder="留白 = 個人" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         </div>
+                        <div id="leadPersonLinkBox" class="hidden border border-slate-200 rounded-xl p-3"></div>
                         <div id="leadContactsRow" class="hidden"><div class="flex items-center justify-between gap-2 border border-rose-200 bg-rose-50/60 rounded-xl px-3 py-2">
                             <span class="text-xs text-slate-600"><i class="fa-regular fa-comments text-rose-500"></i> 聯絡紀錄：<b id="leadContactsSummary">0 筆</b></span>
                             <button type="button" id="leadContactsBtn" onclick="openLeadContacts(document.getElementById('leadId').value)" class="px-3 py-1.5 bg-white border border-rose-300 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-50">開啟聯絡紀錄</button>
@@ -1180,6 +1182,16 @@
                         <button type="button" id="leadSyncConfirmBtn" onclick="leadSyncConfirm()" class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition">確認同步</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div id="personLinkModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-[80] p-3 sm:p-4" onclick="if(event.target===this)closeModal('personLinkModal')">
+            <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
+                <div class="bg-[#1E2E3D] text-white px-5 py-3.5 flex justify-between items-center flex-shrink-0 gap-3">
+                    <h3 id="personLinkTitle" class="font-bold font-editorial text-base truncate">連結同一位客戶</h3>
+                    <button type="button" onclick="closeModal('personLinkModal')" aria-label="關閉" class="text-white/80 hover:text-white transition flex-shrink-0"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div id="personLinkBody" class="p-4 overflow-y-auto"></div>
             </div>
         </div>
 
@@ -2305,7 +2317,7 @@
         function leadNewCoreId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
         function leadMakeCore(L) {
             const C = JSON.parse(JSON.stringify(L));
-            ['acreStage', 'leadCls', 'contacts', 'coreId', 'coreIds', 'history', 'sendCalendar'].forEach(function (k) { delete C[k]; });
+            ['acreStage', 'leadCls', 'contacts', 'coreId', 'coreIds', 'history', 'sendCalendar', 'fintrackId'].forEach(function (k) { delete C[k]; });
             C.id = leadNewCoreId(); C.category = 'NEW'; C.progress = L.lastStage || 'NURTURE'; C.history = []; C.leadId = L.id;
             if (!C.createdAt) C.createdAt = new Date().toISOString();
             return C;
@@ -3382,8 +3394,29 @@
             return out.join('');
         }
 
+        function fintrackDocsKnown() { return window.fintrackDocsReady === true && window.fintrackDocSet; }
+        function fintrackDocExists(id) { return !!(id && window.fintrackDocSet && window.fintrackDocSet[id]); }
+        function resolvePlanId(row) {
+            if (!row) return '';
+            if (row.fintrackId) return String(row.fintrackId);
+            if (row.progress !== 'LEAD' && row.leadId) {
+                const lead = customers.find(function (x) { return x && x.id === row.leadId && x.progress === 'LEAD'; });
+                if (lead) return String(lead.fintrackId || lead.id);
+            }
+            if (row.progress === 'LEAD') return String(row.fintrackId || row.id);
+            return String(row.id || '');
+        }
+        function planIdForOpen(row) {
+            if (!row) return '';
+            const shared = resolvePlanId(row);
+            const own = String(row.id || '');
+            if (shared && shared !== own && fintrackDocsKnown() && !fintrackDocExists(shared) && fintrackDocExists(own)) return own;
+            return shared || own;
+        }
         function fintrackHref(id) {
-            return 'fintrack.html?client=' + encodeURIComponent(id || '');
+            const row = customers.find(function (c) { return c && c.id === id; });
+            const plan = row ? planIdForOpen(row) : (id || '');
+            return 'fintrack.html?client=' + encodeURIComponent(id || '') + '&plan=' + encodeURIComponent(plan || id || '');
         }
         function fintrackRoc(iso) {
             if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
@@ -3391,7 +3424,9 @@
             return String(Number(p[0]) - 1911) + '.' + p[1] + '.' + p[2];
         }
         function fintrackDateNote(id) {
-            var d = (window.fintrackDateMap || {})[id];
+            var row = customers.find(function (c) { return c && c.id === id; });
+            var key = row ? planIdForOpen(row) : id;
+            var d = (window.fintrackDateMap || {})[key];
             if (!d || (!d.last && !d.next)) return '';
             var soon = false;
             if (d.next && /^\d{4}-\d{2}-\d{2}$/.test(d.next)) {
@@ -3404,6 +3439,167 @@
         function fintrackBtn(id) {
             return '<span class="fintrack-pair"><a href="' + fintrackHref(id) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="fintrack-open inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[#1E2E3D] text-[#1E2E3D] bg-white hover:bg-[#1E2E3D] hover:text-white transition whitespace-nowrap" title="開啟此客戶的財務規劃與追蹤"><i class="fa-solid fa-chart-line"></i> 財務規劃與追蹤</a>' + fintrackDateNote(id) + '</span>';
         }
+
+        function personDigits(s) { return String(s || '').replace(/\D/g, ''); }
+        function personAgentLabel(row) { return String((row && row.agentName) || '').trim() || '個人'; }
+        function personSameHint(a, b) {
+            if (!a || !b) return false;
+            const na = String(a.name || '').trim(), nb = String(b.name || '').trim();
+            if (!na || na !== nb) return false;
+            const pa = personDigits(a.phone), pb = personDigits(b.phone);
+            if (pa && pa === pb) return true;
+            const ba = String(a.birthday || '').trim(), bb = String(b.birthday || '').trim();
+            return !!(ba && ba === bb);
+        }
+        function personHasPlan(row) {
+            if (!row || !fintrackDocsKnown()) return false;
+            return [row.id, row.fintrackId, resolvePlanId(row)].some(function (id) { return fintrackDocExists(id); });
+        }
+        function personDocIds(row) {
+            const ids = [];
+            function add(id) { id = String(id || ''); if (id && ids.indexOf(id) < 0 && fintrackDocExists(id)) ids.push(id); }
+            if (!row) return ids;
+            add(row.id); add(row.fintrackId); add(resolvePlanId(row));
+            return ids;
+        }
+        function personDocLabel(docId) {
+            const row = customers.find(function (c) { return c && c.id === docId; });
+            if (!row) return '規劃 ' + docId;
+            const kind = row.progress === 'LEAD' ? '一畝田' : '保單';
+            return (row.name || '（未填姓名）') + '（' + kind + '・' + personAgentLabel(row) + '）';
+        }
+        function personLinkStatusText(row) {
+            if (!row) return '';
+            if (row.fintrackId) {
+                const target = customers.find(function (c) { return c && c.id === row.fintrackId; });
+                const name = target && target.id !== row.id ? ('「' + (target.name || '未填姓名') + '」') : '這一列自己';
+                return '已手動連結到' + name + '的規劃。取消連結只拿掉這個指標，不會刪除任何規劃。';
+            }
+            if (planIdForOpen(row) !== String(row.id)) return '這一單跟著一畝田的同一份規劃（還沒有另外指定）。';
+            return '使用這一列自己的規劃。';
+        }
+        function fillPersonLinkBox(boxId, row) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+            if (!row) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+            box.classList.remove('hidden');
+            const unlink = row.fintrackId ? '<button type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50" onclick="clearPersonLink(\'' + esc(row.id) + '\')">取消連結</button>' : '';
+            box.innerHTML = '<div class="flex flex-wrap items-center justify-between gap-2">' +
+                '<div class="min-w-0"><div class="text-xs font-bold text-slate-500">財務規劃</div><p class="text-sm text-slate-700">' + esc(personLinkStatusText(row)) + '</p></div>' +
+                '<div class="flex flex-wrap gap-2">' +
+                    '<button type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-[#1E2E3D] text-[#1E2E3D] hover:bg-slate-50" onclick="openPersonLink(\'' + esc(row.id) + '\')">連結同一位客戶</button>' +
+                    unlink +
+                '</div></div>';
+        }
+        function refreshOpenPersonLinks() {
+            const editId = (document.getElementById('editId') || {}).value;
+            const leadId = (document.getElementById('leadId') || {}).value;
+            if (editId) fillPersonLinkBox('editPersonLinkBox', customers.find(function (c) { return c && c.id === editId; }));
+            if (leadId) fillPersonLinkBox('leadPersonLinkBox', customers.find(function (c) { return c && c.id === leadId; }));
+            const ft = document.getElementById('fintrackEditLink');
+            if (ft && editId) ft.href = fintrackHref(editId);
+            const lf = document.getElementById('leadFintrackLink');
+            if (lf && leadId) lf.href = fintrackHref(leadId);
+        }
+        let personLinkFromId = '';
+        let personLinkToId = '';
+        function personLinkRowHtml(row, hinted) {
+            const plan = personHasPlan(row) ? '已有規劃' : (fintrackDocsKnown() ? '尚無規劃' : '規劃清單尚未載入');
+            const hint = hinted ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex-shrink-0">可能是同一人</span>' : '';
+            return '<button type="button" class="w-full text-left px-3 py-2.5 border border-slate-200 rounded-xl hover:border-[#D4AF37] hover:bg-amber-50 transition" onclick="personLinkPick(\'' + esc(row.id) + '\')">' +
+                '<div class="flex flex-wrap items-center gap-1.5"><span class="font-bold text-slate-800">' + esc(row.name || '（未填姓名）') + '</span>' + hint +
+                '<span class="text-[10px] font-bold text-slate-500 ml-auto">' + esc(plan) + '</span></div>' +
+                '<div class="text-[11px] text-slate-500 mt-0.5">' + esc(row.phone || '無電話') + ' · ' + esc(row.birthday || '無生日') + ' · 負責業務 ' + esc(personAgentLabel(row)) + '</div></button>';
+        }
+        function renderPersonLinkList() {
+            const me = customers.find(function (c) { return c && c.id === personLinkFromId; });
+            const body = document.getElementById('personLinkBody');
+            if (!me || !body) return;
+            const typing = document.activeElement && document.activeElement.id === 'personLinkQ';
+            const q = String((document.getElementById('personLinkQ') || {}).value || '').trim().toLowerCase();
+            let others = customers.filter(function (c) { return c && c.id !== me.id; });
+            if (q) others = others.filter(function (c) {
+                return ((c.name || '') + ' ' + (c.phone || '') + ' ' + (c.birthday || '') + ' ' + personAgentLabel(c)).toLowerCase().indexOf(q) >= 0;
+            });
+            const hinted = others.filter(function (c) { return personSameHint(me, c); });
+            const rest = others.filter(function (c) { return hinted.indexOf(c) < 0; });
+            const sec = function (title, rows, hint) {
+                if (!rows.length) return '';
+                return '<div class="mt-3"><div class="text-[11px] font-bold text-slate-400 mb-1">' + title + '</div><div class="space-y-2">' + rows.map(function (r) { return personLinkRowHtml(r, hint); }).join('') + '</div></div>';
+            };
+            body.innerHTML = '<input id="personLinkQ" autocomplete="off" placeholder="搜尋姓名、電話、生日、負責業務" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none" oninput="renderPersonLinkList()">' +
+                '<p class="text-[11px] text-slate-400 mt-2">同名不會自動建議。電話或生日也相同時，才標成「可能是同一人」。選了之後才會連結。</p>' +
+                sec('可能是同一人', hinted, true) + sec('其他客戶', rest, false) +
+                (!others.length ? '<p class="text-sm text-slate-400 mt-3">沒有符合的客戶。</p>' : '');
+            const inp = document.getElementById('personLinkQ');
+            if (typing && inp) { inp.focus(); inp.value = q; inp.setSelectionRange(q.length, q.length); }
+        }
+        window.openPersonLink = function (id) {
+            personLinkFromId = id; personLinkToId = '';
+            const t = document.getElementById('personLinkTitle');
+            if (t) t.textContent = '連結同一位客戶';
+            renderPersonLinkList();
+            openModal('personLinkModal');
+        };
+        window.renderPersonLinkList = renderPersonLinkList;
+        window.personLinkPick = function (id) {
+            personLinkToId = id;
+            const from = customers.find(function (c) { return c && c.id === personLinkFromId; });
+            const to = customers.find(function (c) { return c && c.id === id; });
+            const body = document.getElementById('personLinkBody');
+            const title = document.getElementById('personLinkTitle');
+            if (!from || !to || !body) return;
+            if (title) title.textContent = '確認連結';
+            if (!fintrackDocsKnown()) {
+                body.innerHTML = '<p class="text-sm text-slate-600 mb-3">規劃清單還在載入。請稍後再連結，才不會把已經存好的規劃指錯。</p><button type="button" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold" onclick="renderPersonLinkList()">返回</button>';
+                return;
+            }
+            const a1 = personAgentLabel(from), a2 = personAgentLabel(to);
+            const warn = a1 !== a2
+                ? '<div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-sm mb-3">這兩列的負責業務不同（' + esc(from.name || '這一列') + '：' + esc(a1) + '，' + esc(to.name || '另一列') + '：' + esc(a2) + '）。連結後，兩邊各自從自己的列開啟時，都會看到同一份規劃。</div>'
+                : '';
+            const ids = personDocIds(from).concat(personDocIds(to)).filter(function (x, i, arr) { return arr.indexOf(x) === i; });
+            let choice = '';
+            if (ids.length >= 2) {
+                choice = '<div class="text-sm text-slate-700 mb-2">這兩列都已經有各自的財務規劃。請選擇要當主規劃的那一份。另一份會留在原處，不會被覆蓋或刪除。</div>' +
+                    ids.map(function (docId, i) {
+                        return '<label class="flex items-start gap-2 border border-slate-200 rounded-xl px-3 py-2 mb-2 text-sm"><input type="radio" name="personLinkMain" value="' + esc(docId) + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(personDocLabel(docId)) + '</span></label>';
+                    }).join('');
+            } else if (ids.length === 1) {
+                choice = '<p class="text-sm text-slate-700 mb-3">會以「' + esc(personDocLabel(ids[0])) + '」已儲存的規劃為主。另一份若還沒有資料，之後會寫進同一份。既有規劃不會被刪除。</p><input type="hidden" id="personLinkOnly" value="' + esc(ids[0]) + '">';
+            } else {
+                const main = (from.progress === 'LEAD' ? from.id : (to.progress === 'LEAD' ? to.id : to.id));
+                choice = '<p class="text-sm text-slate-700 mb-3">兩邊都還沒有規劃。之後會共用一份，現在不會建立或改動任何規劃資料。</p><input type="hidden" id="personLinkOnly" value="' + esc(main) + '">';
+            }
+            body.innerHTML = warn + '<p class="text-sm font-bold text-slate-800 mb-2">把「' + esc(from.name || '') + '」和「' + esc(to.name || '') + '」連結成同一份財務規劃。</p>' + choice +
+                '<div class="flex flex-wrap justify-end gap-2 mt-3"><button type="button" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold" onclick="renderPersonLinkList()">返回</button><button type="button" class="px-4 py-2 bg-[#1E2E3D] text-white rounded-lg text-sm font-bold" onclick="personLinkApply()">確認連結</button></div>';
+        };
+        window.personLinkApply = function () {
+            const from = customers.find(function (c) { return c && c.id === personLinkFromId; });
+            const to = customers.find(function (c) { return c && c.id === personLinkToId; });
+            if (!from || !to) return;
+            const picked = document.querySelector('input[name="personLinkMain"]:checked');
+            const only = document.getElementById('personLinkOnly');
+            const main = String((picked && picked.value) || (only && only.value) || '');
+            if (!main) return showToast('請選擇要當主規劃的那一份', 'error');
+            [from, to].forEach(function (row) { row.fintrackId = main; });
+            recordState();
+            try { renderApp(); } catch (e) {}
+            refreshOpenPersonLinks();
+            closeModal('personLinkModal');
+            showToast('已連結同一份規劃（沒有改動已儲存的規劃）');
+        };
+        window.clearPersonLink = function (id) {
+            const row = customers.find(function (c) { return c && c.id === id; });
+            if (!row || !row.fintrackId) return;
+            if (!window.confirm('取消連結後，這一列會回到自己的財務規劃。已儲存的規劃不會刪除。')) return;
+            delete row.fintrackId;
+            recordState();
+            try { renderApp(); } catch (e) {}
+            refreshOpenPersonLinks();
+            showToast('已取消連結');
+        };
+        window.personSameHint = personSameHint;
 
         function leadRowHtml(c, curMonth) {
             const sk = leadStageOf(c), st = LEAD_STAGE_MAP[sk];
@@ -3692,6 +3888,7 @@
             }
             leadSyncBirthUi();
             leadRenderFormStage(); leadRenderFormCls();
+            fillPersonLinkBox('leadPersonLinkBox', c);
             openModal('leadModal');
         }
         function handleLeadSave(e) {
@@ -4520,7 +4717,7 @@
 
             tempSelectedTags = c.tags ? [...c.tags] : [];
             renderTagSelector('edit'); switchTab('edit', 'basic');
-            syncCategoryAndFields('edit'); openModal('editCustomerModal');
+            syncCategoryAndFields('edit'); fillPersonLinkBox('editPersonLinkBox', c); openModal('editCustomerModal');
         }
 
         // 複製客戶基本資料，快速建立一筆新規劃（維持「一筆=一規劃、各自跑進度」的結構）
@@ -6353,11 +6550,15 @@
             var col = collection(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', teamId, 'fintrack');
             getDocs(col).then(function (snap) {
                 var map = {};
+                var exists = {};
                 snap.forEach(function (d) {
+                    exists[d.id] = true;
                     var data = d.data() || {};
                     if (!data.lastReviewDate && !data.nextReviewDate) return;
                     map[d.id] = { last: data.lastReviewDate || '', next: data.nextReviewDate || '' };
                 });
+                window.fintrackDocSet = exists;
+                window.fintrackDocsReady = true;
                 window.fintrackDateMap = map;
                 try { if (typeof renderApp === 'function') renderApp(); } catch (e) {}
             }).catch(function (e) { console.warn('fintrack dates', e); });
