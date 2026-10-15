@@ -305,6 +305,11 @@ table.log tfoot td{font-weight:700;border-top:1.5px solid var(--navy);border-bot
 .other-h .icons span{width:26px;height:26px;border-radius:50%;background:#e2e0da;color:#9a9da3;display:flex;align-items:center;justify-content:center}
 .other-h .car{margin-left:auto;font-size:12px;color:var(--muted)}
 .other-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 22px 20px}
+.other-note{padding:0 22px 20px}
+.other-note .nl{display:block;font-size:13px;font-weight:700;letter-spacing:.08em;margin:0 0 8px;color:var(--ink)}
+.other-note textarea{display:block;width:100%;box-sizing:border-box;min-height:140px;resize:none;overflow:hidden;border:1px solid var(--line-2);border-radius:12px;background:#fff;padding:12px 14px;font:inherit;font-size:15px;line-height:1.7;color:var(--ink)}
+.other-note textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.18)}
+.other-note textarea[readonly]{background:#faf9f6;color:var(--ink)}
 .oc{background:#faf9f6;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;filter:grayscale(.85);opacity:.85;transition:all .18s}
 .oc:hover{filter:none;opacity:1}
 .oc .t{display:flex;gap:10px;align-items:center}
@@ -321,7 +326,11 @@ body.present .np-btn{pointer-events:none}
 body.present .np-grid{grid-template-columns:repeat(var(--nsel,4),1fr)}
 body.present #otherNeeds{display:none}
 @media (max-width:1024px){.np-grid{grid-template-columns:repeat(3,1fr)}.other-grid{grid-template-columns:1fr 1fr}body.present .np-grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:640px){.np{padding:16px 14px}.np-grid{gap:14px 8px}.np-btn{padding:14px 4px 10px}.np-btn .ic{width:40px;height:40px}.np-btn .nm{font-size:13px;letter-spacing:.02em}.np-btn .sub{display:none}.np-btn.on{padding-bottom:30px}.np-mv{bottom:5px}.other-grid{grid-template-columns:1fr;padding:0 14px 16px}.other-h{padding:14px}.other-h .icons{display:none}}
+@media (max-width:640px){.np{padding:16px 14px}.np-grid{gap:14px 8px}.np-btn{padding:14px 4px 10px}.np-btn .ic{width:40px;height:40px}.np-btn .nm{font-size:13px;letter-spacing:.02em}.np-btn .sub{display:none}.np-btn.on{padding-bottom:30px}.np-mv{bottom:5px}.other-grid{grid-template-columns:1fr;padding:0 14px 16px}.other-h{padding:14px}.other-h .icons{display:none}.other-note{padding:0 14px 16px}.other-note textarea{font-size:16px}}
+body.present #otherNeeds.has-note,body.printing #otherNeeds.has-note{display:block}
+body.present #otherNeeds .other-h,body.present #otherNeeds .other-grid,body.printing #otherNeeds .other-h,body.printing #otherNeeds .other-grid{display:none!important}
+body.present #otherNeeds.has-note .other,body.printing #otherNeeds.has-note .other{border:0;background:transparent;margin-top:8px}
+body.present .other-note textarea,body.printing .other-note textarea{border-color:transparent;background:transparent;box-shadow:none;padding:0;min-height:0}
 /* blank / empty states */
 .empty-box{border:1.5px dashed var(--line-2);border-radius:14px;background:repeating-linear-gradient(135deg,#faf9f6 0 10px,#f6f4ef 10px 20px);padding:26px 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:10px}
 .eb-t{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:700;color:var(--ink)}
@@ -781,6 +790,10 @@ body.pdfm .pv-ta{display:block!important;white-space:pre-wrap;font-size:12.5px;l
 body.pdfm .pv-empty{color:#9a9ea4;font-weight:500}
 
 body.pdfm .topbar,body.pdfm .tabbar,body.pdfm .edit-only,body.pdfm #otherNeeds,body.pdfm #needPicker,body.pdfm #gtBanner,body.pdfm .tl-more,body.pdfm #snapBtn,body.pdfm .mb,body.pdfm #toast,body.pdfm .toast,body.pdfm .feed-bar,body.pdfm .edit-btn,body.pdfm .list-row .rm,body.pdfm .add-btn,body.pdfm #tlHint,body.pdfm .tri-hint,body.pdfm .btn,body.pdfm .ratio-leg .rl-note{display:none!important}
+body.pdfm #otherNeeds.has-note{display:block!important}
+body.pdfm #otherNeeds .other-h,body.pdfm #otherNeeds .other-grid{display:none!important}
+body.pdfm #otherNeeds.has-note .other{border:0;background:transparent;margin-top:8px}
+body.pdfm .other-note textarea{border-color:transparent!important;background:transparent!important;box-shadow:none!important;min-height:0!important;resize:none}
 body.pdfm .print-head{display:flex!important;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2.5px solid #D4AF37;padding:0 0 6px;margin:0 0 10px;color:#1E2E3D}
 body.pdfm .print-head h1{font-family:"Noto Serif TC",serif;font-size:22px;margin:0;letter-spacing:.08em}
 body.pdfm .print-head .m{font-size:10.5px;color:#5b6570;text-align:right;line-height:1.45}
@@ -820,6 +833,10 @@ body.pdfm .footer{margin-top:10px!important;padding:6px 12px!important;font-size
   html,body{background:#fff!important}
 
 .topbar,.tabbar,.edit-only,#otherNeeds,#needPicker,#gtBanner,.tl-more,#snapBtn,.mb,#toast,.toast,.feed-bar,.edit-btn,.list-row .rm,.add-btn,#tlHint,.tri-hint,.btn,.ratio-leg .rl-note{display:none!important}
+#otherNeeds.has-note{display:block!important}
+#otherNeeds .other-h,#otherNeeds .other-grid{display:none!important}
+#otherNeeds.has-note .other{border:0!important;background:transparent!important}
+.other-note textarea{border-color:transparent!important;background:transparent!important;box-shadow:none!important;min-height:0!important;resize:none}
 .print-head{display:flex!important;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2.5px solid #D4AF37;padding:0 0 6px;margin:0 0 10px;color:#1E2E3D}
 .print-head h1{font-family:"Noto Serif TC",serif;font-size:22px;margin:0;letter-spacing:.08em}
 .print-head .m{font-size:10.5px;color:#5b6570;text-align:right;line-height:1.45}
@@ -2193,15 +2210,28 @@ function renderPicker(){
     else if(i>=0)S.selected.splice(i,1);else S.selected.push(k);
     renderAll();});
 }
+function needNoteValue(){const vs=viewSnap();return String(vs?vs.needNote||'':S.needNote||'');}
+function needNoteLocked(){return !!viewSnap()||S.mode==='client'||document.body.classList.contains('present')||document.body.classList.contains('printing')||document.body.classList.contains('pdfm');}
+function growNeedNote(el){if(!el)return;const slim=document.body.classList.contains('present')||document.body.classList.contains('printing')||document.body.classList.contains('pdfm');const min=slim?0:140;el.style.height='0px';const border=el.offsetHeight-el.clientHeight;el.style.height=Math.max(min,el.scrollHeight+border)+'px';}
 function renderOther(){
   const un=KEYS.filter(k=>!S.selected.includes(k));
-  if(!un.length){$('otherNeeds').innerHTML='';return;}
-  $('otherNeeds').innerHTML=`<div class="other"><button class="other-h" id="otherToggle" aria-expanded="${S.otherOpen}"><b>其他需求（未選）</b><span class="lbl">${un.length} 項</span><span class="icons">${un.map(k=>`<span>${icon(GOALS[k].icon,15)}</span>`).join('')}</span><span class="car">${S.otherOpen?'收合 ▴':'展開 ▾'}</span></button>
-    ${S.otherOpen?`<div class="other-grid">${un.map(k=>{const g=GOALS[k],v=gv(k,S.rows.length-1);return `<div class="oc" style="--c:${g.c};--t:${g.t}"><div class="t"><span class="ic">${icon(g.icon,20)}</span><div><b>${g.label}</b><div class="lbl">${g.title}</div></div></div><p>${g.note}</p>
+  const host=$('otherNeeds');
+  const note=needNoteValue(),trimmed=note.trim();
+  const presenting=S.mode==='client'||document.body.classList.contains('present')||document.body.classList.contains('printing')||document.body.classList.contains('pdfm');
+  const locked=needNoteLocked();
+  const showNote=S.otherOpen||(presenting&&!!trimmed);
+  if(!un.length&&!(presenting&&trimmed)){host.innerHTML='';host.classList.remove('has-note');return;}
+  host.classList.toggle('has-note',!!trimmed);
+  const grid=S.otherOpen&&un.length?`<div class="other-grid">${un.map(k=>{const g=GOALS[k],v=gv(k,S.rows.length-1);return `<div class="oc" style="--c:${g.c};--t:${g.t}"><div class="t"><span class="ic">${icon(g.icon,20)}</span><div><b>${g.label}</b><div class="lbl">${g.title}</div></div></div><p>${g.note}</p>
       <div class="st2"><span>目前累積 <b>${fmtW(v.total)}</b></span><span>目標 <b>${g.target?fmtW(g.target,0):'待設定'}</b></span><span>完成度 <b>${g.target?pct(v.comp):'—'}</b></span></div>
-      <button class="btn sm edit-only" data-addneed="${k}">＋ 加入規劃（第${S.selected.length+1}順位）</button></div>`;}).join('')}</div>`:''}</div>`;
-  $('otherToggle').onclick=()=>{S.otherOpen=!S.otherOpen;renderOther();};
-  $('otherNeeds').querySelectorAll('[data-addneed]').forEach(b=>b.onclick=()=>{S.selected.push(b.dataset.addneed);renderAll();});
+      <button class="btn sm edit-only" data-addneed="${k}">＋ 加入規劃（第${S.selected.length+1}順位）</button></div>`;}).join('')}</div>`:'';
+  const noteHtml=showNote?`<div class="other-note"><label class="nl" for="needNote">備注</label><textarea id="needNote" placeholder="可自行輸入文字"${locked?' readonly':''}>${esc(note)}</textarea></div>`:'';
+  const head=un.length?`<button class="other-h" id="otherToggle" aria-expanded="${S.otherOpen}"><b>其他需求（未選）</b><span class="lbl">${un.length} 項</span><span class="icons">${un.map(k=>`<span>${icon(GOALS[k].icon,15)}</span>`).join('')}</span><span class="car">${S.otherOpen?'收合 ▴':'展開 ▾'}</span></button>`:'';
+  host.innerHTML=`<div class="other">${head}${grid}${noteHtml}</div>`;
+  if($('otherToggle'))$('otherToggle').onclick=()=>{S.otherOpen=!S.otherOpen;renderOther();};
+  host.querySelectorAll('[data-addneed]').forEach(b=>b.onclick=()=>{S.selected.push(b.dataset.addneed);renderAll();});
+  const ta=$('needNote');
+  if(ta){growNeedNote(ta);if(!locked)ta.addEventListener('input',()=>{if(viewSnap())return;S.needNote=ta.value;host.classList.toggle('has-note',!!String(ta.value||'').trim());growNeedNote(ta);});}
 }
 function setupForm(k){
   const g=GOALS[k];const f=(key,label,ph,type='number',w='')=>`<label>${label}<input data-su="${key}" type="${type}" value="${esc(g[key]||'')}" placeholder="${ph}" ${w}></label>`;
@@ -2280,7 +2310,7 @@ function GV(){const v=viewSnap();return v?snapState(v):S.gt;}
 function gtView(){const v=viewSnap();if(!v)return gtNow();return Object.assign({label:v.label,date:v.date},stSum(snapState(v)));}
 function cmpObj(){const G=S.gt;const v=G.view;if(v!=null&&G.cmp===v)return Object.assign(gtNow(),{label:'現在'});return G.snaps[G.cmp]||null;}
 function gtDirty(){const L=S.gt.snaps[S.gt.snaps.length-1];if(!L||!L.state)return false;return JSON.stringify(liveState())!==JSON.stringify(L.state);}
-function setView(i){S.gt.view=(i==null||i<0)?null:i;renderGT();}
+function setView(i){S.gt.view=(i==null||i<0)?null:i;renderGT();renderOther();}
 function useAsDraft(){const v=viewSnap();if(!v)return;const st=cloneSt(snapState(v));Object.assign(S.gt,st);S.gt.view=null;renderGT();renderLinked();toast('已將 '+v.date+' 紀錄複製為「現在」底稿');}
 function gtNow(){return {label:'現在',date:refDate(),income:Number(S.gt.income)||0,life:gtLife(),risk:Number(S.gt.risk)||0,invest:coreSatSum(S.gt)};}
 function triSVG(){
@@ -2299,7 +2329,7 @@ function triSVG(){
 }
 function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400);}
 function snapKey(d){const p=parseRoc(d);return (p.y*12+p.m)*100+p.d;}
-function saveSnap(n,opt){const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));G.view=null;n.state=liveState();Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
+function saveSnap(n,opt){const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));n.needNote=String(S.needNote||'');G.view=null;n.state=liveState();Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
   if(ex>=0){n.label=G.snaps[ex].label;G.snaps[ex]=n;G.cmp=Math.min(G.cmp,G.snaps.length-1);if(!(opt&&opt.quiet))toast('已更新今天的快照');}
   else{G.snaps.push(n);G.snaps.sort((a,b)=>snapKey(a.date)-snapKey(b.date));if(!(opt&&opt.quiet))toast('已存下金三角快照・'+n.date);}
   renderGT();}
