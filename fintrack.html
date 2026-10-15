@@ -2650,11 +2650,11 @@ setTab(TAB,false);renderAll();
     if (!email || !client) return { ok: false, reason: 'missing' };
     const agentName = String(client.agentName || '').trim();
     if (email === OWNER_EMAIL) return { ok: true, role: 'owner', agentName: agentName };
-    if (!agentName) return { ok: false, reason: 'personal', agentName: '' };
     const member = (members || []).find(function (m) {
       return m && String(m.email || '').trim().toLowerCase() === email;
     });
-    if (member && String(member.name || '').trim() === agentName) {
+    if (!member) return { ok: false, reason: 'personal', agentName: agentName };
+    if (!agentName || String(member.name || '').trim() === agentName) {
       return { ok: true, role: 'agent', agentName: agentName };
     }
     return { ok: false, reason: 'not-agent', agentName: agentName };
@@ -2755,7 +2755,7 @@ setTab(TAB,false);renderAll();
   function denyMessage(access, client) {
     const who = access.agentName ? ('「' + esc(access.agentName) + '」') : '帳號擁有者（個人業績）';
     if (access.reason === 'personal') {
-      return '這位客戶的負責業務留空，代表帳號擁有者的個人業績。只有帳號擁有者可以讀寫這份財務規劃。';
+      return '目前登入的帳號 ' + esc(email) + ' 不在這個團隊的成員名單裡。請帳號擁有者到 CRM 的「成員權限設定」加入這個 Email。';
     }
     return '只有帳號擁有者，以及這位客戶的負責業務 ' + who + ' 可以讀寫。目前登入的是 ' + esc(email) + '。';
   }
