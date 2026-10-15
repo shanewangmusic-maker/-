@@ -2634,8 +2634,10 @@ setTab(TAB,false);renderAll();
 </script>
 <script type="module">
 /* Per-client persistence. Same Firebase project and login as index.html.
-   Doc: artifacts/youtrend-crm/public/data/global_state/{teamId}/fintrack/{clientId}
-   Versions: .../fintrack/{clientId}/versions/{id}  (newest 20)
+   Doc: artifacts/youtrend-crm/public/data/global_state/{teamId}/fintrack/{planId}
+   URL: fintrack.html?client={clickedRowId}&plan={planId}
+   Permission uses the clicked row. A link without &plan still reads fintrack/{client}.
+   Versions: .../fintrack/{planId}/versions/{id}  (newest 20)
    Test seam: window.__FT_TEST = { mock:true, ... } uses sessionStorage and never calls Firebase.
    Snapshots are stored as a snapJson string. Firestore rejects nested arrays, and the
    exported state contains them (estate rate brackets, family parts, tax steps). */
@@ -2693,6 +2695,7 @@ setTab(TAB,false);renderAll();
   let lastSavedAt = 0;
   let store = null;
   let teamId = '';
+  let clickedId = '';
   let clientId = '';
   let email = '';
   let crmClient = null;
@@ -3160,7 +3163,9 @@ setTab(TAB,false);renderAll();
   async function openClient() {
     teamId = readTeam();
     const params = new URLSearchParams(location.search);
-    clientId = safeId(params.get('client') || '');
+    clickedId = safeId(params.get('client') || '');
+    const requestedPlan = safeId(params.get('plan') || '') || clickedId;
+    clientId = clickedId;
     if (!email) {
       showLogin(false);
       return;
@@ -3169,7 +3174,7 @@ setTab(TAB,false);renderAll();
       showLogin(true);
       return;
     }
-    if (!clientId) {
+    if (!clickedId) {
       gate('deny', '缺少客戶', '請從 CRM 客戶卡片或編輯視窗的「財務規劃與追蹤」開啟。網址需要 ?client=客戶編號。');
       return;
     }
@@ -3182,9 +3187,9 @@ setTab(TAB,false);renderAll();
       return;
     }
     const members = (crm && crm.members) || [];
-    const cust = ((crm && crm.cust) || []).find(function (c) { return c && c.id === clientId; });
+    const cust = ((crm && crm.cust) || []).find(function (c) { return c && c.id === clickedId; });
     if (!cust) {
-      gate('deny', '找不到客戶', '團隊 ' + esc(teamId) + ' 的 CRM 裡沒有編號 ' + esc(clientId) + ' 的客戶。');
+      gate('deny', '找不到客戶', '團隊 ' + esc(teamId) + ' 的 CRM 裡沒有編號 ' + esc(clickedId) + ' 的客戶。');
       return;
     }
     const access = canAccessClient(email, cust, members);
@@ -3201,7 +3206,27 @@ setTab(TAB,false);renderAll();
     window.__crmClient = crmClient;
 
     let existing = null;
-    try { existing = await store.loadDoc(teamId, clientId); }
+    try {
+      if (requestedPlan !== clickedId) {
+        const sharedDoc = await store.loadDoc(teamId, requestedPlan);
+        if (sharedDoc) {
+          clientId = requestedPlan;
+          existing = sharedDoc;
+        } else {
+          const ownDoc = await store.loadDoc(teamId, clickedId);
+          if (ownDoc) {
+            clientId = clickedId;
+            existing = ownDoc;
+          } else {
+            clientId = requestedPlan;
+            existing = null;
+          }
+        }
+      } else {
+        clientId = clickedId;
+        existing = await store.loadDoc(teamId, clickedId);
+      }
+    }
     catch (e) {
       console.error(e);
       const code = (e && e.code) || '';
@@ -3251,6 +3276,8 @@ setTab(TAB,false);renderAll();
         listVersions: function () { return store.listVersions(teamId, clientId); },
         exportState: exportSnap,
         canAccess: canAccessClient,
+        clickedId: function () { return clickedId; },
+        docId: function () { return clientId; },
         checkFirestore: function (value) { assertNoNestedArrays(value, false); },
         injectRemote: function (extra) { return store.injectRemote(teamId, clientId, extra); },
         localUnsaved: readLocal,
