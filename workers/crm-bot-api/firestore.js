@@ -162,6 +162,29 @@ export function createRestFirestore(env, fetchImpl) {
     async getDoc(path) {
       return readPlain(path);
     },
+    async listDocs(collectionPath) {
+      const out = [];
+      let pageToken = '';
+      for (let page = 0; page < 5; page++) {
+        const query = { pageSize: '100' };
+        if (pageToken) query.pageToken = pageToken;
+        let body;
+        try {
+          body = await call(docUrl(projectId, collectionPath, query), { method: 'GET' });
+        } catch (e) {
+          if (e instanceof FirestoreError && e.httpStatus === 404) return out;
+          throw e;
+        }
+        const docs = Array.isArray(body.documents) ? body.documents : [];
+        docs.forEach((doc) => {
+          const id = String(doc.name || '').split('/').pop();
+          out.push(Object.assign(decodeFields(doc.fields || {}), { id }));
+        });
+        pageToken = body.nextPageToken || '';
+        if (!pageToken) break;
+      }
+      return out;
+    },
     async setDoc(path, data) {
       await call(rootUrl(projectId) + ':commit', {
         method: 'POST',

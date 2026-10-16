@@ -1,24 +1,25 @@
 # CRM 機器人介面（crm-bot-api）
 
-這是給「沒有瀏覽器、只會呼叫網址」的 AI 助理用的一扇門。它能讀取 CRM 客戶、預覽一筆聯絡紀錄或下次聯絡日，並在**你親自確認之後**才寫進雲端。
+助理讀寫 CRM 用。
 
-這次只把程式放進版本庫。**還沒有部署，也不會自動上線。** 下面的步驟等你準備好再做。
+這是給「沒有瀏覽器、只會呼叫網址」的 AI 助理用的一扇門。讀取、修改、新增、刪除都先給你看中文的「修改前／修改後」，你拿出確認碼之後才寫進雲端。
 
-請不要把這支程式貼進現有的手寫辨識 Worker（`crm-ai.shanewangmusic.workers.dev`）。那個密語已經存在瀏覽器裡，不能拿來改客戶資料。每月備份那支 Apps Script 維持只讀，不要改成會寫入。
+線上的 Worker 名稱是 **crm-assistant-gateway**。密語不用重設。這份程式更新**不會自動部署**；要新功能生效時，在這個資料夾再執行一次 `npx wrangler deploy`，不要換密語，也不要貼進手寫辨識那個 Worker（`crm-ai`）。每月備份那支 Apps Script 維持只讀。
 
 ## 它做得到、做不到
 
 做得到：
 
-- 讀客戶：姓名、電話、階段、分類、下次聯絡日、負責業務，以及最近的聯絡紀錄。
-- 預覽兩種寫入：新增一筆聯絡紀錄，或設定下次聯絡日。預覽只會把「待確認單」存到另一個資料夾，**不會改客戶**。
-- 你拿出確認碼之後，才真正寫入。寫入前會再對一次版本號；中間有人存過檔就取消。寫入前先把整本帳另存一份，並留下一筆操作紀錄。
+- 讀完整客戶欄位（仍要機器人金鑰）：`GET /customers`、`GET /customers/客戶id`。
+- 讀財務規劃：`GET /fintrack/計畫id`。
+- 看最近的寫入和對應備份：`GET /history`。
+- 預覽這些操作（都先不改資料）：新增聯絡、改下次聯絡日、改客戶欄位、新增客戶、刪除客戶、改一筆聯絡、刪一筆聯絡、建立或修改財務規劃、用備份還原。
+- 你拿出確認碼之後才寫入。寫入前再對一次版本號；中間有人存過檔就取消。寫入前先把整本帳或那份財務規劃另存一份，並留下操作紀錄。
 
-做不到（故意沒有這些功能）：
+做不到：
 
-- 沒有刪除。
-- 不能把客戶改成已成交，也不能改保費、佣金。
-- 不能改成員名單，也不能讀寫財務規劃。
+- 不能改成員名單，也不能刪 `bot_backups` 裡的備份。
+- 網址上的 DELETE 不能繞過確認。刪除一定要走預覽，預覽會寫明「即將刪除」。
 - 機器人的金鑰**不能**代替你的確認碼。
 
 聯絡紀錄寫在哪裡，跟 CRM 頁面相同：
@@ -27,6 +28,74 @@
 - 一畝田名單如果還沒連結：寫進這筆名單自己的聯絡紀錄。
 - 你指定的是核心看板的某一單：只寫進那一單。
 - 下次聯絡日會跟著這個人，同步到連結的名單和每一單。
+- 改一畝田的姓名時，已連結的核心單會一起改名。刪除客戶時，連結會像 CRM 頁面一樣解開；若刪的是最後一張核心單，聯絡紀錄會帶回一畝田。其他沒點到的客戶不會動。
+
+## 預覽操作
+
+每一次預覽的 `diff.text` 都是中文的「修改前」和「修改後」。刪除時另外有 `diff.warning`，開頭是「即將刪除」。
+
+| op | 你要送的內容 |
+|---|---|
+| `appendContact` | `customerId`、`date`、`method`（Line、電話、面談、其他）、`content`、可省略的 `time` |
+| `setNextContact` | `customerId`、`date`（空白代表清空） |
+| `updateCustomer` | `customerId`、`patch`。`patch` 只能用 CRM 頁面有的欄位，例如姓名、電話、`stage` 或 `progress`、`category`、`agentName`、`notes`、`tags`、保單欄位。不能直接整包換掉聯絡紀錄 |
+| `createCustomer` | `customer`，至少要有 `name` |
+| `deleteCustomer` | `customerId` |
+| `editContact` | `customerId`、`contactId`、`patch`（date、method、content、time、endDate） |
+| `deleteContact` | `customerId`、`contactId` |
+| `createFintrack` | `planId`，可加 `clientName`、`snap`（計畫內容物件） |
+| `updateFintrack` | `planId`，加上要改的 `clientName` 或 `snap` |
+| `undo` | `backupId`（`GET /history` 裡那一筆的備份編號） |
+
+還原會把該次寫入之前的客戶帳或那一份財務規劃放回去，並再留一份新備份，所以還原本身也可以再還原。
+
+## 資料庫規則要加的部分
+
+若現在的規則已經讓任何登入帳號讀寫整棵 `artifacts/youtrend-crm/public/data`，不必再改。
+
+若規則只允許你的信箱，把機器人信箱加進去，並允許讀寫財務規劃。**不要**允許刪除 `bot_backups`。下面這一段是完整規則；如果畫面上還有其他成員的權限，不要整份覆蓋，只把 `fintrack` 和三個 `bot_` 集合補進現有規則。把 `機器人的信箱` 換成第 1 步建立的信箱。
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInEmail() {
+      return request.auth != null && request.auth.token.email != null
+        ? request.auth.token.email
+        : '';
+    }
+    function canUseBotApi() {
+      return signedInEmail() == 'shanewangmusic@gmail.com'
+          || signedInEmail() == '機器人的信箱';
+    }
+
+    match /artifacts/youtrend-crm/public/data/global_state/{teamId} {
+      allow read, create, update: if canUseBotApi();
+      allow delete: if false;
+
+      match /fintrack/{planId} {
+        allow read, create, update: if canUseBotApi();
+        allow delete: if false;
+      }
+    }
+
+    match /artifacts/youtrend-crm/public/data/bot_previews/{id} {
+      allow read, create, update: if canUseBotApi();
+      allow delete: if false;
+    }
+
+    match /artifacts/youtrend-crm/public/data/bot_backups/{id} {
+      allow read, create, update: if canUseBotApi();
+      allow delete: if false;
+    }
+
+    match /artifacts/youtrend-crm/public/data/bot_audit/{id} {
+      allow read, create, update: if canUseBotApi();
+      allow delete: if false;
+    }
+  }
+}
+```
 
 ## 你要先準備
 
@@ -50,12 +119,8 @@
 
 1. 同一專案左側「Firestore Database」→「規則」。
 2. 搜尋 `global_state`。
-3. 如果規則已經寫成「任何登入的人都能讀寫這棵資料」，就**不要再放寬**。機器人用新帳號登入後就能讀寫。程式本身不會去碰 `fintrack`（財務規劃）。
-4. 如果規則只允許你的信箱：在**同樣的條件**旁邊加上機器人的信箱，只開放下面四個位置的讀取、新增、更新，不要開放刪除，也不要新開一條會蓋掉財務規劃的規則：
-   - `artifacts/youtrend-crm/public/data/global_state/你的團隊代碼`
-   - `artifacts/youtrend-crm/public/data/bot_previews/{文件}`
-   - `artifacts/youtrend-crm/public/data/bot_backups/{文件}`
-   - `artifacts/youtrend-crm/public/data/bot_audit/{文件}`
+3. 如果規則已經寫成「任何登入的人都能讀寫這棵資料」，就**不要再放寬**。財務規劃也在這棵資料底下，機器人登入後就能讀寫。
+4. 如果規則只允許你的信箱：用上面「資料庫規則要加的部分」那一整段。它允許讀寫客戶帳、財務規劃，以及預覽、備份、操作紀錄。備份只能新增和更新，不能刪。
 5. 按發布。不確定怎麼改時，先不要發布，把畫面上的規則原文存下來再問人。不要整份換成「全部允許」。
 
 ### 3. 讓過期的預覽單自動清掉
@@ -66,9 +131,9 @@
 2. 建立原則。集合群組填 `bot_previews`，欄位填 `expireAt`。
 3. 儲存。這個刪除是 Firebase 自己做的，不是機器人呼叫刪除。
 
-### 4. 部署這個新的 Worker
+### 4. 部署到已經在用的 Worker
 
-在自己的電腦、這個資料夾裡做。不要部署到舊的 `crm-ai`。
+在自己的電腦、這個資料夾裡做。目標是已經上線的 **crm-assistant-gateway**。不要部署到 `crm-ai`。密語已經設好就不要再 `secret put`。
 
 ```bash
 cd workers/crm-bot-api

@@ -91,6 +91,17 @@ class MemoryFirestore {
     this.writes.push({ op: 'set', path });
     this.docs.set(path, clone(data));
   }
+  async listDocs(collectionPath) {
+    const prefix = String(collectionPath || '').replace(/\/$/, '') + '/';
+    const out = [];
+    for (const [path, doc] of this.docs) {
+      if (!path.startsWith(prefix)) continue;
+      const id = path.slice(prefix.length);
+      if (!id || id.includes('/')) continue;
+      out.push(Object.assign(clone(doc), { id }));
+    }
+    return out;
+  }
   async runTransaction(fn) {
     const snap = new Map();
     for (const [k, v] of this.docs) snap.set(k, clone(v));
@@ -151,7 +162,7 @@ function cust(h, id) {
   return state(h).cust.find((c) => c.id === id);
 }
 
-test('read: search, detail, recent 5, no money fields, auth required', async () => {
+test('read: search, detail, recent 5, full fields, auth required', async () => {
   const h = harness();
   const denied = await call(h, 'GET', '/customers?name=王', undefined, '');
   assert.equal(denied.status, 401);
@@ -171,8 +182,9 @@ test('read: search, detail, recent 5, no money fields, auth required', async () 
   assert.equal(lead.records[0].sys, true);
   assert.equal(lead.records[0].store, 'history');
   assert.equal(lead.records[0].customerId, 'deal-1');
-  assert.equal(JSON.stringify(list.data).includes('舊的名單紀錄'), false);
-  assert.equal(JSON.stringify(list.data).includes('88888'), false);
+  assert.equal(lead.records.some((r) => r.content === '舊的名單紀錄'), false);
+  assert.equal(lead.contacts[0].content, '舊的名單紀錄');
+  assert.equal(list.data.customers[1].premium, '88888');
 
   const many = await call(h, 'GET', '/customers?name=多紀錄');
   assert.equal(many.data.customers[0].records.length, 5);
@@ -188,9 +200,8 @@ test('read: search, detail, recent 5, no money fields, auth required', async () 
   assert.equal(missing.status, 404);
 
   const won = await call(h, 'GET', '/customers/won-1');
-  const wonJson = JSON.stringify(won.data);
-  assert.equal(wonJson.includes('50000'), false);
-  assert.equal(wonJson.includes('終身'), false);
+  assert.equal(won.data.customer.premium, '50000');
+  assert.equal(won.data.customer.policyName, '終身');
   assert.equal(won.data.customer.category, 'WON');
   assert.equal(h.db.writes.length, 0);
 });
@@ -490,3 +501,162 @@ test('firestore values round-trip and a transaction retries after ABORTED', asyn
 function jsonRes(body, status) {
   return new Response(JSON.stringify(body), { status: status || 200, headers: { 'content-type': 'application/json' } });
 }
+
+test('update and create customer touch only that customer', async () => {
+  const h = harness();
+  const before = clone(state(h));
+  const bad = await call(h, 'POST', '/preview', { op: 'updateCustomer', customerId: 'solo', patch: { notAField: 'x' } });
+  assert.equal(bad.status, 400);
+  const preview = await call(h, 'POST', '/preview', {
+    op: 'updateCustomer', customerId: 'solo', patch: { name: '陳太太', notes: '有孫子', stage: 'FIRST_VISIT' }
+  });
+  assert.equal(preview.status, 200);
+  assert.match(preview.data.diff.text, /修改前：/);
+  assert.match(preview.data.diff.text, /修改後：/);
+  assert.deepEqual(state(h), before);
+  let committed = await call(h, 'POST', '/commit', { previewId: preview.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'solo').name, '陳太太');
+  assert.equal(cust(h, 'solo').notes, '有孫子');
+  assert.equal(cust(h, 'solo').progress, 'FIRST_VISIT');
+  assert.equal(cust(h, 'solo').phone, '0988-111-222');
+  assert.equal(cust(h, 'lead-1').name, '王小明');
+  assert.deepEqual(state(h).members, before.members);
+  assert.equal(state(h).extraNote, '不要弄丟');
+
+  h.setNow(1800000005000);
+  const created = await call(h, 'POST', '/preview', {
+    op: 'createCustomer', customer: { name: '新人', phone: '0912000000', category: 'NEW', progress: 'NURTURE' }
+  });
+  assert.match(created.data.diff.text, /修改前：/);
+  assert.match(created.data.diff.text, /新增「新人」/);
+  committed = await call(h, 'POST', '/commit', { previewId: created.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  const newbie = state(h).cust.find((c) => c.name === '新人');
+  assert.ok(newbie);
+  assert.equal(newbie.history.length, 0);
+  assert.equal(state(h).cust.length, before.cust.length + 1);
+  assert.equal(cust(h, 'won-1').premium, '50000');
+  assert.deepEqual(state(h).per, before.per);
+});
+
+test('delete customer and one contact warn, and leave everyone else', async () => {
+  const h = harness();
+  const preview = await call(h, 'POST', '/preview', { op: 'deleteCustomer', customerId: 'deal-2' });
+  assert.match(preview.data.diff.warning, /即將刪除/);
+  assert.match(preview.data.diff.text, /修改前：/);
+  assert.match(preview.data.diff.text, /修改後：/);
+  let committed = await call(h, 'POST', '/commit', { previewId: preview.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'deal-2'), undefined);
+  assert.ok(cust(h, 'deal-1'));
+  assert.ok(cust(h, 'lead-1'));
+  assert.deepEqual(cust(h, 'lead-1').coreIds, ['deal-1']);
+  assert.equal(cust(h, 'solo').name, '陳阿姨');
+  assert.equal(state(h).extraNote, '不要弄丟');
+
+  h.setNow(1800000006000);
+  const edited = await call(h, 'POST', '/preview', {
+    op: 'editContact', customerId: 'deal-1', contactId: 'h1', patch: { content: '改過的經營' }
+  });
+  assert.match(edited.data.diff.text, /修改前：/);
+  assert.match(edited.data.diff.text, /改過的經營/);
+  committed = await call(h, 'POST', '/commit', { previewId: edited.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'deal-1').history.find((row) => row.id === 'h1').content, '改過的經營');
+  assert.equal(cust(h, 'deal-1').premium, '88888');
+
+  h.setNow(1800000007000);
+  const removed = await call(h, 'POST', '/preview', { op: 'deleteContact', customerId: 'deal-1', contactId: 'h1' });
+  assert.match(removed.data.diff.warning, /即將刪除/);
+  assert.match(removed.data.diff.text, /修改後：/);
+  committed = await call(h, 'POST', '/commit', { previewId: removed.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'deal-1').history.some((row) => row.id === 'h1'), false);
+  assert.equal(cust(h, 'deal-1').history.some((row) => row.id === 'h1b'), true);
+  assert.equal(cust(h, 'lead-1').name, '王小明');
+});
+
+test('fintrack create and update do not change the customer book', async () => {
+  const h = harness();
+  const before = clone(state(h));
+  h.db.docs.set(PATHS.fintrack('plan-b'), {
+    clientId: 'plan-b', teamId: TEAM, clientName: '別人', rev: 3, snapJson: JSON.stringify({ client: { name: '別人', job: '舊' } })
+  });
+  const created = await call(h, 'POST', '/preview', {
+    op: 'createFintrack', planId: 'plan-a', clientName: '陳阿姨',
+    snap: { client: { name: '陳阿姨', birth: '', job: '教師', note: '' } }
+  });
+  assert.equal(created.status, 200);
+  assert.match(created.data.diff.text, /修改前：/);
+  assert.match(created.data.diff.text, /修改後：/);
+  let committed = await call(h, 'POST', '/commit', { previewId: created.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.deepEqual(state(h), before);
+  const got = await call(h, 'GET', '/fintrack/plan-a');
+  assert.equal(got.status, 200);
+  assert.equal(got.data.plan.clientName, '陳阿姨');
+  assert.equal(got.data.plan.snap.client.job, '教師');
+  assert.equal(got.data.plan.rev, 1);
+  assert.equal((await call(h, 'GET', '/fintrack/plan-b')).data.plan.clientName, '別人');
+
+  h.setNow(1800000008000);
+  const updated = await call(h, 'POST', '/preview', { op: 'updateFintrack', planId: 'plan-a', clientName: '陳太太' });
+  committed = await call(h, 'POST', '/commit', { previewId: updated.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  const again = await call(h, 'GET', '/fintrack/plan-a');
+  assert.equal(again.data.plan.clientName, '陳太太');
+  assert.equal(again.data.plan.snap.client.job, '教師');
+  assert.equal(again.data.plan.rev, 2);
+  assert.equal((await call(h, 'GET', '/fintrack/plan-b')).data.plan.snap.client.job, '舊');
+  assert.deepEqual(state(h).cust, before.cust);
+  assert.deepEqual(state(h).members, before.members);
+  const backup = h.db.docs.get(PATHS.backup(committed.data.backupId));
+  assert.equal(backup._backup.kind, 'fintrack');
+  assert.equal(backup.clientName, '陳阿姨');
+
+  h.setNow(1800000008500);
+  const undone = await call(h, 'POST', '/preview', { op: 'undo', backupId: committed.data.backupId });
+  assert.match(undone.data.diff.text, /修改前：/);
+  committed = await call(h, 'POST', '/commit', { previewId: undone.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal((await call(h, 'GET', '/fintrack/plan-a')).data.plan.clientName, '陳阿姨');
+  assert.equal((await call(h, 'GET', '/fintrack/plan-b')).data.plan.clientName, '別人');
+  assert.deepEqual(state(h).cust, before.cust);
+});
+
+test('undo round-trip restores the previous customer and can restore forward again', async () => {
+  const h = harness();
+  const first = await call(h, 'POST', '/preview', {
+    op: 'updateCustomer', customerId: 'solo', patch: { notes: '先改備註' }
+  });
+  let committed = await call(h, 'POST', '/commit', { previewId: first.data.previewId, approvalCode: APPROVAL });
+  assert.equal(cust(h, 'solo').notes, '先改備註');
+  const backupId = committed.data.backupId;
+
+  h.setNow(1800000009000);
+  const back = await call(h, 'POST', '/preview', { op: 'undo', backupId });
+  assert.equal(back.status, 200);
+  assert.match(back.data.diff.text, /修改前：/);
+  assert.match(back.data.diff.text, /修改後：/);
+  committed = await call(h, 'POST', '/commit', { previewId: back.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'solo').notes || '', '');
+  assert.equal(cust(h, 'solo').name, '陳阿姨');
+  assert.equal(cust(h, 'lead-1').phone, '0912-000-111');
+  assert.equal(state(h).extraNote, '不要弄丟');
+
+  h.setNow(1800000010000);
+  const forward = await call(h, 'POST', '/preview', { op: 'undo', backupId: committed.data.backupId });
+  committed = await call(h, 'POST', '/commit', { previewId: forward.data.previewId, approvalCode: APPROVAL });
+  assert.equal(committed.status, 200);
+  assert.equal(cust(h, 'solo').notes, '先改備註');
+  assert.equal(cust(h, 'won-1').policyName, '終身');
+
+  const history = await call(h, 'GET', '/history');
+  assert.equal(history.status, 200);
+  assert.ok(history.data.commits.length >= 3);
+  assert.ok(history.data.commits.every((row) => row.backupId && row.op));
+  assert.ok(history.data.commits.some((row) => row.op === 'undo' && row.backupId));
+  assert.equal(history.data.commits[0].at >= history.data.commits[1].at, true);
+});

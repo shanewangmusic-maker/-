@@ -1,4 +1,4 @@
-name = "crm-bot-api"
+name = "crm-assistant-gateway"
 main = "worker.js"
 compatibility_date = "2026-10-16"
 

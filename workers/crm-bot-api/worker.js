@@ -3,18 +3,23 @@ import {
   applyOp,
   backupCopy,
   cloudRev,
-  contactRecords,
   envTrim,
   expireMillis,
+  fintrackRevOf,
+  isPlanId,
   isPreviewId,
   matchCustomer,
   normalizeOp,
+  packFintrack,
   pathsFor,
+  planFintrack,
+  planUndo,
   publicCustomer,
   randomSuffix,
   safeEqual,
   stable,
   teamIdFrom,
+  unpackFintrack,
   withCustomers
 } from './logic.js';
 import { FirestoreError, createRestFirestore } from './firestore.js';
@@ -35,8 +40,11 @@ function routeOf(pathname) {
   const p = String(pathname || '/').replace(/\/+$/, '') || '/';
   if (p === '/health') return { name: 'health' };
   if (p === '/customers') return { name: 'list' };
+  if (p === '/history') return { name: 'history' };
   if (p === '/preview') return { name: 'preview' };
   if (p === '/commit') return { name: 'commit' };
+  const fin = /^\/fintrack\/([^/]+)$/.exec(p);
+  if (fin) return { name: 'fintrack', id: decodeURIComponent(fin[1]) };
   const m = /^\/customers\/([^/]+)$/.exec(p);
   if (m) return { name: 'one', id: decodeURIComponent(m[1]) };
   return { name: 'unknown', path: p };
@@ -69,7 +77,7 @@ function requireTeam(env) {
 
 async function readJson(request) {
   const text = await request.text();
-  if (text.length > 20000) return { error: '內容太長', status: 413 };
+  if (text.length > 800000) return { error: '內容太長', status: 413 };
   if (!text) return { error: '請提供 JSON', status: 400 };
   try {
     const body = JSON.parse(text);
@@ -105,40 +113,220 @@ async function oneCustomer(id, db, paths) {
   return json({ ok: true, customer: publicCustomer(list, c, null) });
 }
 
+async function oneFintrack(id, db, paths) {
+  if (!isPlanId(id)) return json({ error: 'planId 不正確' }, 400);
+  const doc = await db.getDoc(paths.fintrack(id));
+  if (!doc) return json({ error: '找不到這份財務規劃' }, 404);
+  return json({ ok: true, planId: id, plan: unpackFintrack(doc) });
+}
+
+async function listHistory(url, db, paths) {
+  const limitRaw = Number(url.searchParams.get('limit') || 20);
+  const limit = Math.max(1, Math.min(50, Number.isFinite(limitRaw) ? limitRaw : 20));
+  if (!db.listDocs) return json({ error: '無法列出操作紀錄' }, 500);
+  const rows = await db.listDocs(paths.auditCollection);
+  const commits = rows.filter((row) => row && row.op).map((row) => ({
+    id: row.id || '',
+    at: row.at || '',
+    botName: row.botName || '',
+    op: row.op || '',
+    previewId: row.previewId || '',
+    customerId: row.customerId || '',
+    planId: row.planId || '',
+    backupId: row.backupId || '',
+    baseRev: row.baseRev,
+    newRev: row.newRev,
+    summary: row.summary || ''
+  }));
+  commits.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
+  return json({ ok: true, commits: commits.slice(0, limit) });
+}
+
+async function buildPreview(norm, db, paths, deps) {
+  const now = deps.now();
+  const idSource = { now, suffix: deps.random() };
+  if (norm.scope === 'fintrack') {
+    const team = await db.getDoc(paths.state);
+    if (!team) return { error: '找不到這個團隊的資料', status: 404 };
+    const existing = await db.getDoc(paths.fintrack(norm.request.planId));
+    const applied = planFintrack(existing, norm.request, paths.teamId, norm.op === 'createFintrack');
+    if (applied.error) return { error: applied.error, status: 400 };
+    return { applied, idSource, baseRev: applied.baseRev, planId: norm.request.planId };
+  }
+  if (norm.scope === 'undo') {
+    const backup = await db.getDoc(paths.backup(norm.request.backupId));
+    if (!backup) return { error: '找不到這份備份', status: 404 };
+    const meta = backup._backup || {};
+    const kind = meta.kind || (Array.isArray(backup.cust) ? 'global_state' : 'fintrack');
+    const current = kind === 'fintrack'
+      ? await db.getDoc(paths.fintrack(meta.planId || ''))
+      : await db.getDoc(paths.state);
+    if (!current) return { error: '找不到要還原的資料', status: 404 };
+    const applied = planUndo(backup, current, kind);
+    if (applied.error) return { error: applied.error, status: 400 };
+    return { applied, idSource, baseRev: applied.baseRev, planId: applied.planId || '', undoKind: kind, backupId: norm.request.backupId };
+  }
+  const doc = await db.getDoc(paths.state);
+  if (!doc) return { error: '找不到這個團隊的資料', status: 404 };
+  const applied = applyOp(doc, norm.op, norm.request, idSource);
+  if (applied.error) return { error: applied.error, status: 400 };
+  return { applied, idSource, baseRev: cloudRev(doc) };
+}
+
 async function preview(request, db, paths, bot, deps) {
   const parsed = await readJson(request);
   if (parsed.error) return json({ error: parsed.error }, parsed.status);
   const norm = normalizeOp(parsed.body);
   if (norm.error) return json({ error: norm.error }, 400);
-  const doc = await db.getDoc(paths.state);
-  if (!doc) return json({ error: '找不到這個團隊的資料' }, 404);
-  const now = deps.now();
-  const idSource = { now, suffix: deps.random() };
-  const applied = applyOp(doc, norm.op, norm.request, idSource);
-  if (applied.error) return json({ error: applied.error }, 400);
-  const previewId = 'pv-' + now + '-' + idSource.suffix;
-  const expires = new Date(now + PREVIEW_TTL_MS).toISOString();
+  const built = await buildPreview(norm, db, paths, deps);
+  if (built.error) return json({ error: built.error }, built.status);
+  const previewId = 'pv-' + built.idSource.now + '-' + built.idSource.suffix;
+  const expires = new Date(built.idSource.now + PREVIEW_TTL_MS).toISOString();
   const pending = {
     previewId,
     teamId: paths.teamId,
     botName: bot.name,
     op: norm.op,
+    target: built.applied.target || 'state',
     request: norm.request,
-    idSource,
-    baseRev: cloudRev(doc),
-    diff: applied.diff,
+    idSource: built.idSource,
+    baseRev: built.baseRev,
+    diff: built.applied.diff,
     status: 'pending',
-    createdAt: new Date(now).toISOString(),
+    createdAt: new Date(built.idSource.now).toISOString(),
     expireAt: { __timestamp: expires }
   };
+  if (built.planId) pending.planId = built.planId;
+  if (built.backupId) pending.backupId = built.backupId;
+  if (built.undoKind) pending.undoKind = built.undoKind;
   await db.setDoc(paths.preview(previewId), pending);
-  return json({
+  const body = {
     ok: true,
     previewId,
     baseRev: pending.baseRev,
-    diff: applied.diff,
+    diff: built.applied.diff,
     expiresAt: expires
+  };
+  return json(body);
+}
+
+function commitBody(previewId, pending, newRev, backupId, auditId, diff) {
+  return { ok: true, previewId, baseRev: pending.baseRev, newRev, backupId, auditId, diff };
+}
+
+function writeCommit(tx, paths, item) {
+  tx.set(paths.backup(item.backupId), backupCopy(item.backupDoc, Object.assign({
+    at: new Date(item.now).toISOString(),
+    previewId: item.previewId,
+    botName: item.bot.name,
+    op: item.pending.op,
+    teamId: paths.teamId
+  }, item.backupMeta)));
+  tx.set(item.nextPath, item.nextDoc);
+  tx.set(paths.audit(item.auditId), {
+    at: new Date(item.now).toISOString(),
+    teamId: paths.teamId,
+    botName: item.bot.name,
+    op: item.pending.op,
+    previewId: item.previewId,
+    customerId: item.customerId || '',
+    planId: item.backupMeta.planId || '',
+    backupId: item.backupId,
+    baseRev: item.pending.baseRev,
+    newRev: item.newRev,
+    summary: item.pending.diff.summary,
+    diff: item.pending.diff
   });
+  tx.set(paths.preview(item.previewId), Object.assign({}, item.pending, {
+    status: 'committed',
+    committedAt: new Date(item.now).toISOString(),
+    backupId: item.backupId,
+    auditId: item.auditId
+  }));
+}
+
+async function commitFintrack(tx, paths, pending, bot, deps, now, previewId) {
+  const current = await tx.get(paths.fintrack(pending.planId));
+  const creating = pending.op === 'createFintrack';
+  if (creating && current) return { abort: true, status: 409, error: '這份財務規劃剛被建立，請重新預覽' };
+  if (!creating && !current) return { abort: true, status: 404, error: '找不到這份財務規劃' };
+  if (!creating && fintrackRevOf(current) !== pending.baseRev) {
+    return { abort: true, status: 409, error: '財務規劃剛被別人更新，這份預覽已作廢。請重新預覽。' };
+  }
+  const applied = planFintrack(current, pending.request, paths.teamId, creating);
+  if (applied.error) return { abort: true, status: 409, error: applied.error };
+  if (stable(applied.diff) !== stable(pending.diff)) {
+    return { abort: true, status: 409, error: '預覽時的差異和現在不一致，已取消寫入' };
+  }
+  const backupId = 'bk-' + now + '-' + deps.random();
+  const auditId = 'au-' + now + '-' + deps.random();
+  const next = applied.doc;
+  next.rev = (creating ? 0 : fintrackRevOf(current)) + 1;
+  next.updatedAt = now;
+  const packed = packFintrack(next);
+  if (packed.error) return { abort: true, status: 400, error: packed.error };
+  writeCommit(tx, paths, {
+    backupId, auditId, previewId, bot, pending, now,
+    backupDoc: current || { planId: pending.planId, existed: false },
+    backupMeta: { kind: 'fintrack', planId: pending.planId },
+    nextPath: paths.fintrack(pending.planId),
+    nextDoc: packed.doc,
+    newRev: packed.doc.rev,
+    customerId: pending.planId
+  });
+  return { body: commitBody(previewId, pending, packed.doc.rev, backupId, auditId, applied.diff) };
+}
+
+async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
+  const backup = await tx.get(paths.backup(pending.backupId));
+  if (!backup) return { abort: true, status: 404, error: '找不到這份備份' };
+  const kind = pending.undoKind || ((backup._backup && backup._backup.kind) || (Array.isArray(backup.cust) ? 'global_state' : 'fintrack'));
+  const planId = pending.planId || (backup._backup && backup._backup.planId) || '';
+  const current = kind === 'fintrack' ? await tx.get(paths.fintrack(planId)) : await tx.get(paths.state);
+  if (!current) return { abort: true, status: 404, error: '找不到要還原的資料' };
+  const currentRev = kind === 'fintrack' ? fintrackRevOf(current) : cloudRev(current);
+  if (currentRev !== pending.baseRev) {
+    return { abort: true, status: 409, error: '資料剛被別人更新，這份還原已作廢。請重新預覽。' };
+  }
+  const applied = planUndo(backup, current, kind);
+  if (applied.error) return { abort: true, status: 409, error: applied.error };
+  if (stable(applied.diff) !== stable(pending.diff)) {
+    return { abort: true, status: 409, error: '預覽時的差異和現在不一致，已取消寫入' };
+  }
+  const backupId = 'bk-' + now + '-' + deps.random();
+  const auditId = 'au-' + now + '-' + deps.random();
+  const restored = applied.snapshot;
+  let nextPath = paths.state;
+  let newRev = currentRev + 1;
+  if (kind === 'fintrack') {
+    restored.rev = newRev;
+    restored.updatedAt = now;
+    nextPath = paths.fintrack(planId);
+    const packed = packFintrack(restored);
+    if (packed.error) return { abort: true, status: 400, error: packed.error };
+    writeCommit(tx, paths, {
+      backupId, auditId, previewId, bot, pending, now,
+      backupDoc: current,
+      backupMeta: { kind: 'fintrack', planId },
+      nextPath,
+      nextDoc: packed.doc,
+      newRev,
+      customerId: planId
+    });
+  } else {
+    restored._rev = newRev;
+    restored._updatedAt = now;
+    writeCommit(tx, paths, {
+      backupId, auditId, previewId, bot, pending, now,
+      backupDoc: current,
+      backupMeta: { kind: 'global_state' },
+      nextPath,
+      nextDoc: restored,
+      newRev,
+      customerId: ''
+    });
+  }
+  return { body: commitBody(previewId, pending, newRev, backupId, auditId, applied.diff) };
 }
 
 async function commit(request, env, db, paths, bot, deps) {
@@ -154,13 +342,16 @@ async function commit(request, env, db, paths, bot, deps) {
   const now = deps.now();
   const result = await db.runTransaction(async (tx) => {
     const pending = await tx.get(paths.preview(previewId));
-    const doc = await tx.get(paths.state);
     if (!pending || pending.status !== 'pending' || pending.teamId !== paths.teamId) {
       return { abort: true, status: 404, error: '找不到這份待確認的預覽，或已經用過' };
     }
     if (expireMillis(pending) <= now) {
       return { abort: true, status: 410, error: '這份預覽已過期，請重新預覽' };
     }
+    const target = pending.target || 'state';
+    if (target === 'fintrack') return commitFintrack(tx, paths, pending, bot, deps, now, previewId);
+    if (target === 'undo') return commitUndo(tx, paths, pending, bot, deps, now, previewId);
+    const doc = await tx.get(paths.state);
     if (!doc) return { abort: true, status: 404, error: '找不到這個團隊的資料' };
     if (cloudRev(doc) !== pending.baseRev) {
       return { abort: true, status: 409, error: '資料剛被別人更新，這份預覽已作廢。請重新預覽。' };
@@ -173,43 +364,17 @@ async function commit(request, env, db, paths, bot, deps) {
     const backupId = 'bk-' + now + '-' + deps.random();
     const auditId = 'au-' + now + '-' + deps.random();
     const next = withCustomers(doc, applied.customers, now);
-    tx.set(paths.backup(backupId), backupCopy(doc, {
-      at: new Date(now).toISOString(),
-      previewId,
-      botName: bot.name,
-      op: pending.op,
-      teamId: paths.teamId
-    }));
-    tx.set(paths.state, next);
-    tx.set(paths.audit(auditId), {
-      at: new Date(now).toISOString(),
-      teamId: paths.teamId,
-      botName: bot.name,
-      op: pending.op,
-      previewId,
-      customerId: pending.request.customerId,
-      baseRev: pending.baseRev,
+    const customerId = pending.request.customerId || (applied.diff.changes[0] && applied.diff.changes[0].customerId) || '';
+    writeCommit(tx, paths, {
+      backupId, auditId, previewId, bot, pending, now,
+      backupDoc: doc,
+      backupMeta: { kind: 'global_state' },
+      nextPath: paths.state,
+      nextDoc: next,
       newRev: next._rev,
-      summary: applied.diff.summary,
-      diff: applied.diff
+      customerId
     });
-    tx.set(paths.preview(previewId), Object.assign({}, pending, {
-      status: 'committed',
-      committedAt: new Date(now).toISOString(),
-      backupId,
-      auditId
-    }));
-    return {
-      body: {
-        ok: true,
-        previewId,
-        baseRev: pending.baseRev,
-        newRev: next._rev,
-        backupId,
-        auditId,
-        diff: applied.diff
-      }
-    };
+    return { body: commitBody(previewId, pending, next._rev, backupId, auditId, applied.diff) };
   });
   if (result && result.abort) return json({ error: result.error }, result.status);
   return json(result.body);
@@ -236,6 +401,8 @@ export async function handle(request, env, deps) {
     };
     if (route.name === 'list' && request.method === 'GET') return await listCustomers(url, db, team.paths);
     if (route.name === 'one' && request.method === 'GET') return await oneCustomer(route.id, db, team.paths);
+    if (route.name === 'fintrack' && request.method === 'GET') return await oneFintrack(route.id, db, team.paths);
+    if (route.name === 'history' && request.method === 'GET') return await listHistory(url, db, team.paths);
     if (route.name === 'preview' && request.method === 'POST') return await preview(request, db, Object.assign({ teamId: team.teamId }, team.paths), bot, clock);
     if (route.name === 'commit' && request.method === 'POST') return await commit(request, env, db, Object.assign({ teamId: team.teamId }, team.paths), bot, clock);
     if (route.name === 'unknown') return json({ error: '找不到這個網址' }, 404);
