@@ -2681,10 +2681,16 @@ setTab(TAB,false);renderAll();
     email = String(email || '').trim().toLowerCase();
     if (!email || !client) return { ok: false, reason: 'missing' };
     const agentName = String(client.agentName || '').trim();
-    if (email === OWNER_EMAIL) return { ok: true, role: 'owner', agentName: agentName };
-    const member = (members || []).find(function (m) {
+    const list = Array.isArray(members) ? members : [];
+    const member = list.find(function (m) {
       return m && String(m.email || '').trim().toLowerCase() === email;
     });
+    const hasEmails = list.some(function (m) {
+      return m && String(m.email || '').trim();
+    });
+    if (email === OWNER_EMAIL || !hasEmails || (member && member.admin === true)) {
+      return { ok: true, role: 'owner', agentName: agentName };
+    }
     if (!member) return { ok: false, reason: 'personal', agentName: agentName };
     if (!agentName || String(member.name || '').trim() === agentName) {
       return { ok: true, role: 'agent', agentName: agentName };
