@@ -1,0 +1,16 @@
+name = "crm-bot-api"
+main = "worker.js"
+compatibility_date = "2026-10-16"
+
+# 這不是密語。Firebase 專案與 CRM 頁面相同。
+[vars]
+FIREBASE_PROJECT_ID = "fish-teem"
+
+# 下面這些不要寫進這個檔案，也不要寫進聊天。
+# 用 wrangler secret put 設定：
+#   BOT_KEYS          例如 {"助理甲":"一長串亂碼"}
+#   APPROVAL_SECRET   擁有者自己保管的確認碼，不要交給機器人
+#   FIREBASE_API_KEY
+#   BOT_EMAIL
+#   BOT_PASSWORD
+#   TEAM_ID
