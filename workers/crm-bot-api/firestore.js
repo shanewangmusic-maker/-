@@ -191,39 +191,33 @@ export function createRestFirestore(env, fetchImpl) {
         body: JSON.stringify({ writes: [writeOf(projectId, path, data)] })
       });
     },
+    // 一般登入權杖呼叫 beginTransaction 會被 Firestore 回 403。
+    // 改成普通讀取，記下每份文件的 updateTime；寫入時用這個時間當前提，被別人搶先改就整段重試。
     async runTransaction(fn) {
       let last = null;
       for (let attempt = 0; attempt < 5; attempt++) {
-        const begun = await call(rootUrl(projectId) + ':beginTransaction', {
-          method: 'POST',
-          body: JSON.stringify({ options: { readWrite: {} } })
-        });
-        const tx = begun.transaction;
-        if (!tx) throw new FirestoreError('雲端沒有回傳交易編號', 502, 'INTERNAL');
-        let finished = false;
+        const seen = new Map();
+        const staged = [];
         try {
-          const staged = [];
           const result = await fn({
-            get: (path) => readPlain(path, tx),
-            set: (path, data) => { staged.push(writeOf(projectId, path, data)); }
+            get: async (path) => {
+              const observed = await readObserved(call, projectId, path);
+              seen.set(path, observed.updateTime);
+              return observed.data;
+            },
+            set: (path, data) => { staged.push({ path, data }); }
           });
-          if (result && result.abort) {
-            finished = true;
-            try { await rollback(call, projectId, tx); } catch (_) { /* 作廢結果不再重試 */ }
-            return result;
-          }
+          if (result && result.abort) return result;
+          const writes = staged.map((item) => preconditionedWrite(projectId, item.path, item.data, seen));
           await call(rootUrl(projectId) + ':commit', {
             method: 'POST',
-            body: JSON.stringify({ transaction: tx, writes: staged })
+            body: JSON.stringify({ writes })
           });
-          finished = true;
           return result;
         } catch (e) {
-          if (!finished) {
-            try { await rollback(call, projectId, tx); } catch (_) { /* 交易可能已經結束 */ }
-          }
           last = e;
-          if (e instanceof FirestoreError && e.code === 'ABORTED' && attempt < 4) continue;
+          const retryable = e instanceof FirestoreError && (e.code === 'ABORTED' || e.code === 'FAILED_PRECONDITION');
+          if (retryable && attempt < 4) continue;
           throw e;
         }
       }
@@ -232,11 +226,22 @@ export function createRestFirestore(env, fetchImpl) {
   };
 }
 
-async function rollback(call, projectId, tx) {
-  await call(rootUrl(projectId) + ':rollback', {
-    method: 'POST',
-    body: JSON.stringify({ transaction: tx })
-  });
+async function readObserved(call, projectId, path) {
+  try {
+    const body = await call(docUrl(projectId, path), { method: 'GET' });
+    return { data: decodeFields(body.fields || {}), updateTime: body.updateTime || '' };
+  } catch (e) {
+    if (e instanceof FirestoreError && e.httpStatus === 404) return { data: null, updateTime: false };
+    throw e;
+  }
+}
+
+function preconditionedWrite(projectId, path, data, seen) {
+  const write = writeOf(projectId, path, data);
+  if (!seen.has(path)) return write;
+  const mark = seen.get(path);
+  write.currentDocument = mark === false ? { exists: false } : { updateTime: mark };
+  return write;
 }
 
 async function readBody(res) {
