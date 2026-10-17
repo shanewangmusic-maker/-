@@ -44,12 +44,12 @@
   function kindOf(entry) { return entry && entry.kind === 'warm' ? 'warm' : 'call'; }
   function resultLine(kind, res) {
     const map = {
-      care: '暖→ 暖關係：已關心',
-      mute: '暖→ 暖關係：沒回應',
-      no: '約→ 約訪：沒接',
-      ok: '約→ 約訪：約到了',
-      later: '約→ 約訪：再聯絡',
-      nope: '約→ 約訪：不需要'
+      care: '暖關係：已關心',
+      mute: '暖關係：沒回應',
+      no: '約訪：沒接',
+      ok: '約訪：約到了',
+      later: '約訪：再聯絡',
+      nope: '約訪：不需要'
     };
     return map[res] || '';
   }
