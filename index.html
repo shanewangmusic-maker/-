@@ -282,8 +282,8 @@
                     <div class="w-full lg:w-auto flex justify-between sm:justify-end items-center gap-4">
                         <!-- 檢視模式切換按鈕 -->
                         <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200" id="viewModeToggleContainer">
-                            <button onclick="toggleViewMode('grid')" id="viewBtnGrid" class="px-3 py-1 rounded text-sm font-bold bg-white text-[#1E2E3D] shadow-sm"><i class="fa-solid fa-border-all"></i> 卡片</button>
-                            <button onclick="toggleViewMode('list')" id="viewBtnList" class="px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700"><i class="fa-solid fa-list"></i> 列表</button>
+                            <button onclick="toggleViewMode('grid')" id="viewBtnGrid" class="px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700 transition"><i class="fa-solid fa-border-all"></i> 卡片</button>
+                            <button onclick="toggleViewMode('list')" id="viewBtnList" class="px-3 py-1 rounded text-sm font-bold bg-white text-[#1E2E3D] shadow-sm transition"><i class="fa-solid fa-list"></i> 列表</button>
                         </div>
 
                         <div id="sortByWrap" class="flex items-center gap-1 text-sm text-slate-500">
@@ -1418,7 +1418,12 @@
         let customers = []; let customPeriods = []; let annualGoals = {}; let customTags = [];
         let activeTagFilters = []; 
         let tempSelectedTags = []; let activeDeleteId = null;
-        let viewMode = 'grid'; 
+        let pipelineView = 'list';
+        let recruitView = 'grid';
+        let viewMode = pipelineView;
+        // 每次開啟頁面的起始值。這段工作階段裡使用者改過之後就維持，直到重新載入。不從 localStorage 還原。
+        // 列表／卡片是分頁各自的檢視：核心業績看板預設列表，引薦招募庫維持原本的卡片。
+        let boardLoadDefaultsPending = true; 
         let isDashboardOpen = true; 
         
         let currentMainTab = 'PIPELINE'; 
@@ -2498,10 +2503,24 @@
             }
         }
 
+        function syncViewModeButtons() {
+            const on = "px-3 py-1 rounded text-sm font-bold bg-white text-[#1E2E3D] shadow-sm transition";
+            const off = "px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700 transition";
+            const g = document.getElementById('viewBtnGrid'), l = document.getElementById('viewBtnList');
+            if (g) g.className = viewMode === 'grid' ? on : off;
+            if (l) l.className = viewMode === 'list' ? on : off;
+        }
+
+        function applyTabViewMode() {
+            viewMode = currentMainTab === 'RECRUIT' ? recruitView : pipelineView;
+            syncViewModeButtons();
+        }
+
         function toggleViewMode(mode) {
+            if (currentMainTab === 'RECRUIT') recruitView = mode;
+            else pipelineView = mode;
             viewMode = mode;
-            document.getElementById('viewBtnGrid').className = mode==='grid' ? "px-3 py-1 rounded text-sm font-bold bg-white text-[#1E2E3D] shadow-sm transition" : "px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700 transition";
-            document.getElementById('viewBtnList').className = mode==='list' ? "px-3 py-1 rounded text-sm font-bold bg-white text-[#1E2E3D] shadow-sm transition" : "px-3 py-1 rounded text-sm font-bold text-slate-500 hover:text-slate-700 transition";
+            syncViewModeButtons();
             renderCustomerGrid();
         }
 
@@ -2673,6 +2692,8 @@
         }
 
         function renderApp() {
+            if (boardLoadDefaultsPending) pipelineView = 'list';
+            applyTabViewMode();
             var steps = [
                 ['業務員篩選', renderAgentFilter],
                 ['期間篩選', populatePeriodFilter],
@@ -2687,6 +2708,7 @@
                 try { s[1](); } catch (err) { console.error('渲染錯誤 @ ' + s[0], err); failed.push(s[0]); }
             });
             if (failed.length) showRenderError(failed); else hideRenderError();
+            boardLoadDefaultsPending = false;
         }
 
         // ===== 核心新增：動態生成與渲染業務員過濾器 =====
@@ -2696,7 +2718,7 @@
             const btnDeleteAgent = document.getElementById('btnDeleteAgent');
             if (!agentFilter || !agentList) return;
             
-            const currentVal = agentFilter.value || 'ALL'; // 預設為全團隊總覽
+            const currentVal = boardLoadDefaultsPending ? 'PERSONAL' : (agentFilter.value || 'ALL');
             
             // 抓出所有客戶資料中已存在的「負責業務」名稱並去重複
             const agents = [...new Set(customers.map(c => c.agentName).filter(name => name && name.trim() !== ''))].sort();
@@ -2791,8 +2813,9 @@
         // ===== 期間篩選：兩層式（年 → 月）；實際值仍存於隱藏的 select#globalPeriodFilter =====
         // 值的格式不變："YEAR_2026"（全年）或 "2026-10"（單月）
         function populatePeriodFilter() {
-            const filterEl = document.getElementById('globalPeriodFilter'); const currentVal = filterEl.value;
+            const filterEl = document.getElementById('globalPeriodFilter');
             const now = new Date(); const curY = String(now.getFullYear()); const curM = String(now.getMonth() + 1).padStart(2, '0');
+            const currentVal = boardLoadDefaultsPending ? ('YEAR_' + curY) : filterEl.value;
             const monthCount = {}; const yearCount = {}; const years = new Set([curY]);
             // 年/月膠囊數字：跟隨「負責業務」；排除一畝田(LEAD)；同名只計一次（月內／年內各一套）。年份列表仍以全部資料為準。不影響其他統計。
             const fAgentPicker = document.getElementById('filterAgent')?.value || 'ALL';
