@@ -2,7 +2,8 @@
    只描述「怎麼改一筆客戶」與「自動事件怎麼去重」。
    真正寫入由各頁的 Firestore 交易執行：先重讀 global_state，再改那一位。 */
 (function (root) {
-  const OWNER_AGENT = '王盛嶢';
+  const OWNER_AGENT = '王盛嶢'; // 擁有者「寫明」的負責業務，不是空白欄位的代稱。
+  const BLANK_AGENT = '個人';
   const ACT = { call: 'call', appt: 'appt', need: 'need' };
   const METHODS = ['電話', 'Line', '面談', '其他'];
   const AUTO_START = '2026-10-17';
@@ -15,9 +16,25 @@
     if (d.length >= 3) return d.slice(-3);
     return '';
   }
-  function agentLabel(name) {
+  function blankMemberName(team) {
+    if (!team || !team.members) return '';
+    const order = Array.isArray(team.emails) && team.emails.length ? team.emails : Object.keys(team.members);
+    for (let i = 0; i < order.length; i++) {
+      const raw = order[i];
+      const key = String(raw || '').trim().toLowerCase();
+      const m = team.members[key] || team.members[raw];
+      if (!m || m.active === false) continue;
+      if (String(m.agentName || '').trim()) continue;
+      const label = String(m.displayName || '').trim();
+      if (label) return label;
+    }
+    return '';
+  }
+  function agentLabel(name, team) {
     const n = String(name == null ? '' : name).trim();
-    return n || OWNER_AGENT;
+    if (n) return n;
+    const doc = team || (typeof window !== 'undefined' ? window.__aqTeamDoc : null);
+    return blankMemberName(doc) || BLANK_AGENT;
   }
   function validDate(v) {
     const d = String(v || '').substring(0, 10);
@@ -332,6 +349,7 @@
 
   root.CrmLink = {
     OWNER_AGENT: OWNER_AGENT,
+    BLANK_AGENT: BLANK_AGENT,
     phoneTail: phoneTail,
     agentLabel: agentLabel,
     searchCustomers: searchCustomers,
