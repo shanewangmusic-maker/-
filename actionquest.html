@@ -247,6 +247,8 @@ body.tab-team #meView,body.tab-me #teamView{display:none}
 #teamView .A-ped b{font-size:26px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.15)}#teamView .A-ped span{font-size:11px;font-weight:700}
 #teamView .A-ped em{font-style:normal;font-size:10px;font-weight:700;background:#FBF7E8;border:1px solid #EADFAF;color:var(--navy);border-radius:8px;padding:1px 5px;margin-top:4px;white-space:nowrap}
 #teamView .A-p1 .A-ped{height:112px;background:linear-gradient(180deg,#E9C85A,#C9A227)}#teamView .A-p2 .A-ped{height:86px;background:linear-gradient(180deg,#C9D0D7,#9AA5B1)}#teamView .A-p3 .A-ped{height:68px;background:linear-gradient(180deg,#DDA77C,#B87745)}
+#teamView .A-empty{width:100%;padding:22px 12px 18px;text-align:center;color:#8A96A3;font-size:13px}
+#teamView .lbnote{grid-column:span 12;margin:0;text-align:center;font-size:12px;color:#9AA3AD}
 @media(max-width:420px){#teamView .A-ava{width:52px;height:52px;font-size:22px}#teamView .A-p1 .A-ava{width:64px;height:64px;font-size:27px}#teamView .A-val{font-size:17px}#teamView .A-p1 .A-ped{height:96px}#teamView .A-p2 .A-ped{height:74px}#teamView .A-p3 .A-ped{height:58px}}
 .mcard{position:fixed;z-index:31;display:none;width:320px;max-width:calc(100vw - 16px);background:#fff;border:3px solid var(--navy);border-radius:14px;box-shadow:0 6px 0 rgba(30,46,61,.18),0 10px 30px rgba(30,46,61,.2);padding:12px 14px;font-size:13px;line-height:1.6}
 .mcard.on{display:block}.mcard h4{margin:0 0 6px;display:flex;align-items:center;gap:8px;font-size:16px}.mcard h4 svg{flex:none}.mcard .x{margin-left:auto;border:0;background:#EEF1F5;border-radius:8px;cursor:pointer;padding:2px 10px;font-size:15px;display:none}
@@ -332,9 +334,9 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 <main id="teamView">
 <section class="card s8"><h2>🎯 團隊目標 <span class="sub" id="lbGSub"></span><button class="gedit" id="lbGEdit" style="display:none">✏️ 設定</button></h2><div id="lbGPanel" class="gpanel" style="display:none"></div><div id="lbGoals"></div><p class="note" style="margin:8px 0 0">正式版只有團隊管理者登入時可以設定，其他人只能看。</p></section>
 <section class="card s4 cd" id="lbCd"></section>
-<div class="card s12" id="lbSampleBanner" style="background:#FFF6E0;border-left:4px solid var(--y)"><b>範例資料（之後接上團隊真實資料）</b><span class="muted">　「我」是你登入後的真實闖關紀錄。其餘隊友是示範用假資料，名字旁標示「範例」。</span></div>
+<p class="lbnote" id="lbSampleBanner">團隊夥伴的數字接上後會自動出現</p>
 <div id="lbBoards" style="display:contents"></div>
-<div class="foot">🔒 排行榜只顯示次數與名次，不顯示客戶姓名、保費或任何業績金額。<br><span class="note">範例資料（之後接上團隊真實資料）。「我」的數字來自你自己的闖關紀錄；其他成員目前是示範用假資料。</span></div>
+<div class="foot">🔒 排行榜只顯示次數與名次，不顯示客戶姓名、保費或任何業績金額。</div>
 <div class="scrim" id="lbScrim"></div><div class="pop" id="lbPop" role="dialog"></div>
 </main><div class="toast" id="toast"></div><div class="mscrim" id="monScrim"></div><div class="mcard" id="monCard" role="dialog"></div><div class="modal" id="nModal"><div class="mbox"><h3><span id="nTitle"></span><button id="nClose" aria-label="關閉">✕</button></h3><div id="nBody"></div></div></div><div class="modal" id="fnModal"><div class="mbox fnbox"><h3><span id="fnTitle"></span><button id="fnClose" aria-label="關閉">✕</button></h3><input id="fnIn" class="nin" placeholder="輸入姓名按 Enter，逗號可一次加多位" maxlength="60"><div id="fnMsg" class="fnmsg"></div><div id="fnList" class="fnlist"></div><p class="muted" style="margin:0">移除姓名不會減少次數。</p></div></div>
 <script>
@@ -570,15 +572,19 @@ window.__aqBind={
 (()=>{'use strict';
 
 let ME='我';
-const PPL=['我','測試業務A','範例小陳','示範阿華','測試業務B','範例小林','示範佳佳','範例新人'];
+// 正式版只排登入者自己的真實紀錄。?demo=1 才加入示範隊友。之後接上團隊時，把真實夥伴併入 PPL，不要把示範名單放回正式版。
+const LB_DEMO=new URLSearchParams(location.search).get('demo')==='1';
+const SAMPLE=LB_DEMO?['測試業務A','範例小陳','示範阿華','測試業務B','範例小林','示範佳佳','範例新人']:[];
+const PPL=['我',...SAMPLE];
 function recentMonths(n){const out=[];let y=+CURM.slice(0,4),m=+CURM.slice(5);for(let i=n-1;i>=0;i--){let yy=y,mm=m-i;while(mm<=0){mm+=12;yy--;}out.push(yy+'-'+pad(mm));}return out;}
 const MS=recentMonths(6);
 const K=['call','appt','meet','need','prop','deal','lead'];
 const dim=m=>new Date(+m.slice(0,4),+m.slice(5),0).getDate();
 const elapsed=m=>m===CURM?+TODAY.slice(8):dim(m);
-// 假資料
+// 假資料：只在 ?demo=1 產生示範隊友。正式版的數字由 syncMe 從登入者自己的日期紀錄寫入。
 let sd=11;const r=()=>(sd=(sd*1103515245+12345)%2147483648)/2147483648;
-const D={};MS.forEach((m,mi)=>{D[m]={};PPL.forEach((p,pi)=>{const f=elapsed(m)/dim(m);if(p==='範例新人'&&mi<3){D[m][p]=Object.fromEntries(K.map(k=>[k,0]));return}
+const D={};
+if(LB_DEMO)MS.forEach((m,mi)=>{D[m]={};PPL.forEach((p,pi)=>{const f=elapsed(m)/dim(m);if(p==='範例新人'&&mi<3){D[m][p]=Object.fromEntries(K.map(k=>[k,0]));return}
  const base=(70+pi*9+r()*60+mi*6)*(p==='測試自己'?0.9+mi*.06:1);const c=Math.round(base*f),a=Math.round(c*(.25+r()*.15)),me=Math.round(a*(.7+r()*.2)),n=Math.round(me*(.75+r()*.15)),pr=Math.round(n*(.35+r()*.25)),dl=Math.round(pr*(.25+r()*.25)),ld=Math.round(me*(.3+r()*.3));
  D[m][p]={call:c,appt:a,meet:me,need:n,prop:pr,deal:dl,lead:ld}})});
 let meHas={};
@@ -586,11 +592,13 @@ function ensureMonth(m){if(!D[m]){D[m]={};PPL.forEach(p=>{D[m][p]=Object.fromEnt
 function setMeName(name){name=String(name||'').trim()||'我';if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
 window.__aqSetMe=setMeName;
 function syncMe(){let V={};try{V=typeof view==='function'?view():{}}catch(e){V={}}meHas={};const months=new Set(MS);Object.keys(V).forEach(d=>{if(/^\d{4}-\d{2}/.test(d))months.add(d.slice(0,7));});months.forEach(m=>{ensureMonth(m);const o=Object.fromEntries(K.map(k=>[k,0]));for(const d in V){if(!d.startsWith(m))continue;meHas[m]=true;const e=V[d];for(const k of K)o[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)}D[m][ME]=o;});}
-const tot=o=>K.reduce((s,k)=>s+o[k],0);
+const tot=o=>K.reduce((s,k)=>s+(+o[k]||0),0);
+const zeroBag=()=>Object.fromEntries(K.map(k=>[k,0]));
+const bag=(m,p)=>(D[m]&&D[m][p])||zeroBag();
 const AW=[{id:'call',ic:'📞',n:'約訪王',d:'約訪通數',u:'通',f:o=>o.call},{id:'meet',ic:'🤝',n:'面談王',d:'初次面談＋發掘需求次數',u:'次',f:o=>o.meet+o.need},{id:'deal',ic:'🏰',n:'成交王',d:'成交件數（不計保費金額）',u:'件',f:o=>o.deal},{id:'grow',ic:'🚀',n:'進步獎',d:'總行動量成長率（與上個月相比）',u:'',grow:true}];
 const pct=v=>(v>=0?'+':'')+Math.round(v*100)+'%';
-function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{const o=D[m][p];if(!a.grow)return{p,v:a.f(o),txt:a.f(o)+' '+a.u};
- if(!pm)return{p,v:null,txt:'無上月資料'};const cur=tot(o)/elapsed(m),prev=tot(D[pm][p])/dim(pm);if(!prev)return{p,v:null,txt:cur?'首月加入，下月起列入':'—'};const g=cur/prev-1;return{p,v:g,txt:pct(g)}})
+function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{const o=bag(m,p);if(!a.grow){const v=a.f(o);return v?{p,v,txt:v+' '+a.u}:{p,v:null,txt:'—'}}
+ if(!pm)return{p,v:null,txt:'無上月資料'};const cur=tot(o)/elapsed(m),prev=tot(bag(pm,p))/dim(pm);if(!prev)return{p,v:null,txt:cur?'首月加入，下月起列入':'—'};const g=cur/prev-1;return{p,v:g,txt:pct(g)}})
  .sort((x,y)=>(y.v??-1e9)-(x.v??-1e9)||PPL.indexOf(x.p)-PPL.indexOf(y.p))}
 function rankOf(rs){let last=null,rk=0;return rs.map((x,i)=>{if(x.v==null)return{...x,rk:null};if(x.v!==last){rk=i+1;last=x.v}return{...x,rk}})}
 const COL=['#FBF1D6','#E3EEF9','#E2F4EA','#F3E8FA','#FDE7E4','#EAF4EC','#FFF6E0','#E9EEF3'];const col=p=>COL[PPL.indexOf(p)%COL.length];const av=p=>`<span class="av" style="background:${col(p)}">${esc(p[0]||'')}</span>`;
@@ -612,22 +620,23 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b
  if(b.dataset.gdel!=null){b.closest('.gr').remove();gBtns()}if(b.dataset.gsave!=null)saveGoal();if(b.dataset.gcancel!=null)$('lbGPanel').style.display='none'});
 const XPW={call:1,appt:3,meet:5,need:5,prop:10,deal:30,lead:3};const BASEXP=[0,2600,6200,900,4100,9800,1500,0];
 const AC={call:'#2F6FB0',meet:'#2EB872',deal:'#C9A227',grow:'#8E6CC9'};
-function xpP(p){if(p===ME&&typeof view==='function'&&typeof xpOf==='function')return xpOf(view());let x=BASEXP[PPL.indexOf(p)]||0;const sm=$('lbMSel').value;MS.forEach(m=>{if(m<=sm)for(const k in XPW)x+=(D[m][p][k]||0)*XPW[k]});return x}
+function xpP(p){if(p===ME&&typeof view==='function'&&typeof xpOf==='function')return xpOf(view());let x=BASEXP[PPL.indexOf(p)]||0;const sm=$('lbMSel').value;MS.forEach(m=>{if(m<=sm)for(const k in XPW)x+=(bag(m,p)[k]||0)*XPW[k]});return x}
 function lvl(p){const x=xpP(p);let i=0;TITLES.forEach((t,j)=>{if(x>=t[0])i=j});const nx=TITLES[i+1];return{i,t:TITLES[i][1],pc:nx?Math.round((x-TITLES[i][0])/(nx[0]-TITLES[i][0])*100):100,x}}
 function delta(m,a,p,rk){const pm=MS[MS.indexOf(m)-1];if(!pm||rk==null)return'<span class="dl eq" title="無上月排名">－</span>';const pr=rankOf(rows(pm,a)).find(x=>x.p===p);if(!pr||pr.rk==null)return'<span class="dl nw" title="上月未列入排名">新</span>';const d=pr.rk-rk;return d>0?`<span class="dl up" title="比上月進步 ${d} 名">▲${d}</span>`:d<0?`<span class="dl dn" title="比上月退後 ${-d} 名">▼${-d}</span>`:'<span class="dl eq" title="名次與上月相同">－</span>'}
 function lvH(p){const L=lvl(p);return`<span class="lv"><em>Lv${L.i+1} ${L.t}</em><span class="xb"><i style="width:${L.pc}%"></i></span></span>`}
 function rowH(x,P){return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">${x.rk??'—'}</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span>${lvH(x.p)}</span><span class="v">${x.txt}</span>${delta(P.m,P.a,x.p,x.rk)}</li>`}
-function parts(m,a,past){const rs=rankOf(rows(m,a));const top=rs.filter(x=>x.rk&&x.rk<=3).slice(0,3);const meR=rs.find(x=>x.p===ME);const rest=rs.filter(x=>!top.includes(x));
+function parts(m,a,past){const rs=rankOf(rows(m,a));const top=rs.filter(x=>x.rk&&x.rk<=3).slice(0,3);const meR=rs.find(x=>x.p===ME);const rest=rs.filter(x=>x.rk&&!top.includes(x));
  const num=x=>a.grow?x.txt:`${x.v}<small> ${a.u}</small>`;
- const meLine=meR.rk&&meR.rk<=3?`🎉 我目前是第 ${meR.rk} 名`:meR.rk?(()=>{const ab=rs.find(x=>x.rk===meR.rk-1)||rs[rs.indexOf(meR)-1];return`我目前第 ${meR.rk} 名${ab&&!a.grow?`，再 ${ab.v-meR.v+1} ${a.u}可超越前一名`:''}`})():'我本月尚未列入此項排名';
- const list=`<ol class="rank">${rest.map(x=>rowH(x,{m,a})).join('')}</ol><button class="more" data-more>查看完整排名 ▾</button><div class="mebar" data-cmp="${a.id}" tabindex="0" title="查看我與前後名次的比較">👤 ${past?meLine.replace('目前',''):meLine}${meHas[m]?'':' <span class="note">（這個月沒有紀錄，先到我的闖關登錄行動）</span>'}</div>${a.grow?`<p class="note" style="margin:6px 0 0">${past?'以當月與上個月的每日平均行動量比較。':'本月以「至今每日平均」與上個月每日平均比較；上個月無資料者不列入排名。'}</p>`:''}`;
+ const meLine=!meR?'我本月尚未列入此項排名':meR.rk&&meR.rk<=3?`🎉 我目前是第 ${meR.rk} 名`:meR.rk?(()=>{const ab=rs.find(x=>x.rk===meR.rk-1)||rs[rs.indexOf(meR)-1];return`我目前第 ${meR.rk} 名${ab&&ab.v!=null&&!a.grow?`，再 ${ab.v-meR.v+1} ${a.u}可超越前一名`:''}`})():'我本月尚未列入此項排名';
+ const rankList=rest.length?`<ol class="rank">${rest.map(x=>rowH(x,{m,a})).join('')}</ol><button class="more" data-more>查看完整排名 ▾</button>`:'';
+ const list=`${rankList}<div class="mebar" data-cmp="${a.id}" tabindex="0" title="查看我與前後名次的比較">👤 ${past?meLine.replace('目前',''):meLine}${meHas[m]?'':' <span class="note">（這個月沒有紀錄，先到我的闖關登錄行動）</span>'}</div>${a.grow?`<p class="note" style="margin:6px 0 0">${past?'以當月與上個月的每日平均行動量比較。':'本月以「至今每日平均」與上個月每日平均比較；上個月無資料者不列入排名。'}</p>`:''}`;
  return{m,a,past,rs,top,rest,num,list,ac:AC[a.id]}}
 const medal=['金','銀','銅'];
-function card(P){const{a,top,num,past,ac}=P;const pod=[1,0,2].map(i=>{const x=top[i];if(!x)return`<div class="A-col A-p${i+1}"><div class="A-ped"></div></div>`;
- return`<div class="A-col A-p${i+1}${x.p===ME?' me':''}" data-p="${x.p}"><div class="A-ava" style="background:${col(x.p)}">${i===0?'<span class="A-crown">👑</span>':''}${esc(x.p[0])}</div><div class="A-nm">${esc(x.p)}${x.p===ME?' <span class="tagme">我</span>':' <span class="tagme ex">範例</span>'}</div><div class="A-val">${num(x)}</div><div class="A-ped"><b>${x.rk}</b><span>${medal[i]}牌</span>${past?'<em>🎖️ 當月徽章</em>':''}</div></div>`}).join('');
+function card(P){const{a,top,num,past,ac}=P;const order=top.length>=3?[1,0,2]:top.length===2?[1,0]:top.length===1?[0]:[];
+ const pod=order.length?order.map(i=>{const x=top[i];return`<div class="A-col A-p${i+1}${x.p===ME?' me':''}" data-p="${x.p}"><div class="A-ava" style="background:${col(x.p)}">${i===0?'<span class="A-crown">👑</span>':''}${esc(x.p[0])}</div><div class="A-nm">${esc(x.p)}${x.p===ME?' <span class="tagme">我</span>':' <span class="tagme ex">範例</span>'}</div><div class="A-val">${num(x)}</div><div class="A-ped"><b>${x.rk}</b><span>${medal[i]}牌</span>${past?'<em>🎖️ 當月徽章</em>':''}</div></div>`}).join(''):'<div class="A-empty">這個月還沒有可頒發的獎項。</div>';
  return`<section class="card s6 A-card" style="--ac:${ac}"><h2 class="lch"><span class="arr"></span><span class="A-rib">${a.ic} ${a.n}</span><span class="sub">${a.d}</span></h2><div class="A-stage">${pod}</div>${P.list}</section>`}
 
-function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rankOf(rows(m,a)),i=rs.findIndex(x=>x.p===ME),me=rs[i];const ranked=rs.filter(x=>x.rk!=null);
+function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rankOf(rows(m,a)),i=rs.findIndex(x=>x.p===ME),me=rs[i];if(!me)return`<h4>${a?a.ic+' '+a.n+'・':''}我的位置<button class="x" data-close aria-label="關閉">✕</button></h4><p class="note">目前沒有可比較的對象。</p>`;const ranked=rs.filter(x=>x.rk!=null);
  let T=[];const add=(x,lab)=>{if(!x||x.p===ME)return;const e=T.find(t=>t.x.p===x.p);if(e)e.lab+='・'+lab;else T.push({x,lab})};
  if(me.rk===1){add(ranked.find(x=>x.p!==ME&&x.rk>=1&&ranked.indexOf(x)===ranked.findIndex(y=>y.p!==ME)),'第 2 名');add(ranked.filter(x=>x.p!==ME)[1],'第 3 名')}
  else{add(ranked[0],'第 1 名');if(me.rk!=null){add(rs[i-1],'前一名');const b=rs[i+1];if(b&&b.rk!=null)add(b,'後一名')}}
@@ -635,11 +644,12 @@ function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rank
  const ab=me.rk>1?rs[i-1]:null;let nudge;
  if(me.rk===1){const s2=T[0]?.x;nudge=s2?(a.grow?`🎉 目前第 1 名，領先第 2 名 ${Math.round((me.v-s2.v)*100)} 個百分點`:`🎉 目前第 1 名，領先第 2 名 ${me.v-s2.v} ${a.u}`):'🎉 目前第 1 名'}
  else if(me.rk==null)nudge='這個月還沒有列入此項排名，先到我的闖關登錄行動。';
+ else if(!ab)nudge='目前沒有可比較的對象。';
  else nudge=a.grow?`成長率再提高 ${Math.max(1,Math.ceil((ab.v-me.v)*100+0.01))} 個百分點就能超越前一名`:`再 ${ab.v-me.v+1} ${a.u}${a.id==='call'?'約訪':a.id==='deal'?'成交':'面談／需求'}就能超越前一名`;
  const SLx=[['call','約訪','通'],['appt','取得約會','位'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','說明建議書','次'],['deal','成交件數','件'],['lead','新名單','位']];
- const HL={call:['call'],meet:['meet','need'],deal:['deal'],grow:['_tot']};const rowsM=[...SLx,['_tot','總行動量','次']];const val=(p,k)=>k==='_tot'?tot(D[m][p]):D[m][p][k];
+ const HL={call:['call'],meet:['meet','need'],deal:['deal'],grow:['_tot']};const rowsM=[...SLx,['_tot','總行動量','次']];const val=(p,k)=>k==='_tot'?tot(bag(m,p)):bag(m,p)[k];
  const gap=(d,u)=>d<0?`<span class="g bad">還差 ${-d} ${u}</span>`:d>0?`<span class="g good">多 ${d} ${u}</span>`:'<span class="g eq">一樣</span>';
- const cr=(p,x,y)=>{const o=D[m][p];return o[y]?Math.round(o[x]/o[y]*100):null};const CRs=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→成交','deal','meet']];
+ const cr=(p,x,y)=>{const o=bag(m,p);return o[y]?Math.round(o[x]/o[y]*100):null};const CRs=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→成交','deal','meet']];
  const pg=(d)=>d==null?'<span class="g eq">—</span>':d<0?`<span class="g bad">低 ${-d} 個百分點</span>`:d>0?`<span class="g good">高 ${d} 個百分點</span>`:'<span class="g eq">一樣</span>';
  return`<h4>${a.ic} ${a.n}・我的位置<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4><div class="nudge">${nudge}</div>
  <div class="ctw"><table class="cmpt"><thead><tr><th>項目</th><th>我<br><span class="note">第 ${me.rk??'—'} 名</span></th>${T.map(t=>`<th>${esc(t.x.p)}<br><span class="note">${t.lab}</span></th>`).join('')}</tr></thead><tbody>
@@ -649,10 +659,11 @@ function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rank
 
 function render(){syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
  $('lbGSub').textContent=past?`（${+m.slice(5)} 月最終結果）`:'（本月進行中）';const gs=goalsFor(m);
- $('lbGoals').innerHTML=gs.goals.map(g=>{const M=GM.find(x=>x[0]===g.k);const tc=PPL.reduce((s,p)=>s+gv(D[m][p],g.k),0),mine=gv(D[m][ME],g.k),pc=tc/g.n*100;return`<div class="grow"><div class="goal"><span>全團隊${past?'當月':'本月'}${M[1]} <b>${tc}</b> / ${g.n} ${M[2]}</span><b>${Math.round(pc)}%${tc>=g.n?' 🎉 達成':''}</b></div><div class="bar"><i style="width:${Math.min(100,pc)}%"></i></div><p class="muted" style="margin:4px 0 0">我貢獻了 ${mine} ${M[2]}${tc?`（占團隊 ${Math.round(mine/tc*100)}%）`:''}</p></div>`}).join('')+`<p class="note" style="margin:6px 0 0">${gs.src}</p>`;
+ $('lbGoals').innerHTML=gs.goals.map(g=>{const M=GM.find(x=>x[0]===g.k);const tc=PPL.reduce((s,p)=>s+gv(bag(m,p),g.k),0),mine=gv(bag(m,ME),g.k),pc=g.n?tc/g.n*100:0;return`<div class="grow"><div class="goal"><span>全團隊${past?'當月':'本月'}${M[1]} <b>${tc}</b> / ${g.n} ${M[2]}</span><b>${Math.round(pc)}%${tc>=g.n?' 🎉 達成':''}</b></div><div class="bar"><i style="width:${Math.min(100,pc)}%"></i></div><p class="muted" style="margin:4px 0 0">我貢獻了 ${mine} ${M[2]}${tc?`（占團隊 ${Math.round(mine/tc*100)}%）`:''}</p></div>`}).join('')+`<p class="note" style="margin:6px 0 0">${gs.src}</p>`;
  $('lbCd').innerHTML=past?`<div>🏁 ${+m.slice(5)} 月已結算</div><b>完賽</b><div class="note">前三名獲得「當月徽章」</div>`:`<div>⏳ 本月剩下</div><b>${left}</b><div>天</div><div class="note">結算日 ${m.slice(5)}/${dim(m)}・排名每日更新</div>`;
  $('lbBoards').innerHTML=AW.map(a=>card(parts(m,a,past))).join('');syncOwner()}
 const $=id=>document.getElementById(id);
+if(LB_DEMO){const b=$('lbSampleBanner');if(b){b.className='card s12';b.style.cssText='background:#FFF6E0;border-left:4px solid var(--y)';b.innerHTML='<b>範例資料（之後接上團隊真實資料）</b><span class="muted">　「我」是你登入後的真實闖關紀錄。其餘隊友是示範用假資料，名字旁標示「範例」。</span>';}}
 $('lbMSel').innerHTML=[...MS].reverse().map(m=>`<option value="${m}">${m.slice(0,4)} 年 ${+m.slice(5)} 月${m===CURM?'（進行中）':''}</option>`).join('');
 $('lbMSel').onchange=render;
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-more]');if(b){const o=b.previousElementSibling.classList.toggle('open');b.textContent=o?'收合排名 ▴':'查看完整排名 ▾';return}
@@ -663,7 +674,7 @@ window.lbRender=render;render();
 const SL=[['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','說明建議書','次'],['deal','成交件數','件'],['lead','新名單','位']];
 const CV=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→需求','need','meet'],['需求→建議書','prop','need'],['面談→成交','deal','meet']];
 const HOV=matchMedia('(hover:hover) and (min-width:768px)');let popFor=null;
-function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=D[m][p],sc=m===CURM&&pm?elapsed(m)/dim(pm):1,q=pm?Object.fromEntries(K.map(k=>[k,Math.round(D[pm][p][k]*sc)])):null;
+function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=bag(m,p),sc=m===CURM&&pm?elapsed(m)/dim(pm):1,prev=pm?bag(pm,p):null,q=prev?Object.fromEntries(K.map(k=>[k,Math.round((prev[k]||0)*sc)])):null;
  const ar=(v,w)=>w==null||v===w?'':v>w?` <span class="upa">▲${+(v-w).toFixed(1)}</span>`:` <span class="dna">▼${+(w-v).toFixed(1)}</span>`;
  const r=(x,a,b)=>x&&x[b]?x[a]/x[b]*100:null;const P=v=>v==null?'—':Math.round(v)+'%';
  return`<h4><span class="av" style="background:${col(p)}">${esc(p[0])}</span>${esc(p)}${p===ME?'<span class="tagme">我</span>':'<span class="tagme ex">範例</span>'}<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4>
