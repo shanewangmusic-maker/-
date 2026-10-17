@@ -231,6 +231,13 @@ body.tab-team #meView,body.tab-me #teamView{display:none}
 #cmp th,#cmp td{padding:5px 4px;font-size:12px}#cmp tr.fut td,#cmp tr.nod td{color:#B4BCC6}#cmp tr.cur{background:#FBF7E8;font-weight:700}
 @media(max-width:767px){#cmp th:first-child,#cmp td:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 #EEF1F5}#cmp tr.cur td:first-child,#cmp tfoot td:first-child{background:#FBF7E8}#cmp thead th:first-child{background:#F6F8FA}}
 @media(min-width:901px){#daysCard{align-self:start;display:flex;flex-direction:column;overflow:hidden}#daysCard>h2{flex:none}#daysCard .days{flex:1 1 auto;min-height:0;max-height:none}#daysCard thead th{position:sticky;top:0;z-index:1}}
+#lbDenied{background:#FFF6E0;border-left:4px solid var(--gold)}
+#lbDenied p{margin:0;font-size:14px;line-height:1.7}
+#teamView .trow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
+#teamView .trow input[type=text]{border:1px solid #CBD3DC;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;min-width:0}
+#teamView .trow input.tem{flex:1 1 200px}#teamView .trow input.tn{flex:1 1 110px}
+#teamView .trow input.bad{border-color:#E5534B;background:#FFF1F0}
+#teamView .trow label{font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:4px}
 #teamView .gedit{margin-left:auto;border:2px solid var(--navy);background:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 0 rgba(30,46,61,.2)}
 #teamView .gedit:hover{background:#FBF1D6}#teamView .grow+.grow{margin-top:12px}
 #teamView .gpanel{background:#F6F8FA;border:2px solid var(--navy);border-radius:12px;padding:10px;margin-bottom:12px;font-size:13px;display:flex;flex-direction:column;gap:8px}
@@ -327,7 +334,7 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 <div class="frow"><div class="seg tseg" id="tlSeg"><button type="button" data-tlf="all" class="on">全部</button><button type="button" data-tlf="warm">💛 暖關係</button><button type="button" data-tlf="call">📞 約訪</button></div></div>
 <div id="tlList"></div><div id="tlUp"></div>
 <p class="muted">約訪按「沒接」「再聯絡」「約到了」會在今天 +1 約訪並附上姓名（「約到了」另 +1 取得約會）。暖關係按「已關心」會 +1 暖關係。未指定類別時計入陌生。有設定下次聯絡日的人，會在那一天出現；沒接、再聯絡、沒回應且未設定者會延續到明天；「不需要」則移出名單。類型標籤可改；「轉約訪」會改成約訪並保留備註。</p>
-<p class="note" style="color:#9AA3AD;margin:4px 0 0">可搜尋 CRM 客戶加入。同名會顯示電話末三或末四碼，以及負責業務（空白視為王盛嶢）。不在 CRM 的人仍可直接輸入，標示「未在 CRM」。</p></section>
+<p class="note" style="color:#9AA3AD;margin:4px 0 0">可搜尋 CRM 客戶加入。同名會顯示電話末三或末四碼，以及負責業務（空白顯示為個人；若團隊名單裡有人的負責業務留白，則顯示那位的顯示名字）。不在 CRM 的人仍可直接輸入，標示「未在 CRM」。</p></section>
 <section class="card s12"><h2>🗺️ 闖關地圖 <span class="muted" id="mapRange"></span><div class="seg" id="mapSeg"><button data-v="all" class="on">全部</button><button data-v="ds">陌生</button><button data-v="rf">緣故</button></div></h2>
 <div class="map" id="mapShot"><div class="path" id="path"></div><div class="legend"><span><b style="background:var(--g)"></b>轉換率健康</span><span><b style="background:var(--y)"></b>接近警戒</span><span><b style="background:var(--r)"></b>偏低（小怪獸擋路）</span><span>數字＝所選月份次數；百分比＝由上一關轉換</span></div></div><div id="mapAlert"></div></section>
 <section class="card s7" id="stats"><h2 class="ch" data-c="stats"><span class="arr"></span>📊 數據面板<div class="seg" id="statSeg"><button data-v="m" class="on">這個月</button><button data-v="w">這個月的每週</button></div></h2><div class="kpis" id="kpis"></div><div class="tw"><table id="funnel"></table></div><p class="muted">點選任一階段可查看本月對應的客戶姓名。轉換率＝本關次數 ÷ 上一關次數；新名單比率＝新名單 ÷ 初次面談。</p></section>
@@ -342,6 +349,8 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 <div class="foot">僅記錄行動量，不涉及任何商品績效或報酬承諾。每一天的紀錄依日期單獨保存。<span id="aqDemoNote" hidden>「載入假資料」只寫入你自己的闖關紀錄，內容皆為虛構。</span></div>
 </main>
 <main id="teamView">
+<section class="card s12" id="lbDenied" hidden><p>團隊排行尚未開通，請管理者更新 Firebase 規則</p></section>
+<section class="card s12" id="lbTeamCard" style="display:none"><h2>👥 團隊成員設定 <span class="sub">只有管理者可以修改</span></h2><p class="note" id="lbTeamHint" style="margin:0 0 8px"></p><div id="lbTeamRows"></div><div class="gerr" id="lbTeamErr"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="gbtn s" data-tadd>＋新增成員</button><button type="button" class="gbtn p" data-tsave>儲存成員</button></div><p class="note" style="margin:8px 0 0">負責業務對應 CRM 的負責業務；留白代表「個人（空白）」，也就是沒填負責業務的客戶。顯示名字用在排行榜。取消「列入排行」的人仍留在名單裡，但不會出現在排名、也不會公布次數。</p></section>
 <section class="card s8"><h2>🎯 團隊目標 <span class="sub" id="lbGSub"></span><button class="gedit" id="lbGEdit" style="display:none">✏️ 設定</button></h2><div id="lbGPanel" class="gpanel" style="display:none"></div><div id="lbGoals"></div><p class="note" style="margin:8px 0 0">正式版只有團隊管理者登入時可以設定，其他人只能看。</p></section>
 <section class="card s4 cd" id="lbCd"></section>
 <p class="lbnote" id="lbSampleBanner">團隊夥伴的數字接上後會自動出現</p>
@@ -422,6 +431,12 @@ function autoLabel(ev){const n=String((ev&&ev.name)||'').trim()||'（未命名�
 function autoList(date,t,k){const out=[],seen={};AUTO.forEach(ev=>{if(!ev||ev.date!==date||ev.date<AQ_AUTO_START||ev.action!==k)return;const side=ev.side==='rf'?'rf':'ds';if(side!==t)return;const label=autoLabel(ev);const key=(ev.custId||label)+'|'+label;if(seen[key])return;seen[key]=1;out.push(label)});return out}
 function applyAuto(v){v=JSON.parse(JSON.stringify(v));const seen={};AUTO.forEach(ev=>{if(!ev||!ev.date||ev.date<AQ_AUTO_START)return;if(!['warm','call','appt','meet','need','prop','deal','client','lead'].includes(ev.action))return;if(ev.custId){const dk=ev.custId+'|'+ev.action+'|'+ev.date;if(seen[dk])return;seen[dk]=1}const t=ev.side==='rf'?'rf':'ds';if(!v[ev.date])v[ev.date]=blank();const e=normNames(v[ev.date]);e[t][ev.action]=(+e[t][ev.action]||0)+1;const label=autoLabel(ev);if(!e.names[t][ev.action])e.names[t][ev.action]=[];if(label&&!e.names[t][ev.action].includes(label))e.names[t][ev.action].push(label);if(!e.autoMark)e.autoMark={ds:{},rf:{}};if(!e.autoMark[t][ev.action])e.autoMark[t][ev.action]=[];if(!e.autoMark[t][ev.action].includes(label))e.autoMark[t][ev.action].push(label);v[ev.date]=e});return v}
 const view=()=>{const v=JSON.parse(JSON.stringify(E));if(draft)v[draft.date]=JSON.parse(JSON.stringify(draft.e));return applyAuto(v)};
+const BOARD_KEYS=['warm','call','appt','meet','need','prop','deal','client','lead'];
+function boardMonths(days,autos){const months={};const touch=d=>{const m=String(d).slice(0,7);if(!months[m])months[m]=Object.fromEntries(BOARD_KEYS.map(k=>[k,0]));return months[m]};
+ Object.keys(days||{}).forEach(d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;const e=days[d];if(!e||typeof e!=='object')return;const bag=touch(d);BOARD_KEYS.forEach(k=>{bag[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)})});
+ const seen={};(autos||[]).forEach(ev=>{if(!ev||!ev.date||ev.date<AQ_AUTO_START||!/^\d{4}-\d{2}-\d{2}$/.test(ev.date))return;if(BOARD_KEYS.indexOf(ev.action)<0)return;if(ev.custId){const dk=ev.custId+'|'+ev.action+'|'+ev.date;if(seen[dk])return;seen[dk]=1}touch(ev.date)[ev.action]+=1});
+ return months}
+window.__aqBoardMonths=boardMonths;
 function cohortRate(from,to,stageKey){const idx=ST.findIndex(s=>s.k===stageKey);if(idx<=0)return null;const prev=stageKey==='lead'?'meet':ST[idx-1].k;const first={};AUTO.forEach(ev=>{if(!ev||!ev.custId||!ev.action||!ev.date||ev.date<AQ_AUTO_START)return;const id=ev.custId+'#'+(ev.round||1);if(!first[id])first[id]={};if(!first[id][ev.action]||ev.date<first[id][ev.action])first[id][ev.action]=ev.date});let den=0,num=0;for(const id in first){const p=first[id][prev];if(!p||p<from||p>to)continue;den++;const s=first[id][stageKey];if(s&&s>=p)num++}if(!den)return null;return Math.min(1,num/den)}
 const CURM=TODAY.slice(0,7);const isY=m=>m.length===4;const mLabel=m=>isY(m)?`${m} 全年`:`${m.slice(0,4)} 年 ${+m.slice(5)} 月`;const mEnd=m=>{const d=new Date(+m.slice(0,4),+m.slice(5),0);return ds(d)};
 function sumRange(V,days,mode){return days?sumBetween(V,addD(TODAY,-(days-1)),TODAY,mode):sumBetween(V,null,null,mode)}
@@ -616,7 +631,7 @@ let ME='我';
 // 正式版只排登入者自己的真實紀錄。?demo=1 才加入示範隊友。之後接上團隊時，把真實夥伴併入 PPL，不要把示範名單放回正式版。
 const LB_DEMO=new URLSearchParams(location.search).get('demo')==='1';
 const SAMPLE=LB_DEMO?['測試業務A','範例小陳','示範阿華','測試業務B','範例小林','示範佳佳','範例新人']:[];
-const PPL=['我',...SAMPLE];
+let PPL=['我',...SAMPLE];
 function recentMonths(n){const out=[];let y=+CURM.slice(0,4),m=+CURM.slice(5);for(let i=n-1;i>=0;i--){let yy=y,mm=m-i;while(mm<=0){mm+=12;yy--;}out.push(yy+'-'+pad(mm));}return out;}
 const MS=recentMonths(6);
 const K=['warm','call','appt','meet','need','prop','deal','lead'];
@@ -629,21 +644,26 @@ if(LB_DEMO)MS.forEach((m,mi)=>{D[m]={};PPL.forEach((p,pi)=>{const f=elapsed(m)/d
  const base=(70+pi*9+r()*60+mi*6)*(p==='測試自己'?0.9+mi*.06:1);const c=Math.round(base*f),a=Math.round(c*(.25+r()*.15)),me=Math.round(a*(.7+r()*.2)),n=Math.round(me*(.75+r()*.15)),pr=Math.round(n*(.35+r()*.25)),dl=Math.round(pr*(.25+r()*.25)),ld=Math.round(me*(.3+r()*.3)),wm=Math.round((10+r()*8)*f);
  D[m][p]={warm:wm,call:c,appt:a,meet:me,need:n,prop:pr,deal:dl,lead:ld}})});
 let meHas={};
-function ensureMonth(m){if(!D[m]){D[m]={};PPL.forEach(p=>{D[m][p]=Object.fromEntries(K.map(k=>[k,0]));});}}
-function setMeName(name){name=String(name||'').trim()||'我';if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
+let LIVE=false,LABELS={},STARTED={},REAL={};
+function ensureMonth(m){if(!D[m])D[m]={};PPL.forEach(p=>{if(!D[m][p])D[m][p]=Object.fromEntries(K.map(k=>[k,0]));});}
+function labelOf(p){return LABELS[p]||p}
+function tagHtml(p){if(p===ME)return' <span class="tagme">我</span>';if(!REAL[p]&&(LB_DEMO||!LIVE))return' <span class="tagme ex">範例</span>';return''}
+function setMeName(name){name=String(name||'').trim()||'我';if(LIVE){if(ME&&!LABELS[ME])LABELS[ME]=name;return}if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
 window.__aqSetMe=setMeName;
-function syncMe(){let V={};try{V=typeof view==='function'?view():{}}catch(e){V={}}meHas={};const months=new Set(MS);Object.keys(V).forEach(d=>{if(/^\d{4}-\d{2}/.test(d))months.add(d.slice(0,7));});months.forEach(m=>{ensureMonth(m);const o=Object.fromEntries(K.map(k=>[k,0]));for(const d in V){if(!d.startsWith(m))continue;meHas[m]=true;const e=V[d];for(const k of K)o[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)}D[m][ME]=o;});}
+function installLive(team,boards,meEmail){const members=team&&team.members?team.members:{};const active=[];Object.keys(members).forEach(em=>{const m=members[em]||{};if(m.active===false)return;const key=String(em).toLowerCase();active.push(key);LABELS[key]=String(m.displayName||'').trim()||key;REAL[key]=true;STARTED[key]=false});const order=(Array.isArray(team.emails)?team.emails:active).map(e=>String(e).toLowerCase());const list=[];order.forEach(e=>{if(active.indexOf(e)>=0&&list.indexOf(e)<0)list.push(e)});active.forEach(e=>{if(list.indexOf(e)<0)list.push(e)});if(LB_DEMO)SAMPLE.forEach(s=>{if(list.indexOf(s)<0)list.push(s)});PPL=list;ME=String(meEmail||'').toLowerCase();if(ME&&LABELS[ME]==null)LABELS[ME]=ME;LIVE=true;(Array.isArray(boards)?boards:[]).forEach(b=>{if(!b||!b.email)return;const em=String(b.email).toLowerCase();STARTED[em]=true;if(b.displayName)LABELS[em]=String(b.displayName).trim()||LABELS[em]||em;const months=b.months||{};Object.keys(months).forEach(m=>{if(!/^\d{4}-\d{2}$/.test(m))return;ensureMonth(m);const src=months[m]||{},o=Object.fromEntries(K.map(k=>[k,+src[k]||0]));D[m][em]=o})})}
+window.__aqApplyTeam=function(team,boards,meEmail,denied){window.__aqTeamDenied=!!denied;window.__aqTeamDoc=team||null;if(denied){LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor();return}if(team&&team.members&&Object.keys(team.members).length)installLive(team,boards,meEmail);else LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor()};
+function syncMe(){let V={};try{V=typeof view==='function'?view():{}}catch(e){V={}}meHas={};const months=new Set(MS);Object.keys(V).forEach(d=>{if(/^\d{4}-\d{2}/.test(d))months.add(d.slice(0,7));});months.forEach(m=>{ensureMonth(m);const o=Object.fromEntries(K.map(k=>[k,0]));for(const d in V){if(!d.startsWith(m))continue;meHas[m]=true;const e=V[d];for(const k of K)o[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)}if(ME)D[m][ME]=o;});if(LIVE&&ME&&Object.keys(meHas).length)STARTED[ME]=true;}
 const tot=o=>K.reduce((s,k)=>s+(+o[k]||0),0);
 const zeroBag=()=>Object.fromEntries(K.map(k=>[k,0]));
 const bag=(m,p)=>(D[m]&&D[m][p])||zeroBag();
 const AW=[{id:'call',ic:'📞',n:'約訪王',d:'約訪通數',u:'通',f:o=>o.call},{id:'meet',ic:'🤝',n:'面談王',d:'初次面談＋發掘需求次數',u:'次',f:o=>o.meet+o.need},{id:'deal',ic:'🏰',n:'成交王',d:'成交件數（不計保費金額）',u:'件',f:o=>o.deal},{id:'grow',ic:'🚀',n:'進步獎',d:'總行動量成長率（與上個月相比）',u:'',grow:true}];
 const pct=v=>(v>=0?'+':'')+Math.round(v*100)+'%';
-function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{const o=bag(m,p);if(!a.grow){const v=a.f(o);return v?{p,v,txt:v+' '+a.u}:{p,v:null,txt:'—'}}
+function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{if(LIVE&&REAL[p]&&!STARTED[p])return{p,v:null,txt:'尚未開始',idle:true};const o=bag(m,p);if(!a.grow){const v=a.f(o);return v?{p,v,txt:v+' '+a.u}:{p,v:null,txt:'—'}}
  if(!pm)return{p,v:null,txt:'無上月資料'};const cur=tot(o)/elapsed(m),prev=tot(bag(pm,p))/dim(pm);if(!prev)return{p,v:null,txt:cur?'首月加入，下月起列入':'—'};const g=cur/prev-1;return{p,v:g,txt:pct(g)}})
  .sort((x,y)=>(y.v??-1e9)-(x.v??-1e9)||PPL.indexOf(x.p)-PPL.indexOf(y.p))}
 function rankOf(rs){let last=null,rk=0;return rs.map((x,i)=>{if(x.v==null)return{...x,rk:null};if(x.v!==last){rk=i+1;last=x.v}return{...x,rk}})}
-const COL=['#FBF1D6','#E3EEF9','#E2F4EA','#F3E8FA','#FDE7E4','#EAF4EC','#FFF6E0','#E9EEF3'];const col=p=>COL[PPL.indexOf(p)%COL.length];const av=p=>`<span class="av" style="background:${col(p)}">${esc(p[0]||'')}</span>`;
-const nm=p=>p===ME?`<b>${esc(p)}</b><span class="tagme">我</span>`:`${esc(p)}<span class="tagme ex">範例</span>`;
+const COL=['#FBF1D6','#E3EEF9','#E2F4EA','#F3E8FA','#FDE7E4','#EAF4EC','#FFF6E0','#E9EEF3'];const col=p=>COL[Math.max(0,PPL.indexOf(p))%COL.length];const av=p=>`<span class="av" style="background:${col(p)}">${esc((labelOf(p)||'')[0]||'')}</span>`;
+const nm=p=>p===ME?`<b>${esc(labelOf(p))}</b>${tagHtml(p)}`:`${esc(labelOf(p))}${tagHtml(p)}`;
 const GM=[['warm','暖關係','次'],['call','約訪通數','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
 const gv=(o,k)=>+o[k]||0;let GS={months:{}};
 function setGoals(g){GS=(g&&typeof g==='object'&&g.months)?g:{months:{}};}
@@ -656,7 +676,7 @@ function saveGoal(){const m=$('lbMSel').value,rows=[...$('lbGRows').children];le
  if(!ok){$('lbGErr').textContent='目標數請輸入正整數。';return}if(new Set(goals.map(g=>g.k)).size!==goals.length){$('lbGErr').textContent='同一個項目只能設定一個目標。';return}
  if(window.__aqIsOwner!==true){$('lbGErr').textContent='只有團隊擁有者可以設定目標。';return}
  GS.months[m]={goals,carry:$('lbGCarry').checked};if(window.__aqSchedule)window.__aqSchedule('goals');$('lbGPanel').style.display='none';render()}
-document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||!b.closest('#teamView'))return;if(b.id==='lbGEdit'){if(window.__aqIsOwner!==true)return;const P=$('lbGPanel');if(P.style.display==='none')openGoal();else P.style.display='none'}
+document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||!b.closest('#teamView'))return;if(b.dataset.tdel!=null){const row=b.closest('.trow');if(row)row.remove();editorStamp='dirty';return}if(b.dataset.tadd!=null){$('lbTeamRows').insertAdjacentHTML('beforeend',tRow());editorStamp='dirty';return}if(b.dataset.tsave!=null){saveTeamEditor();return}if(b.id==='lbGEdit'){if(window.__aqIsOwner!==true)return;const P=$('lbGPanel');if(P.style.display==='none')openGoal();else P.style.display='none'}
  if(b.dataset.gadd!=null){const used=[...document.querySelectorAll('#lbGRows .gk')].map(x=>x.value);$('lbGRows').insertAdjacentHTML('beforeend',gRow({k:(GM.find(x=>!used.includes(x[0]))||GM[0])[0],n:''}));gBtns()}
  if(b.dataset.gdel!=null){b.closest('.gr').remove();gBtns()}if(b.dataset.gsave!=null)saveGoal();if(b.dataset.gcancel!=null)$('lbGPanel').style.display='none'});
 const XPW={call:1,appt:3,meet:5,need:5,prop:10,deal:30,lead:3};const BASEXP=[0,2600,6200,900,4100,9800,1500,0];
@@ -665,16 +685,16 @@ function xpP(p){if(p===ME&&typeof view==='function'&&typeof xpOf==='function')re
 function lvl(p){const x=xpP(p);let i=0;TITLES.forEach((t,j)=>{if(x>=t[0])i=j});const nx=TITLES[i+1];return{i,t:TITLES[i][1],pc:nx?Math.round((x-TITLES[i][0])/(nx[0]-TITLES[i][0])*100):100,x}}
 function delta(m,a,p,rk){const pm=MS[MS.indexOf(m)-1];if(!pm||rk==null)return'<span class="dl eq" title="無上月排名">－</span>';const pr=rankOf(rows(pm,a)).find(x=>x.p===p);if(!pr||pr.rk==null)return'<span class="dl nw" title="上月未列入排名">新</span>';const d=pr.rk-rk;return d>0?`<span class="dl up" title="比上月進步 ${d} 名">▲${d}</span>`:d<0?`<span class="dl dn" title="比上月退後 ${-d} 名">▼${-d}</span>`:'<span class="dl eq" title="名次與上月相同">－</span>'}
 function lvH(p){const L=lvl(p);return`<span class="lv"><em>Lv${L.i+1} ${L.t}</em><span class="xb"><i style="width:${L.pc}%"></i></span></span>`}
-function rowH(x,P){return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">${x.rk??'—'}</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span>${lvH(x.p)}</span><span class="v">${x.txt}</span>${delta(P.m,P.a,x.p,x.rk)}</li>`}
-function parts(m,a,past){const rs=rankOf(rows(m,a));const top=rs.filter(x=>x.rk&&x.rk<=3).slice(0,3);const meR=rs.find(x=>x.p===ME);const rest=rs.filter(x=>x.rk&&!top.includes(x));
+function rowH(x,P){if(x.idle)return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">—</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span></span><span class="v">尚未開始</span></li>`;return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">${x.rk??'—'}</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span>${lvH(x.p)}</span><span class="v">${x.txt}</span>${delta(P.m,P.a,x.p,x.rk)}</li>`}
+function parts(m,a,past){const rs=rankOf(rows(m,a));const top=rs.filter(x=>x.rk&&x.rk<=3).slice(0,3);const meR=rs.find(x=>x.p===ME);const rest=rs.filter(x=>x.rk&&!top.includes(x));const idle=rs.filter(x=>x.idle);
  const num=x=>a.grow?x.txt:`${x.v}<small> ${a.u}</small>`;
  const meLine=!meR?'我本月尚未列入此項排名':meR.rk&&meR.rk<=3?`🎉 我目前是第 ${meR.rk} 名`:meR.rk?(()=>{const ab=rs.find(x=>x.rk===meR.rk-1)||rs[rs.indexOf(meR)-1];return`我目前第 ${meR.rk} 名${ab&&ab.v!=null&&!a.grow?`，再 ${ab.v-meR.v+1} ${a.u}可超越前一名`:''}`})():'我本月尚未列入此項排名';
- const rankList=rest.length?`<ol class="rank">${rest.map(x=>rowH(x,{m,a})).join('')}</ol><button class="more" data-more>查看完整排名 ▾</button>`:'';
+ const rankList=(rest.length||idle.length)?`<ol class="rank">${rest.map(x=>rowH(x,{m,a})).join('')}${idle.map(x=>rowH(x,{m,a})).join('')}</ol><button class="more" data-more>查看完整排名 ▾</button>`:'';
  const list=`${rankList}<div class="mebar" data-cmp="${a.id}" tabindex="0" title="查看我與前後名次的比較">👤 ${past?meLine.replace('目前',''):meLine}${meHas[m]?'':' <span class="note">（這個月沒有紀錄，先到我的闖關登錄行動）</span>'}</div>${a.grow?`<p class="note" style="margin:6px 0 0">${past?'以當月與上個月的每日平均行動量比較。':'本月以「至今每日平均」與上個月每日平均比較；上個月無資料者不列入排名。'}</p>`:''}`;
  return{m,a,past,rs,top,rest,num,list,ac:AC[a.id]}}
 const medal=['金','銀','銅'];
 function card(P){const{a,top,num,past,ac}=P;const order=top.length>=3?[1,0,2]:top.length===2?[1,0]:top.length===1?[0]:[];
- const pod=order.length?order.map(i=>{const x=top[i];return`<div class="A-col A-p${i+1}${x.p===ME?' me':''}" data-p="${x.p}"><div class="A-ava" style="background:${col(x.p)}">${i===0?'<span class="A-crown">👑</span>':''}${esc(x.p[0])}</div><div class="A-nm">${esc(x.p)}${x.p===ME?' <span class="tagme">我</span>':' <span class="tagme ex">範例</span>'}</div><div class="A-val">${num(x)}</div><div class="A-ped"><b>${x.rk}</b><span>${medal[i]}牌</span>${past?'<em>🎖️ 當月徽章</em>':''}</div></div>`}).join(''):'<div class="A-empty">這個月還沒有可頒發的獎項。</div>';
+ const pod=order.length?order.map(i=>{const x=top[i];return`<div class="A-col A-p${i+1}${x.p===ME?' me':''}" data-p="${x.p}"><div class="A-ava" style="background:${col(x.p)}">${i===0?'<span class="A-crown">👑</span>':''}${esc((labelOf(x.p)||'')[0]||'')}</div><div class="A-nm">${esc(labelOf(x.p))}${tagHtml(x.p)}</div><div class="A-val">${num(x)}</div><div class="A-ped"><b>${x.rk}</b><span>${medal[i]}牌</span>${past?'<em>🎖️ 當月徽章</em>':''}</div></div>`}).join(''):'<div class="A-empty">這個月還沒有可頒發的獎項。</div>';
  return`<section class="card s6 A-card" style="--ac:${ac}"><h2 class="lch"><span class="arr"></span><span class="A-rib">${a.ic} ${a.n}</span><span class="sub">${a.d}</span></h2><div class="A-stage">${pod}</div>${P.list}</section>`}
 
 function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rankOf(rows(m,a)),i=rs.findIndex(x=>x.p===ME),me=rs[i];if(!me)return`<h4>${a?a.ic+' '+a.n+'・':''}我的位置<button class="x" data-close aria-label="關閉">✕</button></h4><p class="note">目前沒有可比較的對象。</p>`;const ranked=rs.filter(x=>x.rk!=null);
@@ -693,12 +713,12 @@ function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rank
  const cr=(p,x,y)=>{const o=bag(m,p);return o[y]?Math.round(o[x]/o[y]*100):null};const CRs=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→成交','deal','meet']];
  const pg=(d)=>d==null?'<span class="g eq">—</span>':d<0?`<span class="g bad">低 ${-d} 個百分點</span>`:d>0?`<span class="g good">高 ${d} 個百分點</span>`:'<span class="g eq">一樣</span>';
  return`<h4>${a.ic} ${a.n}・我的位置<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4><div class="nudge">${nudge}</div>
- <div class="ctw"><table class="cmpt"><thead><tr><th>項目</th><th>我<br><span class="note">第 ${me.rk??'—'} 名</span></th>${T.map(t=>`<th>${esc(t.x.p)}<br><span class="note">${t.lab}</span></th>`).join('')}</tr></thead><tbody>
+ <div class="ctw"><table class="cmpt"><thead><tr><th>項目</th><th>我<br><span class="note">第 ${me.rk??'—'} 名</span></th>${T.map(t=>`<th>${esc(labelOf(t.x.p))}<br><span class="note">${t.lab}</span></th>`).join('')}</tr></thead><tbody>
  ${rowsM.map(([k,n,u])=>`<tr class="${HL[aid].includes(k)?'hl':''}"><td>${n}</td><td><b>${val(ME,k)}</b></td>${T.map(t=>`<td>${val(t.x.p,k)}<br>${gap(val(ME,k)-val(t.x.p,k),u)}</td>`).join('')}</tr>`).join('')}
  ${CRs.map(([n,x,y])=>{const mv=cr(ME,x,y);return`<tr class="cr"><td>${n}</td><td><b>${mv==null?'—':mv+'%'}</b></td>${T.map(t=>{const tv=cr(t.x.p,x,y);return`<td>${tv==null?'—':tv+'%'}<br>${mv==null||tv==null?pg(null):pg(mv-tv)}</td>`}).join('')}</tr>`}).join('')}
  </tbody></table></div><p class="note" style="margin:6px 0 0">${T.length?'':'目前沒有可比較的對象。'}只比較次數與比率，不含客戶姓名與金額。</p>`}
 
-function render(){syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
+function render(){const denied=window.__aqTeamDenied===true;const note=$('lbDenied');if(note)note.hidden=!denied;const banner=$('lbSampleBanner');if(denied){if(banner)banner.hidden=true;$('lbBoards').innerHTML='';$('lbGoals').innerHTML='';$('lbCd').innerHTML='';syncOwner();return}if(banner)banner.hidden=false;if(LIVE&&banner){banner.className='lbnote';banner.removeAttribute('style');banner.textContent='排名只加總次數。標示「尚未開始」的夥伴還沒有登入過行動闖關。'}syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
  $('lbGSub').textContent=past?`（${+m.slice(5)} 月最終結果）`:'（本月進行中）';const gs=goalsFor(m);
  $('lbGoals').innerHTML=gs.goals.map(g=>{const M=GM.find(x=>x[0]===g.k);const tc=PPL.reduce((s,p)=>s+gv(bag(m,p),g.k),0),mine=gv(bag(m,ME),g.k),pc=g.n?tc/g.n*100:0;return`<div class="grow"><div class="goal"><span>全團隊${past?'當月':'本月'}${M[1]} <b>${tc}</b> / ${g.n} ${M[2]}</span><b>${Math.round(pc)}%${tc>=g.n?' 🎉 達成':''}</b></div><div class="bar"><i style="width:${Math.min(100,pc)}%"></i></div><p class="muted" style="margin:4px 0 0">我貢獻了 ${mine} ${M[2]}${tc?`（占團隊 ${Math.round(mine/tc*100)}%）`:''}</p></div>`}).join('')+`<p class="note" style="margin:6px 0 0">${gs.src}</p>`;
  $('lbCd').innerHTML=past?`<div>🏁 ${+m.slice(5)} 月已結算</div><b>完賽</b><div class="note">前三名獲得「當月徽章」</div>`:`<div>⏳ 本月剩下</div><b>${left}</b><div>天</div><div class="note">結算日 ${m.slice(5)}/${dim(m)}・排名每日更新</div>`;
@@ -709,7 +729,14 @@ $('lbMSel').innerHTML=[...MS].reverse().map(m=>`<option value="${m}">${m.slice(0
 $('lbMSel').onchange=render;
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-more]');if(b){const o=b.previousElementSibling.classList.toggle('open');b.textContent=o?'收合排名 ▴':'查看完整排名 ▾';return}
  const h=ev.target.closest('#teamView .lch');if(h&&!matchMedia('(min-width:768px)').matches)h.closest('.card').classList.toggle('closed')});
-function syncOwner(){const b=$('lbGEdit');if(!b)return;const on=window.__aqIsOwner===true;b.style.display=on?'':'none';if(!on&&$('lbGPanel'))$('lbGPanel').style.display='none';}
+const FISH_ROWS=[{email:'shanewangmusic@gmail.com',agentName:'王盛嶢',displayName:'盛嶢',active:true},{email:'jimi810@gmail.com',agentName:'',displayName:'小魚',active:true},{email:'yinhsuanyt25@gmail.com',agentName:'茵琁 Allie',displayName:'Allie',active:true},{email:'angel180325@gmail.com',agentName:'小孟Jenny',displayName:'小孟',active:true}];
+function tRow(r){r=r||{email:'',agentName:'',displayName:'',active:true};return`<div class="trow"><input class="tem" type="text" inputmode="email" autocomplete="off" placeholder="Email" value="${esc(r.email)}"><input class="tn ta" type="text" maxlength="40" autocomplete="off" placeholder="個人（空白）" title="留白代表個人（空白），也就是 CRM 沒填負責業務的客戶" value="${esc(r.agentName)}"><input class="tn td" type="text" maxlength="40" autocomplete="off" placeholder="顯示名字" value="${esc(r.displayName)}"><label><input class="tc" type="checkbox"${r.active?' checked':''}> 列入排行</label><button type="button" class="gx" data-tdel title="移出名單">移除</button></div>`}
+function memberRowsFrom(doc){const out=[];if(!doc||!doc.members)return out;const order=Array.isArray(doc.emails)&&doc.emails.length?doc.emails:Object.keys(doc.members);order.forEach(em=>{const key=String(em).toLowerCase();const m=doc.members[key]||doc.members[em];if(!m)return;out.push({email:key,agentName:m.agentName||'',displayName:m.displayName||'',active:m.active!==false})});return out}
+let editorStamp='';
+function openTeamEditor(){const card=$('lbTeamCard');if(!card)return;const owner=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;card.style.display=owner?'':'none';if(!owner)return;const saved=window.__aqTeamDoc;const seeded=!saved&&window.__aqTeamId==='FISHTEAM';const stamp=saved?JSON.stringify(saved.members):(seeded?'seed':'empty');if(stamp===editorStamp)return;editorStamp=stamp;const rows=saved?memberRowsFrom(saved):(seeded?FISH_ROWS.map(r=>Object.assign({},r)):[]);$('lbTeamHint').textContent=saved?'這是已儲存的名單。改完後按「儲存成員」才會更新。':(seeded?'這是 FISHTEAM 的建議名單，尚未寫入。按「儲存成員」後才會生效。':'尚未設定成員。加入 Email 後按「儲存成員」。');$('lbTeamRows').innerHTML=rows.map(tRow).join('')||tRow();$('lbTeamErr').textContent=''}
+function readTeamEditor(){const rows=[...$('lbTeamRows').querySelectorAll('.trow')];const emails=[],members={},seen={};let ok=rows.length>0;rows.forEach(row=>{const emEl=row.querySelector('.tem'),nmEl=row.querySelector('.td');const em=emEl.value.trim().toLowerCase();const displayName=nmEl.value.trim();const emailOk=/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/.test(em);emEl.classList.toggle('bad',!emailOk||!!seen[em]);nmEl.classList.toggle('bad',!displayName);if(!emailOk||!displayName||seen[em])ok=false;if(emailOk)seen[em]=1;if(emailOk&&displayName&&!members[em]){emails.push(em);members[em]={agentName:row.querySelector('.ta').value.trim(),displayName:displayName,active:!!row.querySelector('.tc').checked}}});return ok?{emails:emails,members:members}:null}
+async function saveTeamEditor(){if(window.__aqIsOwner!==true)return;const doc=readTeamEditor();const err=$('lbTeamErr');if(!doc){err.textContent='請填寫不重複的 Email，並填上顯示名字。';return}err.textContent='';if(!window.__aqSaveTeam){err.textContent='現在無法儲存，請稍後再試。';return}try{await window.__aqSaveTeam(doc);editorStamp='';openTeamEditor()}catch(e){err.textContent=(e&&e.message)||'儲存失敗'}}
+function syncOwner(){const b=$('lbGEdit');if(b){const on=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;b.style.display=on?'':'none';if(!on&&$('lbGPanel'))$('lbGPanel').style.display='none';}openTeamEditor();}
 window.__aqSyncOwner=syncOwner;
 window.lbRender=render;render();
 const SL=[['warm','暖關係','次'],['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
@@ -718,7 +745,7 @@ const HOV=matchMedia('(hover:hover) and (min-width:768px)');let popFor=null;
 function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=bag(m,p),sc=m===CURM&&pm?elapsed(m)/dim(pm):1,prev=pm?bag(pm,p):null,q=prev?Object.fromEntries(K.map(k=>[k,Math.round((prev[k]||0)*sc)])):null;
  const ar=(v,w)=>w==null||v===w?'':v>w?` <span class="upa">▲${+(v-w).toFixed(1)}</span>`:` <span class="dna">▼${+(w-v).toFixed(1)}</span>`;
  const r=(x,a,b)=>x&&x[b]?Math.min(100,x[a]/x[b]*100):null;const P=v=>v==null?'—':Math.round(v)+'%';
- return`<h4><span class="av" style="background:${col(p)}">${esc(p[0])}</span>${esc(p)}${p===ME?'<span class="tagme">我</span>':'<span class="tagme ex">範例</span>'}<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4>
+ return`<h4><span class="av" style="background:${col(p)}">${esc((labelOf(p)||'')[0]||'')}</span>${esc(labelOf(p))}${tagHtml(p)}<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4>
  <div class="sec">行動次數 <span class="note" style="font-weight:400">▲▼ ${m===CURM?'與上個月同期（按天數比例）相比':'與上個月相比'}</span></div><table>${SL.map(([k,n,u])=>`<tr><td>${n}</td><td><b>${o[k]}</b> <span class="note">${u}</span>${q?ar(o[k],q[k]):''}</td></tr>`).join('')}</table>
  <div class="sec">轉換率</div><table>${CV.map(([n,a,b])=>{const v=r(o,a,b),w=q?r(q,a,b):null;return`<tr><td>${n}</td><td><b>${P(v)}</b>${v!=null&&w!=null?ar(Math.round(v),Math.round(w)).replace(/(▲|▼)([\d.]+)/,'$1$2 個百分點'):''}</td></tr>`}).join('')}</table>
  <p class="note" style="margin:8px 0 0">${q&&tot(q)?'':'上個月無資料，無法比較。'}只顯示次數與比率，不含客戶姓名與金額。</p>`}
@@ -750,6 +777,11 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
      每一天一筆，只在該天有改動時覆寫那一天。客戶之後改階段不得回寫舊日期。
    artifacts/youtrend-crm/public/data/actionquest/{teamId}/meta/goals
      團隊目標。全員可讀，只有擁有者可寫。
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/meta/team
+     團隊成員。白名單可讀，只有擁有者可寫。FISHTEAM 的建議名單只預填編輯器，按儲存才寫入。
+     小魚的負責業務留白，代表 CRM 裡空白的負責業務（顯示為個人，有名單時顯示小魚）。王盛嶢只對應寫明「王盛嶢」的客戶。
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/board/{uid}
+     只公布次數。不含客戶姓名、名單、保費或佣金。
 
    若 Firestore 規則還沒有這段路徑，預設會拒絕。不要在這個專案裡改規則或部署。
    需要的規則見這個檔案底部的註解，以及 PR 說明。 */
@@ -777,6 +809,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
   let dirtyDays = false;
   let dirtyToday = false;
   let dirtyGoals = false;
+  let teamDoc = null;
   let lastDays = {};
   let lastToday = '';
   let lastGoals = '';
@@ -852,6 +885,65 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     }
   }
   function isDayId(d) { return /^\d{4}-\d{2}-\d{2}$/.test(d); }
+  function permissionDenied(err) {
+    const c = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    return c.indexOf('permission-denied') >= 0 || c.indexOf('permission_denied') >= 0 || c.indexOf('Missing or insufficient permissions') >= 0;
+  }
+  function isEmailAddr(s) {
+    return /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/.test(String(s || '').toLowerCase());
+  }
+  const COUNT_KEYS = ['warm', 'call', 'appt', 'meet', 'need', 'prop', 'deal', 'client', 'lead'];
+  function sanitizeTeam(raw, by) {
+    const members = {};
+    const emails = [];
+    const order = raw && Array.isArray(raw.emails) ? raw.emails : (raw && raw.members ? Object.keys(raw.members) : []);
+    order.forEach(function (em) {
+      const key = String(em || '').trim().toLowerCase();
+      if (!isEmailAddr(key) || members[key]) return;
+      const m = (raw.members && (raw.members[key] || raw.members[em])) || {};
+      const displayName = String(m.displayName || '').trim().slice(0, 40);
+      if (!displayName) return;
+      members[key] = {
+        agentName: String(m.agentName || '').trim().slice(0, 40),
+        displayName: displayName,
+        active: m.active !== false
+      };
+      emails.push(key);
+    });
+    return { emails: emails, members: members, updatedAt: Date.now(), updatedBy: by || email };
+  }
+  function sanitizeBoard(raw) {
+    const months = {};
+    const src = (raw && raw.months) || {};
+    Object.keys(src).forEach(function (m) {
+      if (!/^\d{4}-\d{2}$/.test(m) || !src[m] || typeof src[m] !== 'object') return;
+      const o = {};
+      COUNT_KEYS.forEach(function (k) { o[k] = Math.max(0, Math.round(+src[m][k] || 0)); });
+      months[m] = o;
+    });
+    return {
+      uid: String((raw && raw.uid) || ''),
+      teamId: String((raw && raw.teamId) || ''),
+      email: String((raw && raw.email) || '').toLowerCase(),
+      displayName: String((raw && raw.displayName) || '').trim().slice(0, 40),
+      agentName: String((raw && raw.agentName) || '').trim().slice(0, 40),
+      months: months,
+      updatedAt: Date.now()
+    };
+  }
+  function memberOf(team, em) {
+    if (!team || !Array.isArray(team.emails)) return null;
+    em = String(em || '').toLowerCase();
+    if (team.emails.map(function (x) { return String(x).toLowerCase(); }).indexOf(em) < 0) return null;
+    const m = team.members && team.members[em];
+    if (!m || m.active === false) return null;
+    return m;
+  }
+  function denyErr() {
+    const err = new Error('Missing or insufficient permissions.');
+    err.code = 'permission-denied';
+    return err;
+  }
 
   function trialSummary() {
     let days = 0;
@@ -921,6 +1013,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     const bind = window.__aqBind;
     if (!bind) return;
     saving = true;
+    let wroteDays = false;
     const wantDays = dirtyDays;
     const wantToday = dirtyToday;
     const wantGoals = dirtyGoals && isOwner;
@@ -935,6 +1028,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         if (ops.puts.length || ops.dels.length) {
           await store.writeDays(teamId, uid, ops.puts.map(function (d) { return { date: d, entry: now[d] }; }), ops.dels);
           lastDays = clone(now);
+          wroteDays = true;
         }
       }
       if (wantToday) {
@@ -961,6 +1055,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         }
       }
       setStatus('saved', '已儲存');
+      if (wroteDays) await publishBoard();
     } catch (err) {
       console.error(err);
       if (wantDays) dirtyDays = true;
@@ -1026,6 +1121,54 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     bind.toast('已匯入 ' + added + ' 天' + (skipped ? ('，' + skipped + ' 天雲端已有紀錄，保留原樣') : '') + todayNote + '。這台電腦的試用資料仍保留。');
   }
 
+  async function publishBoard() {
+    if (!store || !store.saveBoard || !teamDoc || window.__aqTeamDenied) return;
+    const mem = memberOf(teamDoc, email);
+    if (!mem || !window.__aqBoardMonths || !window.__aqBind) return;
+    const months = window.__aqBoardMonths(window.__aqBind.getDays() || {}, window.__aqBind.auto ? window.__aqBind.auto() : []);
+    const doc = sanitizeBoard({
+      uid: uid,
+      teamId: teamId,
+      email: email,
+      displayName: mem.displayName || displayName,
+      agentName: mem.agentName || '',
+      months: months
+    });
+    if (doc.uid !== uid || doc.email !== email || doc.teamId !== teamId) return;
+    try {
+      await store.saveBoard(teamId, uid, doc);
+    } catch (err) {
+      if (permissionDenied(err)) {
+        window.__aqTeamDenied = true;
+        if (window.lbRender) window.lbRender();
+      } else console.warn('board', err);
+    }
+  }
+  window.__aqSaveTeam = async function (raw) {
+    if (!isOwner) {
+      const err = new Error('只有團隊擁有者可以設定成員');
+      err.code = 'permission-denied';
+      throw err;
+    }
+    const clean = sanitizeTeam(raw, email);
+    if (!clean.emails.length) throw new Error('請至少留下一位成員');
+    await store.saveTeam(teamId, clean);
+    teamDoc = clean;
+    window.__aqTeamDoc = clean;
+    await publishBoard();
+    let boards = [];
+    try { boards = store.loadBoard ? await store.loadBoard(teamId) : []; }
+    catch (err) {
+      if (permissionDenied(err)) {
+        window.__aqTeamDenied = true;
+        if (window.lbRender) window.lbRender();
+        return;
+      }
+      throw err;
+    }
+    if (window.__aqApplyTeam) window.__aqApplyTeam(clean, boards, email, false);
+  };
+
   function updateChrome() {
     const who = $('aqWho');
     if (who) who.textContent = displayName + ' · ' + email;
@@ -1088,10 +1231,24 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
       console.warn('crm list', e);
       window.__aqCustomers = [];
     }
+    teamDoc = null;
+    let boards = [];
+    let teamDenied = false;
+    try {
+      if (store.loadTeam) teamDoc = await store.loadTeam(teamId);
+      if (store.loadBoard) boards = await store.loadBoard(teamId);
+    } catch (err) {
+      if (permissionDenied(err)) teamDenied = true;
+      else console.warn('team rank', err);
+    }
+    window.__aqTeamId = teamId;
+    window.__aqTeamDoc = teamDoc;
+    window.__aqTeamDenied = teamDenied;
     window.__aqHydrating = true;
     try {
       if (window.aqStart) window.aqStart();
       if (window.__aqSetGoals) window.__aqSetGoals(goals && goals.months ? goals : { months: {} });
+      if (window.__aqApplyTeam) window.__aqApplyTeam(teamDenied ? null : teamDoc, boards, email, teamDenied);
     } finally {
       window.__aqHydrating = false;
     }
@@ -1104,6 +1261,21 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     showApp();
     const n = Object.keys(days || {}).length;
     setStatus('', n ? '已從雲端讀取' : '尚未儲存');
+    if (!window.__aqTeamDenied) {
+      await publishBoard();
+      if (teamDoc && store.loadBoard && !window.__aqTeamDenied) {
+        try {
+          const again = await store.loadBoard(teamId);
+          if (window.__aqApplyTeam) window.__aqApplyTeam(teamDoc, again, email, false);
+        } catch (err) {
+          if (permissionDenied(err)) {
+            window.__aqTeamDenied = true;
+            if (window.lbRender) window.lbRender();
+          }
+        }
+      }
+    }
+    window.__aqRankReady = true;
     offerImport();
     if (TEST) {
       window.__aqDebug = {
@@ -1114,6 +1286,8 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
             user: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid,
             day: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/days/{YYYY-MM-DD}',
             goals: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/meta/goals',
+            team: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/meta/team',
+            board: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/board/{uid}',
             auto: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/auto/{eventId}',
             crm: 'artifacts/' + APP_ID + '/public/data/global_state/' + teamId,
             writesGlobalState: 'transaction: one customer history / nextContactDate only'
@@ -1295,14 +1469,70 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         sessionStorage.setItem(key(tid, 'goals'), JSON.stringify(data));
       },
       dump: function (tid, id) {
+        let team = null;
+        let board = null;
+        try { team = JSON.parse(sessionStorage.getItem('aqmock:team:' + tid) || 'null'); } catch (e) { team = null; }
+        try { board = JSON.parse(sessionStorage.getItem('aqmock:board:' + tid) || 'null'); } catch (e) { board = null; }
         return {
           user: readBag(tid, id).user,
           days: readBag(tid, id).days,
           goals: JSON.parse(sessionStorage.getItem(key(tid, 'goals')) || 'null'),
           auto: readBag(tid, id).auto || [],
+          team: team,
+          board: board || {},
           crm: JSON.parse(sessionStorage.getItem('aqmock:crm:' + tid) || 'null'),
           crmWrites: crmWrites.n
         };
+      },
+      loadTeam: async function (tid) {
+        if (TEST && TEST.denyTeam) throw denyErr();
+        const k = 'aqmock:team:' + tid;
+        let cur = null;
+        try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
+        if (!cur && TEST && TEST.team) {
+          cur = JSON.parse(JSON.stringify(TEST.team));
+          sessionStorage.setItem(k, JSON.stringify(cur));
+        }
+        return cur;
+      },
+      saveTeam: async function (tid, data) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以設定成員');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        if (TEST && TEST.denyTeam) throw denyErr();
+        refuseGlobal('actionquest/' + tid + '/meta/team');
+        const clean = sanitizeTeam(data, email);
+        assertNoNested(clean, false);
+        sessionStorage.setItem('aqmock:team:' + tid, JSON.stringify(clean));
+        return clean;
+      },
+      loadBoard: async function (tid) {
+        if (TEST && TEST.denyTeam) throw denyErr();
+        const k = 'aqmock:board:' + tid;
+        let cur = null;
+        try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
+        if (!cur && TEST && Array.isArray(TEST.board)) {
+          cur = {};
+          TEST.board.forEach(function (b) { if (b && b.uid) cur[b.uid] = JSON.parse(JSON.stringify(b)); });
+          sessionStorage.setItem(k, JSON.stringify(cur));
+        }
+        cur = cur || {};
+        return Object.keys(cur).map(function (id) { return cur[id]; });
+      },
+      saveBoard: async function (tid, id, data) {
+        if (TEST && TEST.denyTeam) throw denyErr();
+        const clean = sanitizeBoard(data);
+        if (clean.uid !== id || clean.teamId !== tid || clean.email !== email || !memberOf(teamDoc, email)) throw denyErr();
+        refuseGlobal('actionquest/' + tid + '/board/' + id);
+        assertNoNested(clean, false);
+        const k = 'aqmock:board:' + tid;
+        let cur = {};
+        try { cur = JSON.parse(sessionStorage.getItem(k) || '{}') || {}; } catch (e) { cur = {}; }
+        cur[id] = clean;
+        sessionStorage.setItem(k, JSON.stringify(cur));
+        return clean;
       },
       loadCrm: async function (tid) {
         const k = 'aqmock:crm:' + tid;
@@ -1385,6 +1615,12 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     }
     function goalsRef(tid) {
       return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'meta', 'goals');
+    }
+    function teamRef(tid) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'meta', 'team');
+    }
+    function boardRef(tid, id) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'board', id);
     }
     return {
       loadUser: async function (tid, id) {
@@ -1479,6 +1715,39 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         const ref = goalsRef(tid);
         refuseGlobal(ref.path);
         await fs.setDoc(ref, data);
+      },
+      loadTeam: async function (tid) {
+        const snap = await fs.getDoc(teamRef(tid));
+        return snap.exists() ? snap.data() : null;
+      },
+      saveTeam: async function (tid, data) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以設定成員');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        const clean = sanitizeTeam(data, email);
+        assertNoNested(clean, false);
+        const ref = teamRef(tid);
+        refuseGlobal(ref.path);
+        await fs.setDoc(ref, clean);
+        return clean;
+      },
+      loadBoard: async function (tid) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'board');
+        const snap = await fs.getDocs(col);
+        const out = [];
+        snap.forEach(function (d) { const x = d.data() || {}; if (!x.uid) x.uid = d.id; out.push(x); });
+        return out;
+      },
+      saveBoard: async function (tid, id, data) {
+        const clean = sanitizeBoard(data);
+        if (clean.uid !== id || clean.teamId !== tid || clean.email !== email || !memberOf(teamDoc, email)) throw denyErr();
+        const ref = boardRef(tid, id);
+        refuseGlobal(ref.path);
+        assertNoNested(clean, false);
+        await fs.setDoc(ref, clean);
+        return clean;
       },
       loadCrm: async function (tid) {
         const ref = fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid);
@@ -1594,6 +1863,26 @@ match /artifacts/youtrend-crm/public/data/actionquest/{teamId} {
     allow read: if signedIn();
     allow create, update, delete: if signedIn()
       && request.auth.token.email.lower() == 'shanewangmusic@gmail.com';
+  }
+
+  match /meta/team {
+    allow read: if signedIn();
+    allow create, update: if signedIn()
+      && request.auth.token.email.lower() == 'shanewangmusic@gmail.com';
+    allow delete: if false;
+  }
+
+  match /board/{userId} {
+    allow read: if signedIn()
+      && request.auth.token.email.lower() in get(/databases/$(database)/documents/artifacts/youtrend-crm/public/data/actionquest/$(teamId)/meta/team).data.emails;
+    allow create, update: if signedIn()
+      && request.auth.uid == userId
+      && request.auth.token.email.lower() in get(/databases/$(database)/documents/artifacts/youtrend-crm/public/data/actionquest/$(teamId)/meta/team).data.emails
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.teamId == teamId
+      && request.resource.data.email == request.auth.token.email.lower()
+      && request.resource.data.keys().hasOnly(['uid', 'teamId', 'email', 'displayName', 'agentName', 'months', 'updatedAt']);
+    allow delete: if false;
   }
 }
 */
