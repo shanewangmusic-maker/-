@@ -216,6 +216,9 @@ body.tab-team #meView,body.tab-me #teamView{display:none}
 #teamView .card.closed .lch .arr:before{content:'▸'}
 #teamView .card.closed>:not(h2){display:none}
 #teamView .card.closed h2{margin:0}
+#lbTeamCard .th{cursor:pointer;user-select:none}
+#lbTeamCard .th .arr:before{content:'▾';color:var(--gold);width:14px;display:inline-block}
+#lbTeamCard.closed .th .arr:before{content:'▸'}
 @media(min-width:768px){#teamView .lch{cursor:default}
 #teamView .lch .arr{display:none}
 }
@@ -350,7 +353,7 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 </main>
 <main id="teamView">
 <section class="card s12" id="lbDenied" hidden><p>團隊排行尚未開通，請管理者更新 Firebase 規則</p></section>
-<section class="card s12" id="lbTeamCard" style="display:none"><h2>👥 團隊成員設定 <span class="sub">只有管理者可以修改</span></h2><p class="note" id="lbTeamHint" style="margin:0 0 8px"></p><div id="lbTeamRows"></div><div class="gerr" id="lbTeamErr"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="gbtn s" data-tadd>＋新增成員</button><button type="button" class="gbtn p" data-tsave>儲存成員</button></div><p class="note" style="margin:8px 0 0">負責業務對應 CRM 的負責業務；留白代表「個人（空白）」，也就是沒填負責業務的客戶。顯示名字用在排行榜。取消「列入排行」的人仍留在名單裡，但不會出現在排名、也不會公布次數。</p></section>
+<section class="card s12 closed" id="lbTeamCard" style="display:none"><h2 class="th" id="lbTeamHead" role="button" tabindex="0" aria-expanded="false"><span class="arr" aria-hidden="true"></span>👥 團隊成員設定 <span class="sub">只有管理者可以修改</span></h2><div class="tbody"><p class="note" id="lbTeamHint" style="margin:0 0 8px"></p><div id="lbTeamRows"></div><div class="gerr" id="lbTeamErr"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="gbtn s" data-tadd>＋新增成員</button><button type="button" class="gbtn p" data-tsave>儲存成員</button></div><p class="note" style="margin:8px 0 0">負責業務對應 CRM 的負責業務；留白代表「個人（空白）」，也就是沒填負責業務的客戶。顯示名字用在排行榜。取消「列入排行」的人仍留在名單裡，但不會出現在排名、也不會公布次數。</p></div></section>
 <section class="card s8"><h2>🎯 團隊目標 <span class="sub" id="lbGSub"></span><button class="gedit" id="lbGEdit" style="display:none">✏️ 設定</button></h2><div id="lbGPanel" class="gpanel" style="display:none"></div><div id="lbGoals"></div><p class="note" style="margin:8px 0 0">正式版只有團隊管理者登入時可以設定，其他人只能看。</p></section>
 <section class="card s4 cd" id="lbCd"></section>
 <p class="lbnote" id="lbSampleBanner">團隊夥伴的數字接上後會自動出現</p>
@@ -730,6 +733,10 @@ $('lbMSel').innerHTML=[...MS].reverse().map(m=>`<option value="${m}">${m.slice(0
 $('lbMSel').onchange=render;
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-more]');if(b){const o=b.previousElementSibling.classList.toggle('open');b.textContent=o?'收合排名 ▴':'查看完整排名 ▾';return}
  const h=ev.target.closest('#teamView .lch');if(h&&!matchMedia('(min-width:768px)').matches)h.closest('.card').classList.toggle('closed')});
+function teamCardSet(open){const card=$('lbTeamCard');if(!card)return;card.classList.toggle('closed',!open);const head=$('lbTeamHead');if(head)head.setAttribute('aria-expanded',open?'true':'false');try{localStorage.setItem('aq_teamcard_open',open?'1':'0')}catch(e){}}
+(function(){let open=false;try{open=localStorage.getItem('aq_teamcard_open')==='1'}catch(e){}const card=$('lbTeamCard');if(card)card.classList.toggle('closed',!open);const head=$('lbTeamHead');if(head)head.setAttribute('aria-expanded',open?'true':'false')})();
+document.addEventListener('click',ev=>{if(!ev.target.closest('#lbTeamHead'))return;const card=$('lbTeamCard');if(card)teamCardSet(card.classList.contains('closed'))});
+document.addEventListener('keydown',ev=>{if((ev.key!=='Enter'&&ev.key!==' ')||ev.target.id!=='lbTeamHead')return;ev.preventDefault();ev.target.click()});
 const FISH_ROWS=[{email:'shanewangmusic@gmail.com',agentName:'王盛嶢',displayName:'盛嶢',active:true},{email:'jimi810@gmail.com',agentName:'',displayName:'小魚',active:true},{email:'yinhsuanyt25@gmail.com',agentName:'茵琁 Allie',displayName:'Allie',active:true},{email:'angel180325@gmail.com',agentName:'小孟Jenny',displayName:'小孟',active:true}];
 function tRow(r){r=r||{email:'',agentName:'',displayName:'',active:true};return`<div class="trow"><input class="tem" type="text" inputmode="email" autocomplete="off" placeholder="Email" value="${esc(r.email)}"><input class="tn ta" type="text" maxlength="40" autocomplete="off" placeholder="個人（空白）" title="留白代表個人（空白），也就是 CRM 沒填負責業務的客戶" value="${esc(r.agentName)}"><input class="tn td" type="text" maxlength="40" autocomplete="off" placeholder="顯示名字" value="${esc(r.displayName)}"><label><input class="tc" type="checkbox"${r.active?' checked':''}> 列入排行</label><button type="button" class="gx" data-tdel title="移出名單">移除</button></div>`}
 function memberRowsFrom(doc){const out=[];if(!doc||!doc.members)return out;const order=Array.isArray(doc.emails)&&doc.emails.length?doc.emails:Object.keys(doc.members);order.forEach(em=>{const key=String(em).toLowerCase();const m=doc.members[key]||doc.members[em];if(!m)return;out.push({email:key,agentName:m.agentName||'',displayName:m.displayName||'',active:m.active!==false})});return out}
