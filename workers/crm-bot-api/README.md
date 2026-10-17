@@ -13,7 +13,7 @@
 - 讀完整客戶欄位（仍要機器人金鑰）：`GET /customers`、`GET /customers/客戶id`。
 - 讀財務規劃：`GET /fintrack/計畫id`。
 - 看最近的寫入和對應備份：`GET /history`。
-- 預覽這些操作（都先不改資料）：新增聯絡、改下次聯絡日、改客戶欄位、新增客戶、刪除客戶、改一筆聯絡、刪一筆聯絡、建立或修改財務規劃、用備份還原。
+- 預覽這些操作（都先不改資料）：新增聯絡、改下次聯絡日、改客戶欄位、新增客戶、刪除客戶、改一筆聯絡、刪一筆聯絡、建立或修改財務規劃、用備份還原、手動加計或取消行動闖關事件。
 - 你拿出確認碼之後才寫入。寫入前再對一次版本號；中間有人存過檔就取消。寫入前先把整本帳或那份財務規劃另存一份，並留下操作紀錄。
 
 做不到：
@@ -47,6 +47,7 @@
 | `updateFintrack` | `planId`，加上要改的 `clientName` 或 `snap` |
 | `undo` | `backupId`（`GET /history` 裡那一筆的備份編號） |
 | `addQuestCounts` | `date`（2026-10-17 以後）、`counts`（例如 `{"warm":2,"call":3}`；項目只接受 warm、call、appt、meet、need、prop、deal、client、lead，每項 0–30，一次最多 60）、可加 `side`（`ds` 陌生／`rf` 緣故，預設 ds）、`note`。只寫行動闖關，不動客戶帳；要先開啟闖關寫入 |
+| `undoQuest` | 二選一：`eventIds`（要取消的事件編號陣列，`ae_` 或 `am_` 開頭，一次最多 60 筆），或 `previewId`（取消那一次寫入計入的全部闖關事件）。只寫行動闖關，不動客戶帳；要先開啟闖關寫入 |
 
 `appendContact` 和 `updateCustomer` 另外可以帶（放在最外層，不是 patch 裡）：
 - `byEmail`：只接受擁有者信箱（`QUEST_OWNER_EMAIL`，預設 shanewangmusic@gmail.com）。新增的歷程列、階段變更列會蓋上這個信箱，和網頁新增的一樣。
@@ -68,6 +69,7 @@
 ```
     // 助理專用：行動闖關自動計數（只能替「擁有者」新增、讀取；不能改、不能刪）
     // OWNER_UID 換成 shanewangmusic@gmail.com 在 Firebase Authentication 的 UID
+    // ae_／am_ 是一般事件（+1）；ar_ 是取消（沖銷）紀錄：編號 = 'ar_' + 原事件編號、原事件要存在、delta 一定是 -1
     match /artifacts/youtrend-crm/public/data/actionquest/{teamId}/users/{userId}/auto/{eventId} {
       allow read: if request.auth != null
         && request.auth.token.email == 'crmbot@fish-teem.com'
@@ -75,7 +77,18 @@
       allow create: if request.auth != null
         && request.auth.token.email == 'crmbot@fish-teem.com'
         && userId == 'OWNER_UID'
-        && eventId.matches('^a[em]_[A-Za-z0-9_-]{1,177}$')
+        && eventId.matches('^a[emr]_[A-Za-z0-9_-]{1,190}$')
+        && (
+          (eventId.matches('^ar_.*')
+            && request.resource.data.undoOf is string
+            && request.resource.data.undoOf.matches('^a[em]_.*')
+            && eventId == 'ar_' + request.resource.data.undoOf
+            && exists(/databases/$(database)/documents/artifacts/youtrend-crm/public/data/actionquest/$(teamId)/users/$(userId)/auto/$(request.resource.data.undoOf))
+            && request.resource.data.delta == -1)
+          ||
+          (eventId.matches('^a[em]_.*')
+            && (!('delta' in request.resource.data) || request.resource.data.delta == 1))
+        )
         && request.resource.data.uid == userId
         && request.resource.data.teamId == teamId
         && request.resource.data.email == 'shanewangmusic@gmail.com'
@@ -88,6 +101,18 @@
     }
 ```
 
+### 取消算錯的闖關事件（「剛剛那個不要」）
+
+規則不允許刪除闖關事件，所以「取消」是**另外新增一筆抵銷紀錄**，原本那筆留著不動：
+
+- 抵銷紀錄的編號是 `ar_` 加上原事件編號（例如 `ar_ae_solo_call_2026-10-17`），欄位照抄原事件（uid、teamId、email、custId、histId、action、date、round、side、name、leadId），再加上 `delta: -1`、`undoOf: 原事件編號`、`src: "crmbot"`、`createdAt`、`previewId`（取消那一次的預覽編號）。
+- 一筆原事件只會有一筆抵銷紀錄（只新增、不覆蓋）；已經取消過的、找不到的、不是擁有者名下的，預覽會列在 `diff.questUndoSkipped` 並略過。全部都不能取消時，預覽直接回錯誤「沒有可以取消的行動闖關事件」，並說明原因。
+- 預覽 `diff.text` 逐筆列出「取消：約訪 2026-10-17（王小明）」這樣的中文；`diff.questUndo` 是要寫的抵銷紀錄清單。
+- 用 `previewId` 取消時，會找出 `previewId` 欄位是那一次的所有闖關事件（`addQuestCounts` 或客戶帳寫入計入的都可以）。抵銷紀錄本身不會再被取消。
+- 被取消的原事件仍然算「已經計過」：之後同一位客戶同一天同一個項目，不會再用同一個編號重新計入。
+- 行動闖關頁面加總時要把 `delta` 算進去（沒有 `delta` 的算 +1，`delta: -1` 的算 -1）。
+- 編號長度：`ae_`／`am_` 編號最長 180 字，所以 `ar_` 編號最長 183 字，在規則的上限（`a?_` 後面最多 190 字）以內。
+
 還原會把該次寫入之前的客戶帳或那一份財務規劃放回去，並再留一份新備份，所以還原本身也可以再還原。
 
 還原的規則（客戶帳）：
@@ -95,7 +120,8 @@
 - 之後**有人改過** → 只反轉那一次的變更（刪掉那次新增的紀錄、把改過的紀錄或欄位改回、放回那次刪除的紀錄或客戶），其他人的修改全部保留。每次寫入的備份都會在 `_backup.changeSetJson` 記下那次改了什麼；舊備份沒有這一欄時，用當時的預覽重算。
 - 那次改到的地方之後**又被別人改過** → 拒絕，並說明是哪裡，請到 CRM 網頁手動處理。
 - 財務規劃只能在之後沒人改過時整份還原。
-- 已計入行動闖關的自動事件不會因還原而刪除（規則不允許刪除）。
+- 那次寫入如果有計入行動闖關事件，還原時會一併替那些事件寫抵銷紀錄（只處理還在、而且還沒取消過的），預覽的 `diff.questUndo`、`diff.text` 會列出「取消：…」。闖關寫入還沒開啟時不會取消，預覽的 `diff.warning` 和寫入回應的 `quest.disabled` 會說明。
+- 還原「還原」時，已經取消的闖關事件不會恢復（抵銷紀錄不能刪），需要的話請在行動闖關頁面手記或用 `addQuestCounts` 補。
 
 ## 資料庫規則要加的部分
 

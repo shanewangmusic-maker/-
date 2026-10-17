@@ -1069,3 +1069,169 @@ test('firestore createDoc sends exists:false and treats an existing doc as alrea
   assert.deepEqual(await db.createDoc('a/b', { x: 1 }), { created: false });
   await assert.rejects(() => db.createDoc('a/b', { x: 1 }));
 });
+
+// ---------- 行動闖關沖銷（剛剛那個不要）：不刪除，另加 ar_ 抵銷紀錄 ----------
+const AUTO_PREFIX = 'artifacts/youtrend-crm/public/data/actionquest/' + TEAM + '/users/' + UID + '/auto/';
+
+// 照 README 的 Firestore 規則（crmbot create on auto）逐條檢查
+function ruleAllowsCreate(docs, eventId, data, userId = UID, teamId = TEAM) {
+  if (!/^a[emr]_[A-Za-z0-9_-]{1,190}$/.test(eventId)) return false;
+  if (eventId.startsWith('ar_')) {
+    if (typeof data.undoOf !== 'string' || !/^a[em]_/.test(data.undoOf)) return false;
+    if (eventId !== 'ar_' + data.undoOf) return false;
+    if (!docs.has(AUTO_PREFIX + data.undoOf)) return false;
+    if (data.delta !== -1) return false;
+  } else if ('delta' in data && data.delta !== 1) return false;
+  return data.uid === userId && data.teamId === teamId && data.email === OWNER && data.src === 'crmbot'
+    && ['warm', 'call', 'appt', 'meet', 'need', 'prop', 'deal', 'client', 'lead'].includes(data.action)
+    && ['ds', 'rf'].includes(data.side)
+    && typeof data.date === 'string' && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(data.date) && data.date >= '2026-10-17';
+}
+function ruleChecked(h) {
+  const orig = h.db.createDoc;
+  h.db.createDoc = async function (path, data) {
+    const id = path.slice(AUTO_PREFIX.length);
+    if (!this.docs.has(path)) assert.ok(ruleAllowsCreate(this.docs, id, data), 'rule rejects ' + id);
+    return orig.call(this, path, data);
+  };
+}
+
+test('undoQuest by eventIds writes one ar_ reversal per event, skips missing/already reversed, and does not recreate', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  ruleChecked(h);
+  await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' });
+  const before = clone(state(h));
+  h.setNow(OCT17 + 1000);
+  const p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_solo_call_2026-10-17', 'ae_nobody_call_2026-10-17'] });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.match(p.data.diff.text, /取消：約訪 2026-10-17（陳阿姨）/);
+  assert.match(p.data.diff.questUndoSkipped, /ae_nobody_call_2026-10-17（找不到這筆事件）/);
+  assert.deepEqual(p.data.diff.questUndo.map((r) => r.id), ['ar_ae_solo_call_2026-10-17']);
+  assert.equal(autoDocs(h).length, 1);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  assert.deepEqual(c.data.quest.written, ['ar_ae_solo_call_2026-10-17']);
+  const orig = autoDocs(h).find((d) => d._id === 'ae_solo_call_2026-10-17');
+  const rev = autoDocs(h).find((d) => d._id === 'ar_ae_solo_call_2026-10-17');
+  assert.deepEqual(Object.keys(rev).sort(), ['_id', 'action', 'createdAt', 'custId', 'date', 'delta', 'email', 'histId', 'leadId', 'name', 'previewId', 'round', 'side', 'src', 'teamId', 'uid', 'undoOf'].sort());
+  for (const k of ['uid', 'teamId', 'email', 'custId', 'histId', 'action', 'date', 'round', 'side', 'name', 'leadId']) assert.equal(rev[k], orig[k], k);
+  assert.equal(rev.delta, -1);
+  assert.equal(rev.undoOf, 'ae_solo_call_2026-10-17');
+  assert.equal(rev.src, 'crmbot');
+  assert.equal(rev.previewId, p.data.previewId);
+  assert.equal(rev.createdAt, OCT17 + 1000);
+  assert.deepEqual(state(h), before);
+  // 再取消一次：已經取消過 → 清楚說明沒有東西可取消
+  const again = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_solo_call_2026-10-17'] });
+  assert.equal(again.status, 409);
+  assert.match(again.data.error, /沒有可以取消的行動闖關事件.*已經取消過/);
+  // 沖銷紀錄本身不能再被沖銷
+  const bad = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ar_ae_solo_call_2026-10-17'] });
+  assert.equal(bad.status, 400);
+  // 同一天再約訪：被沖銷的原事件仍算已計過，不會用同一編號重建；沖銷紀錄不被當成一般事件
+  const done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '又打', byEmail: OWNER, act: 'call' }, OCT17 + 2000);
+  assert.deepEqual(done.quest.written, []);
+  assert.equal(autoDocs(h).length, 2);
+});
+
+test('undoQuest by previewId cancels everything that commit wrote', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  ruleChecked(h);
+  const added = await botDo(h, { op: 'addQuestCounts', date: '2026-10-17', counts: { warm: 2, call: 1 } });
+  await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' }, OCT17 + 500);
+  h.setNow(OCT17 + 1000);
+  const p = await call(h, 'POST', '/preview', { op: 'undoQuest', previewId: added.previewId });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.equal(p.data.diff.questUndo.length, 3);
+  assert.equal(p.data.diff.text.split('\n').filter((l) => l.startsWith('取消：')).length, 3);
+  assert.match(p.data.diff.text, /取消：暖關係 2026-10-17（助理手記）/);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  assert.equal(c.data.quest.written.length, 3);
+  assert.ok(c.data.quest.written.every((id) => /^ar_am_2026-10-17_/.test(id)));
+  assert.ok(autoDocs(h).some((d) => d._id === 'ae_solo_call_2026-10-17'));
+  assert.ok(!autoDocs(h).some((d) => d._id === 'ar_ae_solo_call_2026-10-17'));
+  // 對沖銷那次的 previewId 再取消 → 沖銷紀錄不算事件，沒有東西可取消
+  const none = await call(h, 'POST', '/preview', { op: 'undoQuest', previewId: p.data.previewId });
+  assert.equal(none.status, 409);
+  assert.match(none.data.error, /沒有可以取消/);
+  const again = await call(h, 'POST', '/preview', { op: 'undoQuest', previewId: added.previewId });
+  assert.equal(again.status, 409);
+  assert.match(again.data.error, /已經取消過/);
+});
+
+test('undoQuest validates input and respects the quest gate', async () => {
+  const h = harness(null, OCT17);
+  let p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_solo_call_2026-10-17'] });
+  assert.equal(p.status, 409);
+  assert.match(p.data.error, /尚未開啟/);
+  questOn(h);
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest' });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_a'], previewId: 'pv-1-aaaa' });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: Array.from({ length: 61 }, (_, i) => 'am_x_' + i) });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_bad id'] });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest', previewId: 'pv-1-aaaa' });
+  assert.equal(p.status, 409);
+  assert.match(p.data.error, /沒有可以取消/);
+  // 網頁建立、不是擁有者信箱的事件不沖銷（規則也不允許）
+  h.db.docs.set(AUTO_PREFIX + 'ae_x_call_2026-10-17', { uid: UID, teamId: TEAM, email: 'other@example.com', custId: 'x', histId: 'h', action: 'call', date: '2026-10-17', round: 1, side: 'ds', name: '別人', leadId: '' });
+  p = await call(h, 'POST', '/preview', { op: 'undoQuest', eventIds: ['ae_x_call_2026-10-17'] });
+  assert.equal(p.status, 409);
+  assert.match(p.data.error, /不是擁有者名下的事件/);
+});
+
+test('undo of a CRM change also reverses the quest events that commit wrote', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  ruleChecked(h);
+  const done = await botDo(h, { op: 'updateCustomer', customerId: 'deal-2', patch: { stage: 'KEY_VISIT' }, byEmail: OWNER });
+  assert.equal(done.quest.written.length, 2);
+  // 其中一筆先單獨取消過
+  await botDo(h, { op: 'undoQuest', eventIds: ['ae_deal-2_meet_2026-10-17'] }, OCT17 + 500);
+  h.setNow(OCT17 + 1000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.deepEqual(p.data.diff.questUndo.map((r) => r.id), ['ar_ae_deal-2_prop_2026-10-17']);
+  assert.match(p.data.diff.text, /取消：關鍵訪 2026-10-17（王小明）/);
+  assert.match(p.data.diff.questUndoSkipped, /已經取消過/);
+  assert.doesNotMatch(p.data.diff.warning || '', /不會被刪除/);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  assert.equal(cust(h, 'deal-2').progress, 'FIRST_VISIT');
+  assert.deepEqual(c.data.quest.written, ['ar_ae_deal-2_prop_2026-10-17']);
+  assert.equal(autoDocs(h).filter((d) => d.delta === -1).length, 2);
+});
+
+test('undo while quest writing is off mentions the events and writes no reversal', async () => {
+  const h = harness(null, OCT17);
+  const done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' });
+  h.setNow(OCT17 + 1000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.match(p.data.diff.warning, /不會一併取消.*尚未開啟/);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  assert.match(c.data.quest.disabled, /尚未開啟/);
+  assert.equal(autoDocs(h).length, 0);
+  assert.equal(cust(h, 'solo').history.length, 0);
+});
+
+test('longest ae_ ids (180) still fit the rule as ar_ reversals (183)', async () => {
+  const data = book();
+  const longId = 'c'.repeat(200);
+  data.cust.push({ id: longId, name: '長編號', category: 'NEW', progress: 'NURTURE', nextContactDate: '', history: [] });
+  const h = harness(data, OCT17);
+  questOn(h);
+  ruleChecked(h);
+  const done = await botDo(h, { op: 'appendContact', customerId: longId, date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' });
+  assert.equal(done.quest.written[0].length, 180);
+  const u = await botDo(h, { op: 'undoQuest', previewId: done.previewId }, OCT17 + 1000);
+  assert.equal(u.quest.written[0].length, 183);
+  assert.equal(u.quest.written[0], 'ar_' + done.quest.written[0]);
+});

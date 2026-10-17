@@ -18,6 +18,12 @@ import {
   planQuestCounts,
   planQuestEvents,
   questEventDoc,
+  isQuestReversal,
+  planQuestReversals,
+  planUndoQuest,
+  questCountOfBackup,
+  questReversalDoc,
+  questReversalId,
   planUndo,
   publicCustomer,
   randomSuffix,
@@ -30,7 +36,7 @@ import {
 import { FirestoreError, createRestFirestore } from './firestore.js';
 
 // 每次部署前改這一行，GET /health 就看得出線上是哪一版
-export const VERSION = '2026-10-17.1';
+export const VERSION = '2026-10-17.2';
 
 const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
@@ -167,6 +173,15 @@ async function buildPreview(norm, db, paths, deps) {
     const applied = planQuestCounts(norm.request, idSource);
     return { applied, idSource, baseRev: 0 };
   }
+  if (norm.scope === 'questUndo') {
+    const cfg = questConfigOf(deps.env || {});
+    if (!cfg.enabled) return { error: cfg.reason, status: 409 };
+    const found = await findQuestTargets(db, cfg, paths, norm.request);
+    if (found.error) return { error: found.error, status: 502 };
+    const applied = planUndoQuest(norm.request, planQuestReversals(found.found, ownerEmailsOf(deps.env)));
+    if (applied.error) return { error: applied.error, status: 409 };
+    return { applied, idSource, baseRev: 0 };
+  }
   if (norm.scope === 'undo') {
     const backup = await db.getDoc(paths.backup(norm.request.backupId));
     if (!backup) return { error: '找不到這份備份', status: 404 };
@@ -179,9 +194,24 @@ async function buildPreview(norm, db, paths, deps) {
     const legacy = kind === 'global_state' && meta.previewId && isPreviewId(meta.previewId)
       ? await db.getDoc(paths.preview(meta.previewId))
       : null;
-    const applied = planUndo(backup, current, kind, legacy);
+    const quest = await undoQuestPlan(db, deps.env || {}, paths, meta, legacy);
+    const applied = planUndo(backup, current, kind, legacy, { questNote: quest.note });
     if (applied.error) return { error: applied.error, status: 400 };
-    return { applied, idSource, baseRev: applied.baseRev, planId: applied.planId || '', undoKind: kind, backupId: norm.request.backupId };
+    const crmDiff = applied.diff;
+    const diff = Object.assign({}, crmDiff);
+    if (quest.reversals.length) {
+      diff.questUndo = quest.reversals;
+      diff.questUndoText = '行動闖關會一併取消：\n' + quest.lines.join('\n');
+      diff.text = crmDiff.text + '\n' + diff.questUndoText;
+    } else if (quest.text) {
+      diff.questUndoText = quest.text;
+    }
+    if (quest.skipText) diff.questUndoSkipped = quest.skipText;
+    const shown = Object.assign({}, applied, { diff });
+    return {
+      applied: shown, idSource, baseRev: applied.baseRev, planId: applied.planId || '', undoKind: kind, backupId: norm.request.backupId,
+      undoExtra: { undoDiff: crmDiff, undoQuestNote: quest.note, questUndo: quest.reversals, questDisabled: !!quest.disabled }
+    };
   }
   const doc = await db.getDoc(paths.state);
   if (!doc) return { error: '找不到這個團隊的資料', status: 404 };
@@ -208,6 +238,8 @@ async function writeQuestEvents(db, cfg, paths, events, jobs, now, previewId) {
   let note = '';
   try { seen = db.listDocs ? await db.listDocs(paths.questAutoCollection(cfg.uid)) : []; }
   catch (_) { seen = []; note = '讀不到已計過的事件，只用事件編號去重'; }
+  // 沖銷紀錄不算一般事件；被沖銷的原事件仍然算「已計過」，不會用同一個編號重建
+  seen = seen.filter((row) => !isQuestReversal(row));
   const planned = [];
   (events || []).forEach((e) => planned.push(e));
   (jobs || []).forEach((job) => {
@@ -226,6 +258,115 @@ async function writeQuestEvents(db, cfg, paths, events, jobs, now, previewId) {
   const out = { written, skipped };
   if (note) out.note = note;
   return out;
+}
+
+// 讀出擁有者的 auto 事件；清單不完整（讀不到或超過 500 筆）時，缺的編號再逐筆讀
+async function loadQuestDocs(db, cfg, paths) {
+  const byId = new Map();
+  let complete = false;
+  if (db.listDocs) {
+    try {
+      const rows = await db.listDocs(paths.questAutoCollection(cfg.uid));
+      rows.forEach((row) => { if (row && row.id) byId.set(row.id, row); });
+      complete = rows.length < 500;
+    } catch (_) { complete = false; }
+  }
+  return { byId, complete };
+}
+
+async function questDocOf(db, cfg, paths, loaded, id) {
+  if (loaded.byId.has(id)) return loaded.byId.get(id);
+  if (loaded.complete) return null;
+  const doc = await db.getDoc(paths.questAuto(cfg.uid, id));
+  const row = doc ? Object.assign(doc, { id }) : null;
+  if (row) loaded.byId.set(id, row);
+  return row;
+}
+
+// sel：{ eventIds } 或 { previewId, extraIds }；回傳每一筆原事件和「是否已沖銷」
+async function findQuestTargets(db, cfg, paths, sel) {
+  let loaded;
+  try { loaded = await loadQuestDocs(db, cfg, paths); }
+  catch (e) { return { error: '讀不到行動闖關事件：' + (e && e.message ? e.message : e) }; }
+  let ids = [];
+  const checkPv = new Set();
+  if (sel.previewId) {
+    loaded.byId.forEach((row, id) => {
+      if (!isQuestReversal(row) && row.previewId === sel.previewId) ids.push(id);
+    });
+    (sel.extraIds || []).forEach((id) => { if (typeof id === 'string' && ids.indexOf(id) < 0) ids.push(id); });
+    if (!loaded.complete) {
+      // 事件清單讀不全時，改用那次的預覽單（diff.quest 列了會計入的編號），每筆再核對 previewId
+      try {
+        const pv = isPreviewId(sel.previewId) ? await db.getDoc(paths.preview(sel.previewId)) : null;
+        const listed = pv && pv.diff && Array.isArray(pv.diff.quest) ? pv.diff.quest : [];
+        listed.forEach((e) => { if (e && typeof e.id === 'string' && ids.indexOf(e.id) < 0) checkPv.add(e.id); });
+      } catch (_) { /* 讀不到預覽單就只用清單 */ }
+      checkPv.forEach((id) => ids.push(id));
+    }
+    ids.sort();
+  } else {
+    ids = (sel.eventIds || []).slice();
+  }
+  const found = [];
+  try {
+    for (const id of ids) {
+      const doc = await questDocOf(db, cfg, paths, loaded, id);
+      if (doc && checkPv.has(id) && doc.previewId !== sel.previewId) continue;
+      const reversed = doc ? !!(await questDocOf(db, cfg, paths, loaded, questReversalId(id))) : false;
+      found.push({ id, doc, reversed });
+    }
+  } catch (e) {
+    return { error: '讀不到行動闖關事件：' + (e && e.message ? e.message : e) };
+  }
+  return { found };
+}
+
+// 還原（undo）時，順便找出那次寫入計入的闖關事件要不要沖銷
+async function undoQuestPlan(db, env, paths, meta, legacy) {
+  const count = questCountOfBackup(meta, legacy);
+  const cfg = questConfigOf(env);
+  const empty = { reversals: [], lines: [], text: '', skipText: '' };
+  if (!cfg.enabled) {
+    return Object.assign(empty, {
+      disabled: count > 0,
+      note: count ? '那次寫入可能已計入行動闖關的 ' + count + ' 筆自動事件，這次不會一併取消：' + cfg.reason + '。' : ''
+    });
+  }
+  const extraIds = Array.isArray(meta.questEventIds) ? meta.questEventIds : [];
+  if (!meta.previewId && !extraIds.length) return Object.assign(empty, { note: '' });
+  const got = await findQuestTargets(db, cfg, paths, { previewId: meta.previewId || '', extraIds });
+  if (got.error) return Object.assign(empty, { note: '', text: got.error + '，這次不會一併取消行動闖關事件。' });
+  const plan = planQuestReversals(got.found, ownerEmailsOf(env));
+  return {
+    reversals: plan.reversals,
+    lines: plan.lines,
+    text: !plan.reversals.length && plan.skipLines.length ? '那次計入的行動闖關事件不用再取消。' : '',
+    skipText: plan.skipLines.length ? '略過：' + plan.skipLines.join('、') : '',
+    note: ''
+  };
+}
+
+// 寫沖銷：寫入前再確認一次原事件還在、還沒被沖銷；createDoc 不會覆蓋（一筆原事件只會有一筆沖銷）
+async function writeQuestReversals(db, cfg, paths, originalIds, now, previewId, ownerEmails) {
+  if (!cfg.enabled) return { written: [], skipped: [], disabled: cfg.reason };
+  if (!db.createDoc) return { written: [], skipped: [], error: '無法寫入行動闖關' };
+  const got = await findQuestTargets(db, cfg, paths, { eventIds: originalIds });
+  if (got.error) return { written: [], skipped: originalIds.slice(), error: got.error };
+  const byId = new Map(got.found.map((f) => [f.id, f.doc]));
+  const plan = planQuestReversals(got.found, ownerEmails);
+  const written = [];
+  const skipped = plan.skipped.map((x) => x.id);
+  try {
+    for (const r of plan.reversals) {
+      const doc = questReversalDoc(byId.get(r.undoOf), r.undoOf, cfg.uid, paths.teamId, now, previewId);
+      const res = await db.createDoc(paths.questAuto(cfg.uid, r.id), doc);
+      if (res && res.created === false) skipped.push(r.undoOf); else written.push(r.id);
+    }
+  } catch (e) {
+    return { written, skipped, error: '行動闖關取消寫入失敗：' + (e && e.message ? e.message : e) };
+  }
+  return { written, skipped };
 }
 
 function ownerEmailsOf(env) {
@@ -259,6 +400,7 @@ async function preview(request, env, db, paths, bot, deps) {
   if (built.planId) pending.planId = built.planId;
   if (built.backupId) pending.backupId = built.backupId;
   if (built.undoKind) pending.undoKind = built.undoKind;
+  if (built.undoExtra) Object.assign(pending, built.undoExtra);
   await db.setDoc(paths.preview(previewId), pending);
   const body = {
     ok: true,
@@ -358,9 +500,10 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
   const legacy = kind === 'global_state' && bmeta.previewId && isPreviewId(bmeta.previewId)
     ? await tx.get(paths.preview(bmeta.previewId))
     : null;
-  const applied = planUndo(backup, current, kind, legacy);
+  const undoOpts = typeof pending.undoQuestNote === 'string' ? { questNote: pending.undoQuestNote } : undefined;
+  const applied = planUndo(backup, current, kind, legacy, undoOpts);
   if (applied.error) return { abort: true, status: 409, error: applied.error };
-  if (stable(applied.diff) !== stable(pending.diff)) {
+  if (stable(applied.diff) !== stable(pending.undoDiff || pending.diff)) {
     return { abort: true, status: 409, error: '預覽時的差異和現在不一致，已取消寫入' };
   }
   const backupId = 'bk-' + now + '-' + deps.random();
@@ -412,7 +555,26 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
       customerId: ''
     });
   }
-  return { body: commitBody(previewId, pending, newRev, backupId, auditId, applied.diff) };
+  return {
+    body: commitBody(previewId, pending, newRev, backupId, auditId, applied.diff),
+    questReversals: (pending.questUndo || []).map((r) => r.undoOf),
+    questDisabled: !!pending.questDisabled
+  };
+}
+
+async function commitQuestUndo(tx, paths, pending, bot, deps, now, previewId, cfg) {
+  if (!cfg.enabled) return { abort: true, status: 409, error: cfg.reason };
+  const auditId = 'au-' + now + '-' + deps.random();
+  tx.set(paths.audit(auditId), {
+    at: new Date(now).toISOString(), teamId: paths.teamId, botName: bot.name, op: pending.op,
+    previewId, customerId: '', planId: '', backupId: '', baseRev: 0, newRev: 0,
+    summary: pending.diff.summary, diff: pending.diff
+  });
+  tx.set(paths.preview(previewId), Object.assign({}, pending, { status: 'committed', committedAt: new Date(now).toISOString(), auditId }));
+  return {
+    body: { ok: true, previewId, auditId, diff: pending.diff },
+    questReversals: (pending.diff.questUndo || []).map((r) => r.undoOf)
+  };
 }
 
 async function commitQuest(tx, paths, pending, bot, deps, now, previewId, cfg) {
@@ -454,6 +616,7 @@ async function commit(request, env, db, paths, bot, deps) {
     if (target === 'fintrack') return commitFintrack(tx, paths, pending, bot, deps, now, previewId);
     if (target === 'undo') return commitUndo(tx, paths, pending, bot, deps, now, previewId);
     if (target === 'quest') return commitQuest(tx, paths, pending, bot, deps, now, previewId, questConfigOf(env));
+    if (target === 'questUndo') return commitQuestUndo(tx, paths, pending, bot, deps, now, previewId, questConfigOf(env));
     const doc = await tx.get(paths.state);
     if (!doc) return { abort: true, status: 404, error: '找不到這個團隊的資料' };
     if (cloudRev(doc) !== pending.baseRev) {
@@ -482,6 +645,12 @@ async function commit(request, env, db, paths, bot, deps) {
   if (result && result.abort) return json({ error: result.error }, result.status);
   if ((result.questJobs && result.questJobs.length) || (result.questEvents && result.questEvents.length)) {
     result.body.quest = await writeQuestEvents(db, questConfigOf(env), paths, result.questEvents || [], result.questJobs || [], now, previewId);
+  }
+  if (result.questReversals && result.questReversals.length) {
+    result.body.quest = await writeQuestReversals(db, questConfigOf(env), paths, result.questReversals, now, previewId, ownerEmailsOf(env));
+  } else if (result.questDisabled) {
+    const cfg = questConfigOf(env);
+    result.body.quest = { written: [], skipped: [], disabled: cfg.enabled ? '預覽時行動闖關寫入還沒開啟，這次沒有一併取消；需要的話請另外用 undoQuest' : cfg.reason };
   }
   return json(result.body);
 }

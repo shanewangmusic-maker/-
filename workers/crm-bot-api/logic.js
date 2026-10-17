@@ -272,6 +272,11 @@ export function normalizeOp(body, opts) {
     if (q.error) return q;
     return { op, request: q.values, scope: 'quest' };
   }
+  if (op === 'undoQuest') {
+    const q = normalizeUndoQuest(body);
+    if (q.error) return q;
+    return { op, request: q.values, scope: 'questUndo' };
+  }
   if (op === 'undo') {
     const backupId = String(body.backupId || '').trim();
     if (!isBackupId(backupId)) return { error: 'backupId 不正確' };
@@ -1084,7 +1089,8 @@ function changeSetForBackup(snapshot, meta, legacyPending) {
   return { set: changeSetOf(snapshot, Object.assign({}, snapshot, { cust: replay.customers })) };
 }
 
-export function planUndo(backup, current, kind, legacyPending) {
+// opts.questNote：呼叫端已處理闖關沖銷時傳入自己的說明（可為空字串）；沒傳就用舊的提醒
+export function planUndo(backup, current, kind, legacyPending, opts) {
   if (!backup) return { error: '找不到這份備份' };
   const snapshot = clone(backup);
   const meta = snapshot._backup || {};
@@ -1092,12 +1098,12 @@ export function planUndo(backup, current, kind, legacyPending) {
   const backupKind = meta.kind || (Array.isArray(snapshot.cust) ? 'global_state' : 'fintrack');
   if (kind && backupKind !== kind) return { error: '備份種類和目前資料不一致' };
   if (backupKind === 'fintrack' && snapshot.existed === false) return { error: '這份備份是建立之前的空檔，不能用來刪除財務規劃' };
-  const questCount = Array.isArray(meta.questEventIds) && meta.questEventIds.length
-    ? meta.questEventIds.length
-    : (legacyPending && legacyPending.diff && Array.isArray(legacyPending.diff.quest) ? legacyPending.diff.quest.length : 0);
-  const questNote = questCount
-    ? '那次寫入可能已計入行動闖關的 ' + questCount + ' 筆自動事件不會被刪除（規則不允許刪除），需要的話請在行動闖關頁面調整。'
-    : '';
+  const questCount = questCountOfBackup(meta, legacyPending);
+  const questNote = opts && typeof opts.questNote === 'string'
+    ? opts.questNote
+    : (questCount
+      ? '那次寫入可能已計入行動闖關的 ' + questCount + ' 筆自動事件不會被刪除（規則不允許刪除），需要的話請在行動闖關頁面調整。'
+      : '');
   if (backupKind === 'fintrack') {
     const resultRev = Number.isFinite(meta.resultRev) ? meta.resultRev : fintrackRev(snapshot) + 1;
     if (fintrackRev(current) !== resultRev) {
@@ -1384,6 +1390,112 @@ export function questLine(ev) {
   return (QUEST_LABELS[ev.action] || ev.action) + ' ' + ev.date + (ev.name ? '（' + ev.name + '）' : '');
 }
 
+// ---- 行動闖關沖銷：不刪除，另外新增一筆 delta:-1 的 ar_ 事件抵掉原本那一筆 ----
+export const QUEST_REVERSAL_PREFIX = 'ar_';
+export const QUEST_UNDO_MAX = 60;
+const QUEST_ORIGINAL_ID_RE = /^a[em]_[A-Za-z0-9_-]{1,190}$/;
+
+export function isQuestOriginalId(id) {
+  return QUEST_ORIGINAL_ID_RE.test(String(id || ''));
+}
+
+export function questReversalId(originalId) {
+  return QUEST_REVERSAL_PREFIX + originalId;
+}
+
+// 沖銷事件本身不是一般事件（不能再被沖銷、不能拿來當「已計過」）
+export function isQuestReversal(doc) {
+  if (!doc) return false;
+  if (String(doc.id || '').indexOf(QUEST_REVERSAL_PREFIX) === 0) return true;
+  if (doc.undoOf) return true;
+  return Number(doc.delta) < 0;
+}
+
+// 欄位照抄原事件，加上 delta:-1、undoOf；文件編號 = 'ar_' + 原編號
+export function questReversalDoc(orig, originalId, uid, teamId, nowMs, previewId) {
+  return {
+    uid, teamId, email: orig.email,
+    custId: orig.custId || '', histId: orig.histId || '', action: orig.action, date: orig.date,
+    round: orig.round || 1, side: orig.side === 'rf' ? 'rf' : 'ds',
+    name: orig.name || '', leadId: orig.leadId || '',
+    delta: -1, undoOf: originalId,
+    src: 'crmbot', createdAt: nowMs, previewId: previewId || ''
+  };
+}
+
+// 這筆原事件能不能沖銷（要符合資料庫規則才寫得進去）
+function questReversalProblem(orig, ownerEmails) {
+  if (QUEST_ACTIONS.indexOf(orig.action) < 0) return '項目不明';
+  if (orig.side && orig.side !== 'ds' && orig.side !== 'rf') return '陌生／緣故不明';
+  const d = validDate(orig.date);
+  if (!d || d !== orig.date || d < AQ_AUTO_START) return '日期不在自動計入範圍';
+  const owners = (Array.isArray(ownerEmails) && ownerEmails.length ? ownerEmails : [DEFAULT_OWNER_EMAIL]).map((e) => String(e).toLowerCase());
+  if (owners.indexOf(String(orig.email || '').toLowerCase()) < 0) return '不是擁有者名下的事件';
+  return '';
+}
+
+export function normalizeUndoQuest(body) {
+  const hasIds = body.eventIds != null;
+  const hasPv = body.previewId != null && body.previewId !== '';
+  if (hasIds === hasPv) return { error: '請提供 eventIds（要取消的事件編號）或 previewId（取消那一次寫入計入的全部事件），二選一' };
+  if (hasPv) {
+    const previewId = String(body.previewId).trim();
+    if (!isPreviewId(previewId)) return { error: 'previewId 不正確' };
+    return { values: { previewId } };
+  }
+  if (!Array.isArray(body.eventIds) || !body.eventIds.length) return { error: 'eventIds 要是事件編號的陣列' };
+  if (body.eventIds.length > QUEST_UNDO_MAX) return { error: '一次最多取消 ' + QUEST_UNDO_MAX + ' 筆' };
+  const ids = [];
+  for (let i = 0; i < body.eventIds.length; i++) {
+    const id = String(body.eventIds[i] == null ? '' : body.eventIds[i]).trim();
+    if (!isQuestOriginalId(id)) return { error: '事件編號不正確（要是 ae_ 或 am_ 開頭）：' + id.slice(0, 80) };
+    if (ids.indexOf(id) < 0) ids.push(id);
+  }
+  return { values: { eventIds: ids } };
+}
+
+// found：{ id, doc（找不到是 null）, reversed（已經沖銷過）}；回傳要寫的沖銷與略過原因
+export function planQuestReversals(found, ownerEmails) {
+  const reversals = [];
+  const skipped = [];
+  (found || []).forEach((f) => {
+    if (!f.doc || isQuestReversal(f.doc)) { skipped.push({ id: f.id, reason: '找不到這筆事件' }); return; }
+    if (f.reversed) { skipped.push({ id: f.id, reason: '已經取消過', line: questLine(f.doc) }); return; }
+    const problem = questReversalProblem(f.doc, ownerEmails);
+    if (problem) { skipped.push({ id: f.id, reason: problem, line: questLine(f.doc) }); return; }
+    reversals.push({
+      id: questReversalId(f.id), undoOf: f.id,
+      action: f.doc.action, date: f.doc.date, side: f.doc.side === 'rf' ? 'rf' : 'ds',
+      custId: f.doc.custId || '', name: f.doc.name || ''
+    });
+  });
+  const lines = reversals.map((r) => '取消：' + questLine(r));
+  const skipLines = skipped.map((s) => (s.line ? s.line : s.id) + '（' + s.reason + '）');
+  return { reversals, skipped, lines, skipLines };
+}
+
+export function planUndoQuest(request, plan) {
+  const head = request.previewId ? '那一次寫入（' + request.previewId + '）計入的' : '';
+  if (!plan.reversals.length) {
+    const why = plan.skipLines.length ? '：' + plan.skipLines.join('、') : '';
+    return { error: '沒有可以取消的行動闖關事件' + (request.previewId && !plan.skipped.length ? '（' + head + '事件找不到）' : '') + why };
+  }
+  const diff = {
+    summary: '取消' + head + '行動闖關 ' + plan.reversals.length + ' 筆：' + plan.reversals.map(questLine).join('、'),
+    text: '修改前：這些事件都還算在闖關裡。\n修改後：\n' + plan.lines.join('\n') +
+      '\n（不刪除原本的事件，而是各加一筆抵銷紀錄。CRM 客戶資料不會變。）',
+    questUndo: plan.reversals
+  };
+  if (plan.skipLines.length) diff.questUndoSkipped = '略過：' + plan.skipLines.join('、');
+  return { target: 'questUndo', reversals: plan.reversals, diff };
+}
+
+export function questCountOfBackup(meta, legacyPending) {
+  meta = meta || {};
+  if (Array.isArray(meta.questEventIds) && meta.questEventIds.length) return meta.questEventIds.length;
+  return legacyPending && legacyPending.diff && Array.isArray(legacyPending.diff.quest) ? legacyPending.diff.quest.length : 0;
+}
+
 // 手動加計：不綁客戶的事件，頁面每筆都 +1（沒有 custId 就不去重）
 export function normalizeQuestCounts(body, opts) {
   const date = String(body.date || '').trim();
@@ -1431,7 +1543,7 @@ export function planQuestCounts(request, idSource) {
     diff: {
       summary: '在行動闖關 ' + request.date + '（' + sideText + '）手動加計：' + parts.join('、'),
       text: '修改前：這些不在闖關裡。\n修改後：' + request.date + ' ' + sideText + ' ' + parts.join('、') + '（共 ' + events.length + ' 筆，記在 ' + request.email + ' 名下，標註「' + (request.note || '助理手記') + '」）。CRM 客戶資料不會變。',
-      warning: '加計之後只能在行動闖關頁面調整，助理不能刪除。',
+      warning: '加計之後助理不能刪除；算錯時可以用 undoQuest 取消（另加一筆抵銷，不刪原紀錄）。',
       quest: events.map((e) => ({ id: e.id, action: e.action, date: e.date, side: e.side }))
     }
   };
