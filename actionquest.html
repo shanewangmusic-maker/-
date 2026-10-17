@@ -309,7 +309,7 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 <main id="meView">
 <section class="card s8" id="xpCard"><h2>🏅 經驗值與等級 <span class="note">（累計全部紀錄，不受月份影響）</span></h2><div class="xprow"><div class="lvl"><small>LV</small><span id="lvNum">1</span></div>
 <div style="flex:1;min-width:200px"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><b id="lvTitle">見習顧問</b><span id="xpTxt" class="muted"></span></div><div class="bar"><i id="xpBar"></i></div><div class="titles" id="titles"></div></div></div>
-<div class="xptable">計分：約訪 1・取得約會 3・面談 5・發掘需求 5・建議書 10・成交 30・新名單 3（XP 僅作為行動量參考）</div></section>
+<div class="xptable">計分：約訪 1・取得約會 3・面談 5・發掘需求 5・關鍵訪 10・成交 30・新名單 3（XP 僅作為行動量參考）</div></section>
 <section class="card s4 quest" id="quest"><h2>📜 今日任務 <span class="note">（連續天數為累計）</span></h2><div id="qList"></div><div class="streak"><span class="flame">🔥</span><span>連續達標 <b id="streak" style="font-size:20px;color:var(--gold)">0</b> 天</span></div><div class="done">🎉 今日任務完成！做得好！</div></section>
 <section class="card s12 tlempty" id="tlEmpty" style="display:none"><button class="nlink" id="tlEmptyBtn" style="margin:0;font-size:14px">＋新增聯繫名單</button><div class="frow" id="tlEmptyForm" style="display:none;margin:8px 0 0"><input id="tlName2" class="tlin" placeholder="輸入姓名" maxlength="20"><select id="tlType2" class="tlsel"><option value="">不指定類別</option><option value="ds">陌生</option><option value="rf">緣故</option></select><button class="btn" id="tlAdd2">加入名單</button></div></section>
 <section class="card s12" id="todayCard"><h2 class="ch" data-c="today"><span class="arr"></span>📋 今日聯繫名單 <span class="note">（試用版）</span><span class="tlsum muted" id="tlSum"></span></h2>
@@ -342,14 +342,14 @@ body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body
 <script>
 // ===== 瓶頸小怪獸建議（可自行修改文字）=====
 // 每一關：name 怪獸名稱、cause 可能原因（一句）、tips 實用建議（2～3 條）、help 求助方式
-const CALL_DAILY_MIN=20; // 沉默怪門檻：本週平均每天約訪未達此數就出現
+const CALL_DAILY_MIN=20; // 沉默怪門檻：本週平均每天曖關係未達此數就出現（仍站在約訪村）
 // 迷霧怪（面談→發掘需求）門檻在 MONSTERS.need.th：[健康值, 警戒值]
 const MONSTERS={
- call:{name:'沉默怪',cause:'名單不足或開口前猶豫，撥出的通數偏少。',tips:['每天固定一個時段集中打電話，先寫好開場白','先從緣故與老客戶回訪開始暖身'],help:'請團隊夥伴陪你一起「電話時段」互相打氣'},
+ call:{name:'沉默怪',cause:'關係經營變冷了，問候和關心的次數還沒到健康標準。',tips:['每天安排固定時段問候','從生活話題開始','問「超業」要話術'],help:'請團隊夥伴一起固定問候時段，互相提醒把關心傳出去'},
  appt:{name:'爽約怪',cause:'通話中沒有給對方明確的見面理由，或時間沒有當場敲定。',tips:['開場說明見面能帶給對方的具體好處（例如保單健檢）','用「二選一」問時間：週二晚上還是週四中午？','約好後前一天傳訊息確認並附上地點'],help:'問「超業」或主管助理要一份約訪話術範本'},
  meet:{name:'猶豫怪',cause:'約到了但臨時取消或改期，對方對見面的必要性還不確定。',tips:['約見前一天再次確認，並說明會談大約 30 分鐘','提供線上會談或對方方便的地點作為選項'],help:'找主管陪訪，第一次見面由主管協助開場'},
  need:{name:'迷霧怪',th:[.70,.55],cause:'面談時太快進入商品介紹，或問題問得不夠深，還沒找到客戶真正在意的需求。',tips:['熟練發掘需求演練：和夥伴角色演練提問流程','用六大需求或金三角當提問工具，逐一確認','面談後記下客戶說的重點，下次見面再確認'],help:'找主管協助或陪訪，或問「超業」助理要提問話術'},
- prop:{name:'拖延怪',cause:'需求已找到，但建議書遲遲沒有排出說明時間。',tips:['面談結束前就約好下次說明建議書的時間','建議書只聚焦 1～2 個對方最在意的需求，避免太複雜'],help:'請主管或資深夥伴幫忙看建議書的呈現方式'},
+ prop:{name:'拖延怪',cause:'需求已找到，但關鍵訪遲遲沒有排出時間。',tips:['面談結束前就約好下次關鍵訪的時間','關鍵訪只聚焦 1～2 個對方最在意的需求，避免太複雜'],help:'請主管或資深夥伴幫忙看關鍵訪的呈現方式'},
  deal:{name:'觀望怪',cause:'說明後對方還在比較或想再考慮，決定被一直延後。',tips:['主動詢問「還有哪些地方需要再確認？」並逐一釐清','給對方整理好的重點摘要，方便與家人討論','約好下一次回覆的時間，而不是等待對方聯絡'],help:'找主管陪訪，一起回答對方的疑問'},
  lead:{name:'害羞怪',cause:'成交或面談後不好意思開口請對方介紹朋友。',tips:['在服務好的時刻自然提出：「身邊有沒有也需要整理保障的朋友？」','準備簡單的介紹卡或訊息，讓對方方便轉傳'],help:'問「超業」助理要轉介紹開口的話術'}
 };
@@ -365,8 +365,9 @@ function monSVG(k){const L=MONLOOK[k],c=L.c,f=L.f;let eyes='<circle cx="19" cy="
  if(f==='shy'){eyes='<path d="M15 28 Q19 31 23 28M29 28 Q33 31 37 28" stroke="#1E2E3D" stroke-width="2" fill="none"/>';extra='<circle cx="13" cy="34" r="4" fill="#E5534B" opacity=".45"/><circle cx="39" cy="34" r="4" fill="#E5534B" opacity=".45"/>';mouth='<circle cx="26" cy="38" r="1.8" fill="#1E2E3D"/>'}
  return`<svg viewBox="0 0 52 50" width="52" height="50" aria-hidden="true">${body}${eyes}${mouth}${extra}</svg>`}
 const KEY='actionquest_entries_v1';
-const ST=[{k:'call',n:'約訪',full:'約訪（通數）',town:'約訪村',ic:'📞',xp:1},{k:'appt',n:'取得約會',full:'取得約會',town:'約會小鎮',ic:'🗓️',xp:3},{k:'meet',n:'初次面談',full:'初次面談',town:'面談森林',ic:'🌲',xp:5},{k:'need',n:'發掘需求',full:'發掘需求',town:'需求山谷',ic:'⛰️',xp:5},{k:'prop',n:'說明建議書',full:'說明建議書',town:'建議書高塔',ic:'🗼',xp:10},{k:'deal',n:'成交',full:'成交（件數）',town:'成交城堡',ic:'🏰',xp:30},{k:'lead',n:'取得新名單',full:'取得新名單',town:'轉介紹寶庫',ic:'💎',xp:3}];
-const FN=s=>s.replace(/<br>.*/,'');const FIELDS=[...ST.slice(0,6).map(s=>[s.k,s.full]),['client','成交（客戶數）'],['lead','取得新名單<br><span class="muted">陌生＝DS取得／緣故＝要求推薦介紹取得</span>']];
+const ST=[{k:'call',n:'約訪',full:'約訪（通數）',town:'約訪村',ic:'📞',xp:1},{k:'appt',n:'取得約會',full:'取得約會',town:'約會小鎮',ic:'🗓️',xp:3},{k:'meet',n:'初次面談',full:'初次面談',town:'面談森林',ic:'🌲',xp:5},{k:'need',n:'發掘需求',full:'發掘需求',town:'需求山谷',ic:'⛰️',xp:5},{k:'prop',n:'關鍵訪',full:'關鍵訪',town:'關鍵訪高塔',ic:'🗼',xp:10},{k:'deal',n:'成交',full:'成交（件數）',town:'成交城堡',ic:'🏰',xp:30},{k:'lead',n:'取得新名單',full:'取得新名單',town:'轉介紹寶庫',ic:'💎',xp:3}];
+const WARM={k:'warm',n:'曖關係',town:'關係經營',ic:'🤝',full:'曖關係<br><span class="muted">問候、關心、日常互動，不是約見面。每日目標 20</span>'};
+const FN=s=>s.replace(/<br>.*/,'');const FIELDS=[[WARM.k,WARM.full],...ST.slice(0,6).map(s=>[s.k,s.full]),['client','成交（客戶數）'],['lead','取得新名單<br><span class="muted">陌生＝DS取得／緣故＝要求推薦介紹取得</span>']];
 // [健康, 警戒] 門檻
 const TH={appt:[.30,.20],meet:[.70,.55],need:MONSTERS.need.th,prop:[.60,.45],deal:[.30,.20],lead:[.50,.30]};
 const TITLES=[[0,'見習顧問'],[1200,'新秀顧問'],[3000,'專業顧問'],[5500,'資深顧問'],[9000,'菁英顧問'],[14000,'傳說顧問']];
@@ -377,17 +378,18 @@ const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const TODAY=ds(new Date());
 const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ds(d)};
 const blank=()=>({ds:Object.fromEntries(FIELDS.map(f=>[f[0],0])),rf:Object.fromEntries(FIELDS.map(f=>[f[0],0])),prem:0,comm:0,sa:0,names:{ds:{},rf:{}},fl:{ds:{},rf:{}}});
-const NK=ST.map(s=>s.k);const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NK=['warm',...ST.map(s=>s.k)];const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function stageOf(k){return k==='warm'?WARM:ST.find(x=>x.k===k)}
 function normNames(e){if(!e.names||typeof e.names!=='object')e.names={};for(const t of['ds','rf']){if(!e.names[t]||typeof e.names[t]!=='object')e.names[t]={};for(const k in e.names[t]){if(!Array.isArray(e.names[t][k]))delete e.names[t][k];else e.names[t][k]=[...new Set(e.names[t][k])]}}if(!e.fl||typeof e.fl!=='object')e.fl={};for(const t of['ds','rf']){if(!e.fl[t]||typeof e.fl[t]!=='object')e.fl[t]={};for(const k in e.fl[t])if(!Array.isArray(e.fl[t][k]))delete e.fl[t][k]}return e}
 const nmOf=(e,t,k)=>(e&&e.names&&e.names[t]&&Array.isArray(e.names[t][k]))?e.names[t][k]:[];
 function load(){try{E=JSON.parse(JSON.stringify(window.__aqInitialDays||{}))}catch(e){E={}}}
 function persist(){if(window.__aqHydrating)return;if(window.__aqSchedule)window.__aqSchedule('days');}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)}
-// 假資料：近 28 天，弱點在 發掘需求→建議書
+// 假資料：近 28 天，弱點在 發掘需求→關鍵訪
 function fake(){let s=20261017;const r=()=>(s=(s*1103515245+12345)%2147483648)/2147483648;const bin=(n,p)=>{let c=0;for(let i=0;i<n;i++)if(r()<p)c++;return c};
  const out={};for(let i=Math.round((new Date(TODAY)-new Date(+TODAY.slice(0,4),+TODAY.slice(5,7)-3,1))/864e5);i>=0;i--){const ago=i>40?(i>70?2:1):0;const day=addD(TODAY,-i);const wd=new Date(day+'T00:00:00').getDay();const e=blank();
   const P={ds:{n:4+ago+Math.floor(r()*6),appt:.32-ago*.03,meet:ago?.8:.5,need:ago?.82:.5,prop:.36+ago*.08,deal:.42},rf:{n:3+Math.floor(r()*3),appt:.55,meet:ago?.88:.52,need:ago?.88:.5,prop:.40+ago*.08,deal:.5}};
-  for(const t of['ds','rf']){const p=P[t],o=e[t];o.call=wd===0?Math.floor(p.n/3):p.n;if(i===0)o.call=t==='ds'?3:1;o.appt=bin(o.call,p.appt);o.meet=bin(o.appt,p.meet);o.need=bin(o.meet,p.need);o.prop=bin(o.need,p.prop);o.deal=bin(o.prop,p.deal);o.client=o.deal;o.lead=t==='ds'?bin(2,.3):bin(o.meet+1,ago?.45:.2)}
+  for(const t of['ds','rf']){const p=P[t],o=e[t];o.call=wd===0?Math.floor(p.n/3):p.n;if(i===0)o.call=t==='ds'?3:1;o.warm=wd===0?3+Math.floor(r()*3):6+Math.floor(r()*6);o.appt=bin(o.call,p.appt);o.meet=bin(o.appt,p.meet);o.need=bin(o.meet,p.need);o.prop=bin(o.need,p.prop);o.deal=bin(o.prop,p.deal);o.client=o.deal;o.lead=t==='ds'?bin(2,.3):bin(o.meet+1,ago?.45:.2)}
   if(i<10&&i>0&&e.ds.meet+e.rf.meet<1){e.rf.appt=Math.max(1,e.rf.appt);e.rf.meet=1}
   if(i===0){e.ds.appt=1;e.ds.meet=0;e.rf.appt=1;e.rf.meet=0;['need','prop','deal','client','lead'].forEach(k=>{e.ds[k]=0;e.rf[k]=0})}
   if(i===20){e.rf.deal=Math.max(1,e.rf.deal);e.rf.client=e.rf.deal;e.rf.prop=Math.max(e.rf.prop,1)}
@@ -396,7 +398,7 @@ function fake(){let s=20261017;const r=()=>(s=(s*1103515245+12345)%2147483648)/2
 const GIV=['小明','阿美','大華','小芳','志強','雅婷','俊傑','怡君','建宏','淑芬','家豪','佩珊','冠宇','欣怡','宗翰','詩涵'],PRE=['測試','範例','示範','假名'];
 function fakeNames(out){let s=7;const r=()=>(s=(s*1103515245+12345)%2147483648)/2147483648;const nm=()=>PRE[Math.floor(r()*4)]+GIV[Math.floor(r()*16)];
  for(const d in out){const e=out[d];for(const t of['ds','rf']){const o=e[t],N={};const ppl=[];const need=Math.max(o.appt,Math.ceil(o.call/2));while(ppl.length<need){const x=nm();if(!ppl.includes(x))ppl.push(x)}
-  if(need)N.call=ppl.slice(0,need);for(const k of['appt','meet','need','prop','deal'])if(o[k])N[k]=ppl.slice(0,o[k]);if(o.lead){N.lead=[];for(let i=0;i<o.lead;i++)N.lead.push(nm())}e.names[t]=N}}
+  if(need)N.call=ppl.slice(0,need);if(o.warm)N.warm=[nm(),nm()].slice(0,Math.min(2,o.warm));for(const k of['appt','meet','need','prop','deal'])if(o[k])N[k]=ppl.slice(0,o[k]);if(o.lead){N.lead=[];for(let i=0;i<o.lead;i++)N.lead.push(nm())}e.names[t]=N}}
  const e=out[TODAY];if(e)e.names={ds:{call:['測試小明','示範大華','範例小王'],appt:['測試小明']},rf:{call:['範例阿美']}};e.fl={ds:{call:['測試小明','示範大華'],appt:['測試小明']},rf:{call:['範例阿美']}};return out}
 function fakeTL(){const it=(id,name,t,res,fx,roll,prev)=>({id,name,t,res,fx,roll,prev});const y=addD(TODAY,-1);const h={};for(let i=1;i<=4;i++){const p=4+i%3;h[addD(TODAY,-i)]={p,d:p,ok:1+i%2}}h[addD(TODAY,-5)]={p:6,d:4,ok:1};
  const a1={d:addD(TODAY,2),t:'19:30',loc:'範例咖啡館'};const I1=it(1,'測試小明','ds','ok',[['ds','call'],['ds','appt']]);I1.appt=a1;I1.note='對儲蓄規劃有興趣';const I2=it(2,'範例阿美','rf','no',[['rf','call']]);I2.note='響很久沒接';I2.next=addD(TODAY,1);const I3=it(3,'示範大華','ds','later',[['ds','call']]);I3.note='出差中，下週再聯絡';I3.next=addD(TODAY,7);
@@ -430,12 +432,12 @@ function renderQuest(V){const e=V[TODAY];const q=[['約訪','call',5,'通'],['�
  $('streak').textContent=streakOf(V);const d=questDone(e);$('quest').classList.toggle('complete',d);if(lastDone===false&&d)celebrate();lastDone=d}
 function celebrate(){const q=$('quest');for(let i=0;i<40;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.background=['#D4AF37','#fff','#2EB872','#F1D77A'][i%4];c.style.animationDelay=Math.random()*.5+'s';q.appendChild(c);setTimeout(()=>c.remove(),2600)}toast('🎉 今日任務完成！')}
 const MON=`<svg viewBox="0 0 52 50" width="52" height="50"><ellipse cx="26" cy="30" rx="22" ry="18" fill="#9B7FD1"/><path d="M8 18 L12 6 L18 15Z M44 18 L40 6 L34 15Z" fill="#9B7FD1"/><circle cx="19" cy="27" r="5" fill="#fff"/><circle cx="33" cy="27" r="5" fill="#fff"/><circle cx="20" cy="28" r="2.4" fill="#1E2E3D"/><circle cx="32" cy="28" r="2.4" fill="#1E2E3D"/><path d="M20 38 Q26 34 32 38" stroke="#1E2E3D" stroke-width="2" fill="none"/><circle cx="12" cy="34" r="3" fill="#F4A9C0" opacity=".7"/><circle cx="40" cy="34" r="3" fill="#F4A9C0" opacity=".7"/></svg>`;
-function weekAvg(V,mode){const y=selMonth.slice(0,4);let ref=isY(selMonth)?(y===CURM.slice(0,4)?TODAY:y+'-12-31'):(selMonth===CURM?TODAY:mEnd(selMonth));const wd=(new Date(ref+'T00:00:00').getDay()+6)%7;const from=addD(ref,-wd);let n=0;for(let d=from;d<=ref;d=addD(d,1)){const e=V[d];if(e)n+=(mode!=='rf'?+e.ds.call||0:0)+(mode!=='ds'?+e.rf.call||0:0)}return{avg:n/(wd+1),from,to:ref}}
+function weekAvg(V,mode){const y=selMonth.slice(0,4);let ref=isY(selMonth)?(y===CURM.slice(0,4)?TODAY:y+'-12-31'):(selMonth===CURM?TODAY:mEnd(selMonth));const wd=(new Date(ref+'T00:00:00').getDay()+6)%7;const from=addD(ref,-wd);let n=0;for(let d=from;d<=ref;d=addD(d,1)){const e=V[d];if(e)n+=(mode!=='rf'?+e.ds.warm||0:0)+(mode!=='ds'?+e.rf.warm||0:0)}return{avg:n/(wd+1),from,to:ref}}
 function renderMap(V){const o=sumMonth(V,selMonth,mapMode);$('mapRange').textContent=`（${mLabel(selMonth)}）`;let bad=[];
- $('path').innerHTML=ST.map((s,i)=>{const r=rateOf(o,i);let l=lightOf(s.k,r);const from=s.k==='lead'?'初次面談':ST[i-1]?.n;let wk=null;if(i===0){wk=weekAvg(V,mapMode);if(wk.avg<CALL_DAILY_MIN)l='r'}if(l==='r')bad.push(i===0?`本週約訪量（平均每天 ${wk.avg.toFixed(1)} 通）`:`${from} → ${s.n}`);
+ $('path').innerHTML=ST.map((s,i)=>{const r=rateOf(o,i);let l=lightOf(s.k,r);const from=s.k==='lead'?'初次面談':ST[i-1]?.n;let wk=null;if(i===0){wk=weekAvg(V,mapMode);if(wk.avg<CALL_DAILY_MIN)l='r'}if(l==='r')bad.push(i===0?`本週曖關係（平均每天 ${wk.avg.toFixed(1)} 次）`:`${from} → ${s.n}`);
   const mon=l==='r'?`<div class="monster" tabindex="0" role="button" aria-label="${MONSTERS[s.k].name}：查看建議" data-mk="${s.k}" data-mn="${o[s.k]}" data-mr="${r}" data-mf="${from}"${wk?` data-wk="${wk.avg.toFixed(1)}" data-wr="${wk.from.slice(5).replace('-','/')}～${wk.to.slice(5).replace('-','/')}"`:''}>${monSVG(s.k)}</div>`:'';
   return`<div class="node" data-stage="${s.k}" data-mode="${mapMode}" title="點擊查看客戶姓名">${mon}<div class="isle">${s.ic}${l?`<span class="light ${l}"></span>`:''}</div><div class="ninfo"><div class="nname">${i+1}. ${s.town}</div><div class="ncount">${o[s.k]}<small> ${s.n}${s.k==='deal'?'（'+o.client+' 位客戶）':''}</small></div><div class="nrate">${i===0?'起點':(s.k==='lead'?'÷面談 ':'轉換 ')+pct(r)}</div></div></div>`}).join('');
- $('mapAlert').innerHTML=bad.length?`<div class="alert">👾 小怪獸出沒：<b>${bad.join('、')}</b> 是本月瓶頸（轉換率或約訪量還沒到健康標準）。</div>`:''}
+ $('mapAlert').innerHTML=bad.length?`<div class="alert">👾 小怪獸出沒：<b>${bad.join('、')}</b> 是本月瓶頸（轉換率或本週曖關係還沒到健康標準）。</div>`:''}
 function weeksOf(m){const out=[];let d=m+'-01';const e=mEnd(m);while(d<=e){let st=d,en=d;while(en<e&&new Date(en+'T00:00:00').getDay()!==0)en=addD(en,1);out.push([st,en]);d=addD(en,1)}return out}
 function renderStats(V){if(isY(selMonth))statView='m';const a=sumMonth(V,selMonth,'all'),d=sumMonth(V,selMonth,'ds'),r=sumMonth(V,selMonth,'rf');
  const avg=(o)=>o.deal?(o.meet/o.deal).toFixed(1):'—';const avgC=o=>o.deal?(o.call/o.deal).toFixed(1):'—';
@@ -443,18 +445,20 @@ function renderStats(V){if(isY(selMonth))statView='m';const a=sumMonth(V,selMont
  const cell=(o,i,s)=>{const v=rateOf(o,i),l=lightOf(s.k,v);return`<td>${o[s.k]}</td><td>${i?(v==null?'<span class="muted">—</span>':`<span class="pill ${l}">${pct(v)}</span>`):'—'}</td>`};
  let rows=ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}" title="點擊查看客戶姓名"><td>${s.full} ›</td>${cell(d,i,s)}${cell(r,i,s)}${cell(a,i,s)}</tr>`);
  rows.splice(6,0,`<tr><td>成交（客戶數）</td><td>${d.client}</td><td></td><td>${r.client}</td><td></td><td>${a.client}</td><td></td></tr>`);
+ rows.unshift(`<tr class="mrow" data-stage="warm" title="點擊查看客戶姓名"><td>曖關係 ›<div class="muted">每日目標 20</div></td><td>${d.warm||0}</td><td>—</td><td>${r.warm||0}</td><td>—</td><td>${a.warm||0}</td><td>—</td></tr>`);
  if(statView==='w'){const W=weeksOf(selMonth).map(w=>sumBetween(V,w[0],w[1],'all'));const wk=weeksOf(selMonth);
-  $('funnel').innerHTML=`<thead><tr><th>階段（合計）</th>${wk.map((w,i)=>`<th>第${i+1}週<br><span class="note">${w[0].slice(5).replace('-','/')}～${w[1].slice(8)}</span></th>`).join('')}</tr></thead><tbody>${ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}"><td>${s.full} ›</td>${W.map(o=>{const v=rateOf(o,i),l=lightOf(s.k,v);return`<td>${o[s.k]}${i&&v!=null?` <span class="pill ${l}">${pct(v)}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td>${W.map(o=>`<td>${avg(o)}</td>`).join('')}</tr></tfoot>`;return}
+  const warmWk=`<tr class="mrow" data-stage="warm"><td>曖關係 ›<div class="muted">每日目標 20</div></td>${W.map(o=>`<td>${o.warm||0}</td>`).join('')}</tr>`;
+  $('funnel').innerHTML=`<thead><tr><th>階段（合計）</th>${wk.map((w,i)=>`<th>第${i+1}週<br><span class="note">${w[0].slice(5).replace('-','/')}～${w[1].slice(8)}</span></th>`).join('')}</tr></thead><tbody>${warmWk}${ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}"><td>${s.full} ›</td>${W.map(o=>{const v=rateOf(o,i),l=lightOf(s.k,v);return`<td>${o[s.k]}${i&&v!=null?` <span class="pill ${l}">${pct(v)}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td>${W.map(o=>`<td>${avg(o)}</td>`).join('')}</tr></tfoot>`;return}
  $('funnel').innerHTML=`<thead><tr><th rowspan="2">階段</th><th colspan="2" style="text-align:center">陌生 (DS)</th><th colspan="2" style="text-align:center">緣故／轉介紹</th><th colspan="2" style="text-align:center">合計</th></tr><tr><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th></tr></thead><tbody>${rows.join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td><td colspan="2">${avg(d)}</td><td colspan="2">${avg(r)}</td><td colspan="2">${avg(a)}</td></tr></tfoot>`}
 function renderBadges(V){const all=sumRange(V,0,'all');const lv=TITLES.filter(t=>xpOf(V)>=t[0]).length;
- const B=[['🥇','第一次成交','完成第 1 件成交',all.deal>=1],['🌲','單週面談 10 次','任 7 天內面談 ≥ 10',maxWindow(V,'meet',7)>=10],['💎','單月 5 份轉介紹','任 30 天內轉介紹名單 ≥ 5',maxWindow(V,'lead',30,'rf')>=5],['🔥','連續 7 天達標','每日任務連續 7 天',maxStreak(V)>=7],['📞','百通約訪','累積約訪 ≥ 100',all.call>=100],['🗼','建議書達人','累積建議書 ≥ 20',all.prop>=20],['🏰','十件成交','累積成交 ≥ 10',all.deal>=10],['⚡','單日約訪 20 通','一天約訪 ≥ 20',maxWindow(V,'call',1)>=20],['🌟','連續 30 天達標','每日任務連續 30 天',maxStreak(V)>=30],['👑','傳說顧問','等級達到 Lv6',lv>=6]];
+ const B=[['🥇','第一次成交','完成第 1 件成交',all.deal>=1],['🌲','單週面談 10 次','任 7 天內面談 ≥ 10',maxWindow(V,'meet',7)>=10],['💎','單月 5 份轉介紹','任 30 天內轉介紹名單 ≥ 5',maxWindow(V,'lead',30,'rf')>=5],['🔥','連續 7 天達標','每日任務連續 7 天',maxStreak(V)>=7],['📞','百通約訪','累積約訪 ≥ 100',all.call>=100],['🗼','關鍵訪達人','累積關鍵訪 ≥ 20',all.prop>=20],['🏰','十件成交','累積成交 ≥ 10',all.deal>=10],['⚡','單日約訪 20 通','一天約訪 ≥ 20',maxWindow(V,'call',1)>=20],['🌟','連續 30 天達標','每日任務連續 30 天',maxStreak(V)>=30],['👑','傳說顧問','等級達到 Lv6',lv>=6]];
  $('bCount').textContent=`（已解鎖 ${B.filter(b=>b[3]).length}/${B.length}）`;$('badges').innerHTML=B.map(b=>`<div class="badge ${b[3]?'':'lock'}" title="${b[2]}"><div class="ic">${b[3]?b[0]:'🔒'}</div><div class="bn">${b[1]}</div><div class="bd">${b[2]}</div></div>`).join('')}
 function renderDays(){if(isY(selMonth)){const y=selMonth;const ms=[];for(let i=1;i<=12;i++)ms.push(y+'-'+pad(i));const rows=ms.map(m=>{const MT={};Object.keys(E).filter(k=>k.startsWith(m)).forEach(k=>MT[k]=E[k]);return[m,MT,Object.keys(MT).length]}).filter(r=>r[2]);const YT={};rows.forEach(r=>Object.assign(YT,r[1]));const t=sumBetween(YT,null,null,'all');$('dCount').textContent=`（${y} 全年・${rows.length} 個月）`;
- $('days').innerHTML=rows.length?`<thead><tr><th>月份</th><th>天數</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th></tr></thead><tbody>`+rows.map(([m,MT,n])=>{const o=sumBetween(MT,null,null,'all');return`<tr class="mrow" data-gom="${m}" title="切換到 ${mLabel(m)}"><td>${mLabel(m)} ›</td><td>${n}</td><td>${o.call}</td><td>${o.meet}</td><td>${o.deal}</td><td>${xpOf(MT)}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>全年合計</td><td>${Object.keys(YT).length}</td><td>${t.call}</td><td>${t.meet}</td><td>${t.deal}</td><td>${xpOf(YT)}</td></tr></tfoot>`:'<tr><td class="muted">這一年尚無資料。</td></tr>';return}
+ $('days').innerHTML=rows.length?`<thead><tr><th>月份</th><th>天數</th><th>曖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th></tr></thead><tbody>`+rows.map(([m,MT,n])=>{const o=sumBetween(MT,null,null,'all');return`<tr class="mrow" data-gom="${m}" title="切換到 ${mLabel(m)}"><td>${mLabel(m)} ›</td><td>${n}</td><td>${o.warm||0}</td><td>${o.call}</td><td>${o.meet}</td><td>${o.deal}</td><td>${xpOf(MT)}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>全年合計</td><td>${Object.keys(YT).length}</td><td>${t.warm||0}</td><td>${t.call}</td><td>${t.meet}</td><td>${t.deal}</td><td>${xpOf(YT)}</td></tr></tfoot>`:'<tr><td class="muted">這一年尚無資料。</td></tr>';return}
  const ks=Object.keys(E).filter(k=>k.startsWith(selMonth)).sort().reverse();$('dCount').textContent=`（${mLabel(selMonth)}・${ks.length} 天）`;const MT={};ks.forEach(k=>MT[k]=E[k]);const tot=sumBetween(MT,null,null,'all');
- $('days').innerHTML=ks.length?`<thead><tr><th>日期</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th><th></th></tr></thead><tbody>`+ks.map(k=>{const e=E[k];return`<tr><td>${k}${questDone(e)?' ✅':''}</td><td>${dayTot(e,'call')}</td><td>${dayTot(e,'meet')}</td><td>${dayTot(e,'deal')}</td><td>${xpOf({x:e})}</td><td><button data-ed="${k}">編輯</button><button class="del" data-del="${k}">刪除</button></td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>本月合計</td><td>${tot.call}</td><td>${tot.meet}</td><td>${tot.deal}</td><td>${xpOf(MT)}</td><td></td></tr></tfoot>`:'<tr><td class="muted">這個月尚無資料，請在左側登錄。</td></tr>'}
+ $('days').innerHTML=ks.length?`<thead><tr><th>日期</th><th>曖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th><th></th></tr></thead><tbody>`+ks.map(k=>{const e=E[k];return`<tr><td>${k}${questDone(e)?' ✅':''}</td><td>${dayTot(e,'warm')}</td><td>${dayTot(e,'call')}</td><td>${dayTot(e,'meet')}</td><td>${dayTot(e,'deal')}</td><td>${xpOf({x:e})}</td><td><button data-ed="${k}">編輯</button><button class="del" data-del="${k}">刪除</button></td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>本月合計</td><td>${tot.warm||0}</td><td>${tot.call}</td><td>${tot.meet}</td><td>${tot.deal}</td><td>${xpOf(MT)}</td><td></td></tr></tfoot>`:'<tr><td class="muted">這個月尚無資料，請在左側登錄。</td></tr>'}
 function renderCmp(V){const Y=isY(selMonth),y=selMonth.slice(0,4);const ms=new Set(Object.keys(V).map(k=>k.slice(0,7)));const show=[];for(let i=1;i<=12;i++){const m=y+'-'+pad(i);if(ms.has(m)&&m<=CURM)show.push(m)}if(!show.length){$('cmp').innerHTML=`<tr><td class="muted">${y} 年尚無任何月份的紀錄。</td></tr>`;return}
- const C=[['約訪',o=>o.call,0],['取得約會',o=>o.appt,0],['初次面談',o=>o.meet,0],['說明建議書',o=>o.prop,0],['成交件數',o=>o.deal,0],['受理實收保費',o=>o.prem,2],['約訪→約會',o=>o.call?o.appt/o.call:null,1],['需求→建議書',o=>o.need?o.prop/o.need:null,1],['建議書→成交',o=>o.prop?o.deal/o.prop:null,1]];
+ const C=[['曖關係',o=>o.warm||0,0],['約訪',o=>o.call,0],['取得約會',o=>o.appt,0],['初次面談',o=>o.meet,0],['關鍵訪',o=>o.prop,0],['成交件數',o=>o.deal,0],['受理實收保費',o=>o.prem,2],['約訪→約會',o=>o.call?o.appt/o.call:null,1],['需求→關鍵訪',o=>o.need?o.prop/o.need:null,1],['關鍵訪→成交',o=>o.prop?o.deal/o.prop:null,1]];
  const fmt=(v,t)=>v==null?'—':t===1?pct(v):t===2?'$'+v.toLocaleString():v;const prevM=m=>{const d=new Date(+m.slice(0,4),+m.slice(5)-2,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
  $('cmp').innerHTML=`<thead><tr><th>月份</th>${C.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>`+show.map(m=>{const lab=`${+m.slice(5)} 月`;
   if(m>CURM)return`<tr class="fut"><td>${lab} <span class="note">（未到）</span></td>${C.map(()=>'<td>—</td>').join('')}</tr>`;
@@ -468,7 +472,7 @@ function renderChips(t,k){const el=$(`c_${t}_${k}`),a=FNm[t][k]||[];if(el){el.te
  if(fnCur&&fnCur[0]===t&&fnCur[1]===k){const fl=FFl[t][k]||[];$('fnList').innerHTML=a.length?a.map((n,i)=>`<div><span class="n">${esc(n)}</span>${fl.includes(n)?'<span class="tag roll">來自聯繫名單</span>':''}<button data-rmn="${t}.${k}.${i}" title="移除" aria-label="移除 ${esc(n)}">×</button></div>`).join(''):'<div class="muted">尚未登記姓名。</div>'}}
 let fnMsgT;function fnMsg(t){$('fnMsg').textContent=t;clearTimeout(fnMsgT);fnMsgT=setTimeout(()=>$('fnMsg').textContent='',2200)}
 function addName(t,k,v){const ns=v.split(/[,，、]/).map(x=>x.trim()).filter(Boolean);if(!ns.length)return;const a=FNm[t][k]||(FNm[t][k]=[]);const dup=[];for(const n of ns){if(a.includes(n)){if(!dup.includes(n))dup.push(n)}else a.push(n)}if(dup.length)fnMsg(`已在名單中：${dup.join('、')}`);const inp=$(`f_${t}_${k}`);if((parseInt(inp.value)||0)<a.length)inp.value=a.length;renderChips(t,k);preview()}
-function openFn(t,k){fnCur=[t,k];const f=FIELDS.find(x=>x[0]===k);const d=$('fDate').value||TODAY;$('fnTitle').textContent=`${ST.find(x=>x.k===k).n}・${t==='ds'?'陌生':'緣故'}・${md(d)}`;const i=$('fnIn');i.dataset.nt=t;i.dataset.nk=k;i.value='';$('fnMsg').textContent='';$('fnModal').classList.add('on');renderChips(t,k);i.focus()}
+function openFn(t,k){fnCur=[t,k];const d=$('fDate').value||TODAY;$('fnTitle').textContent=`${stageOf(k).n}・${t==='ds'?'陌生':'緣故'}・${md(d)}`;const i=$('fnIn');i.dataset.nt=t;i.dataset.nk=k;i.value='';$('fnMsg').textContent='';$('fnModal').classList.add('on');renderChips(t,k);i.focus()}
 function closeFn(){const i=$('fnIn');if(fnCur&&i.value.trim()){addName(fnCur[0],fnCur[1],i.value);i.value=''}fnCur=null;$('fnModal').classList.remove('on')}
 function fillForm(date){const e=normNames(JSON.parse(JSON.stringify(E[date]||blank())));FNm=e.names;FFl=e.fl;NK.forEach(k=>['ds','rf'].forEach(t=>renderChips(t,k)));document.querySelectorAll('.nin').forEach(i=>i.value='');$('fDate').value=date;for(const t of['ds','rf'])for(const[k]of FIELDS)$(`f_${t}_${k}`).value=e[t][k]||0;$('fPrem').value=e.prem||'';$('fComm').value=e.comm||'';$('fSa').value=e.sa||'';$('fHint').textContent=E[date]?'（編輯已登錄的日期）':'（新的一天）';draft=null;render()}
 function readForm(){const e=blank();for(const t of['ds','rf'])for(const[k]of FIELDS)e[t][k]=Math.max(0,parseInt($(`f_${t}_${k}`).value)||0);e.prem=+$('fPrem').value||0;e.comm=+$('fComm').value||0;e.sa=+$('fSa').value||0;for(const t of['ds','rf'])for(const k of NK){const a=FNm[t][k];if(a&&a.length)e.names[t][k]=a.slice();const f=(FFl[t][k]||[]).filter(n=>a&&a.includes(n));if(f.length){e.fl=e.fl||{ds:{},rf:{}};e.fl[t][k]=f}}return e}
@@ -486,7 +490,7 @@ document.addEventListener('keydown',ev=>{const i=ev.target;if(i.classList&&i.cla
 document.addEventListener('click',ev=>{if(ev.target.id==='fnModal'||ev.target.closest('#fnClose'))closeFn()});
 document.addEventListener('focusout',ev=>{const i=ev.target;if(i.id!=='fnIn'&&i.classList&&i.classList.contains('nin')&&i.value.trim()){addName(i.dataset.nt,i.dataset.nk,i.value);i.value=''}});
 // 姓名清單
-function showNames(k,mode){const V=view();const s=ST.find(x=>x.k===k);const m=selMonth;const from=isY(m)?m+'-01-01':m+'-01',to=isY(m)?m+'-12-31':mEnd(m);const ts=mode==='ds'?['ds']:mode==='rf'?['rf']:['ds','rf'];
+function showNames(k,mode){const V=view();const s=stageOf(k);if(!s)return;const m=selMonth;const from=isY(m)?m+'-01-01':m+'-01',to=isY(m)?m+'-12-31':mEnd(m);const ts=mode==='ds'?['ds']:mode==='rf'?['rf']:['ds','rf'];
  let tot=0,cnt=0;const rows=[];Object.keys(V).filter(d=>d>=from&&d<=to).sort().reverse().forEach(d=>{const e=V[d];for(const t of ts){tot+=+e[t][k]||0;const a=nmOf(e,t,k);if(a.length){cnt+=a.length;rows.push(`<tr><td>${d.slice(5).replace('-','/')}</td><td><span class="tag ${t}">${t==='ds'?'陌生':'緣故'}</span></td><td>${a.map(esc).join('、')}</td></tr>`)}}});
  $('nTitle').textContent=`${s.ic} ${s.town}・${s.n}（${mLabel(m)}${mode==='ds'?'・陌生':mode==='rf'?'・緣故':''}）`;
  $('nBody').innerHTML=`<p class="muted" style="margin:0 0 8px">共 ${tot} 次，其中 ${cnt} 筆有登記客戶姓名${tot>cnt?'（其餘只記次數）':''}。</p>`+(rows.length?`<div class="tw"><table class="nlist"><thead><tr><th>日期</th><th>類別</th><th>客戶姓名</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="muted">這段期間沒有登記姓名。</p>');$('nModal').classList.add('on')}
@@ -539,7 +543,7 @@ document.addEventListener('click',ev=>{const g=ev.target.closest('[data-gom]');i
 {const fit=()=>{const dc=$('daysCard');const on=matchMedia('(min-width:901px)').matches;dc.style.maxHeight=dc.style.height=on?$('entry').offsetHeight+'px':''};if(window.ResizeObserver)new ResizeObserver(fit).observe($('entry'));addEventListener('resize',fit);fit()}
 {const HV=matchMedia('(hover:hover) and (min-width:768px)');let cur=null;const card=$('monCard');
  const show=el=>{const k=el.dataset.mk,M=MONSTERS[k],s=ST.find(x=>x.k===k),r=+el.dataset.mr;cur=el;
-  card.innerHTML=`<h4>${monSVG(k).replace('width="52" height="50"','width="40" height="38"')}<span>${M.name}<br><span class="muted" style="font-weight:400">${s.town}的瓶頸</span></span><button class="x" data-mclose aria-label="關閉">✕</button></h4><div class="st">${el.dataset.wk!=null?`本週（${el.dataset.wr}）平均每天約訪 <b>${el.dataset.wk}</b> 通（目標 ≥ ${CALL_DAILY_MIN} 通）`:`${mLabel(selMonth)}：${s.n} <b>${el.dataset.mn}</b> 次・${el.dataset.mf} → ${s.n} 轉換率 <b>${pct(r)}</b>（健康值 ≥ ${pct(TH[k][0])}）`}</div><div><b>可能原因：</b>${M.cause}</div><div style="margin-top:4px"><b>可以試試：</b></div><ul>${M.tips.map(t=>`<li>${t}</li>`).join('')}</ul><div class="hp">🙋 <b>求助：</b>${M.help}</div>`;card.classList.add('on');
+  card.innerHTML=`<h4>${monSVG(k).replace('width="52" height="50"','width="40" height="38"')}<span>${M.name}<br><span class="muted" style="font-weight:400">${s.town}的瓶頸</span></span><button class="x" data-mclose aria-label="關閉">✕</button></h4><div class="st">${el.dataset.wk!=null?`本週（${el.dataset.wr}）平均每天曖關係 <b>${el.dataset.wk}</b> 次（目標 ≥ ${CALL_DAILY_MIN} 次）`:`${mLabel(selMonth)}：${s.n} <b>${el.dataset.mn}</b> 次・${el.dataset.mf} → ${s.n} 轉換率 <b>${pct(r)}</b>（健康值 ≥ ${pct(TH[k][0])}）`}</div><div><b>可能原因：</b>${M.cause}</div><div style="margin-top:4px"><b>可以試試：</b></div><ul>${M.tips.map(t=>`<li>${t}</li>`).join('')}</ul><div class="hp">🙋 <b>求助：</b>${M.help}</div>`;card.classList.add('on');
   if(HV.matches){const b=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight;let x=b.left+b.width/2-w/2,y=b.bottom+8;if(y+h>innerHeight-8)y=b.top-h-8;if(y<8)y=Math.max(8,innerHeight-h-8);card.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+'px';card.style.top=y+'px'}else $('monScrim').classList.add('on')};
  const hide=()=>{card.classList.remove('on');$('monScrim').classList.remove('on');cur=null};
  document.addEventListener('mouseover',e=>{if(!HV.matches)return;const m=e.target.closest('.monster');if(m&&m!==cur)show(m);else if(!m&&cur&&!e.target.closest('#monCard'))hide()});
@@ -578,15 +582,15 @@ const SAMPLE=LB_DEMO?['測試業務A','範例小陳','示範阿華','測試業�
 const PPL=['我',...SAMPLE];
 function recentMonths(n){const out=[];let y=+CURM.slice(0,4),m=+CURM.slice(5);for(let i=n-1;i>=0;i--){let yy=y,mm=m-i;while(mm<=0){mm+=12;yy--;}out.push(yy+'-'+pad(mm));}return out;}
 const MS=recentMonths(6);
-const K=['call','appt','meet','need','prop','deal','lead'];
+const K=['warm','call','appt','meet','need','prop','deal','lead'];
 const dim=m=>new Date(+m.slice(0,4),+m.slice(5),0).getDate();
 const elapsed=m=>m===CURM?+TODAY.slice(8):dim(m);
 // 假資料：只在 ?demo=1 產生示範隊友。正式版的數字由 syncMe 從登入者自己的日期紀錄寫入。
 let sd=11;const r=()=>(sd=(sd*1103515245+12345)%2147483648)/2147483648;
 const D={};
 if(LB_DEMO)MS.forEach((m,mi)=>{D[m]={};PPL.forEach((p,pi)=>{const f=elapsed(m)/dim(m);if(p==='範例新人'&&mi<3){D[m][p]=Object.fromEntries(K.map(k=>[k,0]));return}
- const base=(70+pi*9+r()*60+mi*6)*(p==='測試自己'?0.9+mi*.06:1);const c=Math.round(base*f),a=Math.round(c*(.25+r()*.15)),me=Math.round(a*(.7+r()*.2)),n=Math.round(me*(.75+r()*.15)),pr=Math.round(n*(.35+r()*.25)),dl=Math.round(pr*(.25+r()*.25)),ld=Math.round(me*(.3+r()*.3));
- D[m][p]={call:c,appt:a,meet:me,need:n,prop:pr,deal:dl,lead:ld}})});
+ const base=(70+pi*9+r()*60+mi*6)*(p==='測試自己'?0.9+mi*.06:1);const c=Math.round(base*f),a=Math.round(c*(.25+r()*.15)),me=Math.round(a*(.7+r()*.2)),n=Math.round(me*(.75+r()*.15)),pr=Math.round(n*(.35+r()*.25)),dl=Math.round(pr*(.25+r()*.25)),ld=Math.round(me*(.3+r()*.3)),wm=Math.round((10+r()*8)*f);
+ D[m][p]={warm:wm,call:c,appt:a,meet:me,need:n,prop:pr,deal:dl,lead:ld}})});
 let meHas={};
 function ensureMonth(m){if(!D[m]){D[m]={};PPL.forEach(p=>{D[m][p]=Object.fromEntries(K.map(k=>[k,0]));});}}
 function setMeName(name){name=String(name||'').trim()||'我';if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
@@ -603,7 +607,7 @@ function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{const o=bag(m
 function rankOf(rs){let last=null,rk=0;return rs.map((x,i)=>{if(x.v==null)return{...x,rk:null};if(x.v!==last){rk=i+1;last=x.v}return{...x,rk}})}
 const COL=['#FBF1D6','#E3EEF9','#E2F4EA','#F3E8FA','#FDE7E4','#EAF4EC','#FFF6E0','#E9EEF3'];const col=p=>COL[PPL.indexOf(p)%COL.length];const av=p=>`<span class="av" style="background:${col(p)}">${esc(p[0]||'')}</span>`;
 const nm=p=>p===ME?`<b>${esc(p)}</b><span class="tagme">我</span>`:`${esc(p)}<span class="tagme ex">範例</span>`;
-const GM=[['call','約訪通數','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','說明建議書','次'],['deal','成交件數','件'],['lead','新名單','位']];
+const GM=[['warm','曖關係','次'],['call','約訪通數','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
 const gv=(o,k)=>+o[k]||0;let GS={months:{}};
 function setGoals(g){GS=(g&&typeof g==='object'&&g.months)?g:{months:{}};}
 window.__aqGetGoals=()=>GS;window.__aqSetGoals=function(g){setGoals(g);if(window.lbRender)window.lbRender();};
@@ -646,7 +650,7 @@ function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rank
  else if(me.rk==null)nudge='這個月還沒有列入此項排名，先到我的闖關登錄行動。';
  else if(!ab)nudge='目前沒有可比較的對象。';
  else nudge=a.grow?`成長率再提高 ${Math.max(1,Math.ceil((ab.v-me.v)*100+0.01))} 個百分點就能超越前一名`:`再 ${ab.v-me.v+1} ${a.u}${a.id==='call'?'約訪':a.id==='deal'?'成交':'面談／需求'}就能超越前一名`;
- const SLx=[['call','約訪','通'],['appt','取得約會','位'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','說明建議書','次'],['deal','成交件數','件'],['lead','新名單','位']];
+ const SLx=[['warm','曖關係','次'],['call','約訪','通'],['appt','取得約會','位'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
  const HL={call:['call'],meet:['meet','need'],deal:['deal'],grow:['_tot']};const rowsM=[...SLx,['_tot','總行動量','次']];const val=(p,k)=>k==='_tot'?tot(bag(m,p)):bag(m,p)[k];
  const gap=(d,u)=>d<0?`<span class="g bad">還差 ${-d} ${u}</span>`:d>0?`<span class="g good">多 ${d} ${u}</span>`:'<span class="g eq">一樣</span>';
  const cr=(p,x,y)=>{const o=bag(m,p);return o[y]?Math.round(o[x]/o[y]*100):null};const CRs=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→成交','deal','meet']];
@@ -671,8 +675,8 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-more]');
 function syncOwner(){const b=$('lbGEdit');if(!b)return;const on=window.__aqIsOwner===true;b.style.display=on?'':'none';if(!on&&$('lbGPanel'))$('lbGPanel').style.display='none';}
 window.__aqSyncOwner=syncOwner;
 window.lbRender=render;render();
-const SL=[['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','說明建議書','次'],['deal','成交件數','件'],['lead','新名單','位']];
-const CV=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→需求','need','meet'],['需求→建議書','prop','need'],['面談→成交','deal','meet']];
+const SL=[['warm','曖關係','次'],['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
+const CV=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→需求','need','meet'],['需求→關鍵訪','prop','need'],['面談→成交','deal','meet']];
 const HOV=matchMedia('(hover:hover) and (min-width:768px)');let popFor=null;
 function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=bag(m,p),sc=m===CURM&&pm?elapsed(m)/dim(pm):1,prev=pm?bag(pm,p):null,q=prev?Object.fromEntries(K.map(k=>[k,Math.round((prev[k]||0)*sc)])):null;
  const ar=(v,w)=>w==null||v===w?'':v>w?` <span class="upa">▲${+(v-w).toFixed(1)}</span>`:` <span class="dna">▼${+(w-v).toFixed(1)}</span>`;
