@@ -823,3 +823,21 @@ test('fintrack undo is refused after a later fintrack change', async () => {
   assert.match(p.data.error, /又被修改過/);
   assert.ok(a.backupId);
 });
+
+test('deleting the last deal keeps optional row fields when copying history back to the lead', async () => {
+  const data = book();
+  const lead = data.cust.find((c) => c.id === 'lead-1');
+  lead.coreIds = ['deal-2']; lead.coreId = 'deal-2';
+  data.cust.find((c) => c.id === 'deal-1').leadId = '';
+  data.cust.find((c) => c.id === 'deal-2').history.push({
+    id: 'h-full', date: '2026-10-17', content: '完整欄位', progress: 'FIRST_VISIT', method: '面談', time: '09:30', endTime: '10:30',
+    byEmail: 'owner@example.com', act: 'appt', cat: 'visit', visitType: '初訪', by: '林專員', src: 'aq'
+  });
+  const h = harness(data);
+  await botDo(h, { op: 'deleteCustomer', customerId: 'deal-2' });
+  const ct = cust(h, 'lead-1').contacts.find((r) => r.content === '完整欄位');
+  assert.ok(ct);
+  for (const [k, v] of Object.entries({ time: '09:30', endTime: '10:30', byEmail: 'owner@example.com', act: 'appt', cat: 'visit', visitType: '初訪', by: '林專員', src: 'aq', method: '面談' })) {
+    assert.equal(ct[k], v, k);
+  }
+});

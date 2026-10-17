@@ -41,6 +41,10 @@ export function atValidTime(v) {
   return String(h).padStart(2, '0') + ':' + String(mi).padStart(2, '0');
 }
 
+export function questActOf(v) {
+  return (v === 'call' || v === 'appt' || v === 'need') ? v : '';
+}
+
 export function digits(v) {
   return String(v || '').replace(/\D/g, '');
 }
@@ -555,6 +559,14 @@ function copyHistoryToLead(deal, lead, idSource) {
     const end = validDate(h.endDate);
     if (end && end > date) ct.endDate = end;
     if (atValidTime(h.time)) ct.time = atValidTime(h.time);
+    // 和網頁 leadCarryContacts 一樣保留這些選填欄位
+    if (atValidTime(h.time) && atValidTime(h.endTime)) ct.endTime = atValidTime(h.endTime);
+    if (h.byEmail) ct.byEmail = String(h.byEmail);
+    if (questActOf(h.act)) ct.act = questActOf(h.act);
+    if (h.cat) ct.cat = String(h.cat);
+    if (h.visitType) ct.visitType = String(h.visitType);
+    if (h.by) ct.by = String(h.by);
+    if (h.src) ct.src = String(h.src);
     if (!Array.isArray(lead.contacts)) lead.contacts = [];
     lead.contacts.push(ct);
     n++;
