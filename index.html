@@ -6750,6 +6750,7 @@
     <!-- ========================================== -->
     <!-- 🚀 FIREBASE 雲端即時同步模組 (完美外掛) -->
     <!-- ========================================== -->
+    <script src="crm-link.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -6850,24 +6851,36 @@
         async function saveToCloud() {
             if (!cloudDocRef || !window.getCloudData || isSaving) return;
             isSaving = true;
+            const expectedRev = lastSeenRev;
+            let wrote = 0;
             try {
                 await runTransaction(db, async (tx) => {
                     const snap = await tx.get(cloudDocRef);
-                    const cloudRev = snap.exists() ? (snap.data()._rev || 0) : 0;
-
-                    // 衝突偵測：雲端版本已比我們看到的還新 → 有人搶先存檔了
-                    if (snap.exists() && cloudRev !== lastSeenRev) {
+                    const exists = snap.exists();
+                    const fresh = exists ? snap.data() : null;
+                    const memory = window.getCloudData();
+                    const guarded = window.CrmLink
+                        ? window.CrmLink.guardSave(expectedRev, fresh, memory, exists)
+                        : null;
+                    if (guarded && guarded.conflict) {
                         const err = new Error('CONFLICT');
                         err.__conflict = true;
                         throw err;
                     }
-
-                    const payload = window.getCloudData();
-                    payload._rev = cloudRev + 1;
-                    payload._updatedAt = Date.now();
+                    if (!guarded && exists && ((fresh && fresh._rev) || 0) !== expectedRev) {
+                        const err = new Error('CONFLICT');
+                        err.__conflict = true;
+                        throw err;
+                    }
+                    const payload = guarded ? guarded.payload : memory;
+                    if (!guarded) {
+                        payload._rev = ((fresh && fresh._rev) || 0) + 1;
+                        payload._updatedAt = Date.now();
+                    }
+                    wrote = payload._rev;
                     tx.set(cloudDocRef, payload);
-                    lastSeenRev = payload._rev; // 樂觀更新本地版本號
                 });
+                lastSeenRev = wrote;
             } catch (e) {
                 if (e && e.__conflict) {
                     // 關鍵差異：不再盲目覆寫，改成保留雲端最新版並提醒使用者。
@@ -7014,11 +7027,32 @@
             if (teamId) { try { localStorage.setItem('crm_team_id', teamId); } catch (_) {} attachCloud(teamId); }
         };
 
+        const CRM_MOCK = !!(window.__CRM_TEST && window.__CRM_TEST.mock === true);
+        if (CRM_MOCK) {
+            window.currentUserEmail = String(window.__CRM_TEST.email || 'agent@example.com').toLowerCase();
+            window.currentUserUid = 'uid-mock';
+            const startMock = function () {
+                if (typeof window.syncFromCloud !== 'function') { setTimeout(startMock, 20); return; }
+                const ov = document.getElementById('loadingOverlay');
+                if (ov) { ov.classList.add('hidden'); ov.style.display = 'none'; }
+                const lg = document.getElementById('teamLoginModal');
+                if (lg) { lg.classList.add('hidden'); lg.classList.remove('flex'); }
+                window.__crmCloud = JSON.parse(JSON.stringify(window.__CRM_TEST.state || { cust: [] }));
+                window.syncFromCloud(window.__crmCloud);
+                window.__crmTrySave = function (expectedRev, memoryPayload) {
+                    return window.CrmLink.guardSave(expectedRev, window.__crmCloud, memoryPayload, true);
+                };
+                if (window.__CRM_TEST.tab && typeof switchMainTab === 'function') switchMainTab(window.__CRM_TEST.tab);
+                document.body.classList.add('crm-ready');
+            };
+            startMock();
+        }
+
         // 維持登入狀態，重開頁面免重新登入
-        setPersistence(auth, browserLocalPersistence).catch(() => {});
+        if (!CRM_MOCK) setPersistence(auth, browserLocalPersistence).catch(() => {});
 
         // 唯一進場守門員：依登入狀態決定顯示登入畫面或連線
-        onAuthStateChanged(auth, (user) => {
+        if (!CRM_MOCK) onAuthStateChanged(auth, (user) => {
             if (user && !user.isAnonymous) {
                 window.currentUserEmail = (user.email || '').toLowerCase();
                 window.currentUserUid = user.uid || '';
@@ -7227,7 +7261,7 @@
         }
         zlk_inject();
 
-        onAuthStateChanged(auth, (user)=>{
+        if (!CRM_MOCK) onAuthStateChanged(auth, (user)=>{
             const fab=document.getElementById('zlk_fab');
             if (user && !user.isAnonymous){ if(fab) fab.style.display='block'; setTimeout(zlk_start, 1500); }
             else { zlk_stop(); zlk_rows=[]; zlk_updateBadge(); if(fab) fab.style.display='none'; }
