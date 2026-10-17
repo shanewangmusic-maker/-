@@ -100,7 +100,8 @@ input[type=date],input[type=number]{border:1px solid #CBD3DC;border-radius:8px;p
 .tlsel{border:1px solid #CBD3DC;border-radius:8px;padding:6px;font-size:14px;font-family:inherit}
 .tli{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #EEF1F5}.tli.done{opacity:.6}
 .tln{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}.tlb{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
-.tag{font-size:11px;padding:1px 7px;border-radius:99px;background:#EEF1F5;color:var(--mut)}.tag.ds{background:#E3EEF9;color:#2F6FB0}.tag.rf{background:#FBF1D6;color:#8A6D10}.tag.roll{background:#F3E8FA;color:#7A4E9C}
+.tag{font-size:11px;padding:1px 7px;border-radius:99px;background:#EEF1F5;color:var(--mut)}.tag.ds{background:#E3EEF9;color:#2F6FB0}.tag.rf{background:#FBF1D6;color:#8A6D10}.tag.roll{background:#F3E8FA;color:#7A4E9C}.tag.auto{background:#E7F6EE;color:#1F7A4D}
+.aqplus{font-size:11px;color:#1F7A4D;min-height:14px;margin-top:2px}.autoBox{display:inline-flex;align-items:center;justify-content:center;gap:6px}.aqnote{font-size:10px;line-height:1.3;margin-top:2px}
 .tag.warm{background:#FFF3D6;color:#8A6D10}.tag.call{background:#E5F6EC;color:#1B7A43}
 button.tag.kind{border:0;font-family:inherit;cursor:pointer}.tseg{margin:0}.tlh{font-size:13px;font-weight:800;margin:8px 0 0}
 .rb{border:1px solid #CBD3DC;background:#fff;border-radius:7px;min-width:32px;height:32px;padding:0 6px;cursor:pointer;font-size:15px;font-family:inherit;color:var(--navy);display:inline-flex;align-items:center;gap:2px;line-height:1}.rb:hover{background:#FBF1D6}.rb.ok{border-color:var(--g)}.rb small{font-size:11px;color:var(--mut)}
@@ -369,7 +370,7 @@ function monSVG(k){const L=MONLOOK[k],c=L.c,f=L.f;let eyes='<circle cx="19" cy="
  return`<svg viewBox="0 0 52 50" width="52" height="50" aria-hidden="true">${body}${eyes}${mouth}${extra}</svg>`}
 const KEY='actionquest_entries_v1';
 const ST=[{k:'call',n:'約訪',full:'約訪（通數）',town:'約訪村',ic:'📞',xp:1},{k:'appt',n:'取得約會',full:'取得約會',town:'約會小鎮',ic:'🗓️',xp:3},{k:'meet',n:'初次面談',full:'初次面談',town:'面談森林',ic:'🌲',xp:5},{k:'need',n:'發掘需求',full:'發掘需求',town:'需求山谷',ic:'⛰️',xp:5},{k:'prop',n:'關鍵訪',full:'關鍵訪',town:'關鍵訪高塔',ic:'🗼',xp:10},{k:'deal',n:'成交',full:'成交（件數）',town:'成交城堡',ic:'🏰',xp:30},{k:'lead',n:'取得新名單',full:'取得新名單',town:'轉介紹寶庫',ic:'💎',xp:3}];
-const WARM={k:'warm',n:'暖關係',town:'關係經營',ic:'🤝',full:'暖關係<br><span class="muted">問候、關心、日常互動，不是約見面。每日目標 20</span>'};
+const WARM={k:'warm',n:'暖關係',town:'關係經營',ic:'🤝',full:'暖關係'};
 const FN=s=>s.replace(/<br>.*/,'');const FIELDS=[[WARM.k,WARM.full],...ST.slice(0,6).map(s=>[s.k,s.full]),['client','成交（客戶數）'],['lead','取得新名單<br><span class="muted">陌生＝DS取得／緣故＝要求推薦介紹取得</span>']];
 // [健康, 警戒] 門檻
 const TH={appt:[.30,.20],meet:[.70,.55],need:MONSTERS.need.th,prop:[.60,.45],deal:[.30,.20],lead:[.50,.30]};
@@ -382,7 +383,7 @@ const TODAY=ds(new Date());
 const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ds(d)};
 const blank=()=>({ds:Object.fromEntries(FIELDS.map(f=>[f[0],0])),rf:Object.fromEntries(FIELDS.map(f=>[f[0],0])),prem:0,comm:0,sa:0,names:{ds:{},rf:{}},fl:{ds:{},rf:{}}});
 const NK=['warm',...ST.map(s=>s.k)];const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function stageOf(k){return k==='warm'?WARM:ST.find(x=>x.k===k)}
+function stageOf(k){return k==='warm'?WARM:k==='client'?{k:'client',n:'成交客戶',full:'成交（客戶數）',town:'成交城堡',ic:'🏰'}:ST.find(x=>x.k===k)}
 function normNames(e){if(!e.names||typeof e.names!=='object')e.names={};for(const t of['ds','rf']){if(!e.names[t]||typeof e.names[t]!=='object')e.names[t]={};for(const k in e.names[t]){if(!Array.isArray(e.names[t][k]))delete e.names[t][k];else e.names[t][k]=[...new Set(e.names[t][k])]}}if(!e.fl||typeof e.fl!=='object')e.fl={};for(const t of['ds','rf']){if(!e.fl[t]||typeof e.fl[t]!=='object')e.fl[t]={};for(const k in e.fl[t])if(!Array.isArray(e.fl[t][k]))delete e.fl[t][k]}return e}
 const nmOf=(e,t,k)=>(e&&e.names&&e.names[t]&&Array.isArray(e.names[t][k]))?e.names[t][k]:[];
 function load(){try{E=JSON.parse(JSON.stringify(window.__aqInitialDays||{}))}catch(e){E={}}}
@@ -408,7 +409,14 @@ function fakeTL(){const it=(id,name,t,res,fx,roll,prev)=>({id,name,t,res,fx,roll
  const I4=it(4,'測試小芳','rf',null);I4.kind='warm';const I8=it(8,'範例心怡','ds',null);I8.kind='warm';I8.note='從生活近況問起';
  return{date:TODAY,hist:h,pending:[{id:20,name:'假名建宏',t:'rf',res:null,roll:addD(TODAY,-2),prev:'later',note:'月底比較有空',due:addD(TODAY,3)}],appts:[{id:1,name:'測試小明',...a1},{id:21,name:'範例淑芬',d:addD(TODAY,1),t:'14:00',loc:'示範辦公室'},{id:22,name:'示範冠宇',d:addD(TODAY,4),t:'10:00',loc:''}],items:[I1,I2,I3,I4,it(5,'範例志強','ds',null),it(6,'假名雅婷','',null),it(7,'測試俊傑','rf',null,null,y,'later'),I8]}}
 // 計算
-const view=()=>{const v=JSON.parse(JSON.stringify(E));if(draft)v[draft.date]=draft.e;return v};
+let AUTO=[];
+const AQ_AUTO_START='2026-10-17'; // 與 CRM 相同：此日（含）之後的自動事件才計入。手記數字不改寫。
+const AQ_LOCK=['meet','prop','deal','client'];
+function autoLabel(ev){const n=String((ev&&ev.name)||'').trim()||'（未命名）';return n+((+ev.round||1)>=2?'（第'+ev.round+'輪）':'')}
+function autoList(date,t,k){const out=[],seen={};AUTO.forEach(ev=>{if(!ev||ev.date!==date||ev.date<AQ_AUTO_START||ev.action!==k)return;const side=ev.side==='rf'?'rf':'ds';if(side!==t)return;const label=autoLabel(ev);const key=(ev.custId||label)+'|'+label;if(seen[key])return;seen[key]=1;out.push(label)});return out}
+function applyAuto(v){v=JSON.parse(JSON.stringify(v));AUTO.forEach(ev=>{if(!ev||!ev.date||ev.date<AQ_AUTO_START)return;if(!['warm','call','appt','meet','need','prop','deal','client','lead'].includes(ev.action))return;const t=ev.side==='rf'?'rf':'ds';if(!v[ev.date])v[ev.date]=blank();const e=normNames(v[ev.date]);e[t][ev.action]=(+e[t][ev.action]||0)+1;const label=autoLabel(ev);if(!e.names[t][ev.action])e.names[t][ev.action]=[];if(label&&!e.names[t][ev.action].includes(label))e.names[t][ev.action].push(label);if(!e.autoMark)e.autoMark={ds:{},rf:{}};if(!e.autoMark[t][ev.action])e.autoMark[t][ev.action]=[];if(!e.autoMark[t][ev.action].includes(label))e.autoMark[t][ev.action].push(label);v[ev.date]=e});return v}
+const view=()=>{const v=JSON.parse(JSON.stringify(E));if(draft)v[draft.date]=JSON.parse(JSON.stringify(draft.e));return applyAuto(v)};
+function cohortRate(from,to,stageKey){const idx=ST.findIndex(s=>s.k===stageKey);if(idx<=0)return null;const prev=stageKey==='lead'?'meet':ST[idx-1].k;const first={};AUTO.forEach(ev=>{if(!ev||!ev.custId||!ev.action||!ev.date||ev.date<AQ_AUTO_START)return;const id=ev.custId+'#'+(ev.round||1);if(!first[id])first[id]={};if(!first[id][ev.action]||ev.date<first[id][ev.action])first[id][ev.action]=ev.date});let den=0,num=0;for(const id in first){const p=first[id][prev];if(!p||p<from||p>to)continue;den++;const s=first[id][stageKey];if(s&&s>=p)num++}if(!den)return null;return Math.min(1,num/den)}
 const CURM=TODAY.slice(0,7);const isY=m=>m.length===4;const mLabel=m=>isY(m)?`${m} 全年`:`${m.slice(0,4)} 年 ${+m.slice(5)} 月`;const mEnd=m=>{const d=new Date(+m.slice(0,4),+m.slice(5),0);return ds(d)};
 function sumRange(V,days,mode){return days?sumBetween(V,addD(TODAY,-(days-1)),TODAY,mode):sumBetween(V,null,null,mode)}
 const sumMonth=(V,m,mode)=>isY(m)?sumBetween(V,m+'-01-01',m+'-12-31',mode):sumBetween(V,m+'-01',mEnd(m),mode);
@@ -416,7 +424,7 @@ function sumBetween(V,from,to,mode){const o={};FIELDS.forEach(f=>o[f[0]]=0);o.pr
  for(const d in V){if(from&&(d<from||d>to))continue;const e=V[d];for(const f of FIELDS){const k=f[0];o[k]+=(mode!=='rf'?+e.ds[k]||0:0)+(mode!=='ds'?+e.rf[k]||0:0)}o.prem+=+e.prem||0;o.comm+=+e.comm||0;o.sa+=+e.sa||0}return o}
 const dayTot=(e,k)=>e?(+e.ds[k]||0)+(+e.rf[k]||0):0;
 const rate=(s,i)=>{if(i===0)return null;const prev=s.k==='lead'?'meet':ST[i-1].k;return{prev,v:null}};
-function rateOf(o,i){const s=ST[i];if(i===0)return null;const den=s.k==='lead'?o.meet:o[ST[i-1].k];return den?o[s.k]/den:null}
+function rateOf(o,i,from,to){const s=ST[i];if(!s||i===0)return null;if(from&&to&&s.k!=='lead'){const c=cohortRate(from,to,s.k);if(c!=null)return c}const den=s.k==='lead'?o.meet:o[ST[i-1].k];return den?Math.min(1,o[s.k]/den):null}
 function lightOf(k,v){if(v==null)return'';const t=TH[k];return v>=t[0]?'g':v>=t[1]?'y':'r'}
 const pct=v=>v==null?'—':(v*100).toFixed(0)+'%';
 function xpOf(V){let x=0;for(const d in V)for(const s of ST)x+=dayTot(V[d],s.k)*s.xp;return x}
@@ -426,7 +434,7 @@ function maxStreak(V){const ks=Object.keys(V).sort();let best=0,cur=0,prev=null;
 function maxWindow(V,k,len,mode){let best=0;for(const d in V){let s=0;for(let i=0;i<len;i++){const e=V[addD(d,i)];if(e)s+=mode?(+e[mode][k]||0):dayTot(e,k)}best=Math.max(best,s)}return best}
 // 繪製
 function renderMonthSel(V){const ms=[...new Set([CURM,...Object.keys(V).map(k=>k.slice(0,7))])].sort().reverse();const ys=[...new Set(ms.map(m=>m.slice(0,4)))];if(!selMonth||!(ms.includes(selMonth)||ys.includes(selMonth)))selMonth=CURM;const op=m=>`<option value="${m}" ${m===selMonth?'selected':''}>${mLabel(m)}</option>`;$('monthSel').innerHTML=ys.map(y=>`<optgroup label="${y} 年">${op(y)}${ms.filter(m=>m.startsWith(y)).map(op).join('')}</optgroup>`).join('');$('statSeg').style.display=isY(selMonth)?'none':'';$('cmpTitle').textContent=isY(selMonth)?`📋 ${selMonth} 全年總表`:`📈 月份比較（${selMonth.slice(0,4)} 年）`;$('cmpNote').textContent='（只列出有紀錄的月份；▲▼ 為與前一個月相比，前一個月無資料則不比較）'}
-function render(){const V=view();renderTL();renderMonthSel(V);renderCmp(V);renderXP(V);renderQuest(V);renderMap(V);renderStats(V);renderBadges(V);renderDays()}
+function render(){const V=view();renderTL();renderMonthSel(V);renderCmp(V);renderXP(V);renderQuest(V);renderMap(V);renderStats(V);renderBadges(V);renderDays();if($('fBody'))paintAuto()}
 function renderXP(V){const x=xpOf(V);let li=0;TITLES.forEach((t,i)=>{if(x>=t[0])li=i});const cur=TITLES[li][0],nx=TITLES[li+1]?TITLES[li+1][0]:null;
  $('lvNum').textContent=li+1;$('lvTitle').textContent=TITLES[li][1];$('xpTxt').textContent=nx?`${x.toLocaleString()} / ${nx.toLocaleString()} XP，距離「${TITLES[li+1][1]}」還差 ${(nx-x).toLocaleString()}`:`${x.toLocaleString()} XP・已達最高稱號`;
  $('xpBar').style.width=(nx?(x-cur)/(nx-cur)*100:100)+'%';$('titles').innerHTML=TITLES.map((t,i)=>`<span class="${i<=li?'on':''}">${t[1]}</span>`).join('')}
@@ -437,8 +445,8 @@ function renderQuest(V){const e=V[TODAY];const q=[['約訪','call',5,'通'],['�
 function celebrate(){const q=$('quest');for(let i=0;i<40;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.background=['#D4AF37','#fff','#2EB872','#F1D77A'][i%4];c.style.animationDelay=Math.random()*.5+'s';q.appendChild(c);setTimeout(()=>c.remove(),2600)}toast('🎉 今日任務完成！')}
 const MON=`<svg viewBox="0 0 52 50" width="52" height="50"><ellipse cx="26" cy="30" rx="22" ry="18" fill="#9B7FD1"/><path d="M8 18 L12 6 L18 15Z M44 18 L40 6 L34 15Z" fill="#9B7FD1"/><circle cx="19" cy="27" r="5" fill="#fff"/><circle cx="33" cy="27" r="5" fill="#fff"/><circle cx="20" cy="28" r="2.4" fill="#1E2E3D"/><circle cx="32" cy="28" r="2.4" fill="#1E2E3D"/><path d="M20 38 Q26 34 32 38" stroke="#1E2E3D" stroke-width="2" fill="none"/><circle cx="12" cy="34" r="3" fill="#F4A9C0" opacity=".7"/><circle cx="40" cy="34" r="3" fill="#F4A9C0" opacity=".7"/></svg>`;
 function weekAvg(V,mode){const y=selMonth.slice(0,4);let ref=isY(selMonth)?(y===CURM.slice(0,4)?TODAY:y+'-12-31'):(selMonth===CURM?TODAY:mEnd(selMonth));const wd=(new Date(ref+'T00:00:00').getDay()+6)%7;const from=addD(ref,-wd);let n=0;for(let d=from;d<=ref;d=addD(d,1)){const e=V[d];if(e)n+=(mode!=='rf'?+e.ds.warm||0:0)+(mode!=='ds'?+e.rf.warm||0:0)}return{avg:n/(wd+1),from,to:ref}}
-function renderMap(V){const o=sumMonth(V,selMonth,mapMode);$('mapRange').textContent=`（${mLabel(selMonth)}）`;let bad=[];
- $('path').innerHTML=ST.map((s,i)=>{const r=rateOf(o,i);let l=lightOf(s.k,r);const from=s.k==='lead'?'初次面談':ST[i-1]?.n;let wk=null;if(i===0){wk=weekAvg(V,mapMode);if(wk.avg<CALL_DAILY_MIN)l='r'}if(l==='r')bad.push(i===0?`本週暖關係（平均每天 ${wk.avg.toFixed(1)} 次）`:`${from} → ${s.n}`);
+function renderMap(V){const o=sumMonth(V,selMonth,mapMode);$('mapRange').textContent=`（${mLabel(selMonth)}）`;const rf=isY(selMonth)?selMonth+'-01-01':selMonth+'-01',rt=isY(selMonth)?selMonth+'-12-31':mEnd(selMonth);let bad=[];
+ $('path').innerHTML=ST.map((s,i)=>{const r=rateOf(o,i,rf,rt);let l=lightOf(s.k,r);const from=s.k==='lead'?'初次面談':ST[i-1]?.n;let wk=null;if(i===0){wk=weekAvg(V,mapMode);if(wk.avg<CALL_DAILY_MIN)l='r'}if(l==='r')bad.push(i===0?`本週暖關係（平均每天 ${wk.avg.toFixed(1)} 次）`:`${from} → ${s.n}`);
   const mon=l==='r'?`<div class="monster" tabindex="0" role="button" aria-label="${MONSTERS[s.k].name}：查看建議" data-mk="${s.k}" data-mn="${o[s.k]}" data-mr="${r}" data-mf="${from}"${wk?` data-wk="${wk.avg.toFixed(1)}" data-wr="${wk.from.slice(5).replace('-','/')}～${wk.to.slice(5).replace('-','/')}"`:''}>${monSVG(s.k)}</div>`:'';
   return`<div class="node" data-stage="${s.k}" data-mode="${mapMode}" title="點擊查看客戶姓名">${mon}<div class="isle">${s.ic}${l?`<span class="light ${l}"></span>`:''}</div><div class="ninfo"><div class="nname">${i+1}. ${s.town}</div><div class="ncount">${o[s.k]}<small> ${s.n}${s.k==='deal'?'（'+o.client+' 位客戶）':''}</small></div><div class="nrate">${i===0?'起點':(s.k==='lead'?'÷面談 ':'轉換 ')+pct(r)}</div></div></div>`}).join('');
  $('mapAlert').innerHTML=bad.length?`<div class="alert">👾 小怪獸出沒：<b>${bad.join('、')}</b> 是本月瓶頸（轉換率或本週暖關係還沒到健康標準）。</div>`:''}
@@ -446,34 +454,36 @@ function weeksOf(m){const out=[];let d=m+'-01';const e=mEnd(m);while(d<=e){let s
 function renderStats(V){if(isY(selMonth))statView='m';const a=sumMonth(V,selMonth,'all'),d=sumMonth(V,selMonth,'ds'),r=sumMonth(V,selMonth,'rf');
  const avg=(o)=>o.deal?(o.meet/o.deal).toFixed(1):'—';const avgC=o=>o.deal?(o.call/o.deal).toFixed(1):'—';
  $('kpis').innerHTML=[['平均約幾個人成交一件',`${avg(a)} 人`,'初次面談數 ÷ 成交件數'],['平均幾通約訪成交一件',`${avgC(a)} 通`,''],['成交',`${a.deal} 件／${a.client} 位`,''],['受理實收總保費',`$${a.prem.toLocaleString()}`,''],['佣金',`$${a.comm.toLocaleString()}`,''],['保額',`$${a.sa.toLocaleString()}`,'']].map(k=>`<div class="kpi"><div class="k">${k[0]}</div><div class="v">${k[1]}</div>${k[2]?`<div class="muted">${k[2]}</div>`:''}</div>`).join('');
- const cell=(o,i,s)=>{const v=rateOf(o,i),l=lightOf(s.k,v);return`<td>${o[s.k]}</td><td>${i?(v==null?'<span class="muted">—</span>':`<span class="pill ${l}">${pct(v)}</span>`):'—'}</td>`};
+ const rf=selMonth+'-01',rt=mEnd(selMonth);const cell=(o,i,s)=>{const v=rateOf(o,i,rf,rt),l=lightOf(s.k,v);return`<td>${o[s.k]}</td><td>${i?(v==null?'<span class="muted">—</span>':`<span class="pill ${l}">${pct(v)}</span>`):'—'}</td>`};
  let rows=ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}" title="點擊查看客戶姓名"><td>${s.full} ›</td>${cell(d,i,s)}${cell(r,i,s)}${cell(a,i,s)}</tr>`);
  rows.splice(6,0,`<tr><td>成交（客戶數）</td><td>${d.client}</td><td></td><td>${r.client}</td><td></td><td>${a.client}</td><td></td></tr>`);
  rows.unshift(`<tr class="mrow" data-stage="warm" title="點擊查看客戶姓名"><td>暖關係 ›<div class="muted">每日目標 20</div></td><td>${d.warm||0}</td><td>—</td><td>${r.warm||0}</td><td>—</td><td>${a.warm||0}</td><td>—</td></tr>`);
  if(statView==='w'){const W=weeksOf(selMonth).map(w=>sumBetween(V,w[0],w[1],'all'));const wk=weeksOf(selMonth);
   const warmWk=`<tr class="mrow" data-stage="warm"><td>暖關係 ›<div class="muted">每日目標 20</div></td>${W.map(o=>`<td>${o.warm||0}</td>`).join('')}</tr>`;
-  $('funnel').innerHTML=`<thead><tr><th>階段（合計）</th>${wk.map((w,i)=>`<th>第${i+1}週<br><span class="note">${w[0].slice(5).replace('-','/')}～${w[1].slice(8)}</span></th>`).join('')}</tr></thead><tbody>${warmWk}${ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}"><td>${s.full} ›</td>${W.map(o=>{const v=rateOf(o,i),l=lightOf(s.k,v);return`<td>${o[s.k]}${i&&v!=null?` <span class="pill ${l}">${pct(v)}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td>${W.map(o=>`<td>${avg(o)}</td>`).join('')}</tr></tfoot>`;return}
+  $('funnel').innerHTML=`<thead><tr><th>階段（合計）</th>${wk.map((w,i)=>`<th>第${i+1}週<br><span class="note">${w[0].slice(5).replace('-','/')}～${w[1].slice(8)}</span></th>`).join('')}</tr></thead><tbody>${warmWk}${ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}"><td>${s.full} ›</td>${W.map((o,wi)=>{const v=rateOf(o,i,wk[wi][0],wk[wi][1]),l=lightOf(s.k,v);return`<td>${o[s.k]}${i&&v!=null?` <span class="pill ${l}">${pct(v)}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td>${W.map(o=>`<td>${avg(o)}</td>`).join('')}</tr></tfoot>`;return}
  $('funnel').innerHTML=`<thead><tr><th rowspan="2">階段</th><th colspan="2" style="text-align:center">陌生 (DS)</th><th colspan="2" style="text-align:center">緣故／轉介紹</th><th colspan="2" style="text-align:center">合計</th></tr><tr><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th></tr></thead><tbody>${rows.join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td><td colspan="2">${avg(d)}</td><td colspan="2">${avg(r)}</td><td colspan="2">${avg(a)}</td></tr></tfoot>`}
 function renderBadges(V){const all=sumRange(V,0,'all');const lv=TITLES.filter(t=>xpOf(V)>=t[0]).length;
  const B=[['🥇','第一次成交','完成第 1 件成交',all.deal>=1],['🌲','單週面談 10 次','任 7 天內面談 ≥ 10',maxWindow(V,'meet',7)>=10],['💎','單月 5 份轉介紹','任 30 天內轉介紹名單 ≥ 5',maxWindow(V,'lead',30,'rf')>=5],['🔥','連續 7 天達標','每日任務連續 7 天',maxStreak(V)>=7],['📞','百通約訪','累積約訪 ≥ 100',all.call>=100],['🗼','關鍵訪達人','累積關鍵訪 ≥ 20',all.prop>=20],['🏰','十件成交','累積成交 ≥ 10',all.deal>=10],['⚡','單日約訪 20 通','一天約訪 ≥ 20',maxWindow(V,'call',1)>=20],['🌟','連續 30 天達標','每日任務連續 30 天',maxStreak(V)>=30],['👑','傳說顧問','等級達到 Lv6',lv>=6]];
  $('bCount').textContent=`（已解鎖 ${B.filter(b=>b[3]).length}/${B.length}）`;$('badges').innerHTML=B.map(b=>`<div class="badge ${b[3]?'':'lock'}" title="${b[2]}"><div class="ic">${b[3]?b[0]:'🔒'}</div><div class="bn">${b[1]}</div><div class="bd">${b[2]}</div></div>`).join('')}
-function renderDays(){if(isY(selMonth)){const y=selMonth;const ms=[];for(let i=1;i<=12;i++)ms.push(y+'-'+pad(i));const rows=ms.map(m=>{const MT={};Object.keys(E).filter(k=>k.startsWith(m)).forEach(k=>MT[k]=E[k]);return[m,MT,Object.keys(MT).length]}).filter(r=>r[2]);const YT={};rows.forEach(r=>Object.assign(YT,r[1]));const t=sumBetween(YT,null,null,'all');$('dCount').textContent=`（${y} 全年・${rows.length} 個月）`;
+function renderDays(){const V=view();if(isY(selMonth)){const y=selMonth;const ms=[];for(let i=1;i<=12;i++)ms.push(y+'-'+pad(i));const rows=ms.map(m=>{const MT={};Object.keys(V).filter(k=>k.startsWith(m)).forEach(k=>MT[k]=V[k]);return[m,MT,Object.keys(MT).length]}).filter(r=>r[2]);const YT={};rows.forEach(r=>Object.assign(YT,r[1]));const t=sumBetween(YT,null,null,'all');$('dCount').textContent=`（${y} 全年・${rows.length} 個月）`;
  $('days').innerHTML=rows.length?`<thead><tr><th>月份</th><th>天數</th><th>暖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th></tr></thead><tbody>`+rows.map(([m,MT,n])=>{const o=sumBetween(MT,null,null,'all');return`<tr class="mrow" data-gom="${m}" title="切換到 ${mLabel(m)}"><td>${mLabel(m)} ›</td><td>${n}</td><td>${o.warm||0}</td><td>${o.call}</td><td>${o.meet}</td><td>${o.deal}</td><td>${xpOf(MT)}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>全年合計</td><td>${Object.keys(YT).length}</td><td>${t.warm||0}</td><td>${t.call}</td><td>${t.meet}</td><td>${t.deal}</td><td>${xpOf(YT)}</td></tr></tfoot>`:'<tr><td class="muted">這一年尚無資料。</td></tr>';return}
- const ks=Object.keys(E).filter(k=>k.startsWith(selMonth)).sort().reverse();$('dCount').textContent=`（${mLabel(selMonth)}・${ks.length} 天）`;const MT={};ks.forEach(k=>MT[k]=E[k]);const tot=sumBetween(MT,null,null,'all');
- $('days').innerHTML=ks.length?`<thead><tr><th>日期</th><th>暖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th><th></th></tr></thead><tbody>`+ks.map(k=>{const e=E[k];return`<tr><td>${k}${questDone(e)?' ✅':''}</td><td>${dayTot(e,'warm')}</td><td>${dayTot(e,'call')}</td><td>${dayTot(e,'meet')}</td><td>${dayTot(e,'deal')}</td><td>${xpOf({x:e})}</td><td><button data-ed="${k}">編輯</button><button class="del" data-del="${k}">刪除</button></td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>本月合計</td><td>${tot.warm||0}</td><td>${tot.call}</td><td>${tot.meet}</td><td>${tot.deal}</td><td>${xpOf(MT)}</td><td></td></tr></tfoot>`:'<tr><td class="muted">這個月尚無資料，請在左側登錄。</td></tr>'}
+ const ks=Object.keys(V).filter(k=>k.startsWith(selMonth)).sort().reverse();$('dCount').textContent=`（${mLabel(selMonth)}・${ks.length} 天）`;const MT={};ks.forEach(k=>MT[k]=V[k]);const tot=sumBetween(MT,null,null,'all');
+ $('days').innerHTML=ks.length?`<thead><tr><th>日期</th><th>暖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th><th></th></tr></thead><tbody>`+ks.map(k=>{const e=V[k];return`<tr><td>${k}${questDone(e)?' ✅':''}</td><td>${dayTot(e,'warm')}</td><td>${dayTot(e,'call')}</td><td>${dayTot(e,'meet')}</td><td>${dayTot(e,'deal')}</td><td>${xpOf({x:e})}</td><td><button data-ed="${k}">編輯</button>${E[k]?`<button class="del" data-del="${k}">刪除</button>`:''}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>本月合計</td><td>${tot.warm||0}</td><td>${tot.call}</td><td>${tot.meet}</td><td>${tot.deal}</td><td>${xpOf(MT)}</td><td></td></tr></tfoot>`:'<tr><td class="muted">這個月尚無資料，請在左側登錄。</td></tr>'}
 function renderCmp(V){const Y=isY(selMonth),y=selMonth.slice(0,4);const ms=new Set(Object.keys(V).map(k=>k.slice(0,7)));const show=[];for(let i=1;i<=12;i++){const m=y+'-'+pad(i);if(ms.has(m)&&m<=CURM)show.push(m)}if(!show.length){$('cmp').innerHTML=`<tr><td class="muted">${y} 年尚無任何月份的紀錄。</td></tr>`;return}
- const C=[['暖關係',o=>o.warm||0,0],['約訪',o=>o.call,0],['取得約會',o=>o.appt,0],['初次面談',o=>o.meet,0],['關鍵訪',o=>o.prop,0],['成交件數',o=>o.deal,0],['受理實收保費',o=>o.prem,2],['約訪→約會',o=>o.call?o.appt/o.call:null,1],['需求→關鍵訪',o=>o.need?o.prop/o.need:null,1],['關鍵訪→成交',o=>o.prop?o.deal/o.prop:null,1]];
+ const rateAt=key=>(o,span)=>{let from='',to='';if(span&&String(span).length===4){from=span+'-01-01';to=span+'-12-31'}else if(span&&String(span).length===7){from=span+'-01';to=mEnd(span)}if(from){const c=cohortRate(from,to,key);if(c!=null)return c}const i=ST.findIndex(s=>s.k===key);if(i<=0)return null;const den=o[ST[i-1].k];return den?Math.min(1,o[key]/den):null};
+ const C=[['暖關係',o=>o.warm||0,0],['約訪',o=>o.call,0],['取得約會',o=>o.appt,0],['初次面談',o=>o.meet,0],['關鍵訪',o=>o.prop,0],['成交件數',o=>o.deal,0],['受理實收保費',o=>o.prem,2],['約訪→約會',rateAt('appt'),1],['需求→關鍵訪',rateAt('prop'),1],['關鍵訪→成交',rateAt('deal'),1]];
  const fmt=(v,t)=>v==null?'—':t===1?pct(v):t===2?'$'+v.toLocaleString():v;const prevM=m=>{const d=new Date(+m.slice(0,4),+m.slice(5)-2,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
  $('cmp').innerHTML=`<thead><tr><th>月份</th>${C.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>`+show.map(m=>{const lab=`${+m.slice(5)} 月`;
   if(m>CURM)return`<tr class="fut"><td>${lab} <span class="note">（未到）</span></td>${C.map(()=>'<td>—</td>').join('')}</tr>`;
   if(!ms.has(m))return`<tr class="nod"><td>${lab}</td>${C.map(c=>`<td>${c[2]===1?'—':0}</td>`).join('')}</tr>`;
   const o=sumMonth(V,m,'all'),pm=prevM(m),po=ms.has(pm)?sumMonth(V,pm,'all'):null;
-  return`<tr class="mrow${m===selMonth?' cur':''}" data-gom="${m}"><td>${lab}${m===CURM?' <span class="note">（進行中）</span>':''}</td>${C.map(c=>{const v=c[1](o),p=po?c[1](po):null;const ar=(v==null||p==null||v===p)?'':v>p?' <span class="up">▲</span>':' <span class="dn">▼</span>';return`<td>${fmt(v,c[2])}${ar}</td>`}).join('')}</tr>`}).join('')+'</tbody>'+(()=>{const o=sumMonth(V,y,'all');return`<tfoot><tr style="font-weight:700;background:#FBF7E8"><td>${y} 合計</td>${C.map(c=>`<td>${fmt(c[1](o),c[2])}</td>`).join('')}</tr></tfoot>`})()}
+  return`<tr class="mrow${m===selMonth?' cur':''}" data-gom="${m}"><td>${lab}${m===CURM?' <span class="note">（進行中）</span>':''}</td>${C.map(c=>{const v=c[1](o,m),p=po?c[1](po,pm):null;const ar=(v==null||p==null||v===p)?'':v>p?' <span class="up">▲</span>':' <span class="dn">▼</span>';return`<td>${fmt(v,c[2])}${ar}</td>`}).join('')}</tr>`}).join('')+'</tbody>'+(()=>{const o=sumMonth(V,y,'all');return`<tfoot><tr style="font-weight:700;background:#FBF7E8"><td>${y} 合計</td>${C.map(c=>`<td>${fmt(c[1](o,y),c[2])}</td>`).join('')}</tr></tfoot>`})()}
 // 表單
-function buildForm(){$('fBody').innerHTML=FIELDS.map(([k,n])=>`<tr><td>${n}</td>${['ds','rf'].map(t=>`<td style="text-align:center"><span class="stp"><button data-s="${t}.${k}" data-d="-1">－</button><input type="number" min="0" id="f_${t}_${k}" value="0"><button data-s="${t}.${k}" data-d="1">＋</button></span>${NK.includes(k)?`<button class="nlink" id="c_${t}_${k}" data-fn="${t}.${k}"></button>`:''}</td>`).join('')}</tr>`).join('')}
+function buildForm(){$('fBody').innerHTML=FIELDS.map(([k,n])=>`<tr><td>${n}</td>${['ds','rf'].map(t=>{const names=NK.includes(k)||k==='client'?`<button class="nlink" id="c_${t}_${k}" data-fn="${t}.${k}"></button>`:'';if(AQ_LOCK.includes(k))return `<td style="text-align:center"><div class="autoBox"><b id="f_${t}_${k}_show">0</b><span class="tag auto">自動</span></div><div class="aqnote" id="aqn_${t}_${k}">從 CRM 歷程帶入</div><input type="hidden" id="f_${t}_${k}" value="0">${names}</td>`;return `<td style="text-align:center"><span class="stp"><button data-s="${t}.${k}" data-d="-1">－</button><input type="number" min="0" id="f_${t}_${k}" value="0"><button data-s="${t}.${k}" data-d="1">＋</button></span><div class="aqplus" id="aq_${t}_${k}"></div>${names}</td>`}).join('')}</tr>`).join('')}
 let FNm={ds:{},rf:{}},FFl={ds:{},rf:{}},fnCur=null;
-function renderChips(t,k){const el=$(`c_${t}_${k}`),a=FNm[t][k]||[];if(el){el.textContent=a.length?`👤 ${a.length} 位`:'＋姓名';el.classList.toggle('empty',!a.length);el.title=a.length?a.join('、'):'新增客戶姓名'}
- if(fnCur&&fnCur[0]===t&&fnCur[1]===k){const fl=FFl[t][k]||[];$('fnList').innerHTML=a.length?a.map((n,i)=>`<div><span class="n">${esc(n)}</span>${fl.includes(n)?'<span class="tag roll">來自聯繫名單</span>':''}<button data-rmn="${t}.${k}.${i}" title="移除" aria-label="移除 ${esc(n)}">×</button></div>`).join(''):'<div class="muted">尚未登記姓名。</div>'}}
+function renderChips(t,k){const el=$(`c_${t}_${k}`),a=FNm[t][k]||[];const autos=autoList($('fDate')&&$('fDate').value||TODAY,t,k);const n=a.length+autos.length;if(el){el.textContent=n?`👤 ${n} 位`:'＋姓名';el.classList.toggle('empty',!n);el.title=n?[...a,...autos].join('、'):'新增客戶姓名'}
+ if(fnCur&&fnCur[0]===t&&fnCur[1]===k){const fl=FFl[t][k]||[];const rows=a.map((n,i)=>`<div><span class="n">${esc(n)}</span>${fl.includes(n)?'<span class="tag roll">來自聯繫名單</span>':''}<button data-rmn="${t}.${k}.${i}" title="移除" aria-label="移除 ${esc(n)}">×</button></div>`);const marks=autos.map(n=>`<div><span class="n">${esc(n)}</span><span class="tag auto">自動</span></div>`);$('fnList').innerHTML=(rows.length||marks.length)?rows.join('')+marks.join(''):'<div class="muted">尚未登記姓名。</div>'}}
+function paintAuto(){const date=$('fDate')&&$('fDate').value||TODAY;for(const t of['ds','rf'])for(const[k]of FIELDS){const man=parseInt($(`f_${t}_${k}`).value)||0;const names=autoList(date,t,k);const add=names.length;const who=names.slice(0,2).join('、');if(AQ_LOCK.includes(k)){const show=$(`f_${t}_${k}_show`);if(show)show.textContent=String(man+add);const note=$(`aqn_${t}_${k}`);if(note)note.textContent=add?((man?`手記 ${man}＋自動 ${add}`:`自動 ${add}・從 CRM 歷程帶入`)+(who?'・'+who:'')):'從 CRM 歷程帶入'}else{const plus=$(`aq_${t}_${k}`);if(plus)plus.textContent=add?('自動 +'+add+(who?'・'+who:'')):''}renderChips(t,k)}}
 let fnMsgT;function fnMsg(t){$('fnMsg').textContent=t;clearTimeout(fnMsgT);fnMsgT=setTimeout(()=>$('fnMsg').textContent='',2200)}
 function addName(t,k,v){const ns=v.split(/[,，、]/).map(x=>x.trim()).filter(Boolean);if(!ns.length)return;const a=FNm[t][k]||(FNm[t][k]=[]);const dup=[];for(const n of ns){if(a.includes(n)){if(!dup.includes(n))dup.push(n)}else a.push(n)}if(dup.length)fnMsg(`已在名單中：${dup.join('、')}`);const inp=$(`f_${t}_${k}`);if((parseInt(inp.value)||0)<a.length)inp.value=a.length;renderChips(t,k);preview()}
 function openFn(t,k){fnCur=[t,k];const d=$('fDate').value||TODAY;$('fnTitle').textContent=`${stageOf(k).n}・${t==='ds'?'陌生':'緣故'}・${md(d)}`;const i=$('fnIn');i.dataset.nt=t;i.dataset.nk=k;i.value='';$('fnMsg').textContent='';$('fnModal').classList.add('on');renderChips(t,k);i.focus()}
@@ -486,7 +496,7 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b
  if(b.dataset.fn){const[t,k]=b.dataset.fn.split('.');openFn(t,k)}
  if(b.dataset.rmn){const[t,k,i]=b.dataset.rmn.split('.');const[n]=FNm[t][k].splice(+i,1);if(FFl[t][k])FFl[t][k]=FFl[t][k].filter(x=>x!==n);renderChips(t,k);preview()}
  if(b.dataset.ed){fillForm(b.dataset.ed);$('entry').scrollIntoView({behavior:'smooth'})}
- if(b.dataset.del&&confirm(`確定刪除 ${b.dataset.del} 的紀錄？`)){delete E[b.dataset.del];persist();fillForm($('fDate').value);toast('已刪除')}});
+ if(b.dataset.del&&confirm(`確定刪除 ${b.dataset.del} 的手記？CRM 自動計入的次數會留下。`)){delete E[b.dataset.del];persist();fillForm($('fDate').value);toast('已刪除手記')}});
 document.addEventListener('input',ev=>{if(ev.target.closest('#entry')&&ev.target.id!=='fDate')preview()});
 document.addEventListener('keydown',ev=>{const i=ev.target;if(i.classList&&i.classList.contains('nin')&&ev.key==='Enter'&&!ev.isComposing&&ev.keyCode!==229){ev.preventDefault();addName(i.dataset.nt,i.dataset.nk,i.value);i.value=''}
  if((i.id==='tlName'||i.id==='tlName2')&&ev.key==='Enter'&&!ev.isComposing&&ev.keyCode!==229){ev.preventDefault();tlAdd(i.id==='tlName2'?'2':'')}
@@ -495,7 +505,7 @@ document.addEventListener('click',ev=>{if(ev.target.id==='fnModal'||ev.target.cl
 document.addEventListener('focusout',ev=>{const i=ev.target;if(i.id!=='fnIn'&&i.classList&&i.classList.contains('nin')&&i.value.trim()){addName(i.dataset.nt,i.dataset.nk,i.value);i.value=''}});
 // 姓名清單
 function showNames(k,mode){const V=view();const s=stageOf(k);if(!s)return;const m=selMonth;const from=isY(m)?m+'-01-01':m+'-01',to=isY(m)?m+'-12-31':mEnd(m);const ts=mode==='ds'?['ds']:mode==='rf'?['rf']:['ds','rf'];
- let tot=0,cnt=0;const rows=[];Object.keys(V).filter(d=>d>=from&&d<=to).sort().reverse().forEach(d=>{const e=V[d];for(const t of ts){tot+=+e[t][k]||0;const a=nmOf(e,t,k);if(a.length){cnt+=a.length;rows.push(`<tr><td>${d.slice(5).replace('-','/')}</td><td><span class="tag ${t}">${t==='ds'?'陌生':'緣故'}</span></td><td>${a.map(esc).join('、')}</td></tr>`)}}});
+ let tot=0,cnt=0;const rows=[];Object.keys(V).filter(d=>d>=from&&d<=to).sort().reverse().forEach(d=>{const e=V[d];for(const t of ts){tot+=+e[t][k]||0;const a=nmOf(e,t,k);if(a.length){cnt+=a.length;const mark=(e.autoMark&&e.autoMark[t]&&e.autoMark[t][k])||[];rows.push(`<tr><td>${d.slice(5).replace('-','/')}</td><td><span class="tag ${t}">${t==='ds'?'陌生':'緣故'}</span></td><td>${a.map(n=>esc(n)+(mark.includes(n)?' <span class="tag auto">自動</span>':'')).join('、')}</td></tr>`)}}});
  $('nTitle').textContent=`${s.ic} ${s.town}・${s.n}（${mLabel(m)}${mode==='ds'?'・陌生':mode==='rf'?'・緣故':''}）`;
  $('nBody').innerHTML=`<p class="muted" style="margin:0 0 8px">共 ${tot} 次，其中 ${cnt} 筆有登記客戶姓名${tot>cnt?'（其餘只記次數）':''}。</p>`+(rows.length?`<div class="tw"><table class="nlist"><thead><tr><th>日期</th><th>類別</th><th>客戶姓名</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="muted">這段期間沒有登記姓名。</p>');$('nModal').classList.add('on')}
 document.addEventListener('click',ev=>{const n=ev.target.closest('[data-stage]');if(n&&!ev.target.closest('.monster')){showNames(n.dataset.stage,n.dataset.mode||'all');return}if(ev.target.id==='nModal'||ev.target.closest('#nClose'))$('nModal').classList.remove('on')});
@@ -564,7 +574,8 @@ document.addEventListener('click',ev=>{const g=ev.target.closest('[data-gom]');i
  document.addEventListener('keydown',e=>{if(e.key==='Escape')hide();if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('monster'))show(e.target)});addEventListener('scroll',()=>{if(HV.matches&&cur)hide()},{passive:true})}
 $('monthSel').onchange=e=>{selMonth=e.target.value;render()};
 for(const[id,fn]of[['mapSeg',v=>mapMode=v],['statSeg',v=>statView=v]])$(id).onclick=ev=>{const b=ev.target.closest('button');if(!b)return;[...$(id).children].forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.v);render()};
-function aqStart(){load();for(const d in E)normNames(E[d]);tlLoad();buildForm();fillForm(TODAY);if(window.lbRender)window.lbRender();}
+function loadAuto(){try{AUTO=Array.isArray(window.__aqInitialAuto)?window.__aqInitialAuto.map(x=>Object.assign({},x)):[];}catch(e){AUTO=[]}}
+function aqStart(){load();loadAuto();for(const d in E)normNames(E[d]);tlLoad();buildForm();fillForm(TODAY);if(window.lbRender)window.lbRender();}
 window.aqStart=aqStart;
 window.__aqTODAY=TODAY;
 window.__aqBind={
@@ -574,12 +585,14 @@ window.__aqBind={
   setToday:(v)=>{TL=v;},
   norm:(e)=>normNames(e),
   blank:()=>blank(),
+  cohort:(from,to,k)=>cohortRate(from,to,k),
+  auto:()=>AUTO.slice(),
   roll:()=>tlRoll(),
   fill:(d)=>fillForm(d),
   toast:(t)=>toast(t)
 };
 /* TODO（下一步，這一步不做）
-   1. 從 CRM 歷程自動計入「當天」的日期紀錄。客戶之後改階段，不得回寫已經保存的舊日期。
+   1. 已接上：2026-10-17 起的新歷程寫入 actionquest/.../auto，本頁加在手記上面。客戶之後改階段不得回寫已經保存的舊日期，也不得減少已計入的次數。
    2. 今日聯繫名單改從 CRM 客戶與下次聯絡日挑選（掛點：tlAdd）。
    3. 備註與下次聯絡日寫回 CRM 客戶聯絡紀錄（掛點：tlPanel 的 .crm 標籤、psave）。
    4. 約見寫入 Google 日曆（掛點：即將約見、psave）。
@@ -693,7 +706,7 @@ const CV=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['
 const HOV=matchMedia('(hover:hover) and (min-width:768px)');let popFor=null;
 function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=bag(m,p),sc=m===CURM&&pm?elapsed(m)/dim(pm):1,prev=pm?bag(pm,p):null,q=prev?Object.fromEntries(K.map(k=>[k,Math.round((prev[k]||0)*sc)])):null;
  const ar=(v,w)=>w==null||v===w?'':v>w?` <span class="upa">▲${+(v-w).toFixed(1)}</span>`:` <span class="dna">▼${+(w-v).toFixed(1)}</span>`;
- const r=(x,a,b)=>x&&x[b]?x[a]/x[b]*100:null;const P=v=>v==null?'—':Math.round(v)+'%';
+ const r=(x,a,b)=>x&&x[b]?Math.min(100,x[a]/x[b]*100):null;const P=v=>v==null?'—':Math.round(v)+'%';
  return`<h4><span class="av" style="background:${col(p)}">${esc(p[0])}</span>${esc(p)}${p===ME?'<span class="tagme">我</span>':'<span class="tagme ex">範例</span>'}<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4>
  <div class="sec">行動次數 <span class="note" style="font-weight:400">▲▼ ${m===CURM?'與上個月同期（按天數比例）相比':'與上個月相比'}</span></div><table>${SL.map(([k,n,u])=>`<tr><td>${n}</td><td><b>${o[k]}</b> <span class="note">${u}</span>${q?ar(o[k],q[k]):''}</td></tr>`).join('')}</table>
  <div class="sec">轉換率</div><table>${CV.map(([n,a,b])=>{const v=r(o,a,b),w=q?r(q,a,b):null;return`<tr><td>${n}</td><td><b>${P(v)}</b>${v!=null&&w!=null?ar(Math.round(v),Math.round(w)).replace(/(▲|▼)([\d.]+)/,'$1$2 個百分點'):''}</td></tr>`}).join('')}</table>
@@ -1031,12 +1044,16 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
       gate('deny', '雲端拒絕讀取', ruleHint(err));
       return;
     }
+    let autos = [];
+    try { autos = store.loadAuto ? await store.loadAuto(teamId, uid) : []; }
+    catch (e) { console.warn('auto events', e); autos = []; }
     let today = null;
     if (user && typeof user.todayJson === 'string' && user.todayJson) {
       try { today = JSON.parse(user.todayJson); } catch (e) { today = null; }
     }
     if (window.__aqSetMe) window.__aqSetMe(displayName);
     window.__aqInitialDays = days || {};
+    window.__aqInitialAuto = autos || [];
     window.__aqInitialToday = today;
     window.__aqHydrating = true;
     try {
@@ -1064,6 +1081,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
             user: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid,
             day: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/days/{YYYY-MM-DD}',
             goals: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/meta/goals',
+            auto: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/auto/{eventId}',
             writesGlobalState: false
           };
         },
@@ -1157,7 +1175,27 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         bag.user = data;
         writeBag(tid, id, bag);
       },
+      loadAuto: async function (tid, id) {
+        if (TEST && Array.isArray(TEST.auto)) return JSON.parse(JSON.stringify(TEST.auto));
+        const bag = readBag(tid, id);
+        return Array.isArray(bag.auto) ? bag.auto : [];
+      },
       loadDays: async function (tid, id) {
+        if (TEST && TEST.days && typeof TEST.days === 'object') {
+          const out = {};
+          Object.keys(TEST.days).forEach(function (d) {
+            if (!isDayId(d)) return;
+            const raw = TEST.days[d];
+            const e = window.__aqBind.blank();
+            if (raw.ds) Object.assign(e.ds, raw.ds);
+            if (raw.rf) Object.assign(e.rf, raw.rf);
+            e.prem = +raw.prem || 0; e.comm = +raw.comm || 0; e.sa = +raw.sa || 0;
+            e.names = raw.names || { ds: {}, rf: {} };
+            e.fl = raw.fl || { ds: {}, rf: {} };
+            out[d] = window.__aqBind.norm(e);
+          });
+          return out;
+        }
         const bag = readBag(tid, id);
         const out = {};
         Object.keys(bag.days || {}).forEach(function (d) {
@@ -1280,6 +1318,13 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         refuseGlobal(userRef(tid, id).path);
         assertNoNested(data, false);
         await fs.setDoc(userRef(tid, id), data);
+      },
+      loadAuto: async function (tid, id) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'auto');
+        const snap = await fs.getDocs(col);
+        const out = [];
+        snap.forEach(function (d) { const x = d.data() || {}; if (!x.id) x.id = d.id; out.push(x); });
+        return out;
       },
       loadDays: async function (tid, id) {
         const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'days');
@@ -1411,6 +1456,17 @@ match /artifacts/youtrend-crm/public/data/actionquest/{teamId} {
         && request.resource.data.date == dayId
         && dayId.matches('^\\d{4}-\\d{2}-\\d{2}$');
       allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /auto/{eventId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.teamId == teamId
+        && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && eventId.matches('^[A-Za-z0-9_\\-]{1,200}$');
+      allow update, delete: if false;
     }
   }
 
