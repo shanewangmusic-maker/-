@@ -1048,3 +1048,24 @@ test('planQuestEvents matches index.html aqPlanEvents on the same jobs', { skip:
   assert.equal(questEventId('cust-1.5', 'call', '2026-10-17'), 'ae_cust-1_5_call_2026-10-17');
   assert.equal(typeof questJob, 'function');
 });
+
+test('firestore createDoc sends exists:false and treats an existing doc as already counted', async () => {
+  resetAuthCache();
+  let n = 0;
+  const fetchImpl = async (url, options) => {
+    if (String(url).includes('signInWithPassword')) return jsonRes({ idToken: 't', expiresIn: '3600' });
+    if (String(url).includes(':commit')) {
+      n += 1;
+      const body = JSON.parse(options.body);
+      assert.deepEqual(body.writes[0].currentDocument, { exists: false });
+      if (n === 2) return jsonRes({ error: { status: 'ALREADY_EXISTS', message: 'exists' } }, 409);
+      if (n === 3) return jsonRes({ error: { status: 'PERMISSION_DENIED', message: 'no' } }, 403);
+      return jsonRes({ commitTime: 'x' });
+    }
+    return jsonRes({ error: { message: 'unexpected' } }, 500);
+  };
+  const db = createRestFirestore(env(), fetchImpl);
+  assert.deepEqual(await db.createDoc('a/b', { x: 1 }), { created: true });
+  assert.deepEqual(await db.createDoc('a/b', { x: 1 }), { created: false });
+  await assert.rejects(() => db.createDoc('a/b', { x: 1 }));
+});
