@@ -651,7 +651,7 @@ function tagHtml(p){if(p===ME)return' <span class="tagme">我</span>';if(!REAL[p
 function setMeName(name){name=String(name||'').trim()||'我';if(LIVE){if(ME&&!LABELS[ME])LABELS[ME]=name;return}if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
 window.__aqSetMe=setMeName;
 function installLive(team,boards,meEmail){const members=team&&team.members?team.members:{};const active=[];Object.keys(members).forEach(em=>{const m=members[em]||{};if(m.active===false)return;const key=String(em).toLowerCase();active.push(key);LABELS[key]=String(m.displayName||'').trim()||key;REAL[key]=true;STARTED[key]=false});const order=(Array.isArray(team.emails)?team.emails:active).map(e=>String(e).toLowerCase());const list=[];order.forEach(e=>{if(active.indexOf(e)>=0&&list.indexOf(e)<0)list.push(e)});active.forEach(e=>{if(list.indexOf(e)<0)list.push(e)});if(LB_DEMO)SAMPLE.forEach(s=>{if(list.indexOf(s)<0)list.push(s)});PPL=list;ME=String(meEmail||'').toLowerCase();if(ME&&LABELS[ME]==null)LABELS[ME]=ME;LIVE=true;(Array.isArray(boards)?boards:[]).forEach(b=>{if(!b||!b.email)return;const em=String(b.email).toLowerCase();STARTED[em]=true;if(b.displayName)LABELS[em]=String(b.displayName).trim()||LABELS[em]||em;const months=b.months||{};Object.keys(months).forEach(m=>{if(!/^\d{4}-\d{2}$/.test(m))return;ensureMonth(m);const src=months[m]||{},o=Object.fromEntries(K.map(k=>[k,+src[k]||0]));D[m][em]=o})})}
-window.__aqApplyTeam=function(team,boards,meEmail,denied){window.__aqTeamDenied=!!denied;window.__aqTeamDoc=team||null;if(denied){LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor();return}if(team&&team.members&&Object.keys(team.members).length)installLive(team,boards,meEmail);else LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor()};
+window.__aqApplyTeam=function(team,boards,meEmail,denied){window.__aqTeamDenied=!!denied;window.__aqTeamDoc=denied?null:(team||null);const skip=!!denied||window.__aqTeamMissing===true||window.__aqTeamOut===true||window.__aqBoardDenied===true||!(team&&team.members&&Object.keys(team.members).length);if(!skip)installLive(team,boards,meEmail);else LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor()};
 function syncMe(){let V={};try{V=typeof view==='function'?view():{}}catch(e){V={}}meHas={};const months=new Set(MS);Object.keys(V).forEach(d=>{if(/^\d{4}-\d{2}/.test(d))months.add(d.slice(0,7));});months.forEach(m=>{ensureMonth(m);const o=Object.fromEntries(K.map(k=>[k,0]));for(const d in V){if(!d.startsWith(m))continue;meHas[m]=true;const e=V[d];for(const k of K)o[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)}if(ME)D[m][ME]=o;});if(LIVE&&ME&&Object.keys(meHas).length)STARTED[ME]=true;}
 const tot=o=>K.reduce((s,k)=>s+(+o[k]||0),0);
 const zeroBag=()=>Object.fromEntries(K.map(k=>[k,0]));
@@ -718,7 +718,8 @@ function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rank
  ${CRs.map(([n,x,y])=>{const mv=cr(ME,x,y);return`<tr class="cr"><td>${n}</td><td><b>${mv==null?'—':mv+'%'}</b></td>${T.map(t=>{const tv=cr(t.x.p,x,y);return`<td>${tv==null?'—':tv+'%'}<br>${mv==null||tv==null?pg(null):pg(mv-tv)}</td>`}).join('')}</tr>`}).join('')}
  </tbody></table></div><p class="note" style="margin:6px 0 0">${T.length?'':'目前沒有可比較的對象。'}只比較次數與比率，不含客戶姓名與金額。</p>`}
 
-function render(){const denied=window.__aqTeamDenied===true;const note=$('lbDenied');if(note)note.hidden=!denied;const banner=$('lbSampleBanner');if(denied){if(banner)banner.hidden=true;$('lbBoards').innerHTML='';$('lbGoals').innerHTML='';$('lbCd').innerHTML='';syncOwner();return}if(banner)banner.hidden=false;if(LIVE&&banner){banner.className='lbnote';banner.removeAttribute('style');banner.textContent='排名只加總次數。標示「尚未開始」的夥伴還沒有登入過行動闖關。'}syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
+function rankHold(){if(window.__aqTeamDenied||window.__aqBoardDenied)return'團隊排行尚未開通，請管理者更新 Firebase 規則';if(window.__aqTeamOut)return'你還不在這個團隊的排行名單';if(window.__aqTeamMissing){if(LB_DEMO)return null;return window.__aqIsOwner===true?'':'管理者尚未設定團隊成員'}return null}
+function render(){const hold=rankHold();const note=$('lbDenied');const banner=$('lbSampleBanner');if(hold!=null){if(note){const p=note.querySelector('p');if(p)p.textContent=hold;note.hidden=!hold}if(banner)banner.hidden=true;$('lbBoards').innerHTML='';$('lbGoals').innerHTML='';$('lbCd').innerHTML='';syncOwner();return}if(note)note.hidden=true;if(banner)banner.hidden=false;if(LIVE&&banner){banner.className='lbnote';banner.removeAttribute('style');banner.textContent='排名只加總次數。標示「尚未開始」的夥伴還沒有登入過行動闖關。'}syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
  $('lbGSub').textContent=past?`（${+m.slice(5)} 月最終結果）`:'（本月進行中）';const gs=goalsFor(m);
  $('lbGoals').innerHTML=gs.goals.map(g=>{const M=GM.find(x=>x[0]===g.k);const tc=PPL.reduce((s,p)=>s+gv(bag(m,p),g.k),0),mine=gv(bag(m,ME),g.k),pc=g.n?tc/g.n*100:0;return`<div class="grow"><div class="goal"><span>全團隊${past?'當月':'本月'}${M[1]} <b>${tc}</b> / ${g.n} ${M[2]}</span><b>${Math.round(pc)}%${tc>=g.n?' 🎉 達成':''}</b></div><div class="bar"><i style="width:${Math.min(100,pc)}%"></i></div><p class="muted" style="margin:4px 0 0">我貢獻了 ${mine} ${M[2]}${tc?`（占團隊 ${Math.round(mine/tc*100)}%）`:''}</p></div>`}).join('')+`<p class="note" style="margin:6px 0 0">${gs.src}</p>`;
  $('lbCd').innerHTML=past?`<div>🏁 ${+m.slice(5)} 月已結算</div><b>完賽</b><div class="note">前三名獲得「當月徽章」</div>`:`<div>⏳ 本月剩下</div><b>${left}</b><div>天</div><div class="note">結算日 ${m.slice(5)}/${dim(m)}・排名每日更新</div>`;
@@ -736,7 +737,7 @@ let editorStamp='';
 function openTeamEditor(){const card=$('lbTeamCard');if(!card)return;const owner=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;card.style.display=owner?'':'none';if(!owner)return;const saved=window.__aqTeamDoc;const seeded=!saved&&window.__aqTeamId==='FISHTEAM';const stamp=saved?JSON.stringify(saved.members):(seeded?'seed':'empty');if(stamp===editorStamp)return;editorStamp=stamp;const rows=saved?memberRowsFrom(saved):(seeded?FISH_ROWS.map(r=>Object.assign({},r)):[]);$('lbTeamHint').textContent=saved?'這是已儲存的名單。改完後按「儲存成員」才會更新。':(seeded?'這是 FISHTEAM 的建議名單，尚未寫入。按「儲存成員」後才會生效。':'尚未設定成員。加入 Email 後按「儲存成員」。');$('lbTeamRows').innerHTML=rows.map(tRow).join('')||tRow();$('lbTeamErr').textContent=''}
 function readTeamEditor(){const rows=[...$('lbTeamRows').querySelectorAll('.trow')];const emails=[],members={},seen={};let ok=rows.length>0;rows.forEach(row=>{const emEl=row.querySelector('.tem'),nmEl=row.querySelector('.td');const em=emEl.value.trim().toLowerCase();const displayName=nmEl.value.trim();const emailOk=/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/.test(em);emEl.classList.toggle('bad',!emailOk||!!seen[em]);nmEl.classList.toggle('bad',!displayName);if(!emailOk||!displayName||seen[em])ok=false;if(emailOk)seen[em]=1;if(emailOk&&displayName&&!members[em]){emails.push(em);members[em]={agentName:row.querySelector('.ta').value.trim(),displayName:displayName,active:!!row.querySelector('.tc').checked}}});return ok?{emails:emails,members:members}:null}
 async function saveTeamEditor(){if(window.__aqIsOwner!==true)return;const doc=readTeamEditor();const err=$('lbTeamErr');if(!doc){err.textContent='請填寫不重複的 Email，並填上顯示名字。';return}err.textContent='';if(!window.__aqSaveTeam){err.textContent='現在無法儲存，請稍後再試。';return}try{await window.__aqSaveTeam(doc);editorStamp='';openTeamEditor()}catch(e){err.textContent=(e&&e.message)||'儲存失敗'}}
-function syncOwner(){const b=$('lbGEdit');if(b){const on=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;b.style.display=on?'':'none';if(!on&&$('lbGPanel'))$('lbGPanel').style.display='none';}openTeamEditor();}
+function syncOwner(){const b=$('lbGEdit');const teamOpen=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;if(b){b.style.display=teamOpen?'':'none';if(!teamOpen&&$('lbGPanel'))$('lbGPanel').style.display='none';}openTeamEditor();}
 window.__aqSyncOwner=syncOwner;
 window.lbRender=render;render();
 const SL=[['warm','暖關係','次'],['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
@@ -810,6 +811,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
   let dirtyToday = false;
   let dirtyGoals = false;
   let teamDoc = null;
+  let boardReads = 0;
   let lastDays = {};
   let lastToday = '';
   let lastGoals = '';
@@ -931,13 +933,27 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
       updatedAt: Date.now()
     };
   }
-  function memberOf(team, em) {
-    if (!team || !Array.isArray(team.emails)) return null;
+  function emailListed(team, em) {
+    if (!team || !Array.isArray(team.emails)) return false;
     em = String(em || '').toLowerCase();
-    if (team.emails.map(function (x) { return String(x).toLowerCase(); }).indexOf(em) < 0) return null;
+    return team.emails.some(function (x) { return String(x).toLowerCase() === em; });
+  }
+  function memberOf(team, em) {
+    if (!emailListed(team, em)) return null;
+    em = String(em || '').toLowerCase();
     const m = team.members && team.members[em];
     if (!m || m.active === false) return null;
     return m;
+  }
+  function setRankFlags(team, teamDenied, boardDenied) {
+    window.__aqTeamDenied = !!teamDenied;
+    window.__aqBoardDenied = !!boardDenied;
+    window.__aqTeamMissing = !teamDenied && !team;
+    window.__aqTeamOut = !teamDenied && !!team && !emailListed(team, email);
+    window.__aqTeamDoc = teamDenied ? null : (team || null);
+  }
+  function canUseBoard() {
+    return !!(teamDoc && !window.__aqTeamDenied && !window.__aqTeamMissing && !window.__aqTeamOut && !window.__aqBoardDenied && emailListed(teamDoc, email));
   }
   function denyErr() {
     const err = new Error('Missing or insufficient permissions.');
@@ -1122,7 +1138,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
   }
 
   async function publishBoard() {
-    if (!store || !store.saveBoard || !teamDoc || window.__aqTeamDenied) return;
+    if (!store || !store.saveBoard || !canUseBoard()) return;
     const mem = memberOf(teamDoc, email);
     if (!mem || !window.__aqBoardMonths || !window.__aqBind) return;
     const months = window.__aqBoardMonths(window.__aqBind.getDays() || {}, window.__aqBind.auto ? window.__aqBind.auto() : []);
@@ -1139,9 +1155,21 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
       await store.saveBoard(teamId, uid, doc);
     } catch (err) {
       if (permissionDenied(err)) {
-        window.__aqTeamDenied = true;
+        window.__aqBoardDenied = true;
         if (window.lbRender) window.lbRender();
       } else console.warn('board', err);
+    }
+  }
+  async function refreshBoard() {
+    if (!canUseBoard() || !store || !store.loadBoard) return [];
+    try {
+      return await store.loadBoard(teamId);
+    } catch (err) {
+      if (permissionDenied(err)) {
+        window.__aqBoardDenied = true;
+        return [];
+      }
+      throw err;
     }
   }
   window.__aqSaveTeam = async function (raw) {
@@ -1154,18 +1182,9 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     if (!clean.emails.length) throw new Error('請至少留下一位成員');
     await store.saveTeam(teamId, clean);
     teamDoc = clean;
-    window.__aqTeamDoc = clean;
+    setRankFlags(clean, false, false);
     await publishBoard();
-    let boards = [];
-    try { boards = store.loadBoard ? await store.loadBoard(teamId) : []; }
-    catch (err) {
-      if (permissionDenied(err)) {
-        window.__aqTeamDenied = true;
-        if (window.lbRender) window.lbRender();
-        return;
-      }
-      throw err;
-    }
+    const boards = window.__aqBoardDenied ? [] : await refreshBoard();
     if (window.__aqApplyTeam) window.__aqApplyTeam(clean, boards, email, false);
   };
 
@@ -1234,16 +1253,25 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     teamDoc = null;
     let boards = [];
     let teamDenied = false;
+    let boardDenied = false;
     try {
       if (store.loadTeam) teamDoc = await store.loadTeam(teamId);
-      if (store.loadBoard) boards = await store.loadBoard(teamId);
     } catch (err) {
       if (permissionDenied(err)) teamDenied = true;
       else console.warn('team rank', err);
     }
+    const listed = !teamDenied && emailListed(teamDoc, email);
+    if (!teamDenied && listed && store.loadBoard) {
+      try { boards = await store.loadBoard(teamId); }
+      catch (err) {
+        if (permissionDenied(err)) boardDenied = true;
+        else console.warn('team rank', err);
+        boards = [];
+      }
+    }
     window.__aqTeamId = teamId;
-    window.__aqTeamDoc = teamDoc;
-    window.__aqTeamDenied = teamDenied;
+    setRankFlags(teamDenied ? null : teamDoc, teamDenied, boardDenied);
+    if (teamDenied) teamDoc = null;
     window.__aqHydrating = true;
     try {
       if (window.aqStart) window.aqStart();
@@ -1261,19 +1289,12 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
     showApp();
     const n = Object.keys(days || {}).length;
     setStatus('', n ? '已從雲端讀取' : '尚未儲存');
-    if (!window.__aqTeamDenied) {
+    if (canUseBoard()) {
       await publishBoard();
-      if (teamDoc && store.loadBoard && !window.__aqTeamDenied) {
-        try {
-          const again = await store.loadBoard(teamId);
-          if (window.__aqApplyTeam) window.__aqApplyTeam(teamDoc, again, email, false);
-        } catch (err) {
-          if (permissionDenied(err)) {
-            window.__aqTeamDenied = true;
-            if (window.lbRender) window.lbRender();
-          }
-        }
-      }
+      if (canUseBoard()) {
+        const again = await refreshBoard();
+        if (window.__aqApplyTeam) window.__aqApplyTeam(teamDoc, again, email, false);
+      } else if (window.lbRender) window.lbRender();
     }
     window.__aqRankReady = true;
     offerImport();
@@ -1480,6 +1501,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
           auto: readBag(tid, id).auto || [],
           team: team,
           board: board || {},
+          boardReads: boardReads,
           crm: JSON.parse(sessionStorage.getItem('aqmock:crm:' + tid) || 'null'),
           crmWrites: crmWrites.n
         };
@@ -1509,7 +1531,12 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         return clean;
       },
       loadBoard: async function (tid) {
+        boardReads += 1;
         if (TEST && TEST.denyTeam) throw denyErr();
+        let teamNow = null;
+        try { teamNow = JSON.parse(sessionStorage.getItem('aqmock:team:' + tid) || 'null'); } catch (e) { teamNow = null; }
+        if (!emailListed(teamNow, email)) throw denyErr();
+        if (TEST && TEST.denyBoard) throw denyErr();
         const k = 'aqmock:board:' + tid;
         let cur = null;
         try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
