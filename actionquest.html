@@ -370,7 +370,7 @@ function monSVG(k){const L=MONLOOK[k],c=L.c,f=L.f;let eyes='<circle cx="19" cy="
  return`<svg viewBox="0 0 52 50" width="52" height="50" aria-hidden="true">${body}${eyes}${mouth}${extra}</svg>`}
 const KEY='actionquest_entries_v1';
 const ST=[{k:'call',n:'約訪',full:'約訪（通數）',town:'約訪村',ic:'📞',xp:1},{k:'appt',n:'取得約會',full:'取得約會',town:'約會小鎮',ic:'🗓️',xp:3},{k:'meet',n:'初次面談',full:'初次面談',town:'面談森林',ic:'🌲',xp:5},{k:'need',n:'發掘需求',full:'發掘需求',town:'需求山谷',ic:'⛰️',xp:5},{k:'prop',n:'關鍵訪',full:'關鍵訪',town:'關鍵訪高塔',ic:'🗼',xp:10},{k:'deal',n:'成交',full:'成交（件數）',town:'成交城堡',ic:'🏰',xp:30},{k:'lead',n:'取得新名單',full:'取得新名單',town:'轉介紹寶庫',ic:'💎',xp:3}];
-const WARM={k:'warm',n:'暖關係',town:'關係經營',ic:'🤝',full:'暖關係<br><span class="muted">問候、關心、日常互動，不是約見面。每日目標 20</span>'};
+const WARM={k:'warm',n:'暖關係',town:'關係經營',ic:'🤝',full:'暖關係'};
 const FN=s=>s.replace(/<br>.*/,'');const FIELDS=[[WARM.k,WARM.full],...ST.slice(0,6).map(s=>[s.k,s.full]),['client','成交（客戶數）'],['lead','取得新名單<br><span class="muted">陌生＝DS取得／緣故＝要求推薦介紹取得</span>']];
 // [健康, 警戒] 門檻
 const TH={appt:[.30,.20],meet:[.70,.55],need:MONSTERS.need.th,prop:[.60,.45],deal:[.30,.20],lead:[.50,.30]};
