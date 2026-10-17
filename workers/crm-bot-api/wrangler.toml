@@ -5,6 +5,8 @@ compatibility_date = "2026-10-16"
 # 這不是密語。Firebase 專案與 CRM 頁面相同。
 [vars]
 FIREBASE_PROJECT_ID = "fish-teem"
+QUEST_AUTO_WRITE = "1"
+QUEST_OWNER_UID = "8fqrm2KAjTcb1IO5Xyq4mvNpuU82"
 
 # 下面這些不要寫進這個檔案，也不要寫進聊天。
 # 用 wrangler secret put 設定：
