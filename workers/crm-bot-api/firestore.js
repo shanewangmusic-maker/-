@@ -185,6 +185,18 @@ export function createRestFirestore(env, fetchImpl) {
       }
       return out;
     },
+    // 只新增：文件已存在就不寫（回傳 created:false），用來做闖關事件的去重
+    async createDoc(path, data) {
+      const w = writeOf(projectId, path, data);
+      w.currentDocument = { exists: false };
+      try {
+        await call(rootUrl(projectId) + ':commit', { method: 'POST', body: JSON.stringify({ writes: [w] }) });
+        return { created: true };
+      } catch (e) {
+        if (e instanceof FirestoreError && (e.code === 'ALREADY_EXISTS' || e.code === 'FAILED_PRECONDITION')) return { created: false };
+        throw e;
+      }
+    },
     async setDoc(path, data) {
       await call(rootUrl(projectId) + ':commit', {
         method: 'POST',

@@ -14,3 +14,8 @@ FIREBASE_PROJECT_ID = "fish-teem"
 #   BOT_EMAIL
 #   BOT_PASSWORD
 #   TEAM_ID
+
+# 行動闖關寫入（預設關閉；規則更新後才開）：
+#   QUEST_AUTO_WRITE = "1"
+#   QUEST_OWNER_UID  = 擁有者的 Firebase UID
+#   QUEST_OWNER_EMAIL = "shanewangmusic@gmail.com"（不設就是這個）

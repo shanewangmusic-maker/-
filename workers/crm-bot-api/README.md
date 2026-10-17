@@ -46,6 +46,47 @@
 | `createFintrack` | `planId`，可加 `clientName`、`snap`（計畫內容物件） |
 | `updateFintrack` | `planId`，加上要改的 `clientName` 或 `snap` |
 | `undo` | `backupId`（`GET /history` 裡那一筆的備份編號） |
+| `addQuestCounts` | `date`（2026-10-17 以後）、`counts`（例如 `{"warm":2,"call":3}`；項目只接受 warm、call、appt、meet、need、prop、deal、client、lead，每項 0–30，一次最多 60）、可加 `side`（`ds` 陌生／`rf` 緣故，預設 ds）、`note`。只寫行動闖關，不動客戶帳；要先開啟闖關寫入 |
+
+`appendContact` 和 `updateCustomer` 另外可以帶（放在最外層，不是 patch 裡）：
+- `byEmail`：只接受擁有者信箱（`QUEST_OWNER_EMAIL`，預設 shanewangmusic@gmail.com）。新增的歷程列、階段變更列會蓋上這個信箱，和網頁新增的一樣。
+- `act`：只接受 `call`（約訪）、`appt`（取得約會）、`need`（發掘需求）。
+沒帶就不蓋，和以前一樣。
+
+`updateCustomer` 改階段時照網頁的規則：加一筆「階段由「X」改為「Y」」歷程（台灣日期）、轉待定／流失時記下 `lastStage`、不是關鍵訪就清空預計規劃欄位、成交（`stage: "WON"` 或 `category: "WON"`）時 `progress` 清空並清掉下次聯絡日。名單（LEAD）和核心客戶之間的轉換請在網頁做。
+
+### 行動闖關自動計入
+
+網頁只在瀏覽器存檔時計入闖關，所以機器人寫的紀錄要自己寫事件。事件編號和去重和網頁 `aqPlanEvents`／`crm-link.js` 完全一樣（`ae_<客戶>_<項目>_<日期>`），寫到 `actionquest/{TEAM_ID}/users/{擁有者 UID}/auto/{編號}`，多一個 `src: "crmbot"`。只有蓋了擁有者 `byEmail` 的列才會計入。
+
+目前的資料庫規則只允許本人（`request.auth.uid == userId`）寫自己的 auto，機器人帳號寫不進去，所以這功能**預設關閉**：預覽會列出「會計入」的事件，寫入時回傳 `quest.disabled`。開啟步驟：
+1. 在規則加上下面這段（OWNER_UID 換成擁有者的 UID）。
+2. Worker 設定 `QUEST_OWNER_UID`（擁有者 UID）和 `QUEST_AUTO_WRITE=1`。
+
+闖關事件是在客戶帳寫好之後才寫；就算闖關寫入失敗，客戶帳也已經寫好，回應裡的 `quest.error` 會說明。
+
+```
+    // 助理專用：行動闖關自動計數（只能替「擁有者」新增、讀取；不能改、不能刪）
+    // OWNER_UID 換成 shanewangmusic@gmail.com 在 Firebase Authentication 的 UID
+    match /artifacts/youtrend-crm/public/data/actionquest/{teamId}/users/{userId}/auto/{eventId} {
+      allow read: if request.auth != null
+        && request.auth.token.email == 'crmbot@fish-teem.com'
+        && userId == 'OWNER_UID';
+      allow create: if request.auth != null
+        && request.auth.token.email == 'crmbot@fish-teem.com'
+        && userId == 'OWNER_UID'
+        && eventId.matches('^a[em]_[A-Za-z0-9_-]{1,177}$')
+        && request.resource.data.uid == userId
+        && request.resource.data.teamId == teamId
+        && request.resource.data.email == 'shanewangmusic@gmail.com'
+        && request.resource.data.src == 'crmbot'
+        && request.resource.data.action in ['warm', 'call', 'appt', 'meet', 'need', 'prop', 'deal', 'client', 'lead']
+        && request.resource.data.side in ['ds', 'rf']
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.date >= '2026-10-17';
+    }
+```
 
 還原會把該次寫入之前的客戶帳或那一份財務規劃放回去，並再留一份新備份，所以還原本身也可以再還原。
 

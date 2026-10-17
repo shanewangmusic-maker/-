@@ -15,6 +15,9 @@ import {
   packFintrack,
   pathsFor,
   planFintrack,
+  planQuestCounts,
+  planQuestEvents,
+  questEventDoc,
   planUndo,
   publicCustomer,
   randomSuffix,
@@ -158,6 +161,12 @@ async function buildPreview(norm, db, paths, deps) {
     if (applied.error) return { error: applied.error, status: 400 };
     return { applied, idSource, baseRev: applied.baseRev, planId: norm.request.planId };
   }
+  if (norm.scope === 'quest') {
+    const cfg = questConfigOf(deps.env || {});
+    if (!cfg.enabled) return { error: cfg.reason, status: 409 };
+    const applied = planQuestCounts(norm.request, idSource);
+    return { applied, idSource, baseRev: 0 };
+  }
   if (norm.scope === 'undo') {
     const backup = await db.getDoc(paths.backup(norm.request.backupId));
     if (!backup) return { error: '找不到這份備份', status: 404 };
@@ -167,7 +176,7 @@ async function buildPreview(norm, db, paths, deps) {
       ? await db.getDoc(paths.fintrack(meta.planId || ''))
       : await db.getDoc(paths.state);
     if (!current) return { error: '找不到要還原的資料', status: 404 };
-    const legacy = kind === 'global_state' && !meta.changeSetJson && meta.previewId && isPreviewId(meta.previewId)
+    const legacy = kind === 'global_state' && meta.previewId && isPreviewId(meta.previewId)
       ? await db.getDoc(paths.preview(meta.previewId))
       : null;
     const applied = planUndo(backup, current, kind, legacy);
@@ -181,6 +190,44 @@ async function buildPreview(norm, db, paths, deps) {
   return { applied, idSource, baseRev: cloudRev(doc) };
 }
 
+// 行動闖關寫入設定：要等 Firestore 規則允許 crmbot 寫入擁有者的 auto，才把 QUEST_AUTO_WRITE 設成 1
+export function questConfigOf(env) {
+  const uid = envTrim(env && env.QUEST_OWNER_UID);
+  if (envTrim(env && env.QUEST_AUTO_WRITE) !== '1') {
+    return { enabled: false, reason: '行動闖關寫入尚未開啟（需要先更新 Firestore 規則，再設定 QUEST_OWNER_UID 與 QUEST_AUTO_WRITE=1）' };
+  }
+  if (!/^[A-Za-z0-9]{6,128}$/.test(uid)) return { enabled: false, reason: 'QUEST_OWNER_UID 沒有設定或格式不對' };
+  return { enabled: true, uid };
+}
+
+// CRM 已經寫好之後才做，失敗也不影響 CRM；同一個事件編號只會建立一次
+async function writeQuestEvents(db, cfg, paths, events, jobs, now, previewId) {
+  if (!cfg.enabled) return { written: [], skipped: [], disabled: cfg.reason };
+  if (!db.createDoc) return { written: [], skipped: [], error: '無法寫入行動闖關' };
+  let seen = [];
+  let note = '';
+  try { seen = db.listDocs ? await db.listDocs(paths.questAutoCollection(cfg.uid)) : []; }
+  catch (_) { seen = []; note = '讀不到已計過的事件，只用事件編號去重'; }
+  const planned = [];
+  (events || []).forEach((e) => planned.push(e));
+  (jobs || []).forEach((job) => {
+    planQuestEvents(job, seen.concat(planned)).forEach((e) => planned.push(e));
+  });
+  const written = [];
+  const skipped = [];
+  try {
+    for (const ev of planned) {
+      const r = await db.createDoc(paths.questAuto(cfg.uid, ev.id), questEventDoc(ev, cfg.uid, paths.teamId, now, previewId));
+      (r && r.created === false ? skipped : written).push(ev.id);
+    }
+  } catch (e) {
+    return { written, skipped, error: '行動闖關寫入失敗（CRM 已經寫好）：' + (e && e.message ? e.message : e), note };
+  }
+  const out = { written, skipped };
+  if (note) out.note = note;
+  return out;
+}
+
 function ownerEmailsOf(env) {
   const raw = envTrim(env && env.QUEST_OWNER_EMAIL) || DEFAULT_OWNER_EMAIL;
   return raw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
@@ -191,7 +238,7 @@ async function preview(request, env, db, paths, bot, deps) {
   if (parsed.error) return json({ error: parsed.error }, parsed.status);
   const norm = normalizeOp(parsed.body, { ownerEmails: ownerEmailsOf(env) });
   if (norm.error) return json({ error: norm.error }, 400);
-  const built = await buildPreview(norm, db, paths, deps);
+  const built = await buildPreview(norm, db, paths, Object.assign({ env }, deps));
   if (built.error) return json({ error: built.error }, built.status);
   const previewId = 'pv-' + built.idSource.now + '-' + built.idSource.suffix;
   const expires = new Date(built.idSource.now + PREVIEW_TTL_MS).toISOString();
@@ -308,7 +355,7 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
     return { abort: true, status: 409, error: '資料剛被別人更新，這份還原已作廢。請重新預覽。' };
   }
   const bmeta = backup._backup || {};
-  const legacy = kind === 'global_state' && !bmeta.changeSetJson && bmeta.previewId && isPreviewId(bmeta.previewId)
+  const legacy = kind === 'global_state' && bmeta.previewId && isPreviewId(bmeta.previewId)
     ? await tx.get(paths.preview(bmeta.previewId))
     : null;
   const applied = planUndo(backup, current, kind, legacy);
@@ -368,6 +415,22 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
   return { body: commitBody(previewId, pending, newRev, backupId, auditId, applied.diff) };
 }
 
+async function commitQuest(tx, paths, pending, bot, deps, now, previewId, cfg) {
+  if (!cfg.enabled) return { abort: true, status: 409, error: cfg.reason };
+  const applied = planQuestCounts(pending.request, pending.idSource);
+  if (stable(applied.diff) !== stable(pending.diff)) {
+    return { abort: true, status: 409, error: '預覽時的差異和現在不一致，已取消寫入' };
+  }
+  const auditId = 'au-' + now + '-' + deps.random();
+  tx.set(paths.audit(auditId), {
+    at: new Date(now).toISOString(), teamId: paths.teamId, botName: bot.name, op: pending.op,
+    previewId, customerId: '', planId: '', backupId: '', baseRev: 0, newRev: 0,
+    summary: pending.diff.summary, diff: pending.diff
+  });
+  tx.set(paths.preview(previewId), Object.assign({}, pending, { status: 'committed', committedAt: new Date(now).toISOString(), auditId }));
+  return { body: { ok: true, previewId, auditId, diff: applied.diff }, questEvents: applied.events };
+}
+
 async function commit(request, env, db, paths, bot, deps) {
   const secret = envTrim(env.APPROVAL_SECRET);
   if (!secret) return json({ error: '尚未設定 APPROVAL_SECRET' }, 500);
@@ -390,6 +453,7 @@ async function commit(request, env, db, paths, bot, deps) {
     const target = pending.target || 'state';
     if (target === 'fintrack') return commitFintrack(tx, paths, pending, bot, deps, now, previewId);
     if (target === 'undo') return commitUndo(tx, paths, pending, bot, deps, now, previewId);
+    if (target === 'quest') return commitQuest(tx, paths, pending, bot, deps, now, previewId, questConfigOf(env));
     const doc = await tx.get(paths.state);
     if (!doc) return { abort: true, status: 404, error: '找不到這個團隊的資料' };
     if (cloudRev(doc) !== pending.baseRev) {
@@ -413,9 +477,12 @@ async function commit(request, env, db, paths, bot, deps) {
       newRev: next._rev,
       customerId
     });
-    return { body: commitBody(previewId, pending, next._rev, backupId, auditId, applied.diff) };
+    return { body: commitBody(previewId, pending, next._rev, backupId, auditId, applied.diff), questJobs: applied.questJobs || [] };
   });
   if (result && result.abort) return json({ error: result.error }, result.status);
+  if ((result.questJobs && result.questJobs.length) || (result.questEvents && result.questEvents.length)) {
+    result.body.quest = await writeQuestEvents(db, questConfigOf(env), paths, result.questEvents || [], result.questJobs || [], now, previewId);
+  }
   return json(result.body);
 }
 

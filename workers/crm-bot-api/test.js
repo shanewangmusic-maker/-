@@ -930,3 +930,121 @@ test('appendContact stamps byEmail and act on history and on lead contacts', asy
   assert.equal(plain.byEmail, undefined);
   assert.equal(plain.act, undefined);
 });
+
+// ---------- 行動闖關：自動事件與手動加計 ----------
+import { readFileSync, existsSync } from 'node:fs';
+import { planQuestEvents, questEventId, questJob, AQ_AUTO_START } from './logic.js';
+
+MemoryFirestore.prototype.createDoc = async function (path, data) {
+  if (this.failCreate) throw new Error('PERMISSION_DENIED');
+  if (this.docs.has(path)) return { created: false };
+  this.docs.set(path, clone(data));
+  this.writes.push({ op: 'create', path });
+  return { created: true };
+};
+const OCT17 = 1792206000000; // 2026-10-17 11:00 台灣
+const UID = 'ownerUid123456';
+function questOn(h) { h.env.QUEST_AUTO_WRITE = '1'; h.env.QUEST_OWNER_UID = UID; }
+function autoDocs(h) {
+  const prefix = 'artifacts/youtrend-crm/public/data/actionquest/' + TEAM + '/users/' + UID + '/auto/';
+  return [...h.db.docs.entries()].filter(([k]) => k.startsWith(prefix)).map(([k, v]) => Object.assign({ _id: k.slice(prefix.length) }, v));
+}
+
+test('quest events are previewed but not written while the feature is off', async () => {
+  const h = harness(null, OCT17);
+  const p = await call(h, 'POST', '/preview', { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' });
+  assert.equal(p.status, 200);
+  assert.deepEqual(p.data.diff.quest.map((e) => e.id), ['ae_solo_call_2026-10-17']);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200);
+  assert.match(c.data.quest.disabled, /尚未開啟/);
+  assert.equal(autoDocs(h).length, 0);
+  const q = await call(h, 'POST', '/preview', { op: 'addQuestCounts', date: '2026-10-17', counts: { call: 2 } });
+  assert.equal(q.status, 409);
+  assert.match(q.data.error, /Firestore 規則/);
+});
+
+test('with quest writing on, appended act rows and stage changes create web-compatible auto events once', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  let done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'call' });
+  assert.deepEqual(done.quest.written, ['ae_solo_call_2026-10-17']);
+  const ev = autoDocs(h)[0];
+  assert.deepEqual(Object.keys(ev).sort(), ['_id', 'action', 'createdAt', 'custId', 'date', 'email', 'histId', 'leadId', 'name', 'previewId', 'round', 'side', 'src', 'teamId', 'uid'].sort());
+  assert.equal(ev.uid, UID);
+  assert.equal(ev.teamId, TEAM);
+  assert.equal(ev.email, OWNER);
+  assert.equal(ev.histId, cust(h, 'solo').history[0].id);
+  // 同一天同一個客戶再約訪一次 → 和網頁一樣不重複計
+  done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '又打', byEmail: OWNER, act: 'call' }, OCT17 + 1000);
+  assert.deepEqual(done.quest.written, []);
+  // 階段推到關鍵訪 → 面談 + 關鍵訪；第二單 round 2
+  done = await botDo(h, { op: 'updateCustomer', customerId: 'deal-2', patch: { stage: 'KEY_VISIT' }, byEmail: OWNER }, OCT17 + 2000);
+  assert.deepEqual(done.quest.written.sort(), ['ae_deal-2_meet_2026-10-17', 'ae_deal-2_prop_2026-10-17']);
+  assert.equal(autoDocs(h).find((e) => e._id === 'ae_deal-2_prop_2026-10-17').round, 2);
+  // 沒蓋 byEmail → 不計
+  done = await botDo(h, { op: 'updateCustomer', customerId: 'deal-1', patch: { stage: 'FIRST_VISIT' } }, OCT17 + 3000);
+  assert.equal(done.quest, undefined);
+  assert.equal(autoDocs(h).length, 3);
+});
+
+test('a failing quest write does not undo the CRM write', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  h.db.failCreate = true;
+  const done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '約訪', byEmail: OWNER, act: 'appt' });
+  assert.match(done.quest.error, /CRM 已經寫好/);
+  assert.equal(cust(h, 'solo').history.length, 1);
+});
+
+test('addQuestCounts previews then writes unlinked events, leaving the CRM book alone', async () => {
+  const h = harness(null, OCT17);
+  questOn(h);
+  const before = clone(state(h));
+  let p = await call(h, 'POST', '/preview', { op: 'addQuestCounts', date: '2026-10-16', counts: { call: 1 } });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'addQuestCounts', date: '2026-10-17', counts: { warm: 2, call: 1, bogus: 1 } });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'addQuestCounts', date: '2026-10-17', side: 'rf', counts: { warm: 2, call: 1 } });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.match(p.data.diff.summary, /暖關係 2、約訪 1/);
+  assert.equal(autoDocs(h).length, 0);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  assert.equal(c.data.quest.written.length, 3);
+  const docs = autoDocs(h);
+  assert.equal(docs.length, 3);
+  assert.ok(docs.every((d) => d.custId === '' && d.side === 'rf' && d.date === '2026-10-17' && /^am_2026-10-17_/.test(d._id)));
+  assert.deepEqual(state(h), before);
+  const again = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(again.status, 404);
+  assert.equal(autoDocs(h).length, 3);
+});
+
+test('planQuestEvents matches index.html aqPlanEvents on the same jobs', { skip: !existsSync('/tmp/crmcheck/index.html') }, () => {
+  const html = readFileSync('/tmp/crmcheck/index.html', 'utf8');
+  const start = html.indexOf('function aqPlanEvents(job, seen) {');
+  const end = html.indexOf('function aqJob(c, h, opt)');
+  const src = html.slice(start, end);
+  const web = new Function('AQ_AUTO_START', 'aqNormDate', 'aqActOf', src + '\nreturn aqPlanEvents;')(
+    AQ_AUTO_START,
+    (v) => { const d = String(v || '').substring(0, 10); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ''; },
+    (v) => ((v === 'call' || v === 'appt' || v === 'need') ? v : '')
+  );
+  const base = { byEmail: OWNER, histId: 'h-1', custId: 'c1', date: '2026-10-18', name: '甲', side: 'ds', round: 1, leadId: '', firstWon: true, sales: true };
+  const jobs = [
+    Object.assign({}, base, { act: 'call' }),
+    Object.assign({}, base, { changed: true, stageFrom: 'NURTURE', stageTo: 'KEY_VISIT' }),
+    Object.assign({}, base, { changed: true, stageFrom: 'KEY_VISIT', stageTo: 'WON', dealDate: '2026-10-20', act: 'need' }),
+    Object.assign({}, base, { changed: true, stageFrom: 'NURTURE', stageTo: 'WON', firstWon: false, round: 2 }),
+    Object.assign({}, base, { visitType: '初訪' }),
+    Object.assign({}, base, { date: '2026-10-16', act: 'call' }),
+    Object.assign({}, base, { byEmail: '', act: 'call' }),
+    Object.assign({}, base, { sales: false, act: 'call' }),
+    Object.assign({}, base, { sys: true, act: 'call' })
+  ];
+  const seenSets = [[], [{ custId: 'c1', action: 'meet', round: 1, date: '2026-10-01', histId: 'h-0' }], [{ custId: 'c1', action: 'call', histId: 'h-1', date: '2026-10-17' }]];
+  for (const job of jobs) for (const seen of seenSets) assert.deepEqual(planQuestEvents(job, seen), web(job, seen));
+  assert.equal(questEventId('cust-1.5', 'call', '2026-10-17'), 'ae_cust-1_5_call_2026-10-17');
+  assert.equal(typeof questJob, 'function');
+});

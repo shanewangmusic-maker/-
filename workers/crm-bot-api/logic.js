@@ -267,6 +267,11 @@ export function normalizeOp(body, opts) {
     if (built.error) return built;
     return { op, request: Object.assign({ planId }, built.values), scope: 'fintrack' };
   }
+  if (op === 'addQuestCounts') {
+    const q = normalizeQuestCounts(body, opts);
+    if (q.error) return q;
+    return { op, request: q.values, scope: 'quest' };
+  }
   if (op === 'undo') {
     const backupId = String(body.backupId || '').trim();
     if (!isBackupId(backupId)) return { error: 'backupId 不正確' };
@@ -1087,8 +1092,11 @@ export function planUndo(backup, current, kind, legacyPending) {
   const backupKind = meta.kind || (Array.isArray(snapshot.cust) ? 'global_state' : 'fintrack');
   if (kind && backupKind !== kind) return { error: '備份種類和目前資料不一致' };
   if (backupKind === 'fintrack' && snapshot.existed === false) return { error: '這份備份是建立之前的空檔，不能用來刪除財務規劃' };
-  const questNote = Array.isArray(meta.questEventIds) && meta.questEventIds.length
-    ? '這次寫入已計入行動闖關的 ' + meta.questEventIds.length + ' 筆自動事件不會被刪除（規則不允許刪除）。'
+  const questCount = Array.isArray(meta.questEventIds) && meta.questEventIds.length
+    ? meta.questEventIds.length
+    : (legacyPending && legacyPending.diff && Array.isArray(legacyPending.diff.quest) ? legacyPending.diff.quest.length : 0);
+  const questNote = questCount
+    ? '那次寫入可能已計入行動闖關的 ' + questCount + ' 筆自動事件不會被刪除（規則不允許刪除），需要的話請在行動闖關頁面調整。'
     : '';
   if (backupKind === 'fintrack') {
     const resultRev = Number.isFinite(meta.resultRev) ? meta.resultRev : fintrackRev(snapshot) + 1;
@@ -1234,6 +1242,201 @@ function applyNext(customers, request) {
   return { customers, diff: diffText({ summary, changes }, beforeText, afterText) };
 }
 
+// ---- 行動闖關自動事件：和 index.html aqJob / aqPlanEvents、crm-link.js 同一套 id 與去重 ----
+export const AQ_AUTO_START = '2026-10-17';
+export const QUEST_ACTIONS = ['warm', 'call', 'appt', 'meet', 'need', 'prop', 'deal', 'client', 'lead'];
+export const QUEST_LABELS = { warm: '暖關係', call: '約訪', appt: '取得約會', meet: '初次面談', need: '發掘需求', prop: '關鍵訪', deal: '成交', client: '成交（客戶數）', lead: '取得新名單' };
+
+export function questEventId(custId, action, date) {
+  return ('ae_' + custId + '_' + action + '_' + date).replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180);
+}
+
+function questSideOf(customers, tagsDef, c) {
+  let src = String((c && c.source) || '').trim();
+  if (!src && c && c.leadId) {
+    const L = customers.find((x) => x && x.id === c.leadId);
+    if (L) src = String(L.source || '').trim();
+  }
+  let tags = '';
+  if (c && Array.isArray(c.tags)) {
+    c.tags.forEach((id) => {
+      const t = (Array.isArray(tagsDef) ? tagsDef : []).find((x) => x && x.id === id);
+      if (t && t.name) tags += ' ' + t.name;
+    });
+  }
+  const blob = src + ' ' + tags;
+  if (/陌生/.test(blob)) return 'ds';
+  if (/緣故|轉介紹|家人|朋友|同學|同事/.test(blob)) return 'rf';
+  return 'ds';
+}
+
+function questRoundOf(customers, c) {
+  if (!c || c.category === 'RECRUIT' || c.progress === 'LEAD') return 0;
+  const L = coreLeadOf(customers, c);
+  if (!L) return 1;
+  const deals = leadDeals(customers, L).slice().sort((a, b) =>
+    String(a.createdAt || '').localeCompare(String(b.createdAt || '')) || String(a.id).localeCompare(String(b.id)));
+  const i = deals.findIndex((x) => x.id === c.id);
+  return (i < 0 ? 0 : i) + 1;
+}
+
+function questFirstWon(customers, c) {
+  const L = coreLeadOf(customers, c);
+  if (!L) return true;
+  return !leadDeals(customers, L).some((d) => d && d.id !== c.id && d.category === 'WON');
+}
+
+export function questJob(doc, customers, c, h, opt) {
+  opt = opt || {};
+  return {
+    byEmail: (h && h.byEmail) || '',
+    sys: !!(h && h.sys),
+    srcContactId: (h && h.srcContactId) || '',
+    act: (h && h.act) || '',
+    visitType: (h && h.visitType) || '',
+    date: (h && h.date) || '',
+    histId: (h && h.id) || '',
+    custId: (c && c.id) || '',
+    name: String((c && c.name) || '').trim(),
+    side: c ? questSideOf(customers, doc && doc.tags, c) : 'ds',
+    round: c ? (questRoundOf(customers, c) || 1) : 1,
+    leadId: (c && c.leadId) || '',
+    firstWon: c ? questFirstWon(customers, c) : true,
+    sales: !(c && (c.category === 'RECRUIT' || c.progress === 'LEAD')),
+    changed: !!opt.changed,
+    stageFrom: opt.stageFrom || '',
+    stageTo: opt.stageTo || '',
+    dealDate: opt.dealDate || ''
+  };
+}
+
+// 逐行對照 index.html 的 aqPlanEvents
+export function planQuestEvents(job, seen) {
+  seen = seen || [];
+  if (!job || !job.byEmail || !job.histId || !job.custId) return [];
+  if (job.sys || job.srcContactId || job.sales === false) return [];
+  const date0 = validDate(job.date);
+  if (!date0 || date0 < AQ_AUTO_START) return [];
+  const act = questActOf(job.act);
+  const visit = job.visitType || '';
+  let entering = '';
+  if (job.changed && job.stageTo && job.stageTo !== job.stageFrom) {
+    if (job.stageTo === 'WON') entering = 'deal';
+    else if (job.stageTo === 'KEY_VISIT') entering = 'prop';
+    else if (job.stageTo === 'FIRST_VISIT') entering = 'meet';
+  } else if (!job.changed) {
+    if (visit === '關鍵訪') entering = 'prop';
+    else if (visit === '初訪') entering = 'meet';
+  }
+  const round = job.round || 1;
+  const out = [];
+  const seenHit = (action, date) => seen.some((e) => e && e.custId === job.custId && e.action === action && ((e.round || 1) === round) && (!date || e.date === date));
+  const push = (action, date) => {
+    date = validDate(date);
+    if (!action || !date || date < AQ_AUTO_START) return;
+    if (seen.some((e) => e && e.custId === job.custId && e.histId === job.histId && e.action === action)) return;
+    if (out.some((e) => e.action === action && e.date === date)) return;
+    if (seenHit(action, date)) return;
+    out.push({
+      id: questEventId(job.custId, action, date),
+      custId: job.custId, histId: job.histId, action, date,
+      round, side: job.side === 'rf' ? 'rf' : 'ds',
+      name: job.name || '（未命名）', leadId: job.leadId || '', email: job.byEmail
+    });
+  };
+  if (entering === 'meet') push('meet', date0);
+  if (entering === 'prop') { if (!seenHit('meet') && !out.some((e) => e.action === 'meet')) push('meet', date0); push('prop', date0); }
+  if (entering === 'deal') {
+    const prefer = validDate(job.dealDate);
+    const dDate = (prefer && prefer >= AQ_AUTO_START) ? prefer : date0;
+    if (!seenHit('meet') && !out.some((e) => e.action === 'meet')) push('meet', dDate);
+    if (!seenHit('prop') && !out.some((e) => e.action === 'prop')) push('prop', dDate);
+    push('deal', dDate);
+    if (job.firstWon) push('client', dDate);
+  }
+  if (act) push(act, date0);
+  return out;
+}
+
+// applyOp 的 questRows → 可計入闖關的工作（只有蓋了 byEmail 的列）
+export function questJobsOf(doc, customers, rows) {
+  const jobs = [];
+  (Array.isArray(rows) ? rows : []).forEach((r) => {
+    const c = customers.find((x) => x && x.id === r.customerId);
+    const h = c && Array.isArray(c.history) ? c.history.find((x) => x && x.id === r.rowId) : null;
+    if (c && h && h.byEmail) jobs.push(questJob(doc, customers, c, h, r.opt));
+  });
+  return jobs;
+}
+
+// 寫進 actionquest/{teamId}/users/{uid}/auto/{id} 的內容；欄位和網頁 aqCreate 相同，多一個 src 註明來源
+export function questEventDoc(ev, uid, teamId, nowMs, previewId) {
+  return {
+    uid, teamId, email: ev.email,
+    custId: ev.custId || '', histId: ev.histId || '', action: ev.action, date: ev.date,
+    round: ev.round || 1, side: ev.side === 'rf' ? 'rf' : 'ds',
+    name: ev.name || '', leadId: ev.leadId || '', createdAt: nowMs,
+    src: 'crmbot', previewId: previewId || ''
+  };
+}
+
+export function questLine(ev) {
+  return (QUEST_LABELS[ev.action] || ev.action) + ' ' + ev.date + (ev.name ? '（' + ev.name + '）' : '');
+}
+
+// 手動加計：不綁客戶的事件，頁面每筆都 +1（沒有 custId 就不去重）
+export function normalizeQuestCounts(body, opts) {
+  const date = String(body.date || '').trim();
+  if (!atParse(date)) return { error: '日期格式要是 YYYY-MM-DD' };
+  if (date < AQ_AUTO_START) return { error: '行動闖關自動計入從 ' + AQ_AUTO_START + ' 開始，之前的日期請在頁面上手記' };
+  const side = body.side == null || body.side === '' ? 'ds' : String(body.side);
+  if (side !== 'ds' && side !== 'rf') return { error: 'side 只接受 ds（陌生）或 rf（緣故）' };
+  const counts = body.counts;
+  if (!counts || typeof counts !== 'object' || Array.isArray(counts)) return { error: '請提供 counts，例如 {"call":3}' };
+  const out = {};
+  let total = 0;
+  const keys = Object.keys(counts);
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    if (QUEST_ACTIONS.indexOf(k) < 0) return { error: '闖關項目只接受 ' + QUEST_ACTIONS.join('、') };
+    const n = Number(counts[k]);
+    if (!Number.isInteger(n) || n < 0 || n > 30) return { error: '每一項要是 0 到 30 的整數' };
+    if (n) { out[k] = n; total += n; }
+  }
+  if (!total) return { error: '沒有要加計的數量' };
+  if (total > 60) return { error: '一次最多加計 60 筆' };
+  const note = String(body.note == null ? '' : body.note).trim().slice(0, 40);
+  const owners = (opts && Array.isArray(opts.ownerEmails) && opts.ownerEmails.length ? opts.ownerEmails : [DEFAULT_OWNER_EMAIL]);
+  return { values: { date, side, counts: out, note, email: String(owners[0]).toLowerCase() } };
+}
+
+export function planQuestCounts(request, idSource) {
+  const events = [];
+  const tag = String(idSource.now) + '_' + String(idSource.suffix || '').replace(/[^A-Za-z0-9]/g, '');
+  QUEST_ACTIONS.forEach((action) => {
+    const n = request.counts[action] || 0;
+    for (let i = 1; i <= n; i++) {
+      events.push({
+        id: ('am_' + request.date + '_' + action + '_' + tag + '_' + i).replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180),
+        custId: '', histId: '', action, date: request.date, round: 1, side: request.side,
+        name: request.note || '助理手記', leadId: '', email: request.email
+      });
+    }
+  });
+  const parts = QUEST_ACTIONS.filter((a) => request.counts[a]).map((a) => QUEST_LABELS[a] + ' ' + request.counts[a]);
+  const sideText = request.side === 'rf' ? '緣故' : '陌生';
+  return {
+    target: 'quest',
+    events,
+    diff: {
+      summary: '在行動闖關 ' + request.date + '（' + sideText + '）手動加計：' + parts.join('、'),
+      text: '修改前：這些不在闖關裡。\n修改後：' + request.date + ' ' + sideText + ' ' + parts.join('、') + '（共 ' + events.length + ' 筆，記在 ' + request.email + ' 名下，標註「' + (request.note || '助理手記') + '」）。CRM 客戶資料不會變。',
+      warning: '加計之後只能在行動闖關頁面調整，助理不能刪除。',
+      quest: events.map((e) => ({ id: e.id, action: e.action, date: e.date, side: e.side }))
+    }
+  };
+}
+
 export function applyOp(doc, op, request, idSource) {
   if (!doc || !Array.isArray(doc.cust)) return { error: '團隊資料裡沒有客戶清單' };
   const customers = clone(doc.cust);
@@ -1246,7 +1449,20 @@ export function applyOp(doc, op, request, idSource) {
   else if (op === 'editContact') result = applyEditContact(customers, request);
   else if (op === 'deleteContact') result = applyDeleteContact(customers, request);
   else return { error: '不支援的操作' };
-  if (result && result.customers) result.target = 'state';
+  if (result && result.customers) {
+    result.target = 'state';
+    result.questJobs = questJobsOf(doc, result.customers, result.questRows);
+    delete result.questRows;
+    if (result.questJobs.length) {
+      // 預覽時還讀不到已經計過的事件，所以這裡列的是「最多會計入」的；實際寫入時會再去重
+      const evs = [];
+      result.questJobs.forEach((job) => planQuestEvents(job, evs).forEach((e) => evs.push(e)));
+      if (evs.length) {
+        result.diff.quest = evs.map((e) => ({ id: e.id, action: e.action, date: e.date, custId: e.custId, histId: e.histId }));
+        result.diff.questText = '行動闖關會計入（已計過的會自動略過）：' + evs.map(questLine).join('、');
+      }
+    }
+  }
   return result;
 }
 
@@ -1298,6 +1514,8 @@ export function pathsFor(teamId) {
     preview: (id) => root + '/bot_previews/' + id,
     backup: (id) => root + '/bot_backups/' + id,
     audit: (id) => root + '/bot_audit/' + id,
+    questAuto: (uid, id) => root + '/actionquest/' + teamId + '/users/' + uid + '/auto/' + id,
+    questAutoCollection: (uid) => root + '/actionquest/' + teamId + '/users/' + uid + '/auto',
     auditCollection: root + '/bot_audit'
   };
 }
