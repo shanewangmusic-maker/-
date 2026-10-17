@@ -865,3 +865,68 @@ test('health shows a version without needing a key', async () => {
   assert.equal(data.service, 'crm-bot-api');
   assert.match(data.version, /^\d{4}-\d{2}-\d{2}\.\d+$/);
 });
+
+// ---------- 階段變更：和網頁一樣的副作用；byEmail / act ----------
+const OWNER = 'shanewangmusic@gmail.com';
+
+test('stage change writes the web-style stage row, clears planned fields and stamps byEmail/act', async () => {
+  const data = book();
+  const solo = data.cust.find((c) => c.id === 'solo');
+  solo.plannedPolicyName = '預計A'; solo.csSupervisor = '主管';
+  const h = harness(data);
+  const p = await call(h, 'POST', '/preview', { op: 'updateCustomer', customerId: 'solo', patch: { stage: 'HOLD' }, byEmail: 'ShaneWangMusic@gmail.com', act: 'need' });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.match(p.data.diff.text, /階段由「關鍵訪」改為「待定」/);
+  await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  const c = cust(h, 'solo');
+  assert.equal(c.progress, 'HOLD');
+  assert.equal(c.category, 'NEW');
+  assert.equal(c.lastStage, 'KEY_VISIT');
+  assert.equal(c.plannedPolicyName, '');
+  assert.equal(c.csSupervisor, '');
+  const row = c.history[c.history.length - 1];
+  assert.deepEqual(row, { id: 'h-1800000000000', date: '2027-01-15', content: '階段由「關鍵訪」改為「待定」', progress: 'HOLD', byEmail: OWNER, act: 'need' });
+});
+
+test('stage WON clears progress and the next-contact date across linked records', async () => {
+  const h = harness();
+  await botDo(h, { op: 'updateCustomer', customerId: 'deal-1', patch: { stage: 'WON', dealDate: '2026-10-17' } });
+  const c = cust(h, 'deal-1');
+  assert.equal(c.category, 'WON');
+  assert.equal(c.progress, '');
+  for (const id of ['lead-1', 'deal-1', 'deal-2']) assert.equal(cust(h, id).nextContactDate, '');
+  const row = c.history[c.history.length - 1];
+  assert.equal(row.content, '階段由「經營」改為「成交」');
+  assert.equal(row.progress, 'WON');
+  assert.equal(row.byEmail, undefined);
+});
+
+test('non-stage edits add no stage row; LEAD conversion and bad byEmail/act are refused', async () => {
+  const h = harness();
+  await botDo(h, { op: 'updateCustomer', customerId: 'solo', patch: { notes: '只改備註' } });
+  assert.equal(cust(h, 'solo').history.length, 0);
+  let p = await call(h, 'POST', '/preview', { op: 'updateCustomer', customerId: 'lead-plain', patch: { stage: 'NURTURE' } });
+  assert.equal(p.status, 400);
+  assert.match(p.data.error, /CRM 網頁/);
+  p = await call(h, 'POST', '/preview', { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: 'x', byEmail: 'someone@example.com' });
+  assert.equal(p.status, 400);
+  p = await call(h, 'POST', '/preview', { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: 'x', act: '約訪' });
+  assert.equal(p.status, 400);
+});
+
+test('appendContact stamps byEmail and act on history and on lead contacts', async () => {
+  const h = harness();
+  await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '打電話', byEmail: OWNER, act: 'call' });
+  const row = cust(h, 'solo').history[0];
+  assert.equal(row.byEmail, OWNER);
+  assert.equal(row.act, 'call');
+  assert.match(row.id, /^h-\d+$/);
+  await botDo(h, { op: 'appendContact', customerId: 'lead-plain', date: '2026-10-17', method: 'Line', content: '傳訊', byEmail: OWNER, act: 'appt' }, 1800000001000);
+  const ct = cust(h, 'lead-plain').contacts.find((r) => r.content === '傳訊');
+  assert.equal(ct.byEmail, OWNER);
+  assert.equal(ct.act, 'appt');
+  await botDo(h, { op: 'appendContact', customerId: 'many', date: '2026-10-17', method: '電話', content: '沒蓋章' }, 1800000002000);
+  const plain = cust(h, 'many').history.find((r) => r.content === '沒蓋章');
+  assert.equal(plain.byEmail, undefined);
+  assert.equal(plain.act, undefined);
+});

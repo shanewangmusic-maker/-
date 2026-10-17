@@ -175,9 +175,31 @@ function cleanCustomerId(v) {
   return s;
 }
 
-export function normalizeOp(body) {
+// byEmail：只接受設定好的擁有者信箱（預設 shanewangmusic@gmail.com）；act：只接受 call / appt / need
+export const DEFAULT_OWNER_EMAIL = 'shanewangmusic@gmail.com';
+
+function stampOf(body, opts) {
+  const out = {};
+  const owners = (opts && Array.isArray(opts.ownerEmails) && opts.ownerEmails.length ? opts.ownerEmails : [DEFAULT_OWNER_EMAIL])
+    .map((e) => String(e || '').trim().toLowerCase()).filter(Boolean);
+  if (body.byEmail != null && body.byEmail !== '') {
+    const email = String(body.byEmail).trim().toLowerCase();
+    if (owners.indexOf(email) < 0) return { error: 'byEmail 只接受擁有者的信箱' };
+    out.byEmail = email;
+  }
+  if (body.act != null && body.act !== '') {
+    const act = questActOf(String(body.act).trim());
+    if (!act) return { error: 'act 只接受 call（約訪）、appt（取得約會）、need（發掘需求）' };
+    out.act = act;
+  }
+  return { values: out };
+}
+
+export function normalizeOp(body, opts) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return { error: '請提供 JSON 物件' };
   const op = body.op;
+  const stamp = stampOf(body, opts);
+  if (stamp.error) return stamp;
   if (op === 'appendContact') {
     const customerId = cleanCustomerId(body.customerId);
     const date = String(body.date || '').trim();
@@ -194,7 +216,7 @@ export function normalizeOp(body) {
       time = atValidTime(timeRaw);
       if (!time) return { error: '時間格式要是 HH:MM' };
     }
-    return { op, request: { customerId, date, method, content, time } };
+    return { op, request: Object.assign({ customerId, date, method, content, time }, stamp.values) };
   }
   if (op === 'setNextContact') {
     const customerId = cleanCustomerId(body.customerId);
@@ -208,7 +230,7 @@ export function normalizeOp(body) {
     const patch = normalizePatch(body.patch);
     if (!customerId) return { error: '缺少 customerId' };
     if (patch.error) return patch;
-    return { op, request: { customerId, patch: patch.values }, scope: 'state' };
+    return { op, request: Object.assign({ customerId, patch: patch.values }, stamp.values), scope: 'state' };
   }
   if (op === 'createCustomer') {
     const raw = body.customer && typeof body.customer === 'object' && !Array.isArray(body.customer) ? body.customer : body;
@@ -313,14 +335,19 @@ export function normalizePatch(patch, opts) {
   const creating = opts && opts.creating;
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return { error: '請提供要修改的欄位' };
   const values = {};
-  const keys = Object.keys(patch).filter((k) => k !== 'op' && k !== 'customer' && k !== 'customerId');
+  const keys = Object.keys(patch).filter((k) => ['op', 'customer', 'customerId', 'byEmail', 'act'].indexOf(k) < 0);
   if (!keys.length) return { error: '沒有要修改的欄位' };
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     const raw = patch[key];
     if (BLOCKED_FIELDS[key]) return { error: '不能直接改 ' + key + '。聯絡紀錄請用 editContact 或 deleteContact' };
     if (key === 'stage' || key === 'progress') {
-      const progress = String(raw == null ? '' : raw).trim();
+      let progress = String(raw == null ? '' : raw).trim();
+      if (progress === 'WON') {
+        if (values.category != null && values.category !== 'WON') return { error: '階段成交和分類不一致' };
+        values.category = 'WON';
+        progress = '';
+      }
       if (PROGRESS_VALUES.indexOf(progress) < 0) return { error: '階段不是 CRM 有的值' };
       if (values.progress != null && values.progress !== progress) return { error: 'stage 和 progress 不一致' };
       values.progress = progress;
@@ -329,6 +356,7 @@ export function normalizePatch(patch, opts) {
     if (key === 'category') {
       const category = String(raw || '').trim();
       if (CATEGORY_VALUES.indexOf(category) < 0) return { error: '分類只接受 NEW、WON、RECRUIT' };
+      if (values.category != null && values.category !== category) return { error: '階段成交和分類不一致' };
       values.category = category;
       continue;
     }
@@ -456,11 +484,93 @@ function locateContact(customers, customerId, contactId) {
   return { hit: found[0], customer: c };
 }
 
-function applyUpdateCustomer(customers, request) {
+// ---- 階段變更：照網頁 index.html 的規則（aqLogStageEdit、handleAddHistory、quickAdvance、handleQuickWon）----
+const ACTIVE_STAGES = ['NURTURE', 'FIRST_VISIT', 'KEY_VISIT', 'R_CONTACT', 'R_INTERVIEW', 'R_ONBOARD'];
+const PLANNED_FIELDS = ['csSupervisor', 'plannedPolicyName', 'plannedInsuranceCompany', 'plannedProductType', 'plannedPremium',
+  'plannedCommissionRate', 'plannedFyc', 'plannedRankRate', 'plannedCommission', 'plannedOutline'];
+const STAGE_LABELS = { HOLD: '待定', LOST: '流失', LEAD: '名單', NURTURE: '經營', FIRST_VISIT: '初訪', KEY_VISIT: '關鍵訪', R_CONTACT: '接觸/咖啡', R_INTERVIEW: '主管面談', R_ONBOARD: '考照/報聘' };
+
+export function stageLabel(cat, prog) {
+  if (cat === 'WON') return '成交';
+  return STAGE_LABELS[prog] || prog || '未標';
+}
+
+export function effectiveStage(c) {
+  return c && c.category === 'WON' ? 'WON' : ((c && c.progress) || '');
+}
+
+// 台灣日期（UTC+8，沒有日光節約）
+export function twDate(ms) {
+  return new Date(Number(ms) + 8 * 3600 * 1000).toISOString().substring(0, 10);
+}
+
+export function nextHistoryId(arr, start) {
+  const ids = new Set((Array.isArray(arr) ? arr : []).map((h) => h && h.id));
+  let n = Number(start);
+  let hid;
+  do { hid = 'h-' + (n++); } while (ids.has(hid));
+  return hid;
+}
+
+function setTracked(c, key, value, changes) {
+  const before = c[key] == null ? '' : clone(c[key]);
+  if (stable(before) === stable(value)) return;
+  c[key] = clone(value);
+  changes.push({ kind: 'set', customerId: c.id, customerName: c.name || '', field: key, before, after: clone(value) });
+}
+
+// 在一般欄位改完之後呼叫；只在「實際階段」變了才動作
+function stageSideEffects(customers, c, patch, prev, request, idSource, changes) {
+  const has = (k) => Object.prototype.hasOwnProperty.call(patch, k);
+  // 沒給分類時，依新階段補上網頁會用的分類
+  if (has('progress') && !has('category')) {
+    const p = c.progress;
+    if (p === 'HOLD' || p === 'LOST' || p === 'LEAD') setTracked(c, 'category', 'NEW', changes);
+    else if (/^R_/.test(p)) setTracked(c, 'category', 'RECRUIT', changes);
+    else if (p && prev.cat !== 'NEW') setTracked(c, 'category', 'NEW', changes);
+  }
+  const before = prev.cat === 'WON' ? 'WON' : (prev.prog || '');
+  if (c.category === 'WON' && c.progress) setTracked(c, 'progress', '', changes);   // 成交：progress 一律清空
+  const after = effectiveStage(c);
+  if (before === after) return { changed: false };
+  if (after === 'WON' && !has('nextContactDate')) {
+    const beforeMap = new Map(customers.map((row) => [row.id, row.nextContactDate || '']));
+    nxtSet(customers, c, '');
+    customers.forEach((row) => {
+      const p = beforeMap.get(row.id) || '';
+      const n = row.nextContactDate || '';
+      if (p !== n) changes.push({ kind: 'set', customerId: row.id, customerName: row.name || '', field: 'nextContactDate', before: p, after: n });
+    });
+  }
+  if ((after === 'HOLD' || after === 'LOST') && ACTIVE_STAGES.indexOf(prev.prog) >= 0 && !has('lastStage')) {
+    setTracked(c, 'lastStage', prev.prog, changes);
+  }
+  if (after !== 'KEY_VISIT') {
+    PLANNED_FIELDS.forEach((k) => { if (!has(k) && c[k] != null && c[k] !== '') setTracked(c, k, '', changes); });
+  }
+  c.history = Array.isArray(c.history) ? c.history : [];
+  const row = {
+    id: nextHistoryId(c.history, idSource.now),
+    date: twDate(idSource.now),
+    content: '階段由「' + stageLabel(prev.cat, prev.prog) + '」改為「' + stageLabel(c.category, c.progress) + '」',
+    progress: after === 'WON' ? 'WON' : (c.progress || '')
+  };
+  if (request.byEmail) row.byEmail = request.byEmail;
+  if (request.act) row.act = request.act;
+  c.history.push(row);
+  changes.push({ kind: 'append', store: 'history', customerId: c.id, customerName: c.name || '', record: clone(row) });
+  return { changed: true, row, before, after };
+}
+
+function applyUpdateCustomer(customers, request, idSource) {
   const c = customers.find((x) => x && x.id === request.customerId);
   if (!c) return { error: '找不到這位客戶' };
   const patch = request.patch;
   const changes = [];
+  const prev = { cat: c.category || '', prog: c.progress || '' };
+  if (Object.prototype.hasOwnProperty.call(patch, 'progress') && (prev.prog === 'LEAD') !== (patch.progress === 'LEAD')) {
+    return { error: '一畝田名單和核心客戶之間的轉換要搬聯絡紀錄和連結，請在 CRM 網頁操作' };
+  }
   const keys = Object.keys(patch);
   keys.forEach((key) => {
     if (key === 'nextContactDate') return;
@@ -476,6 +586,7 @@ function applyUpdateCustomer(customers, request) {
     c[key] = clone(patch[key]);
     changes.push({ kind: 'set', customerId: c.id, customerName: c.name || '', field: key, before, after: clone(c[key]) });
   });
+  const stage = stageSideEffects(customers, c, patch, prev, request, idSource, changes);
   if (Object.prototype.hasOwnProperty.call(patch, 'nextContactDate')) {
     const beforeMap = new Map(customers.map((row) => [row.id, row.nextContactDate || '']));
     nxtSet(customers, c, patch.nextContactDate);
@@ -495,9 +606,12 @@ function applyUpdateCustomer(customers, request) {
     });
   }
   if (!changes.length) return { error: '沒有需要變更的內容' };
-  const beforeText = changes.map((row) => (FIELD_LABELS[row.field] || row.field) + showVal(row.before)).join('、');
-  const afterText = changes.map((row) => (FIELD_LABELS[row.field] || row.field) + showVal(row.after)).join('、');
+  const sets = changes.filter((row) => row.kind === 'set');
+  const added = changes.filter((row) => row.kind === 'append').map((row) => '新增歷程「' + row.record.content + '」');
+  const beforeText = sets.map((row) => (FIELD_LABELS[row.field] || row.field) + showVal(row.before)).join('、') || '（無）';
+  const afterText = sets.map((row) => (FIELD_LABELS[row.field] || row.field) + showVal(row.after)).concat(added).join('、');
   return {
+    questRows: stage.changed ? [{ customerId: c.id, rowId: stage.row.id, opt: { changed: true, stageFrom: stage.before, stageTo: stage.after, dealDate: c.dealDate || '' } }] : [],
     customers,
     diff: diffText({
       summary: '修改「' + (c.name || c.id) + '」的資料',
@@ -1057,6 +1171,8 @@ function applyAppend(customers, request, idSource) {
       method: request.method
     };
     if (request.time) record.time = request.time;
+    if (request.byEmail) record.byEmail = request.byEmail;
+    if (request.act) record.act = request.act;
   } else {
     record = {
       id: 'lc-' + idSource.now + '-' + idSource.suffix,
@@ -1065,6 +1181,8 @@ function applyAppend(customers, request, idSource) {
       content: request.content
     };
     if (request.time) record.time = request.time;
+    if (request.byEmail) record.byEmail = request.byEmail;
+    if (request.act) record.act = request.act;
   }
   arr.push(record);
   const place = store === 'contacts'
@@ -1079,6 +1197,7 @@ function applyAppend(customers, request, idSource) {
     record
   };
   return {
+    questRows: store === 'history' && record.byEmail ? [{ customerId: target.id, rowId: record.id, opt: { changed: false } }] : [],
     customers,
     diff: diffText({
       summary: '在「' + (c.name || c.id) + '」的' + place + '新增 ' + request.date + ' ' + request.method + '：' + request.content,
@@ -1121,7 +1240,7 @@ export function applyOp(doc, op, request, idSource) {
   let result;
   if (op === 'appendContact') result = applyAppend(customers, request, idSource);
   else if (op === 'setNextContact') result = applyNext(customers, request);
-  else if (op === 'updateCustomer') result = applyUpdateCustomer(customers, request);
+  else if (op === 'updateCustomer') result = applyUpdateCustomer(customers, request, idSource);
   else if (op === 'createCustomer') result = applyCreateCustomer(customers, request, idSource);
   else if (op === 'deleteCustomer') result = applyDeleteCustomer(customers, request, idSource);
   else if (op === 'editContact') result = applyEditContact(customers, request);

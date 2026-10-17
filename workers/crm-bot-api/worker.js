@@ -1,4 +1,5 @@
 import {
+  DEFAULT_OWNER_EMAIL,
   PREVIEW_TTL_MS,
   applyOp,
   backupCopy,
@@ -180,10 +181,15 @@ async function buildPreview(norm, db, paths, deps) {
   return { applied, idSource, baseRev: cloudRev(doc) };
 }
 
-async function preview(request, db, paths, bot, deps) {
+function ownerEmailsOf(env) {
+  const raw = envTrim(env && env.QUEST_OWNER_EMAIL) || DEFAULT_OWNER_EMAIL;
+  return raw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+}
+
+async function preview(request, env, db, paths, bot, deps) {
   const parsed = await readJson(request);
   if (parsed.error) return json({ error: parsed.error }, parsed.status);
-  const norm = normalizeOp(parsed.body);
+  const norm = normalizeOp(parsed.body, { ownerEmails: ownerEmailsOf(env) });
   if (norm.error) return json({ error: norm.error }, 400);
   const built = await buildPreview(norm, db, paths, deps);
   if (built.error) return json({ error: built.error }, built.status);
@@ -436,7 +442,7 @@ export async function handle(request, env, deps) {
     if (route.name === 'one' && request.method === 'GET') return await oneCustomer(route.id, db, team.paths);
     if (route.name === 'fintrack' && request.method === 'GET') return await oneFintrack(route.id, db, team.paths);
     if (route.name === 'history' && request.method === 'GET') return await listHistory(url, db, team.paths);
-    if (route.name === 'preview' && request.method === 'POST') return await preview(request, db, Object.assign({ teamId: team.teamId }, team.paths), bot, clock);
+    if (route.name === 'preview' && request.method === 'POST') return await preview(request, env || {}, db, Object.assign({ teamId: team.teamId }, team.paths), bot, clock);
     if (route.name === 'commit' && request.method === 'POST') return await commit(request, env, db, Object.assign({ teamId: team.teamId }, team.paths), bot, clock);
     if (route.name === 'unknown') return json({ error: '找不到這個網址' }, 404);
     return json({ error: '這個網址不接受此方法' }, 405);
