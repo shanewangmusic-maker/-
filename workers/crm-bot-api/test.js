@@ -435,6 +435,8 @@ test('firestore values round-trip and a transaction retries after ABORTED', asyn
   resetAuthCache();
   const calls = [];
   let commits = 0;
+  let stateReads = 0;
+  let lastStateTime = '';
   const previewDoc = {
     previewId: 'pv-1800000000000-k3mz',
     teamId: TEAM,
@@ -456,17 +458,26 @@ test('firestore values round-trip and a transaction retries after ABORTED', asyn
     if (String(url).includes('signInWithPassword')) {
       return jsonRes({ idToken: 'firebase-token', expiresIn: '3600' });
     }
-    if (String(url).includes(':beginTransaction')) return jsonRes({ transaction: 'tx-' + calls.length });
-    if (String(url).includes(':rollback')) return jsonRes({});
+    if (String(url).includes(':beginTransaction') || String(url).includes(':rollback')) {
+      return jsonRes({ error: { status: 'PERMISSION_DENIED', message: 'beginTransaction is not used' } }, 403);
+    }
     if (String(url).includes(':commit')) {
       commits += 1;
       const body = JSON.parse(options.body);
-      if (commits === 1) return jsonRes({ error: { status: 'ABORTED', message: 'conflict' } }, 409);
+      assert.equal(body.transaction, undefined);
       const names = body.writes.map((w) => w.update.name);
+      const stateWrite = body.writes.find((w) => w.update.name.endsWith('/global_state/' + TEAM));
+      const backupWrite = body.writes.find((w) => w.update.name.includes('/bot_backups/'));
+      const auditWrite = body.writes.find((w) => w.update.name.includes('/bot_audit/'));
+      assert.deepEqual(stateWrite.currentDocument, { updateTime: lastStateTime });
+      assert.equal(backupWrite.currentDocument, undefined);
+      assert.equal(auditWrite.currentDocument, undefined);
+      if (commits === 1) return jsonRes({ error: { status: 'ABORTED', message: 'conflict' } }, 409);
+      if (commits === 2) return jsonRes({ error: { status: 'FAILED_PRECONDITION', message: 'updateTime changed' } }, 400);
       assert.equal(names[0].includes('/bot_backups/'), true);
       assert.equal(names[1].endsWith('/global_state/' + TEAM), true);
       assert.equal(names[2].includes('/bot_audit/'), true);
-      const fields = body.writes[1].update.fields;
+      const fields = stateWrite.update.fields;
       assert.equal(fields.extraNote.stringValue, '不要弄丟');
       assert.equal(fields.per.arrayValue.values[0].mapValue.fields.id.stringValue, 'p1');
       assert.equal(fields.members.arrayValue.values.length, 1);
@@ -475,8 +486,14 @@ test('firestore values round-trip and a transaction retries after ABORTED', asyn
       assert.equal(JSON.stringify(names).includes('fintrack'), false);
       return jsonRes({ commitTime: '2026-10-16T12:00:01.000Z' });
     }
-    if (String(url).includes('/bot_previews/')) return jsonRes({ fields: encodeFields(previewDoc) });
-    if (String(url).includes('/global_state/')) return jsonRes({ fields: encodeFields(original) });
+    if (String(url).includes('/bot_previews/')) {
+      return jsonRes({ fields: encodeFields(previewDoc), updateTime: '2026-10-16T12:00:00.000000Z' });
+    }
+    if (String(url).includes('/global_state/')) {
+      stateReads += 1;
+      lastStateTime = '2026-10-16T11:00:00.' + stateReads + '00000Z';
+      return jsonRes({ fields: encodeFields(original), updateTime: lastStateTime });
+    }
     return jsonRes({ error: { message: 'unexpected ' + url } }, 500);
   };
   const db = createRestFirestore(env(), fetchImpl);
@@ -494,8 +511,9 @@ test('firestore values round-trip and a transaction retries after ABORTED', asyn
     return { ok: true };
   });
   assert.equal(txResult.ok, true);
-  assert.equal(commits, 2);
-  assert.equal(calls.filter((c) => c.includes(':rollback')).length, 1);
+  assert.equal(commits, 3);
+  assert.equal(stateReads, 3);
+  assert.equal(calls.filter((c) => c.includes(':beginTransaction') || c.includes(':rollback')).length, 0);
 });
 
 function jsonRes(body, status) {
