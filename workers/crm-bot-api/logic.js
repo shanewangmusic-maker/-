@@ -754,7 +754,206 @@ export function planFintrack(existing, request, teamId, creating) {
   return applied;
 }
 
-export function planUndo(backup, current, kind) {
+// ---- 還原：只有「這次寫入之後沒人再改過」才整份放回；否則只反轉這一次的變更 ----
+const ROW_STORES = ['history', 'contacts'];
+const DOC_SKIP = { cust: 1, _rev: 1, _updatedAt: 1, _backup: 1 };
+
+function hasKey(o, k) {
+  return !!o && Object.prototype.hasOwnProperty.call(o, k);
+}
+
+function rowsById(arr) {
+  if (!Array.isArray(arr)) return null;
+  const m = new Map();
+  for (let i = 0; i < arr.length; i++) {
+    const r = arr[i];
+    if (!r || typeof r !== 'object' || !r.id || m.has(r.id)) return null;
+    m.set(r.id, { row: r, index: i });
+  }
+  return m;
+}
+
+function fieldEntry(t, id, key, b, a) {
+  const e = { t, key, hasBefore: hasKey(b, key), before: hasKey(b, key) ? clone(b[key]) : null, hasAfter: hasKey(a, key), after: hasKey(a, key) ? clone(a[key]) : null };
+  if (id) e.id = id;
+  return e;
+}
+
+// 比對寫入前後，列出每一個被改到的地方（客戶、欄位、單筆紀錄）
+export function changeSetOf(beforeDoc, afterDoc) {
+  const out = [];
+  const bc = Array.isArray(beforeDoc && beforeDoc.cust) ? beforeDoc.cust : [];
+  const ac = Array.isArray(afterDoc && afterDoc.cust) ? afterDoc.cust : [];
+  const bm = new Map();
+  bc.forEach((c, i) => { if (c && c.id) bm.set(c.id, { c, i }); });
+  const am = new Map();
+  ac.forEach((c, i) => { if (c && c.id) am.set(c.id, { c, i }); });
+  bc.forEach((c, i) => {
+    if (c && c.id && !am.has(c.id)) out.push({ t: 'cust-del', id: c.id, index: i, before: clone(c) });
+  });
+  ac.forEach((c) => {
+    if (!c || !c.id) return;
+    const prev = bm.get(c.id);
+    if (!prev) { out.push({ t: 'cust-add', id: c.id, after: clone(c) }); return; }
+    const b = prev.c;
+    const keys = [];
+    Object.keys(b).concat(Object.keys(c)).forEach((k) => { if (keys.indexOf(k) < 0) keys.push(k); });
+    keys.forEach((k) => {
+      const hb = hasKey(b, k);
+      const ha = hasKey(c, k);
+      if (hb && ha && stable(b[k]) === stable(c[k])) return;
+      if (ROW_STORES.indexOf(k) >= 0) {
+        const rb = rowsById(hb ? b[k] : []);
+        const ra = rowsById(ha ? c[k] : []);
+        if (rb && ra) {
+          rb.forEach((v, rid) => {
+            if (!ra.has(rid)) out.push({ t: 'row-del', id: c.id, store: k, rowId: rid, index: v.index, before: clone(v.row) });
+          });
+          ra.forEach((v, rid) => {
+            const old = rb.get(rid);
+            if (!old) out.push({ t: 'row-add', id: c.id, store: k, rowId: rid, after: clone(v.row) });
+            else if (stable(old.row) !== stable(v.row)) out.push({ t: 'row-edit', id: c.id, store: k, rowId: rid, before: clone(old.row), after: clone(v.row) });
+          });
+          if (!hb && ha && !c[k].length) out.push(fieldEntry('field', c.id, k, b, c));
+          return;
+        }
+      }
+      out.push(fieldEntry('field', c.id, k, b, c));
+    });
+  });
+  const dk = [];
+  Object.keys(beforeDoc || {}).concat(Object.keys(afterDoc || {})).forEach((k) => { if (!DOC_SKIP[k] && dk.indexOf(k) < 0) dk.push(k); });
+  dk.forEach((k) => {
+    const hb = hasKey(beforeDoc, k);
+    const ha = hasKey(afterDoc, k);
+    if (hb && ha && stable(beforeDoc[k]) === stable(afterDoc[k])) return;
+    out.push(fieldEntry('doc', '', k, beforeDoc, afterDoc));
+  });
+  return out;
+}
+
+function sameSlot(obj, has, value, key) {
+  if (hasKey(obj, key) !== has) return false;
+  return !has || stable(obj[key]) === stable(value);
+}
+
+function rowText(row) {
+  if (!row) return '';
+  return contactLine(row) + (atValidTime(row.time) ? ' ' + atValidTime(row.time) : '');
+}
+
+// 把一份變更清單反向套到「現在的資料」上；被別人改過的地方不碰，回報衝突
+export function reverseChangeSet(currentDoc, set) {
+  const customers = clone(Array.isArray(currentDoc && currentDoc.cust) ? currentDoc.cust : []);
+  const docPatch = {};
+  const conflicts = [];
+  const lines = [];
+  const changes = [];
+  const find = (id) => customers.find((c) => c && c.id === id);
+  const nameOf = (id, fallback) => {
+    const c = find(id);
+    return (c && c.name) || (fallback && fallback.name) || id;
+  };
+  const list = Array.isArray(set) ? set : [];
+  const reinserts = [];
+  list.forEach((e) => {
+    if (!e || !e.t) return;
+    if (e.t === 'cust-add') {
+      const c = find(e.id);
+      const who = (e.after && e.after.name) || e.id;
+      if (!c) { lines.push('客戶「' + who + '」已經不在，不用再刪'); return; }
+      if (stable(c) !== stable(e.after)) { conflicts.push('客戶「' + who + '」新增之後又被修改過'); return; }
+      customers.splice(customers.indexOf(c), 1);
+      lines.push('刪除這次新增的客戶「' + who + '」');
+      changes.push({ kind: 'remove-customer', customerId: e.id });
+      return;
+    }
+    if (e.t === 'cust-del') {
+      reinserts.push(e);
+      return;
+    }
+    if (e.t === 'doc') {
+      if (sameSlot(currentDoc || {}, e.hasBefore, e.before, e.key)) return;
+      if (!sameSlot(currentDoc || {}, e.hasAfter, e.after, e.key)) { conflicts.push('整本資料的「' + e.key + '」之後又被修改過'); return; }
+      docPatch[e.key] = e.hasBefore ? { set: clone(e.before) } : { remove: true };
+      lines.push('整本資料的「' + e.key + '」改回原值');
+      changes.push({ kind: 'restore-doc-field', field: e.key });
+      return;
+    }
+    const c = find(e.id);
+    if (!c) { conflicts.push('客戶「' + e.id + '」已經不在'); return; }
+    const who = c.name || c.id;
+    if (e.t === 'field') {
+      if (sameSlot(c, e.hasBefore, e.before, e.key)) return;
+      if (!sameSlot(c, e.hasAfter, e.after, e.key)) { conflicts.push('「' + who + '」的' + (FIELD_LABELS[e.key] || e.key) + '之後又被修改過'); return; }
+      const now = hasKey(c, e.key) ? clone(c[e.key]) : '';
+      if (e.hasBefore) c[e.key] = clone(e.before); else delete c[e.key];
+      lines.push('「' + who + '」的' + (FIELD_LABELS[e.key] || e.key) + '：' + showVal(now) + ' → ' + showVal(e.hasBefore ? e.before : ''));
+      changes.push({ kind: 'restore-field', customerId: c.id, field: e.key, before: now, after: e.hasBefore ? clone(e.before) : '' });
+      return;
+    }
+    const arr = Array.isArray(c[e.store]) ? c[e.store] : null;
+    const idx = arr ? arr.findIndex((r) => r && r.id === e.rowId) : -1;
+    if (e.t === 'row-add') {
+      if (idx < 0) { lines.push('「' + who + '」那一筆紀錄已經不在，不用再刪'); return; }
+      if (stable(arr[idx]) !== stable(e.after)) { conflicts.push('「' + who + '」這次新增的紀錄（' + rowText(e.after) + '）之後又被修改過'); return; }
+      arr.splice(idx, 1);
+      lines.push('刪除「' + who + '」這次新增的紀錄：' + rowText(e.after));
+      changes.push({ kind: 'remove-row', customerId: c.id, store: e.store, contactId: e.rowId });
+      return;
+    }
+    if (e.t === 'row-edit') {
+      if (idx < 0) { conflicts.push('「' + who + '」這次修改的紀錄已經被刪除'); return; }
+      if (stable(arr[idx]) === stable(e.before)) return;
+      if (stable(arr[idx]) !== stable(e.after)) { conflicts.push('「' + who + '」這次修改的紀錄（' + rowText(e.after) + '）之後又被修改過'); return; }
+      arr[idx] = clone(e.before);
+      lines.push('「' + who + '」的紀錄改回：' + rowText(e.before) + '（原本是：' + rowText(e.after) + '）');
+      changes.push({ kind: 'restore-row', customerId: c.id, store: e.store, contactId: e.rowId });
+      return;
+    }
+    if (e.t === 'row-del') {
+      if (idx >= 0) {
+        if (stable(arr[idx]) !== stable(e.before)) conflicts.push('「' + who + '」這次刪除的紀錄已經用同一個編號重新出現');
+        return;
+      }
+      if (!Array.isArray(c[e.store])) c[e.store] = [];
+      const target = c[e.store];
+      target.splice(Math.min(e.index, target.length), 0, clone(e.before));
+      lines.push('放回「' + who + '」這次刪除的紀錄：' + rowText(e.before));
+      changes.push({ kind: 'restore-row', customerId: c.id, store: e.store, contactId: e.rowId });
+    }
+  });
+  reinserts.sort((a, b) => a.index - b.index).forEach((e) => {
+    const who = (e.before && e.before.name) || e.id;
+    const c = find(e.id);
+    if (c) {
+      if (stable(c) !== stable(e.before)) conflicts.push('客戶「' + who + '」已經用同一個編號重新出現');
+      return;
+    }
+    customers.splice(Math.min(e.index, customers.length), 0, clone(e.before));
+    lines.push('放回這次刪除的客戶「' + who + '」');
+    changes.push({ kind: 'restore-customer', customerId: e.id });
+  });
+  return { customers, docPatch, conflicts, lines, changes };
+}
+
+const REPLAYABLE_OPS = ['appendContact', 'setNextContact', 'updateCustomer', 'createCustomer', 'deleteCustomer', 'editContact', 'deleteContact'];
+
+// legacy：舊備份（還沒有 changeSetJson）就用當時的預覽重算一次「寫入後」的樣子
+function changeSetForBackup(snapshot, meta, legacyPending) {
+  if (meta && typeof meta.changeSetJson === 'string' && meta.changeSetJson) {
+    try { return { set: JSON.parse(meta.changeSetJson) }; } catch (_) { return { error: '這份備份的變更紀錄壞掉了，不能只還原這一次' }; }
+  }
+  const p = legacyPending;
+  if (!p || !p.op || REPLAYABLE_OPS.indexOf(p.op) < 0 || !p.request || !p.idSource) {
+    return { error: '這份備份沒有留下這一次改了什麼，只能在「之後沒人再改過」時整份還原' };
+  }
+  const replay = applyOp(snapshot, p.op, p.request, p.idSource);
+  if (!replay || replay.error || !replay.customers) return { error: '無法重算這一次改了什麼，不能只還原這一次' };
+  return { set: changeSetOf(snapshot, Object.assign({}, snapshot, { cust: replay.customers })) };
+}
+
+export function planUndo(backup, current, kind, legacyPending) {
   if (!backup) return { error: '找不到這份備份' };
   const snapshot = clone(backup);
   const meta = snapshot._backup || {};
@@ -762,22 +961,57 @@ export function planUndo(backup, current, kind) {
   const backupKind = meta.kind || (Array.isArray(snapshot.cust) ? 'global_state' : 'fintrack');
   if (kind && backupKind !== kind) return { error: '備份種類和目前資料不一致' };
   if (backupKind === 'fintrack' && snapshot.existed === false) return { error: '這份備份是建立之前的空檔，不能用來刪除財務規劃' };
-  const changes = [];
-  if (backupKind === 'global_state') {
+  const questNote = Array.isArray(meta.questEventIds) && meta.questEventIds.length
+    ? '這次寫入已計入行動闖關的 ' + meta.questEventIds.length + ' 筆自動事件不會被刪除（規則不允許刪除）。'
+    : '';
+  if (backupKind === 'fintrack') {
+    const resultRev = Number.isFinite(meta.resultRev) ? meta.resultRev : fintrackRev(snapshot) + 1;
+    if (fintrackRev(current) !== resultRev) {
+      return { error: '這份財務規劃在那次寫入之後又被修改過（版本 ' + resultRev + ' → ' + fintrackRev(current) + '），不能整份還原。請改用 updateFintrack 手動改回。' };
+    }
+    const diff = {
+      summary: '還原到備份 ' + (meta.previewId || '') + ' 之前的內容',
+      text: '修改前：現在的版本 ' + fintrackRev(current) + '。\n修改後：回到這次寫入之前的內容。',
+      changes: []
+    };
+    return { target: 'undo', kind: backupKind, mode: 'whole', planId: meta.planId || '', snapshot, baseRev: fintrackRev(current), diff };
+  }
+  const resultRev = Number.isFinite(meta.resultRev) ? meta.resultRev : cloudRev(snapshot) + 1;
+  const currentRev = cloudRev(current);
+  if (currentRev === resultRev) {
+    // 那次寫入之後沒有任何人再改過 → 整份放回；預覽列出「現在 → 備份」之間的每一個差異
+    const rev = reverseChangeSet(current, changeSetOf(snapshot, current));
     const nowIds = new Set((current && current.cust || []).map((row) => row && row.id));
     const oldIds = new Set((snapshot.cust || []).map((row) => row && row.id));
-    nowIds.forEach((id) => { if (id && !oldIds.has(id)) changes.push({ kind: 'restore-remove', customerId: id }); });
-    oldIds.forEach((id) => { if (id && !nowIds.has(id)) changes.push({ kind: 'restore-add', customerId: id }); });
+    const removed = [];
+    nowIds.forEach((id) => { if (id && !oldIds.has(id)) removed.push(id); });
+    const warns = [];
+    if (removed.length) warns.push('還原後，這些現在有、備份裡沒有的客戶會消失：' + removed.join('、') + '。');
+    if (questNote) warns.push(questNote);
+    const diff = {
+      summary: '整份還原到備份 ' + (meta.previewId || '') + ' 之前的內容（那次寫入之後沒有人再改過）',
+      text: '修改前：現在的版本 ' + currentRev + '。\n修改後：回到這次寫入之前的內容。' + (rev.lines.length ? '\n會改回：\n- ' + rev.lines.join('\n- ') : ''),
+      mode: 'whole',
+      changes: rev.changes
+    };
+    if (warns.length) diff.warning = warns.join('');
+    return { target: 'undo', kind: backupKind, mode: 'whole', planId: '', snapshot, baseRev: currentRev, diff };
   }
-  const removed = changes.filter((row) => row.kind === 'restore-remove').map((row) => row.customerId);
-  const warning = removed.length ? '還原後，這些現在有、備份裡沒有的客戶會消失：' + removed.join('、') + '。' : '';
+  const got = changeSetForBackup(snapshot, meta, legacyPending);
+  if (got.error) return { error: got.error + '（那次寫入後版本 ' + resultRev + '，現在 ' + currentRev + '）' };
+  const rev = reverseChangeSet(current, got.set);
+  if (rev.conflicts.length) {
+    return { error: '那次寫入之後資料又被改過，而且以下地方也被動到，所以不能只還原這一次：' + rev.conflicts.join('；') + '。請在 CRM 網頁手動處理。' };
+  }
+  if (!rev.changes.length) return { error: '這一次的變更已經不在了，沒有東西可以還原' };
   const diff = {
-    summary: '還原到備份 ' + (meta.previewId || '') + ' 之前的內容',
-    text: '修改前：現在的版本 ' + (backupKind === 'fintrack' ? fintrackRev(current) : cloudRev(current)) + '。\n修改後：回到這次寫入之前的內容。',
-    changes
+    summary: '只還原備份 ' + (meta.previewId || '') + ' 那一次的變更（之後別人做的修改都保留）',
+    text: '修改前：現在的版本 ' + currentRev + '。\n修改後：只反轉那一次的變更：\n- ' + rev.lines.join('\n- '),
+    mode: 'targeted',
+    changes: rev.changes
   };
-  if (warning) diff.warning = warning;
-  return { target: 'undo', kind: backupKind, planId: meta.planId || '', snapshot, baseRev: backupKind === 'fintrack' ? fintrackRev(current) : cloudRev(current), diff };
+  if (questNote) diff.warning = questNote;
+  return { target: 'undo', kind: backupKind, mode: 'targeted', planId: '', customers: rev.customers, docPatch: rev.docPatch, baseRev: currentRev, diff };
 }
 
 export function fintrackRevOf(doc) {

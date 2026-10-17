@@ -2,6 +2,7 @@ import {
   PREVIEW_TTL_MS,
   applyOp,
   backupCopy,
+  changeSetOf,
   cloudRev,
   envTrim,
   expireMillis,
@@ -162,7 +163,10 @@ async function buildPreview(norm, db, paths, deps) {
       ? await db.getDoc(paths.fintrack(meta.planId || ''))
       : await db.getDoc(paths.state);
     if (!current) return { error: '找不到要還原的資料', status: 404 };
-    const applied = planUndo(backup, current, kind);
+    const legacy = kind === 'global_state' && !meta.changeSetJson && meta.previewId && isPreviewId(meta.previewId)
+      ? await db.getDoc(paths.preview(meta.previewId))
+      : null;
+    const applied = planUndo(backup, current, kind, legacy);
     if (applied.error) return { error: applied.error, status: 400 };
     return { applied, idSource, baseRev: applied.baseRev, planId: applied.planId || '', undoKind: kind, backupId: norm.request.backupId };
   }
@@ -215,7 +219,13 @@ function commitBody(previewId, pending, newRev, backupId, auditId, diff) {
 }
 
 function writeCommit(tx, paths, item) {
-  tx.set(paths.backup(item.backupId), backupCopy(item.backupDoc, Object.assign({
+  const extraMeta = { resultRev: item.newRev };
+  if (item.backupMeta.kind === 'global_state') {
+    // 記下這次到底改了什麼，之後就算別人又改過，也能只還原這一次
+    extraMeta.changeSetJson = JSON.stringify(changeSetOf(item.backupDoc, item.nextDoc));
+  }
+  if (item.questEventIds && item.questEventIds.length) extraMeta.questEventIds = item.questEventIds;
+  tx.set(paths.backup(item.backupId), backupCopy(item.backupDoc, Object.assign(extraMeta, {
     at: new Date(item.now).toISOString(),
     previewId: item.previewId,
     botName: item.bot.name,
@@ -288,7 +298,11 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
   if (currentRev !== pending.baseRev) {
     return { abort: true, status: 409, error: '資料剛被別人更新，這份還原已作廢。請重新預覽。' };
   }
-  const applied = planUndo(backup, current, kind);
+  const bmeta = backup._backup || {};
+  const legacy = kind === 'global_state' && !bmeta.changeSetJson && bmeta.previewId && isPreviewId(bmeta.previewId)
+    ? await tx.get(paths.preview(bmeta.previewId))
+    : null;
+  const applied = planUndo(backup, current, kind, legacy);
   if (applied.error) return { abort: true, status: 409, error: applied.error };
   if (stable(applied.diff) !== stable(pending.diff)) {
     return { abort: true, status: 409, error: '預覽時的差異和現在不一致，已取消寫入' };
@@ -312,6 +326,22 @@ async function commitUndo(tx, paths, pending, bot, deps, now, previewId) {
       nextDoc: packed.doc,
       newRev,
       customerId: planId
+    });
+  } else if (applied.mode === 'targeted') {
+    const next = withCustomers(current, applied.customers, now);
+    Object.keys(applied.docPatch || {}).forEach((key) => {
+      const p = applied.docPatch[key];
+      if (p.remove) delete next[key]; else next[key] = p.set;
+    });
+    newRev = next._rev;
+    writeCommit(tx, paths, {
+      backupId, auditId, previewId, bot, pending, now,
+      backupDoc: current,
+      backupMeta: { kind: 'global_state' },
+      nextPath,
+      nextDoc: next,
+      newRev,
+      customerId: ''
     });
   } else {
     restored._rev = newRev;

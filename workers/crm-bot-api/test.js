@@ -678,3 +678,148 @@ test('undo round-trip restores the previous customer and can restore forward aga
   assert.ok(history.data.commits.some((row) => row.op === 'undo' && row.backupId));
   assert.equal(history.data.commits[0].at >= history.data.commits[1].at, true);
 });
+
+// ---------- 還原：之後有人改過 → 只反轉那一次 ----------
+function webEdit(h, fn) {
+  const doc = clone(state(h));
+  fn(doc);
+  doc._rev = (doc._rev || 0) + 1;
+  h.db.docs.set(PATHS.state, doc);
+}
+
+async function botDo(h, body, now) {
+  if (now) h.setNow(now);
+  const p = await call(h, 'POST', '/preview', body);
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  return c.data;
+}
+
+test('undo with no later change restores the whole doc and lists what it reverts', async () => {
+  const h = harness();
+  const done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '機器人紀錄' });
+  const backup = h.db.docs.get(PATHS.backup(done.backupId));
+  assert.equal(backup._backup.resultRev, 8);
+  assert.ok(JSON.parse(backup._backup.changeSetJson).some((e) => e.t === 'row-add'));
+  h.setNow(1800000001000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 200);
+  assert.equal(p.data.diff.mode, 'whole');
+  assert.match(p.data.diff.text, /刪除「陳阿姨」這次新增的紀錄/);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200);
+  assert.equal(cust(h, 'solo').history.length, 0);
+});
+
+test('undo after a web change only removes the bot row and keeps the web edits', async () => {
+  const h = harness();
+  const done = await botDo(h, { op: 'appendContact', customerId: 'solo', date: '2026-10-17', method: '電話', content: '機器人紀錄' });
+  webEdit(h, (doc) => {
+    const solo = doc.cust.find((c) => c.id === 'solo');
+    solo.history.push({ id: 'h-web1', date: '2026-10-17', content: '網頁新增', progress: 'KEY_VISIT', byEmail: 'owner@example.com', act: 'call' });
+    solo.notes = '網頁改的備註';
+    doc.cust.find((c) => c.id === 'won-1').policyName = '網頁改保單';
+    doc.per.push({ id: 'p2', name: '十一月' });
+  });
+  h.setNow(1800000002000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.equal(p.data.diff.mode, 'targeted');
+  assert.match(p.data.diff.text, /刪除「陳阿姨」這次新增的紀錄：2026-10-17 電話 機器人紀錄/);
+  assert.equal(p.data.diff.changes.length, 1);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200, JSON.stringify(c.data));
+  const solo = cust(h, 'solo');
+  assert.deepEqual(solo.history.map((r) => r.id), ['h-web1']);
+  assert.equal(solo.history[0].byEmail, 'owner@example.com');
+  assert.equal(solo.history[0].act, 'call');
+  assert.equal(solo.notes, '網頁改的備註');
+  assert.equal(cust(h, 'won-1').policyName, '網頁改保單');
+  assert.equal(state(h).per.length, 2);
+  assert.equal(state(h)._rev, 10);
+});
+
+test('undo refuses when the edited row was changed again on the web', async () => {
+  const h = harness();
+  const done = await botDo(h, { op: 'editContact', customerId: 'deal-1', contactId: 'h1', patch: { content: '機器人改的' } });
+  webEdit(h, (doc) => {
+    doc.cust.find((c) => c.id === 'deal-1').history.find((r) => r.id === 'h1').content = '網頁又改';
+  });
+  h.setNow(1800000002000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 400);
+  assert.match(p.data.error, /之後又被修改過/);
+  assert.equal(cust(h, 'deal-1').history.find((r) => r.id === 'h1').content, '網頁又改');
+});
+
+test('targeted undo restores an edited row, a deleted row, fields and next-contact dates', async () => {
+  const h = harness();
+  const e1 = await botDo(h, { op: 'editContact', customerId: 'deal-1', contactId: 'h1', patch: { content: '機器人改的', time: '10:00' } });
+  const e2 = await botDo(h, { op: 'deleteContact', customerId: 'many', contactId: 'hm-3' }, 1800000001000);
+  const e3 = await botDo(h, { op: 'setNextContact', customerId: 'deal-2', date: '2026-11-11' }, 1800000002000);
+  const e4 = await botDo(h, { op: 'updateCustomer', customerId: 'solo', patch: { notes: '機器人備註', phone: '0900' } }, 1800000003000);
+  webEdit(h, (doc) => { doc.cust.find((c) => c.id === 'won-1').notes = '網頁'; });
+  const undo = async (id, now) => {
+    h.setNow(now);
+    const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: id });
+    assert.equal(p.status, 200, JSON.stringify(p.data));
+    assert.equal(p.data.diff.mode, 'targeted');
+    const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+    assert.equal(c.status, 200, JSON.stringify(c.data));
+    return p.data.diff;
+  };
+  await undo(e1.backupId, 1800000010000);
+  const h1 = cust(h, 'deal-1').history.find((r) => r.id === 'h1');
+  assert.equal(h1.content, '經營');
+  assert.equal(h1.time, undefined);
+  await undo(e2.backupId, 1800000011000);
+  assert.deepEqual(cust(h, 'many').history.map((r) => r.id), ['hm-1', 'hm-2', 'hm-3', 'hm-4', 'hm-5', 'hm-6']);
+  const d3 = await undo(e3.backupId, 1800000012000);
+  assert.match(d3.text, /下次聯絡日/);
+  for (const id of ['lead-1', 'deal-1', 'deal-2']) assert.equal(cust(h, id).nextContactDate, '2026-10-01');
+  await undo(e4.backupId, 1800000013000);
+  assert.equal(cust(h, 'solo').notes, undefined);
+  assert.equal(cust(h, 'solo').phone, '0988-111-222');
+  assert.equal(cust(h, 'won-1').notes, '網頁');
+});
+
+test('targeted undo re-inserts a deleted customer and handles legacy backups without a change list', async () => {
+  const h = harness();
+  const done = await botDo(h, { op: 'deleteCustomer', customerId: 'solo' });
+  const bk = h.db.docs.get(PATHS.backup(done.backupId));
+  delete bk._backup.changeSetJson;
+  delete bk._backup.resultRev;
+  webEdit(h, (doc) => { doc.cust.find((c) => c.id === 'won-1').notes = '網頁'; });
+  h.setNow(1800000005000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 200, JSON.stringify(p.data));
+  assert.match(p.data.diff.text, /放回這次刪除的客戶「陳阿姨」/);
+  const c = await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  assert.equal(c.status, 200);
+  assert.equal(state(h).cust[3].id, 'solo');
+  assert.equal(cust(h, 'won-1').notes, '網頁');
+});
+
+test('undo of a created customer is refused once the web edited that customer', async () => {
+  const h = harness();
+  const done = await botDo(h, { op: 'createCustomer', customer: { name: '新人', progress: 'NURTURE' } });
+  const id = state(h).cust.find((c) => c.name === '新人').id;
+  webEdit(h, (doc) => { doc.cust.find((c) => c.id === id).history.push({ id: 'h-w', date: '2026-10-17', content: 'x', progress: 'NURTURE' }); });
+  h.setNow(1800000005000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: done.backupId });
+  assert.equal(p.status, 400);
+  assert.match(p.data.error, /新增之後又被修改過/);
+});
+
+test('fintrack undo is refused after a later fintrack change', async () => {
+  const h = harness();
+  const a = await botDo(h, { op: 'createFintrack', planId: 'plan-a', clientName: 'A', snap: { client: { name: 'A' } } });
+  const b = await botDo(h, { op: 'updateFintrack', planId: 'plan-a', clientName: 'B' }, 1800000001000);
+  await botDo(h, { op: 'updateFintrack', planId: 'plan-a', clientName: 'C' }, 1800000002000);
+  h.setNow(1800000003000);
+  const p = await call(h, 'POST', '/preview', { op: 'undo', backupId: b.backupId });
+  assert.equal(p.status, 400);
+  assert.match(p.data.error, /又被修改過/);
+  assert.ok(a.backupId);
+});
