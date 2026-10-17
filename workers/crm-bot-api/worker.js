@@ -25,6 +25,9 @@ import {
 } from './logic.js';
 import { FirestoreError, createRestFirestore } from './firestore.js';
 
+// 每次部署前改這一行，GET /health 就看得出線上是哪一版
+export const VERSION = '2026-10-17.1';
+
 const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store',
@@ -416,7 +419,7 @@ export async function handle(request, env, deps) {
   const route = routeOf(url.pathname);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: JSON_HEADERS });
   if (route.name === 'health' && request.method === 'GET') {
-    return json({ ok: true, service: 'crm-bot-api' });
+    return json({ ok: true, service: 'crm-bot-api', version: VERSION });
   }
   if (request.method === 'DELETE') return json({ error: '不提供刪除' }, 405);
   try {

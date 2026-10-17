@@ -856,3 +856,12 @@ test('editContact clearing the time also drops endTime', async () => {
   assert.equal(row.endTime, undefined);
   assert.equal(row.content, '經營');
 });
+
+test('health shows a version without needing a key', async () => {
+  const h = harness();
+  const res = await handle(req('GET', '/health'), h.env, h.deps());
+  const data = await res.json();
+  assert.equal(res.status, 200);
+  assert.equal(data.service, 'crm-bot-api');
+  assert.match(data.version, /^\d{4}-\d{2}-\d{2}\.\d+$/);
+});
