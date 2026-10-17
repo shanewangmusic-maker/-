@@ -161,9 +161,6 @@
                     <button onclick="exportMonthlyReport()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出業績月報（依上方選的期間，CSV 可用 Excel 開啟）">
                         <i class="fa-solid fa-file-excel"></i>
                     </button>
-                    <a id="actionQuestLink" href="actionquest.html" class="bg-white/5 hover:bg-white/10 text-[#D4AF37] hover:text-white px-3 py-2.5 rounded-lg transition duration-200 border border-[#D4AF37]/50 flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-bold" title="行動闖關">
-                        <i class="fa-solid fa-chess-knight"></i> 闖關
-                    </a>
                     <button id="memberAdminBtn" onclick="openMemberAdmin()" style="display:none" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="成員權限設定（分配各業務員可用的分頁）">
                         <i class="fa-solid fa-users-gear"></i>
                     </button>
@@ -188,6 +185,9 @@
                 <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-week"></i> 週行程
                 </button>
+                <a id="actionQuestLink" href="actionquest.html" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-chess-knight"></i> 闖關
+                </a>
                 <button onclick="switchMainTab('RECRUIT')" id="mainTab-RECRUIT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-user-tie"></i> 引薦招募庫
                 </button>
