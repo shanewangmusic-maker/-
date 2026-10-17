@@ -4123,16 +4123,18 @@
         // ---- v8：開發名單「聯絡紀錄」Modal 邏輯 ----
         function lcLead() { const c = customers.find(x => x.id === document.getElementById('lcLeadId').value); return c || null; }
         let lcHistEditIdx = -1;
+        let lcHistEditId = '';
         function openLeadContacts(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
             document.getElementById('lcLeadId').value = c.id;
             document.getElementById('lcName').textContent = '— ' + (c.name || '');
             lcHistEditIdx = -1;
+            lcHistEditId = '';
             lcResetForm();
             lcRender();
             openModal('leadContactsModal');
         }
-        function lcClose() { lcHistEditIdx = -1; closeModal('leadContactsModal'); }
+        function lcClose() { lcHistEditIdx = -1; lcHistEditId = ''; closeModal('leadContactsModal'); }
         function lcResetForm() {
             document.getElementById('lcEditIdx').value = '';
             document.getElementById('lcDate').value = leadTodayStr();
@@ -4172,7 +4174,7 @@
             if (hist.length) {
                 h += '<details class="mt-2"' + (lcHistEditIdx >= 0 ? ' open' : '') + '><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（共 ' + hist.length + ' 筆；可修改文字，日期維持原樣；同樣會顯示在週行程）</summary><div class="space-y-1.5 mt-1">';
                 hist.forEach(function (x) {
-                    const editing = lcHistEditIdx === x.i;
+                    const editing = lcHistEditId ? String((x.h && x.h.id) || '') === lcHistEditId : lcHistEditIdx === x.i;
                     h += '<div class="text-[11px] text-slate-500 bg-slate-50 rounded px-2 py-1.5 border border-slate-100">' +
                         '<div class="flex items-center justify-between gap-2"><span class="font-mono">' + esc(String(x.h.date).substring(0, 10)) + '</span> ' + (x.h.method ? '<b>' + esc(x.h.method) + '</b>' : '') + (x.h.by ? ' <span class="text-slate-400">紀錄人 ' + esc(x.h.by) + '</span>' : '');
                     if (!editing) h += '<button type="button" class="lc-hist-edit text-slate-500 hover:text-[#1E2E3D] px-1.5 py-1 font-bold" onclick="lcHistStart(' + x.i + ')">編輯</button>';
@@ -4191,22 +4193,30 @@
             document.getElementById('lcList').innerHTML = h;
         }
         function lcHistStart(i) {
+            const c = lcLead();
+            const h = c && Array.isArray(c.history) ? c.history[i] : null;
             lcHistEditIdx = i;
+            lcHistEditId = h && h.id ? String(h.id) : '';
             lcRender();
             const ta = document.getElementById('lcHistEditText');
             if (ta) { ta.focus(); const n = ta.value.length; try { ta.setSelectionRange(n, n); } catch (err) {} }
         }
-        function lcHistCancel() { lcHistEditIdx = -1; lcRender(); }
+        function lcHistCancel() { lcHistEditIdx = -1; lcHistEditId = ''; lcRender(); }
         function lcHistSave() {
             const c = lcLead();
             const ta = document.getElementById('lcHistEditText');
             const idx = lcHistEditIdx;
+            const id = lcHistEditId;
             if (!c || !ta || idx < 0) return;
-            const h = Array.isArray(c.history) ? c.history[idx] : null;
-            if (!h || typeof h !== 'object') { lcHistEditIdx = -1; lcRender(); return showToast('找不到這筆歷程', 'error'); }
+            const list = Array.isArray(c.history) ? c.history : [];
+            let h = null;
+            if (id) h = list.find(function (x) { return x && typeof x === 'object' && String(x.id) === id; }) || null;
+            else if (list[idx] && typeof list[idx] === 'object') h = list[idx];
+            if (!h) { lcHistEditIdx = -1; lcHistEditId = ''; lcRender(); return showToast('這筆紀錄已被刪除或移動，請重新整理', 'info'); }
             const next = normHistText(ta.value);
             const prev = h.content == null ? '' : String(h.content);
             lcHistEditIdx = -1;
+            lcHistEditId = '';
             if (next === prev) { lcRender(); return; }
             h.content = next;
             lcAfterChange('這筆歷程已儲存');
@@ -5590,7 +5600,7 @@
                 const delta = Math.round((atParse(date) - atParse(od)) / 86400000);
                 r.date = date;
                 if (multi) r.endDate = atAdd(oe, delta);
-                if (hour == null || hour === '') { if (!multi) delete r.time; }                 // 丟到「未定時間」帶 → 變成沒有時間
+                if (hour == null || hour === '') { if (!multi) { delete r.time; delete r.endTime; } }                 // 丟到「未定時間」帶 → 時間與結束時間一起清掉
                 else {
                     const t = atValidTime(r.time), oe = atValidTime(r.endTime);
                     if (!t || atHourOf(t) !== +hour) {
@@ -6614,6 +6624,7 @@
         }
 
         // 跟進歷程：每一筆都可以改文字。只寫回該筆的 content，日期／紀錄人／方式／狀態與其他欄位不動。
+        // 開始編輯時記住該筆的 id，存檔用 id 找回同一筆（沒有 id 才退回當時的陣列位置）。
         // 存檔仍走 recordState（整包＋雲端版本號），跟新增紀錄同一條路。
         let histEdit = null;
         function histProgLabel(p) {
@@ -6646,7 +6657,7 @@
                 return d || (b.i - a.i);
             });
             tc.innerHTML = rows.map(function (row) {
-                const h = row.h, i = row.i, editing = !!(histEdit && histEdit.cid === cid && histEdit.idx === i);
+                const h = row.h, i = row.i, editing = !!(histEdit && histEdit.cid === cid && (histEdit.id ? String(h.id || '') === histEdit.id : histEdit.idx === i));
                 const time = atValidTime(h.time);
                 const head = '<p class="text-xs font-bold text-slate-700 min-w-0">' + esc(h.date || '') + (time ? ' ' + esc(time) : '') + (h.endDate ? ' ~ ' + esc(h.endDate) : '') +
                     (h.method ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">' + esc(h.method) + '</span>' : '') +
@@ -6664,7 +6675,9 @@
         }
         function histStartEdit(idx) {
             const cid = (document.getElementById('historyCustomerId') || {}).value || '';
-            histEdit = { cid: cid, idx: idx };
+            const c = customers.find(function (x) { return x.id === cid; });
+            const h = c && Array.isArray(c.history) ? c.history[idx] : null;
+            histEdit = { cid: cid, idx: idx, id: h && h.id ? String(h.id) : '' };
             renderFollowUpTimeline();
             const ta = document.getElementById('histEditText');
             if (ta) { ta.focus(); const n = ta.value.length; try { ta.setSelectionRange(n, n); } catch (err) {} }
@@ -6678,11 +6691,14 @@
             const ta = document.getElementById('histEditText');
             if (!ed || !ta) return;
             const c = customers.find(function (x) { return x.id === ed.cid; });
-            const h = c && Array.isArray(c.history) ? c.history[ed.idx] : null;
-            if (!h || typeof h !== 'object') {
+            const list = c && Array.isArray(c.history) ? c.history : [];
+            let h = null;
+            if (ed.id) h = list.find(function (x) { return x && typeof x === 'object' && String(x.id) === ed.id; }) || null;
+            else if (list[ed.idx] && typeof list[ed.idx] === 'object') h = list[ed.idx];
+            if (!h) {
                 histEdit = null;
                 renderFollowUpTimeline();
-                showToast('找不到這筆歷程', 'error');
+                showToast('這筆紀錄已被刪除或移動，請重新整理', 'info');
                 return;
             }
             const next = normHistText(ta.value);
