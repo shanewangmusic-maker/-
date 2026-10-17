@@ -192,38 +192,39 @@ export function createRestFirestore(env, fetchImpl) {
       });
     },
     async runTransaction(fn) {
+      // 不用 beginTransaction（用一般登入帳號會被雲端拒絕）；改成讀取時記住版本，寫入時要求版本沒變，效果一樣安全
       let last = null;
       for (let attempt = 0; attempt < 5; attempt++) {
-        const begun = await call(rootUrl(projectId) + ':beginTransaction', {
-          method: 'POST',
-          body: JSON.stringify({ options: { readWrite: {} } })
-        });
-        const tx = begun.transaction;
-        if (!tx) throw new FirestoreError('雲端沒有回傳交易編號', 502, 'INTERNAL');
-        let finished = false;
+        const seen = new Map();
         try {
           const staged = [];
           const result = await fn({
-            get: (path) => readPlain(path, tx),
-            set: (path, data) => { staged.push(writeOf(projectId, path, data)); }
+            get: async (path) => {
+              try {
+                const body = await call(docUrl(projectId, path, null), { method: 'GET' });
+                seen.set(path, body.updateTime || null);
+                return decodeFields(body.fields || {});
+              } catch (e) {
+                if (e instanceof FirestoreError && e.httpStatus === 404) { seen.set(path, false); return null; }
+                throw e;
+              }
+            },
+            set: (path, data) => { staged.push({ path, w: writeOf(projectId, path, data) }); }
           });
-          if (result && result.abort) {
-            finished = true;
-            try { await rollback(call, projectId, tx); } catch (_) { /* 作廢結果不再重試 */ }
-            return result;
-          }
-          await call(rootUrl(projectId) + ':commit', {
-            method: 'POST',
-            body: JSON.stringify({ transaction: tx, writes: staged })
+          if (result && result.abort) return result;
+          const writes = staged.map(({ path, w }) => {
+            if (seen.has(path)) {
+              const t = seen.get(path);
+              w.currentDocument = t ? { updateTime: t } : { exists: false };
+            }
+            return w;
           });
-          finished = true;
+          await call(rootUrl(projectId) + ':commit', { method: 'POST', body: JSON.stringify({ writes }) });
           return result;
         } catch (e) {
-          if (!finished) {
-            try { await rollback(call, projectId, tx); } catch (_) { /* 交易可能已經結束 */ }
-          }
           last = e;
-          if (e instanceof FirestoreError && e.code === 'ABORTED' && attempt < 4) continue;
+          const conflict = e instanceof FirestoreError && (e.code === 'ABORTED' || e.code === 'FAILED_PRECONDITION');
+          if (conflict && attempt < 4) continue;
           throw e;
         }
       }
