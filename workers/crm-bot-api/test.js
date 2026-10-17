@@ -841,3 +841,18 @@ test('deleting the last deal keeps optional row fields when copying history back
     assert.equal(ct[k], v, k);
   }
 });
+
+test('editContact clearing the time also drops endTime', async () => {
+  const data = book();
+  data.cust.find((c) => c.id === 'deal-1').history[0].time = '14:00';
+  data.cust.find((c) => c.id === 'deal-1').history[0].endTime = '15:00';
+  const h = harness(data);
+  const p = await call(h, 'POST', '/preview', { op: 'editContact', customerId: 'deal-1', contactId: 'h1', patch: { time: '' } });
+  assert.equal(p.status, 200);
+  assert.match(p.data.diff.text, /14:00-15:00/);
+  await call(h, 'POST', '/commit', { previewId: p.data.previewId, approvalCode: APPROVAL });
+  const row = cust(h, 'deal-1').history.find((r) => r.id === 'h1');
+  assert.equal(row.time, undefined);
+  assert.equal(row.endTime, undefined);
+  assert.equal(row.content, '經營');
+});

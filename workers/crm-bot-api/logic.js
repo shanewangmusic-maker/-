@@ -622,7 +622,7 @@ function applyEditContact(customers, request) {
   const located = locateContact(customers, request.customerId, request.contactId);
   if (located.error) return located;
   const rec = located.hit.arr[located.hit.index];
-  const lineOf = (row) => contactLine(row) + (atValidTime(row.time) ? ' ' + atValidTime(row.time) : '') + (validDate(row.endDate) ? ' ~ ' + validDate(row.endDate) : '');
+  const lineOf = (row) => contactLine(row) + (atValidTime(row.time) ? ' ' + atValidTime(row.time) + (atValidTime(row.endTime) ? '-' + atValidTime(row.endTime) : '') : '') + (validDate(row.endDate) ? ' ~ ' + validDate(row.endDate) : '');
   const before = lineOf(rec);
   const patch = request.patch;
   if (patch.date) rec.date = patch.date;
@@ -630,7 +630,7 @@ function applyEditContact(customers, request) {
   if (patch.content) rec.content = patch.content;
   if (Object.prototype.hasOwnProperty.call(patch, 'time')) {
     if (patch.time) rec.time = patch.time;
-    else delete rec.time;
+    else { delete rec.time; delete rec.endTime; }   // 沒有開始時間，結束時間也沒有意義（網頁同樣只在有 time 時才讀 endTime）
   }
   if (Object.prototype.hasOwnProperty.call(patch, 'endDate')) {
     if (patch.endDate && patch.endDate > (rec.date || '')) rec.endDate = patch.endDate;
