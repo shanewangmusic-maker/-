@@ -88,6 +88,8 @@
             #app { padding-bottom: 88px; }
             #zlk_fab { padding: 8px 12px !important; font-size: 13px !important; right: 12px !important; bottom: 12px !important; }
         }
+        /* 歷程／聯絡內容：保留 Enter 換行。文字先經 esc() 跳脫，這裡不再把內容當 HTML。 */
+        .hist-text { white-space: pre-wrap; overflow-wrap: anywhere; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen relative">
@@ -855,7 +857,7 @@
                                 </div>
                             </div>
                             
-                            <div><textarea autocomplete="off" id="historyContent" required rows="3" placeholder="紀錄內容..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none resize-none bg-white"></textarea></div>
+                            <div><textarea autocomplete="off" id="historyContent" required rows="4" placeholder="紀錄內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none bg-white"></textarea></div>
                             
                             <div class="flex justify-end pt-4"><button type="submit" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-sm">送出紀錄</button></div>
                         </form>
@@ -962,7 +964,7 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
-                        <textarea autocomplete="off" id="lcContent" rows="2" placeholder="聯絡內容…" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea>
+                        <textarea autocomplete="off" id="lcContent" rows="4" placeholder="聯絡內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea>
                         <div class="flex justify-end gap-2">
                             <button type="button" id="lcCancelEdit" onclick="lcResetForm()" class="hidden px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">取消編輯</button>
                             <button type="button" id="lcSaveBtn" onclick="lcSave()" class="px-4 py-1.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
@@ -1044,7 +1046,7 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atEdEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">分類</label><select id="atEdCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤</label><select id="atEdVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="關鍵訪">關鍵訪</option><option value="初訪">初訪</option><option value="定期檢視">定期檢視</option></select></div>
-                            <div class="col-span-2"><label id="atEdLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atEdContent" rows="4" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                            <div class="col-span-2"><label id="atEdLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atEdContent" rows="4" placeholder="內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea></div>
                         </div>
                     </div>
                 </div>
@@ -1078,7 +1080,7 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
-                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atAddContent" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] resize-none"></textarea></div>
+                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atAddContent" rows="4" placeholder="內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea></div>
                     </div>
                 </div>
                 <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
@@ -2644,6 +2646,10 @@
                 return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m];
             });
         }
+        // 只把換行統一成 \n，不把段落折成一行。trim 只去掉頭尾空白，段落中間的換行留著。
+        function normHistText(s) {
+            return String(s == null ? '' : s).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+        }
 
         function openModal(id) { document.getElementById(id).classList.replace('hidden','flex'); document.body.classList.add('overflow-hidden'); }
         function closeModal(id) { document.getElementById(id).classList.replace('flex','hidden'); document.body.classList.remove('overflow-hidden'); }
@@ -3933,15 +3939,17 @@
 
         // ---- v8：開發名單「聯絡紀錄」Modal 邏輯 ----
         function lcLead() { const c = customers.find(x => x.id === document.getElementById('lcLeadId').value); return c || null; }
+        let lcHistEditIdx = -1;
         function openLeadContacts(id) {
             const c = customers.find(x => x.id === id); if (!c) return;
             document.getElementById('lcLeadId').value = c.id;
             document.getElementById('lcName').textContent = '— ' + (c.name || '');
+            lcHistEditIdx = -1;
             lcResetForm();
             lcRender();
             openModal('leadContactsModal');
         }
-        function lcClose() { closeModal('leadContactsModal'); }
+        function lcClose() { lcHistEditIdx = -1; closeModal('leadContactsModal'); }
         function lcResetForm() {
             document.getElementById('lcEditIdx').value = '';
             document.getElementById('lcDate').value = leadTodayStr();
@@ -3962,7 +3970,7 @@
             leadRecFlat(c).forEach(function (o) { if (o.ct && typeof o.ct === 'object') items.push({ ct: o.ct, i: o.gi, d: leadCtDate(o.ct), deal: o.deal }); });
             lcFillDeals(c, deals);
             items.sort((a, b) => { const ta = atValidTime(a.ct.time), tb = atValidTime(b.ct.time); return a.d < b.d ? 1 : a.d > b.d ? -1 : (ta < tb ? 1 : ta > tb ? -1 : b.i - a.i); });
-            const hist = C ? [] : (Array.isArray(c.history) ? c.history : []).filter(h => h && leadValidDate(h.date)).sort((a, b) => (a.date < b.date ? 1 : -1));
+            const hist = C ? [] : (Array.isArray(c.history) ? c.history : []).map(function (h, i) { return { h: h, i: i }; }).filter(function (x) { return x.h && leadValidDate(x.h.date); }).sort(function (a, b) { return a.h.date < b.h.date ? 1 : a.h.date > b.h.date ? -1 : b.i - a.i; });
             document.getElementById('lcCount').textContent = '(' + items.length + ' 筆' + (hist.length ? '，另有 ' + hist.length + ' 筆舊歷程' : '') + ')';
             let h = '';
             if (C && !multi) h += '<p id="lcLinkedNote" class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5"><i class="fa-solid fa-link"></i> 已在核心看板：這裡的紀錄與核心客戶「' + esc(C.name) + '」的跟進歷程是<b>同一份</b>，兩邊新增／修改／刪除都會同步。</p>';
@@ -3973,15 +3981,51 @@
                 h += '<div class="lc-item flex items-start gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs" style="border-left:4px solid ' + color + '" data-lc-idx="' + o.i + '">' +
                     '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono font-bold text-slate-700">' + esc(o.d || String(ct.date || '(無日期)')) + (atValidTime(ct.time) ? ' ' + atValidTime(ct.time) : '') + (end && end > o.d ? ' ~ ' + esc(end) : '') + '</span>' +
                     '<span class="px-1.5 rounded text-[10px] font-bold ' + (m === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (m === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(m) + '</span>' + (multi && o.deal ? '<span class="lc-dealtag px-1.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">' + esc(leadDealLabel(c, o.deal)) + '</span>' : '') + '</div>' +
-                    '<div class="text-slate-600 whitespace-pre-wrap break-words mt-0.5">' + esc(ct.content || '') + '</div></div>' +
+                    '<div class="hist-text text-slate-600 break-words mt-0.5">' + esc(ct.content || '') + '</div></div>' +
                     '<button type="button" class="lc-edit text-slate-400 hover:text-[#1E2E3D] px-1.5 py-1" title="編輯" onclick="lcEdit(' + o.i + ')"><i class="fa-regular fa-pen-to-square"></i></button>' +
                     '<button type="button" class="lc-del text-slate-300 hover:text-rose-500 px-1.5 py-1" title="刪除" onclick="lcDelete(' + o.i + ')"><i class="fa-solid fa-trash-can"></i></button></div>';
             });
             if (hist.length) {
-                h += '<details class="mt-2"><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（唯讀，共 ' + hist.length + ' 筆；同樣會顯示在週行程）</summary><div class="space-y-1 mt-1">' +
-                    hist.map(x => '<div class="text-[11px] text-slate-500 bg-slate-50 rounded px-2 py-1"><span class="font-mono">' + esc(String(x.date).substring(0, 10)) + '</span> ' + (x.method ? '<b>' + esc(x.method) + '</b> ' : '') + esc(x.content || '') + '</div>').join('') + '</div></details>';
+                h += '<details class="mt-2"' + (lcHistEditIdx >= 0 ? ' open' : '') + '><summary class="text-[11px] text-slate-400 cursor-pointer">舊歷程（共 ' + hist.length + ' 筆；可修改文字，日期維持原樣；同樣會顯示在週行程）</summary><div class="space-y-1.5 mt-1">';
+                hist.forEach(function (x) {
+                    const editing = lcHistEditIdx === x.i;
+                    h += '<div class="text-[11px] text-slate-500 bg-slate-50 rounded px-2 py-1.5 border border-slate-100">' +
+                        '<div class="flex items-center justify-between gap-2"><span class="font-mono">' + esc(String(x.h.date).substring(0, 10)) + '</span> ' + (x.h.method ? '<b>' + esc(x.h.method) + '</b>' : '') + (x.h.by ? ' <span class="text-slate-400">紀錄人 ' + esc(x.h.by) + '</span>' : '');
+                    if (!editing) h += '<button type="button" class="lc-hist-edit text-slate-500 hover:text-[#1E2E3D] px-1.5 py-1 font-bold" onclick="lcHistStart(' + x.i + ')">編輯</button>';
+                    h += '</div>';
+                    if (editing) {
+                        h += '<textarea id="lcHistEditText" rows="4" class="hist-text w-full mt-1 px-2 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-700 outline-none bg-white" placeholder="紀錄內容…（按 Enter 換行）" onkeydown="if(event.key===\'Enter\')event.stopPropagation();if(event.key===\'Escape\'){event.preventDefault();lcHistCancel();}">' + esc(x.h.content || '') + '</textarea>' +
+                            '<p class="text-[10px] text-slate-400 mt-1">只改這一筆的文字。日期與其他欄位維持原樣。</p>' +
+                            '<div class="flex justify-end gap-2 mt-1"><button type="button" onclick="lcHistCancel()" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600">取消</button><button type="button" id="lcHistSaveBtn" onclick="lcHistSave()" class="px-2.5 py-1 bg-[#1E2E3D] text-white rounded-lg text-xs font-bold">儲存</button></div>';
+                    } else {
+                        h += '<div class="hist-text text-slate-600 mt-0.5">' + esc(x.h.content || '') + '</div>';
+                    }
+                    h += '</div>';
+                });
+                h += '</div></details>';
             }
             document.getElementById('lcList').innerHTML = h;
+        }
+        function lcHistStart(i) {
+            lcHistEditIdx = i;
+            lcRender();
+            const ta = document.getElementById('lcHistEditText');
+            if (ta) { ta.focus(); const n = ta.value.length; try { ta.setSelectionRange(n, n); } catch (err) {} }
+        }
+        function lcHistCancel() { lcHistEditIdx = -1; lcRender(); }
+        function lcHistSave() {
+            const c = lcLead();
+            const ta = document.getElementById('lcHistEditText');
+            const idx = lcHistEditIdx;
+            if (!c || !ta || idx < 0) return;
+            const h = Array.isArray(c.history) ? c.history[idx] : null;
+            if (!h || typeof h !== 'object') { lcHistEditIdx = -1; lcRender(); return showToast('找不到這筆歷程', 'error'); }
+            const next = normHistText(ta.value);
+            const prev = h.content == null ? '' : String(h.content);
+            lcHistEditIdx = -1;
+            if (next === prev) { lcRender(); return; }
+            h.content = next;
+            lcAfterChange('這筆歷程已儲存');
         }
         function lcAfterChange(msg) {
             recordState(); renderApp(); lcRender();
@@ -4002,7 +4046,7 @@
             let method = document.getElementById('lcMethod').value; if (!method) method = 'Line';
             const end = document.getElementById('lcEndDate').value;
             const time = atValidTime(document.getElementById('lcTime').value);
-            const content = document.getElementById('lcContent').value.trim();
+            const content = normHistText(document.getElementById('lcContent').value);
             const idxStr = document.getElementById('lcEditIdx').value;
             const deals = leadDeals(c), flat = leadRecFlat(c, true);
             const tgt = idxStr !== '' ? flat.find(function (o) { return o.gi === +idxStr; }) : null;
@@ -5231,7 +5275,7 @@
                 const vi = $('atEdVisit').value; if (AT_VISITS.indexOf(vi) >= 0) r.visitType = vi; else delete r.visitType;
                 if (ref.src !== 'e') { const m = $('atEdMethod').value; if (m) r.method = m; else delete r.method; }
                 const end = $('atEdEnd').value; if (atParse(end) && end > date) r.endDate = end; else delete r.endDate;
-                const ct = $('atEdContent').value; if (ct.trim() !== String(r.content || '').trim()) r.content = ct.trim();
+                const ct = normHistText($('atEdContent').value); if (ct !== normHistText(r.content)) r.content = ct;
             }
             closeModal('atEditModal'); atEditRef = null; atSaved('已儲存修改');
         }
@@ -5291,7 +5335,7 @@
             const $ = function (n) { return document.getElementById(n); };
             if (atAddPick === '__evt__') {
                 const edate = $('atAddDate').value; if (!atParse(edate)) return showToast('請選擇日期', 'error');
-                const econtent = $('atAddContent').value.trim(); if (!econtent) return showToast('個人行程請在「內容」輸入標題', 'error');
+                const econtent = normHistText($('atAddContent').value); if (!econtent) return showToast('個人行程請在「內容」輸入標題', 'error');
                 const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value;
                 const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, content: econtent, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
                 if (etime) er.time = etime; if (atParse(eend) && eend > edate) er.endDate = eend;
@@ -5305,7 +5349,7 @@
             const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;      // v12：已連結的名單 → 寫進核心客戶的 history（同一份）
             if (!c) return showToast('請先選擇客戶或名單', 'error');
             const date = $('atAddDate').value; if (!atParse(date)) return showToast('請選擇日期', 'error');
-            const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = $('atAddContent').value.trim();
+            const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = normHistText($('atAddContent').value);
             if (c.progress === 'LEAD') {
                 const r = { id: leadNewContactId(), date: date, method: method, content: content };
                 if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
@@ -5955,7 +5999,7 @@
             const h = rs.r, end = (h.endDate && h.endDate > h.date) ? h.endDate : '', t = atValidTime(h.time);
             document.getElementById('airtableDetailTitle').innerHTML = '<i class="fa-regular fa-calendar-check text-[#D4AF37]"></i> 個人行程';
             document.getElementById('airtableDetailBody').innerHTML =
-                '<div class="flex items-center justify-between gap-2"><p class="text-lg font-bold font-editorial text-[#1E2E3D] break-words min-w-0">' + esc(h.content || '') + '</p><span class="flex items-center gap-1">' + atCatPills(h) + '</span></div>' +
+                '<div class="flex items-center justify-between gap-2"><p class="hist-text text-lg font-bold font-editorial text-[#1E2E3D] break-words min-w-0">' + esc(h.content || '') + '</p><span class="flex items-center gap-1">' + atCatPills(h) + '</span></div>' +
                 '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
                     '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
                     (t ? '<div><span class="font-bold">時間：</span>' + esc(t + (atValidTime(h.endTime) ? '–' + atValidTime(h.endTime) : '')) + '</div>' : '') +
@@ -6088,10 +6132,10 @@
             const skin = isNext ? 'bg-white border border-dashed border-sky-400 hover:border-sky-600' : (ev.cat === '個人' ? 'at-personal border border-slate-900 hover:border-[#D4AF37]' : 'bg-white border border-slate-200 hover:border-[#D4AF37]');
             const right = (isNext || isEvt) ? '' : '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + mcolor + '"') + '>' + esc(ev.method) + '</span>';
             const body = isEvt ? '' : isNext ? '<div class="text-sky-700">預定下次聯絡' + (ev.c.agentName ? '・' + esc(ev.c.agentName) : '') + '</div>'
-                : '<div class="text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(String(ev.h.content || '').substring(0, 160)) + '</div>';
+                : '<div class="hist-text text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap">' + esc(String(ev.h.content || '').substring(0, 400)) + '</div>';
             return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isEvt ? 'evt' : 'rec')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev) + '>' +
                 '<div class="flex items-center gap-1 min-w-0 flex-wrap"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
-                '<span class="font-bold text-[#1E2E3D] ' + (isEvt ? 'break-words' : 'truncate') + '">' + esc(ev.c.name) + '</span>' + right + '</div>' +
+                '<span class="font-bold text-[#1E2E3D] ' + (isEvt ? 'break-words hist-text' : 'truncate') + '">' + esc(ev.c.name) + '</span>' + right + '</div>' +
                 '<div class="mt-0.5 flex items-center gap-1 flex-wrap">' + atKindPill(ev) + atDealPill(ev) + atCatPills(ev.h) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
                 '</button>';
         }
@@ -6100,7 +6144,7 @@
             const clipL = ev.start < weekStart, clipR = ev.end > weekEnd;
             return '<button type="button" class="at-chip at-bar at-chip-rec text-left text-[11px] leading-tight px-2 truncate text-white font-bold hover:brightness-110 transition ' + (clipL ? '' : 'rounded-l-md ') + (clipR ? '' : 'rounded-r-md ') + '" ' +
                 'style="grid-row:' + (lane + 2) + ';grid-column:' + (colStart + 1) + '/' + (colEnd + 2) + ';background:' + color + ';margin:2px 3px;z-index:2" ' + atChipAttrs(ev) + '>' +
-                (clipL ? '◀ ' : '') + (ev.xcat ? '[' + ev.xcat + '] ' : '') + (ev.time ? atTimeTxt(ev) + ' ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + (ev.src === 'e' ? '' : ' · ' + esc(ev.method) + ' · ' + esc(String(ev.h.content || '').substring(0, 80))) + (clipR ? ' ▶' : '') + '</button>';
+                (clipL ? '◀ ' : '') + (ev.xcat ? '[' + ev.xcat + '] ' : '') + (ev.time ? atTimeTxt(ev) + ' ' : '') + atMD(ev.start) + '~' + atMD(ev.end) + ' ' + esc(ev.c.name) + (ev.src === 'e' ? '' : ' · ' + esc(ev.method) + ' · ' + esc(normHistText(ev.h.content).replace(/\n+/g, ' ／ ').substring(0, 80))) + (clipR ? ' ▶' : '') + '</button>';
         }
         function renderAirtableCalendar() {
             const area = document.getElementById('airtableArea');
@@ -6275,7 +6319,7 @@
                 '</div>' +
                 (src === 'n'
                     ? '<div id="atDetailContent" class="bg-sky-50 border border-dashed border-sky-300 rounded-xl p-3 text-sky-700">這是名單設定的「下次聯絡日」提醒，不是已發生的聯絡紀錄。</div>'
-                    : '<div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 whitespace-pre-wrap break-words">' + esc(h.content || '') + '</div>');
+                    : '<div id="atDetailContent" class="hist-text bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 break-words">' + esc(h.content || '') + '</div>');
             const ebtn = document.getElementById('airtableDetailEditBtn');
             ebtn.innerHTML = src === 'n' ? '<i class="fa-regular fa-calendar-check"></i> 調整日期' : '<i class="fa-regular fa-pen-to-square"></i> 編輯';
             ebtn.onclick = function () { closeModal('airtableDetailModal'); atOpenEdit(c.id, src, hi); };
@@ -6357,16 +6401,98 @@
                 stepEl.innerHTML = `<div class="flex bg-slate-50 p-3 rounded-xl border border-slate-200">` + stageOrder.map((st, i) => `<div class="flex-1 text-center text-[10px] font-bold ${i<=curIdx?'text-[#1E2E3D]':'text-slate-400'}">${stageConfig[st].label}</div>`).join('') + `</div>`;
             }
 
-            const tc = document.getElementById('timelineContainer');
-            if (!c.history || c.history.length===0) tc.innerHTML = '<p class="text-xs text-slate-400">尚無跟進歷程記錄</p>';
-            else tc.innerHTML = [...c.history].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(h => `<div class="relative"><span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span><div class="bg-slate-50 rounded-xl p-3 border border-slate-150"><p class="text-xs font-bold text-slate-700 mb-1">${h.date}${atValidTime(h.time)?' '+atValidTime(h.time):''}${h.endDate?' ~ '+esc(h.endDate):''}${h.method?` <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">${esc(h.method)}</span>`:''} ${h.progress?`<span class="ml-1 text-[#1E2E3D] font-bold">[${h.progress==='WON'?'成交':(h.progress==='HOLD'?'待定':(h.progress==='LOST'?'流失':(stageConfig[h.progress]?stageConfig[h.progress].label:h.progress)))}]</span>`:''}</p><p class="text-xs text-slate-600">${esc(h.content)}</p></div></div>`).join('');
+            histEdit = null;
+            renderFollowUpTimeline();
             openModal('followUpModal');
+        }
+
+        // 跟進歷程：每一筆都可以改文字。只寫回該筆的 content，日期／紀錄人／方式／狀態與其他欄位不動。
+        // 存檔仍走 recordState（整包＋雲端版本號），跟新增紀錄同一條路。
+        let histEdit = null;
+        function histProgLabel(p) {
+            if (p === 'WON') return '成交';
+            if (p === 'HOLD') return '待定';
+            if (p === 'LOST') return '流失';
+            if (p && stageConfig[p] && stageConfig[p].label) return stageConfig[p].label;
+            return esc(p || '');
+        }
+        function histEditKey(e) {
+            if (!e) return;
+            if (e.key === 'Escape') { e.preventDefault(); histCancelEdit(); }
+            else if (e.key === 'Enter') e.stopPropagation();
+        }
+        function renderFollowUpTimeline() {
+            const tc = document.getElementById('timelineContainer');
+            if (!tc) return;
+            const cid = (document.getElementById('historyCustomerId') || {}).value || '';
+            const c = customers.find(function (x) { return x.id === cid; });
+            const list = (c && Array.isArray(c.history)) ? c.history : [];
+            if (!c || !list.length) {
+                histEdit = null;
+                tc.innerHTML = '<p class="text-xs text-slate-400">尚無跟進歷程記錄</p>';
+                return;
+            }
+            if (histEdit && histEdit.cid !== cid) histEdit = null;
+            const rows = list.map(function (h, i) { return { h: h || {}, i: i }; });
+            rows.sort(function (a, b) {
+                const d = new Date(b.h.date) - new Date(a.h.date);
+                return d || (b.i - a.i);
+            });
+            tc.innerHTML = rows.map(function (row) {
+                const h = row.h, i = row.i, editing = !!(histEdit && histEdit.cid === cid && histEdit.idx === i);
+                const time = atValidTime(h.time);
+                const head = '<p class="text-xs font-bold text-slate-700 min-w-0">' + esc(h.date || '') + (time ? ' ' + esc(time) : '') + (h.endDate ? ' ~ ' + esc(h.endDate) : '') +
+                    (h.method ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">' + esc(h.method) + '</span>' : '') +
+                    (h.progress ? ' <span class="ml-1 text-[#1E2E3D] font-bold">[' + histProgLabel(h.progress) + ']</span>' : '') +
+                    (h.by ? ' <span class="ml-1 text-slate-400 font-normal">紀錄人 ' + esc(h.by) + '</span>' : '') + '</p>';
+                const dot = '<span class="absolute -left-[31px] top-1 flex h-4 w-4 rounded-full bg-slate-200 ring-4 ring-white"><span class="h-2 w-2 m-auto rounded-full bg-[#1E2E3D]"></span></span>';
+                const editBtn = '<button type="button" class="hist-edit-btn flex-shrink-0 px-2.5 py-1 bg-white border border-slate-200 text-slate-600 hover:text-[#1E2E3D] hover:border-[#1E2E3D] rounded-lg text-[11px] font-bold" onclick="histStartEdit(' + i + ')"><i class="fa-regular fa-pen-to-square"></i> 編輯</button>';
+                const body = editing
+                    ? head + '<textarea id="histEditText" rows="4" class="hist-text w-full mt-2 px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white" placeholder="紀錄內容…（按 Enter 換行）" onkeydown="histEditKey(event)">' + esc(h.content || '') + '</textarea>' +
+                        '<p class="text-[11px] text-slate-400 mt-1">只改這一筆的文字。日期、紀錄人與其他欄位維持原樣。按 Enter 換行。</p>' +
+                        '<div class="flex justify-end gap-2 mt-2"><button type="button" id="histCancelBtn" onclick="histCancelEdit()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold">取消</button><button type="button" id="histSaveBtn" onclick="histSaveEdit()" class="px-3 py-1.5 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-xs font-bold">儲存</button></div>'
+                    : '<div class="flex items-start justify-between gap-2 mb-1">' + head + editBtn + '</div><p class="hist-text text-xs text-slate-600">' + esc(h.content || '') + '</p>';
+                return '<div class="relative" data-hist-idx="' + i + '">' + dot + '<div class="bg-slate-50 rounded-xl p-3 border border-slate-200">' + body + '</div></div>';
+            }).join('');
+        }
+        function histStartEdit(idx) {
+            const cid = (document.getElementById('historyCustomerId') || {}).value || '';
+            histEdit = { cid: cid, idx: idx };
+            renderFollowUpTimeline();
+            const ta = document.getElementById('histEditText');
+            if (ta) { ta.focus(); const n = ta.value.length; try { ta.setSelectionRange(n, n); } catch (err) {} }
+        }
+        function histCancelEdit() {
+            histEdit = null;
+            renderFollowUpTimeline();
+        }
+        function histSaveEdit() {
+            const ed = histEdit;
+            const ta = document.getElementById('histEditText');
+            if (!ed || !ta) return;
+            const c = customers.find(function (x) { return x.id === ed.cid; });
+            const h = c && Array.isArray(c.history) ? c.history[ed.idx] : null;
+            if (!h || typeof h !== 'object') {
+                histEdit = null;
+                renderFollowUpTimeline();
+                showToast('找不到這筆歷程', 'error');
+                return;
+            }
+            const next = normHistText(ta.value);
+            const prev = h.content == null ? '' : String(h.content);
+            histEdit = null;
+            if (next === prev) { renderFollowUpTimeline(); return; }
+            h.content = next;
+            recordState();
+            renderApp();
+            renderFollowUpTimeline();
+            showToast('這筆歷程已儲存');
         }
 
         function handleAddHistory(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('historyCustomerId').value);
             const pSel = document.getElementById('historyProgress').value;
-            const h = { id: 'h-'+Date.now(), date: document.getElementById('historyDate').value, content: document.getElementById('historyContent').value, progress: pSel==='KEEP'?c.progress:pSel };
+            const h = { id: 'h-'+Date.now(), date: document.getElementById('historyDate').value, content: normHistText(document.getElementById('historyContent').value), progress: pSel==='KEEP'?c.progress:pSel };
             { // 選填新欄位（加法式）：聯絡方式 method、結束日期 endDate（需晚於起日才記錄）
                 const mEl = document.getElementById('historyMethod'), eEl = document.getElementById('historyEndDate');
                 if (mEl && mEl.value) h.method = mEl.value;
