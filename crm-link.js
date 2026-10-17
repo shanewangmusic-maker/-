@@ -111,27 +111,123 @@
     });
   }
   function stageProgress(c) { return c && c.progress ? String(c.progress) : ''; }
-  function putRow(c, row) {
-    if (!row || !row.id || !validDate(row.date)) return;
-    const copy = { id: String(row.id), date: validDate(row.date), content: String(row.content || ''), progress: stageProgress(c) };
+  function linkedDeals(cust, L) {
+    if (!L || L.progress !== 'LEAD') return [];
+    const ids = dealIds(L);
+    const out = [];
+    ids.forEach(function (id) {
+      const C = (Array.isArray(cust) ? cust : []).find(function (x) { return x && x.id === id; });
+      if (C && C.progress !== 'LEAD' && C.leadId === L.id && out.indexOf(C) < 0) out.push(C);
+    });
+    return out;
+  }
+  function defaultDeal(cust, L) {
+    const deals = linkedDeals(cust, L);
+    if (!deals.length) return null;
+    let best = null, bk = '';
+    deals.forEach(function (d, i) {
+      let last = '';
+      (Array.isArray(d.history) ? d.history : []).forEach(function (h) {
+        if (h && !h.sys) {
+          const x = validDate(h.date);
+          if (x > last) last = x;
+        }
+      });
+      const k = last + '|' + String(d.createdAt || '').substring(0, 19) + '|' + String(i).padStart(4, '0');
+      if (!best || k > bk) { best = d; bk = k; }
+    });
+    return best;
+  }
+  function contactKey(id) {
+    const s = String(id || '');
+    if (/^lc-[A-Za-z0-9_-]+$/.test(s)) return s;
+    const body = s.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 48);
+    return 'lc-' + (body || 'x');
+  }
+  function fillCopy(row) {
+    const copy = { date: validDate(row.date), content: String(row.content || '') };
     if (row.byEmail) copy.byEmail = String(row.byEmail).toLowerCase();
     if (METHODS.indexOf(row.method) >= 0) copy.method = row.method;
     if (actOf(row.act)) copy.act = actOf(row.act);
     if (validTime(row.time)) copy.time = validTime(row.time);
+    return copy;
+  }
+  function mergeRow(prev, copy) {
+    prev.date = copy.date;
+    prev.content = copy.content;
+    if (copy.byEmail) prev.byEmail = copy.byEmail;
+    if (copy.method) prev.method = copy.method;
+    if (copy.act) prev.act = copy.act;
+    if (copy.time) prev.time = copy.time;
+  }
+  function putRow(c, row) {
+    if (!row || !row.id || !validDate(row.date)) return;
+    const copy = fillCopy(row);
+    copy.id = String(row.id);
+    copy.progress = stageProgress(c);
     c.history = Array.isArray(c.history) ? c.history : [];
     const i = c.history.findIndex(function (h) { return h && h.id === copy.id; });
     if (i >= 0) {
       const prev = c.history[i];
-      prev.date = copy.date;
-      prev.content = copy.content;
+      mergeRow(prev, copy);
       prev.progress = copy.progress;
-      if (copy.byEmail) prev.byEmail = copy.byEmail;
-      if (copy.method) prev.method = copy.method;
-      if (copy.act) prev.act = copy.act;
-      if (copy.time) prev.time = copy.time;
       return;
     }
     c.history.push(copy);
+  }
+  function putContact(c, row) {
+    if (!row || !row.id || !validDate(row.date)) return;
+    const key = contactKey(row.id);
+    const copy = fillCopy(row);
+    copy.id = key;
+    c.contacts = Array.isArray(c.contacts) ? c.contacts : [];
+    const raw = String(row.id);
+    const i = c.contacts.findIndex(function (h) { return h && (String(h.id) === key || String(h.id) === raw); });
+    if (i >= 0) {
+      const prev = c.contacts[i];
+      if (!prev.id || String(prev.id).indexOf('lc-') !== 0) prev.id = key;
+      mergeRow(prev, copy);
+      return;
+    }
+    c.contacts.push(copy);
+  }
+  function placeRow(cust, c, row) {
+    if (!c || !row) return;
+    if (c.progress === 'LEAD') {
+      const deal = defaultDeal(cust, c);
+      if (deal) { putRow(deal, row); return; }
+      putContact(c, row);
+      return;
+    }
+    putRow(c, row);
+  }
+  function rowKeys(rowId) {
+    const id = String(rowId || '');
+    const keys = [id];
+    const ck = contactKey(id);
+    if (keys.indexOf(ck) < 0) keys.push(ck);
+    return keys;
+  }
+  function matchRow(list, keys) {
+    if (!Array.isArray(list)) return null;
+    for (let i = 0; i < list.length; i++) {
+      const h = list[i];
+      if (h && keys.indexOf(String(h.id)) >= 0) return h;
+    }
+    return null;
+  }
+  function locateRow(cust, custId, rowId) {
+    const list = Array.isArray(cust) ? cust : [];
+    const c = list.find(function (x) { return x && x.id === custId; });
+    if (!c || !rowId) return null;
+    const keys = rowKeys(rowId);
+    let row = matchRow(c.history, keys) || matchRow(c.contacts, keys);
+    if (!row && c.progress === 'LEAD') {
+      const deals = linkedDeals(list, c);
+      for (let i = 0; i < deals.length && !row; i++) row = matchRow(deals[i].history, keys);
+    }
+    if (!row) return null;
+    return { row: row, custId: c.id, name: String(c.name || ''), leadId: c.leadId || '' };
   }
   function patchState(state, custId, ops) {
     ops = ops || {};
@@ -141,8 +237,8 @@
     const next = clone(state);
     const c = next.cust[idx];
     if (!c || c.id !== custId) return { ok: false, reason: 'missing' };
-    if (ops.history) putRow(c, ops.history);
-    if (ops.appointment) putRow(c, ops.appointment);
+    if (ops.history) placeRow(next.cust, c, ops.history);
+    if (ops.appointment) placeRow(next.cust, c, ops.appointment);
     if (ops.nextContactDate != null && validDate(ops.nextContactDate)) syncNext(next.cust, c, validDate(ops.nextContactDate));
     next._rev = (Number(state._rev) || 0) + 1;
     next._updatedAt = Date.now();
@@ -251,6 +347,7 @@
     buildWrite: buildWrite,
     planListEvents: planListEvents,
     planActEvent: planActEvent,
+    locateRow: locateRow,
     guardSave: guardSave
   };
 })(typeof window !== 'undefined' ? window : globalThis);
