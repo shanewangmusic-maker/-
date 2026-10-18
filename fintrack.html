@@ -225,7 +225,7 @@ body.present .tag-pick{pointer-events:none}
 .feed-bar .f{display:flex;gap:16px;flex-wrap:wrap;color:var(--ink-2)}
 .feed-bar .f span strong{color:var(--ink);font-weight:700}
 .tbl-wrap{overflow-x:auto}
-table.log{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:1180px}
+table.log{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:1300px}
 table.log th{font-weight:600;color:var(--ink-2);font-size:12px;text-align:right;padding:10px 10px;border-bottom:1.5px solid var(--navy);white-space:nowrap;background:#fff}
 table.log td{padding:10px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
 table.log tr:hover td{background:#fbfaf6}
@@ -776,6 +776,52 @@ body.present .pol-card .gap-row span{height:auto}
 .gap-sug{margin-top:8px;font-size:11.5px;color:var(--ink-2);display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:#f6e7de;border-radius:8px;padding:6px 8px}
 @media (max-width:1024px){.pol-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pc:nth-child(3n){border-right:1px solid #e6d9c7}.pc:nth-child(2n){border-right:0}.pc:nth-child(n+4){border-bottom:1px solid #e6d9c7}.pc:nth-child(n+5){border-bottom:0}.pol-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.pol-hero{grid-template-columns:minmax(0,1fr);justify-items:center}.pol-shield{width:150px}.pol-kpis{width:100%}.pol-grid{grid-template-columns:minmax(0,1fr)}.pc{border-right:0!important;border-bottom:1px solid #e6d9c7!important}.pc:last-child{border-bottom:0!important}.pe-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 20px}.pe-row input[data-pol$="|g"],.pe-row input[data-pol$="|n"]{grid-column:1/-1}.pol-bar .pb-d{margin-left:0}.pol-bar.edit input{width:80px}}
+/* policy value tables */
+.pv-board{margin:0 0 16px}
+.pv-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pv-h h3{margin:0;font-family:"Noto Serif TC",serif}
+.pv-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pv-tools label{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+.pv-tools select,.pv-tools input,.pv-meta input,.pv-meta select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.pv-sum{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.pv-sum .g-kpi{background:var(--surface-2);border-radius:10px;padding:8px 12px;min-width:140px}
+.pv-pol{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px;background:#fff}
+.pv-meta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.pv-meta label{display:inline-flex;gap:6px;align-items:center;font-size:13px}
+.pv-meta input[type="text"]{min-width:140px}
+.pv-meta input[type="number"]{width:88px}
+.pv-scroll{overflow-x:auto;margin-top:8px}
+.pv-t{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.pv-t th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+.pv-t td{padding:4px;border-bottom:1px solid var(--line);text-align:right}
+.pv-t input{width:100%;min-width:68px;box-sizing:border-box;border:1px solid var(--line-2);border-radius:7px;padding:4px 6px;font-size:13px;text-align:right;background:#fff}
+.pv-paste{margin-top:8px}
+.pv-paste textarea{width:100%;min-height:72px;box-sizing:border-box;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px}
+.pv-face{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px;padding:8px 10px;background:#f8f1ea;border-radius:10px}
+.pv-face input{width:150px;border:1px solid var(--line-2);border-radius:8px;padding:4px 8px;font-size:15px;font-weight:700}
+.pv-k{font-weight:700;letter-spacing:.06em}
+.pv-tag{font-size:12px;color:var(--muted)}
+.pv-life{margin:0 0 12px;padding:10px 12px;border:1px solid #e6d9c7;border-radius:12px;background:#fff}
+.pv-chart{margin-top:4px}
+.pv-chart svg{width:100%;height:auto;display:block}
+.pv-chart.empty{font-size:12.5px;color:var(--muted);padding:8px 0}
+.pv-ret{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#f4faf7;border:1px solid #d5ebe3;border-radius:12px;padding:10px 12px;margin:8px 0 12px}
+.pv-ret .v{font-size:22px}
+table.log td.face .gap-tag{display:block;font-weight:500}
+@media(max-width:640px){
+  .pv-h,.pv-meta,.pv-ret{align-items:stretch}
+  .pv-meta label,.pv-tools label{flex-wrap:wrap;max-width:100%}
+  .pv-meta input[type="text"]{min-width:0;width:9em;max-width:100%}
+  .pv-scroll{overflow:visible}
+  .pv-t{min-width:0}
+  .pv-t thead{display:none}
+  .pv-t,.pv-t tbody{display:block}
+  .pv-t tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .pv-t td{display:block;border:0;padding:0;text-align:left;width:auto}
+  .pv-t td[data-h]:not([data-h=""])::before{content:attr(data-h);display:block;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:2px}
+  .pv-t td[colspan]{grid-column:1 / -1}
+  .pv-face input{width:100%}
+}
 .print-head{display:none}
 .print-brk{display:none}
 .pv{display:none}
@@ -817,7 +863,7 @@ body.pdfm .list-row,body.pdfm .list-row.tagged{grid-template-columns:1fr 92px!im
 body.pdfm .tl button{pointer-events:none}
 body.pdfm .tbl-wrap{display:block!important;overflow:visible!important}
 body.pdfm .log-cards{display:none!important}
-body.pdfm table.log{font-size:11px;width:100%}
+body.pdfm table.log{font-size:11px;width:100%;min-width:0!important}
 body.pdfm table.log td,body.pdfm table.log th{padding-top:5px!important;padding-bottom:5px!important}
 body.pdfm .kpis{grid-template-columns:repeat(4,1fr)!important}
 body.pdfm .ov-grid{grid-template-columns:1fr 380px!important}
@@ -860,7 +906,7 @@ body.pdfm .footer{margin-top:10px!important;padding:6px 12px!important;font-size
 .tl button{pointer-events:none}
 .tbl-wrap{display:block!important;overflow:visible!important}
 .log-cards{display:none!important}
-table.log{font-size:11px;width:100%}
+table.log{font-size:11px;width:100%;min-width:0!important}
 table.log td,table.log th{padding-top:5px!important;padding-bottom:5px!important}
 .footer{margin-top:10px!important;padding:6px 12px!important;font-size:10px!important;background:none!important;color:#5b6570!important;border-top:1.5px solid #D4AF37}
 
@@ -1303,8 +1349,9 @@ function polSection(P,o){return withPol(P,()=>{const ed=o.ed,view=o.view,bl=polB
     <span class="sp"></span>${o.editBtn?`<button class="btn sm edit-only pol-edit-b ${ed?'primary':''}" ${M?'id="polEdit"':''}>${ed?'✓ 完成編輯':'✎ 編輯保單'}</button>`:''}${o.base?`<button class="btn sm edit-only pol-save-b" ${M?'id="polSave"':''} title="保存目前保單內容，之後可選為比較基準">存為新版本</button>`:''}</div>`;
   const bar=ed?`<div class="pol-bar edit"><div class="pb-c"><span class="l">規劃前</span><label>年保費 <input type="number" data-prem="by" value="${P.prem.by}" placeholder="年保費"></label><label>月保費 <input type="number" data-prem="bm" value="${P.prem.bm}" placeholder="${P.prem.by?Math.floor(P.prem.by/12):'自動'}"></label></div><div class="pb-arrow">→</div><div class="pb-c"><span class="l">規劃後</span><label>年保費 <input type="number" data-prem="ay" value="${P.prem.ay}" placeholder="年保費"></label><label>月保費 <input type="number" data-prem="am" value="${P.prem.am}" placeholder="${P.prem.ay?Math.floor(P.prem.ay/12):'自動'}"></label></div></div>`
     :`<div class="pol-bar"><div class="pb-c"><span class="l">${esc(bl)}</span><span>年保費 <b>${f(pr.by)}</b> 元</span><span>月保費 <b>${f(pr.bm)}</b> 元</span></div><div class="pb-arrow">→</div><div class="pb-c"><span class="l">規劃後</span><span>年保費 <b>${f(pr.ay)}</b> 元</span><span>月保費 <b>${f(pr.am)}</b> 元</span></div><div class="pb-d ${pr.dy>0?'save':pr.dy<0?'more':''}">${pr.dy==null?'填入保費後顯示差額':pr.dy>0?`每年省 <b>${fmt(pr.dy)}</b> 元<small>月省 ${f(pr.dm)} 元</small>`:pr.dy<0?`每年多 <b>${fmt(-pr.dy)}</b> 元<small>月多 ${f(-pr.dm)} 元</small>`:'保費不變'}</div></div>`;
+  const life=o.main?`<div class="pv-life">${pvLifeHTML(S.mode!=='client'&&!document.body.classList.contains('present')&&!document.body.classList.contains('printing')&&!document.body.classList.contains('pdfm'))}</div>`:'';
   return `<div class="pol-sec" data-polsec="${o.sid}">${tb}<div class="pol-legend"><span><span class="pb up">▲</span>保障提高</span><span><span class="pb new">新增</span>原本沒有</span><span><span class="pb down">▼</span>保障降低</span><span><span class="pb rm">移除</span>規劃後沒有</span></div>
-    <div class="pol-grid">${POL_CELLS.map(cellH).join('')}</div>${bar}</div>`;});}
+    ${life}<div class="pol-grid">${POL_CELLS.map(cellH).join('')}</div>${bar}</div>`;});}
 function polRerender(){const a=document.activeElement;let key=null;if(a&&a.dataset&&(a.dataset.pol||a.dataset.prem)){const sec=a.closest('[data-polsec]');key=(sec?`[data-polsec="${sec.dataset.polsec}"] `:'')+(a.dataset.pol?'[data-pol="'+a.dataset.pol+'"]':'[data-prem="'+a.dataset.prem+'"]');}renderAll();if(key){const e=document.querySelector(key);if(e)e.focus();}}
 function wirePol(root,P){if(!root)return;
   root.querySelectorAll('[data-pol-view]').forEach(b=>b.onclick=e=>{e.stopPropagation();P.view=b.dataset.polView;renderAll();});
@@ -1315,8 +1362,62 @@ function wirePol(root,P){if(!root)return;
   root.querySelectorAll('[data-pol-rm]').forEach(b=>b.onclick=()=>{const q=b.dataset.polRm.split('|');P.cells[+q[0]].items.splice(+q[1],1);renderAll();});
   root.querySelectorAll('[data-pol-add]').forEach(b=>b.onclick=()=>{const ci=+b.dataset.polAdd;const sid=root.dataset.polsec||(root.querySelector('[data-polsec]')||{dataset:{}}).dataset.polsec;P.cells[ci].items.push({g:'',n:'',b:'',a:''});renderAll();const ins=document.querySelectorAll(`[data-polsec="${sid}"] [data-pol^="${ci}|"][data-pol$="|n"]`);if(ins.length)ins[ins.length-1].focus();});
   root.querySelectorAll('[data-prem]').forEach(el=>{el.oninput=()=>{P.prem[el.dataset.prem]=el.value===''?'':Number(el.value);};el.onchange=()=>setTimeout(polRerender,0);});}
-function wirePolicy(){wirePol(document.querySelector('#goals .pol-card'),POL());wireFamily();wireEdu();wireStage();wireEstate();simplifyUI();}
+function wirePolicy(){wirePv();wirePol(document.querySelector('#goals .pol-card'),POL());wireFamily();wireEdu();wireStage();wireEstate();simplifyUI();}
 function policyInit(){return {view:'cmp',base:'before',edit:true,cells:POL_CELLS.map(()=>({items:[]})),prem:{by:'',bm:'',ay:'',am:''},versions:[]};}
+
+/* ===== 保單價值表：新欄位，舊快照沒有時視為空表 ===== */
+function pvBox(){const p=S.pv;if(!p||typeof p!=='object')return {ccy:'TWD',policies:[]};return {ccy:p.ccy==='USD'?'USD':'TWD',policies:Array.isArray(p.policies)?p.policies:[],lifeOverride:p.lifeOverride};}
+function pvEnsure(){if(!S.pv||typeof S.pv!=='object')S.pv={ccy:'TWD',policies:[]};if(!Array.isArray(S.pv.policies))S.pv.policies=[];if(S.pv.ccy!=='USD'&&S.pv.ccy!=='TWD')S.pv.ccy='TWD';return S.pv;}
+function pvNum(v){if(v==null||v==='')return '';const n=Number(String(v).replace(/[,，\s]/g,''));return isFinite(n)?n:'';}
+function pvNormRow(r){r=r||{};const pick=(a,b)=>a!=null?a:b;return {year:pvNum(pick(r.year,r['年度'])),age:pvNum(pick(r.age,r['年齡'])),paidCum:pvNum(pick(r.paidCum,r['折扣後累計所繳保費'])),deathBenefit:pvNum(pick(r.deathBenefit,r['當年度末身故保險金'])),surrenderTotal:pvNum(pick(r.surrenderTotal,r['可能領取解約金總和']))};}
+function pvClientAge(){const a=clientAge();if(a!=null)return a;const g=Number(GOALS.retire&&GOALS.retire.age);return g>0?g:null;}
+function pvRetireAge(){const n=Number(GOALS.retire&&GOALS.retire.retireAge);return n>0?n:60;}
+function pvCcyLabel(c){return c==='USD'?'美元':'台幣';}
+function pvRate(p){const n=Number(p&&p.rate);return n>0?n:null;}
+function pvConvert(amount,from,rate,to){const n=Number(amount);if(!isFinite(n))return null;from=from==='USD'?'USD':'TWD';to=to==='USD'?'USD':'TWD';if(from===to)return n;if(!(rate>0))return null;if(from==='USD'&&to==='TWD')return n*rate;if(from==='TWD'&&to==='USD')return n/rate;return null;}
+function pvAtAge(p,age){if(age==null||!isFinite(+age))return null;const rows=(p.rows||[]).filter(r=>r&&r.age!==''&&r.age!=null&&isFinite(+r.age));if(!rows.length)return null;const target=+age;const exact=rows.find(r=>Number(r.age)===target);if(exact)return exact;const under=rows.filter(r=>Number(r.age)<=target).sort((a,b)=>Number(b.age)-Number(a.age));return under[0]||null;}
+function pvSum(field,age,mode){const box=pvBox();const to=box.ccy;let sum=0,n=0,missing=false,par=false;box.policies.forEach(p=>{if(!p||mode==='retire'&&p.retire==='manual')return;const row=pvAtAge(p,age);if(!row||row[field]===''||row[field]==null||!isFinite(+row[field])){missing=true;return;}const v=pvConvert(row[field],p.currency,pvRate(p),to);if(v==null){missing=true;return;}sum+=v;n++;if(p.par)par=true;});return {sum,n,missing,par,ccy:to};}
+function pvLifeValue(){const box=pvBox();if(box.lifeOverride!=null&&box.lifeOverride!==''&&isFinite(+box.lifeOverride))return +box.lifeOverride;const s=pvSum('deathBenefit',pvClientAge(),'life');return s.n?Math.round(s.sum):null;}
+function pvFaceOf(row){if(row&&row.faceAccum!=null&&row.faceAccum!==''&&isFinite(+row.faceAccum))return {v:+row.faceAccum,src:'saved'};const age=row&&row.date?ageOn(clientBirth(),rocToDate(row.date)):null;const s=pvSum('deathBenefit',age,'life');if(age==null||!s.n)return {v:null,src:'none',age:age};return {v:Math.round(s.sum),src:'auto',age:age,par:s.par,ccy:s.ccy};}
+function pvFaceText(row){const f=pvFaceOf(row);if(f.v==null)return '—';const tag=f.src==='auto'?(f.par?'<div class="gap-tag">預估（假設中分紅）</div>':'<div class="gap-tag">預估</div>'):'';return fmt(f.v)+tag;}
+function pvSeries(){const ages=new Set();pvBox().policies.forEach(p=>(p.rows||[]).forEach(r=>{if(r&&isFinite(+r.age))ages.add(Number(r.age));}));return [...ages].sort((a,b)=>a-b).map(age=>{const d=pvSum('deathBenefit',age,'life'),s=pvSum('surrenderTotal',age,'life');return {age,death:d.n?d.sum:null,sur:s.n?s.sum:null};}).filter(p=>p.death!=null||p.sur!=null);}
+function pvChartHTML(){const pts=pvSeries();if(pts.length<2)return '<div class="pv-chart empty" id="pvChart">至少兩個年齡後，這裡畫出身價與解約金。</div>';
+  const W=640,H=210,pl=54,pr=16,pt=16,pb=28;const vals=pts.flatMap(p=>[p.death,p.sur].filter(v=>v!=null));const ymax=niceMax(Math.max(...vals,1)*1.08);
+  const X=i=>pl+(W-pl-pr)*(pts.length===1?0:i/(pts.length-1)),Y=v=>pt+(H-pt-pb)*(1-v/ymax);
+  let grid='';for(let q=0;q<=4;q++){const v=ymax*q/4;grid+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e7e2d7"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="#8c929b">${fmtW(v,0)}</text>`;}
+  pts.forEach((p,i)=>{if(i===0||i===pts.length-1||pts.length<=6)grid+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#8c929b">${p.age}歲</text>`;});
+  const line=(key,color)=>pts.map((p,i)=>p[key]==null?null:[X(i),Y(p[key])]).filter(Boolean).map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+  const dots=(key,color)=>pts.map((p,i)=>p[key]==null?'':`<circle cx="${X(i)}" cy="${Y(p[key])}" r="3" fill="${color}"/>`).join('');
+  return `<div class="pv-chart" id="pvChart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="身價與解約金">${grid}<polyline points="${line('death')}" fill="none" stroke="#1E2E3D" stroke-width="2"/>${dots('death','#1E2E3D')}<polyline points="${line('sur')}" fill="none" stroke="#2f7a63" stroke-width="2"/>${dots('sur','#2f7a63')}</svg><div class="legend"><span><i class="sw" style="background:#1E2E3D"></i>身價</span><span><i class="sw" style="background:#2f7a63"></i>解約金</span><span class="lbl">${pvCcyLabel(pvBox().ccy)}・依各年齡加總</span></div></div>`;}
+function pvLifeHTML(ed){const age=pvClientAge();const auto=pvSum('deathBenefit',age,'life');const box=pvBox();const manual=box.lifeOverride!=null&&box.lifeOverride!==''&&isFinite(+box.lifeOverride);const shown=manual?+box.lifeOverride:(auto.n?Math.round(auto.sum):null);const tag=manual?'手填':(auto.par?'預估（假設中分紅）':'預估');
+  return `<div class="pv-face" id="pvLifeLine"><span class="pv-k">壽險・身價</span>${ed?`<input type="number" id="pvLifeIn" value="${shown==null?'':shown}" placeholder="尚無表格" aria-label="壽險身價">`:`<b class="num">${shown==null?'—':fmt(shown)}</b>`}<span class="pv-tag">${shown==null?'':tag}${age!=null?'・'+age+' 歲':''}・${pvCcyLabel(auto.ccy)}</span>${ed&&manual?'<button type="button" class="btn sm edit-only" id="pvLifeReset">改回表格</button>':''}${shown==null?'<span class="lbl">填入保單價值表後，依目前年齡的身故保險金加總</span>':''}</div>${pvChartHTML()}`;}
+function pvRetireHTML(){const age=pvRetireAge();const s=pvSum('surrenderTotal',age,'retire');const txt=s.n?fmt(Math.round(s.sum))+' 元':'—';const tag=s.n?(s.par?'預估（假設中分紅）':'預估'):'';
+  return `<div class="pv-ret" id="pvRetire"><div class="g-kpi"><div class="lbl">預估解約金・${age}歲</div><div class="v num">${txt}</div><div class="s">${tag}${tag?'・':''}${pvCcyLabel(s.ccy)}${s.n?'・'+s.n+' 張保單':''}</div></div><p class="lbl" style="margin:0">${s.missing?'有保單缺這一年齡或匯率，未計入。':''}沒有價值表、或這張保單選了「手填」的商品，仍用每月投入與年化，不從表格帶入。</p></div>`;}
+function pvParsePaste(text){const lines=String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);if(!lines.length)return [];
+  const split=line=>line.includes('\t')?line.split('\t'):line.split(/[,，]/);let rows=lines.map(split).map(c=>c.map(x=>String(x).trim()));
+  const head=rows[0].join('');let map=null;if(/年|齡|保費|身故|解約/.test(head)){const h=rows.shift();const find=re=>{const i=h.findIndex(x=>re.test(x));return i<0?null:i;};map={year:find(/年度|^年$/),age:find(/年齡/),paid:find(/保費|所繳/),death:find(/身故|身價/),sur:find(/解約/)};}
+  const at=(c,i)=>i==null?'':c[i];return rows.map(c=>{const src=map?{year:at(c,map.year),age:at(c,map.age),paidCum:at(c,map.paid),deathBenefit:at(c,map.death),surrenderTotal:at(c,map.sur)}:{year:c[0],age:c[1],paidCum:c[2],deathBenefit:c[3],surrenderTotal:c[4]};return pvNormRow(src);}).filter(r=>[r.year,r.age,r.paidCum,r.deathBenefit,r.surrenderTotal].some(x=>x!==''));}
+function pvNewPolicy(src){src=src||{};const rows=Array.isArray(src.rows)?src.rows.map(pvNormRow):[];return {id:src.id||('pv'+Date.now().toString(36)+Math.floor(Math.random()*99)),name:String(src.name||''),currency:src.currency==='USD'?'USD':'TWD',rate:src.rate==null||src.rate===''?'':pvNum(src.rate),par:!!src.par,retire:src.retire==='manual'?'manual':'table',manual:!!src.manual,rows};}
+function pvImportPolicy(obj){obj=obj||{};const box=pvEnsure();const id=obj.id?String(obj.id):'';let cur=id?box.policies.find(p=>p.id===id):null;if(cur&&cur.manual&&!obj.replace)return {ok:false,reason:'manual',id:cur.id};const next=pvNewPolicy(Object.assign({},obj,{id:cur?cur.id:(id||undefined),manual:false}));if(cur){const i=box.policies.indexOf(cur);box.policies[i]=next;}else box.policies.push(next);return {ok:true,id:next.id};}
+function pvBoardHTML(){const ed=S.mode!=='client'&&!document.body.classList.contains('present')&&!document.body.classList.contains('printing')&&!document.body.classList.contains('pdfm');const box=pvBox();const age=pvClientAge();const face=pvSum('deathBenefit',age,'life');const sur=pvSum('surrenderTotal',pvRetireAge(),'retire');
+  const pol=(p)=>`<section class="pv-pol" data-pvid="${esc(p.id)}"><div class="pv-meta"><label>名稱 <input data-pvf="name" value="${esc(p.name)}" placeholder="保單名稱"${ed?'':' disabled'}></label><label>幣別 <select data-pvf="currency"${ed?'':' disabled'}><option value="TWD"${p.currency!=='USD'?' selected':''}>台幣</option><option value="USD"${p.currency==='USD'?' selected':''}>美元</option></select></label>${p.currency==='USD'||box.ccy!==(p.currency||'TWD')?`<label>1 美元＝ <input data-pvf="rate" type="number" value="${p.rate===''||p.rate==null?'':esc(p.rate)}" placeholder="匯率"${ed?'':' disabled'}> 元台幣</label>`:''}<label class="ck"><input type="checkbox" data-pvf="par"${p.par?' checked':''}${ed?'':' disabled'}>預估（假設中分紅）</label><label>退休 <select data-pvf="retire"${ed?'':' disabled'}><option value="table"${p.retire!=='manual'?' selected':''}>用表格解約金</option><option value="manual"${p.retire==='manual'?' selected':''}>手填（不計入表格）</option></select></label>${ed?`<button type="button" class="btn sm edit-only" data-pv-del="${esc(p.id)}">刪除此保單</button>`:''}</div>
+    <div class="pv-scroll"><table class="pv-t"><thead><tr><th>年度</th><th>年齡</th><th>累計所繳</th><th>身故保險金</th><th>解約金總和</th>${ed?'<th></th>':''}</tr></thead><tbody>${(p.rows||[]).map((r,i)=>`<tr><td data-h="年度"><input data-pvr="${i}|year" type="number" value="${r.year===''?'':r.year}"${ed?'':' disabled'}></td><td data-h="年齡"><input data-pvr="${i}|age" type="number" value="${r.age===''?'':r.age}"${ed?'':' disabled'}></td><td data-h="累計所繳"><input data-pvr="${i}|paidCum" type="number" value="${r.paidCum===''?'':r.paidCum}"${ed?'':' disabled'}></td><td data-h="身故保險金"><input data-pvr="${i}|deathBenefit" type="number" value="${r.deathBenefit===''?'':r.deathBenefit}"${ed?'':' disabled'}></td><td data-h="解約金總和"><input data-pvr="${i}|surrenderTotal" type="number" value="${r.surrenderTotal===''?'':r.surrenderTotal}"${ed?'':' disabled'}></td>${ed?`<td data-h=""><button type="button" class="rm" data-pvr-rm="${i}" title="刪除此列">×</button></td>`:''}</tr>`).join('')||`<tr><td colspan="6" class="l" style="text-align:left;color:var(--muted)">尚無列。可自行新增，或貼上試算表。</td></tr>`}</tbody></table></div>
+    ${ed?`<div class="edit-only" style="margin-top:8px"><button type="button" class="btn sm" data-pv-addrow="${esc(p.id)}">＋新增一列</button></div><details class="pv-paste edit-only"><summary>貼上試算表（Tab 或逗號）</summary><textarea data-pv-paste placeholder="年度	年齡	累計所繳	身故保險金	解約金總和"></textarea><button type="button" class="btn sm" data-pv-apply>貼上並取代列</button></details>`:''}</section>`;
+  return `<article class="card pv-board" id="pvBoard"><div class="goal-in"><div class="pv-h"><div><div class="k">POLICY VALUE</div><h3>保單價值表</h3><p class="lbl" style="margin:4px 0 0">每一張保單自訂列。手改一律保留；之後若再匯入同一張且已手改，不會覆蓋。</p></div><div class="pv-tools">${ed?`<label>加總顯示 <select id="pvCcy"><option value="TWD"${box.ccy!=='USD'?' selected':''}>台幣</option><option value="USD"${box.ccy==='USD'?' selected':''}>美元</option></select></label><button type="button" class="btn sm primary edit-only" id="pvAdd">＋新增保單</button>`:`<span class="lbl">加總顯示 ${pvCcyLabel(box.ccy)}</span>`}</div></div>
+    <div class="pv-sum"><div class="g-kpi"><div class="lbl">目前身價${age==null?'':'・'+age+'歲'}</div><div class="v num">${face.n?fmt(Math.round(face.sum)):'—'}</div></div><div class="g-kpi"><div class="lbl">退休解約金・${pvRetireAge()}歲</div><div class="v num">${sur.n?fmt(Math.round(sur.sum)):'—'}</div><div class="s">${sur.par?'預估（假設中分紅）':'預估'}</div></div></div>
+    ${box.policies.length?box.policies.map(pol).join(''):'<div class="empty-box" style="margin-top:12px"><div class="eb-t">尚未建立保單價值表</div><div class="eb-s">新增保單後，可逐列填寫或從試算表貼上。</div></div>'}
+  </div></article>`;}
+function pvTouch(p){if(p)p.manual=true;}
+function wirePv(){const root=document.getElementById('pvBoard');const life=document.getElementById('pvLifeIn');if(life)life.onchange=()=>{const box=pvEnsure();box.lifeOverride=life.value===''?null:Number(life.value);renderAll();};const rst=document.getElementById('pvLifeReset');if(rst)rst.onclick=()=>{const box=pvEnsure();delete box.lifeOverride;renderAll();};if(!root)return;
+  const ccy=document.getElementById('pvCcy');if(ccy)ccy.onchange=()=>{pvEnsure().ccy=ccy.value==='USD'?'USD':'TWD';renderAll();};
+  const add=document.getElementById('pvAdd');if(add)add.onclick=()=>{pvEnsure().policies.push(pvNewPolicy({name:'新保單',currency:'TWD',rows:[{year:'',age:'',paidCum:'',deathBenefit:'',surrenderTotal:''}]}));renderAll();};
+  root.querySelectorAll('[data-pvid]').forEach(sec=>{const id=sec.dataset.pvid;const get=()=>pvEnsure().policies.find(x=>x.id===id);sec.querySelectorAll('[data-pvf]').forEach(el=>{el.onchange=()=>{const p=get();if(!p)return;const f=el.dataset.pvf;if(f==='par')p.par=el.checked;else if(f==='rate')p.rate=el.value===''?'':pvNum(el.value);else p[f]=el.value;pvTouch(p);renderAll();};});
+    sec.querySelectorAll('[data-pvr]').forEach(el=>{el.oninput=()=>{const p=get();if(!p)return;const q=el.dataset.pvr.split('|');const row=p.rows[+q[0]];if(!row)return;row[q[1]]=el.value===''?'':pvNum(el.value);pvTouch(p);};el.onchange=()=>renderAll();});
+    sec.querySelectorAll('[data-pvr-rm]').forEach(b=>b.onclick=()=>{const p=get();if(!p)return;p.rows.splice(+b.dataset.pvrRm,1);pvTouch(p);renderAll();});
+    const addR=sec.querySelector('[data-pv-addrow]');if(addR)addR.onclick=()=>{const p=get();if(!p)return;p.rows.push({year:'',age:'',paidCum:'',deathBenefit:'',surrenderTotal:''});pvTouch(p);renderAll();};
+    const apply=sec.querySelector('[data-pv-apply]');if(apply)apply.onclick=()=>{const p=get();if(!p)return;const ta=sec.querySelector('[data-pv-paste]');const rows=pvParsePaste(ta?ta.value:'');if(!rows.length){toast('沒有讀到列。請用 Tab 或逗號分隔年度、年齡、累計保費、身故保險金、解約金。');return;}p.rows=rows;pvTouch(p);renderAll();toast('已貼上 '+rows.length+' 列');};});
+  root.querySelectorAll('[data-pv-del]').forEach(b=>b.onclick=()=>{const box=pvEnsure();const p=box.policies.find(x=>x.id===b.dataset.pvDel);if(p&&!confirm('刪除「'+(p.name||'此保單')+'」？已存的檢視列不會被刪。'))return;box.policies=box.policies.filter(x=>x.id!==b.dataset.pvDel);renderAll();});}
+window.FT=window.FT||{};window.FT.importPolicyTable=function(policyObj){const r=pvImportPolicy(policyObj||{});if(r.ok)renderAll();return r;};
 {const _gv=gv;gv=function(k,i){return k==='personal'?polGv(i):_gv(k,i);};}
 
 
@@ -1332,7 +1433,7 @@ let FSTD=JSON.parse(JSON.stringify(STD_DEF));
 function saveStd(){/* per-client standards travel with the cloud snapshot */}
 function fmtA(n){if(n==null||n==='')return '—';n=Number(n);if(n>=10000){const w=n/10000;return (Math.round(w*10)/10)+'萬';}return fmt(n)+'元';}
 function memGrp(m){const a=memAge(m);return a==null?'adult':a>=65?'senior':a<18?'kid':'adult';}
-function selfDerive(ci){const P=POL();const it=P.cells[ci].items.filter(x=>polHas(x.a));const v=x=>{const n=parseAmt(x.a);return isNaN(n)?0:n;};if(!it.length)return null;
+function selfDerive(ci){if(ci===0){const face=pvLifeValue();if(face!=null)return face;}const P=POL();const it=P.cells[ci].items.filter(x=>polHas(x.a));const v=x=>{const n=parseAmt(x.a);return isNaN(n)?0:n;};if(!it.length)return null;
   let r=null;if(ci===0)r=it.reduce((s,x)=>s+v(x),0);else if(ci===1){const x=it.find(x=>/身故|失能/.test(x.n));r=x?v(x):null;}else if(ci===2){const x=it.find(x=>/雜費/.test(x.n+x.g));r=x?v(x):null;}
   else if(ci===3){const xs=it.filter(x=>/一次金/.test(x.g+x.n));r=xs.length?Math.max(...xs.map(v)):null;}else if(ci===4){r=Math.max(...it.map(v));}else if(ci===5){const x=it.find(x=>/月/.test(x.n));r=x?v(x):null;}
   return r>0?r:null;}
@@ -1689,7 +1790,7 @@ function stageCard(k,g,rank,P){const {T,ro:snapRo}=stView();const printing=docum
      <div class="sg-more${more?' open':''}"><div class="sg-grid"><div class="merge"><div class="merge-h"><b>實際價值 × 已投入本金</b><span class="lbl">只顯示實際紀錄，不含任何假設報酬率</span></div>${stageChart(k,id,P,g)}</div><div>${ed?setHTML:''}${st?payoutHTML(g,pm,st,v,'chart'):''}${wdBoxHTML(k,id,true)}${ctBoxHTML(k,id)}</div></div></div>`;};
   if(k==='retire'){const R=retSet();const v=gv('retire',li);const c=R.conv||{};
     const set=`<div class="sg-set"><label>目標金額<span class="inl"><input type="number" data-rset="target" value="${(Number(g.target)||0)/10000}"> 萬</span></label><label>起始本金<input type="number" data-rset="base" value="${R.base||0}"></label><label>轉換門檻<span class="inl"><input type="number" data-rset="threshold" value="${(Number(R.threshold)||0)/10000}"> 萬</span></label></div>${convForm(c,true)}`;
-    body=`<div class="sg-stage"><span class="sg-pill pill ${c.on?'pay':''}">${c.on?'配息期（部分轉換）':'累積期'}</span></div>`+view(null,v,c,'',set);}
+    body=pvRetireHTML()+`<div class="sg-stage"><span class="sg-pill pill ${c.on?'pay':''}">${c.on?'配息期（部分轉換）':'累積期'}</span></div>`+view(null,v,c,'',set);}
   else{const L=T.dreams.list;const sel=T.dreams.sel==='all'||L.some(d=>d.id===T.dreams.sel)?T.dreams.sel:(L[0]?L[0].id:'all');
     tabs=L.length?`<div class="edu-tabs dr-tabs">${L.map(d=>`<button class="et${sel===d.id?' on':''}" data-dt="${d.id}"><span class="dr-ic">${dIcon(d.icon,15)}</span>${esc(d.name)}${d.ach?`<span class="dstk" title="已達成">${stkSvg('done')}</span>`:''}</button>`).join('')}<button class="et${sel==='all'?' on':''}" data-dt="all">全部</button>${ed?`<button class="et add edit-only" id="drAdd">＋新增夢想</button>`:''}</div>`:'';
     const form=ed&&T.dreams.adding?drFormHTML():'';
@@ -2240,14 +2341,14 @@ function setupForm(k){
   const ex={edu:f('childAge','子女目前年齡','例 3'),retire:(clientBirth()?`<label>客戶目前年齡（依出生年月日）<input value="${clientAge()} 歲" disabled></label>`:f('age','客戶目前年齡','例 35（或於上方填出生年月日）'))+f('retireAge','預計退休年齡','例 60'),dream:f('dreamName','夢想名稱','例 環球旅行','text')+f('deadline','預計實現（民國）','例 117.12','text')}[k]||'';
   const tl=g.kind==='protect'?f('cover','目前保單保額','例 2400000'):f('toolMonthly','規劃工具・每月投入','例 6000')+f('rate','工具預估年化 %','例 2.5');
   return `<div class="setup"><div class="setup-h"><b>${g.configured?'調整目標設定':'設定這個需求的目標'}</b><span class="lbl">${k==='retire'?'目標＝退休時需要的資本（年化 '+g.yieldPct+'% 換算月被動收入）':g.kind==='protect'?'目標＝保障缺口總額':'先填目標與期初累積，之後每次檢視會自動更新'}</span></div>
-   <div class="fgrid">${f('target',k==='retire'?'目標資本':g.kind==='protect'?'保障缺口（目標）':'目標金額','例 '+(k==='retire'?'10000000':'1000000'))}${f('start','自己已累積（期初）','例 200000')}${f('selfPlan','自己每月計畫提撥','例 5000')}${tl}${ex}</div>
+   <div class="fgrid">${f('target',k==='retire'?'目標資本':g.kind==='protect'?'保障缺口（目標）':'目標金額','例 '+(k==='retire'?'10000000':'1000000'))}${f('start','自己已累積（期初）','例 200000')}${f('selfPlan','自己每月計畫提撥','例 5000')}${tl}${ex}</div>${k==='retire'?pvRetireHTML():''}
    <div class="setup-f"><span class="lbl" id="suMsg-${k}">金三角中標記為「${g.label}」的核心／衛星項目也會自動計入「自己累積」。</span><button class="btn primary" data-sugo="${k}">${g.configured?'更新':'開始追蹤'}</button>${g.configured?`<button class="btn" data-sucancel="${k}">取消</button>`:''}</div></div>`;
 }
 function renderGoals(P){
   renderPicker();renderOther();
   const L=P[P.length-1],Pv=P[P.length-2];const li=L?L.last.i:-1,pi=Pv?Pv.last.i:-1;
   const lastDate=refDate();
-  $('goals').innerHTML=S.selected.map((k,rank)=>{
+  $('goals').innerHTML=pvBoardHTML()+S.selected.map((k,rank)=>{
     const g=GOALS[k],v=gv(k,li),pv=gv(k,pi);if(k==='personal')return policyCard(g,rank);if(k==='family')return familyCard(g,rank);if(k==='edu')return eduCard(g,rank,P);if(k==='dream')return stageCard(k,g,rank,P);if(k==='tax')return estateCard(g,rank);const tr=v.toolE?v.tool/v.toolE:1,sr=v.selfE?v.self/v.selfE:1;
     let hero='',side='',wide=false;
     const avgAlloc=S.rows.length?S.rows.slice(-6).reduce((s,r)=>s+(r.alloc[k]||0),0)/Math.min(6,S.rows.length):(Number(g.selfPlan)||0);
@@ -2479,7 +2580,7 @@ function renderLogCards(P){
     const nd=pi>0?needDiff(S.rows[pi-1].needs,p.last.needs):{add:[],rm:[]};
     const noteHtml=(notes.map(n=>`<span class="note-chip">${esc(n)}</span>`).join(' ')||'—')+(nd.add.length||nd.rm.length?`<div style="margin-top:4px">${needChips(nd)}</div>`:'');
     return item(esc(p.label), p.n>1?`・${p.n}期`:'',
-      field('開始日',esc(p.label))+field('收入',fmt(p.income))+field('固定支出',fmt(p.fixed))+field('儲蓄',fmt(p.invest))+field('資產淨值','<b>'+fmt(p.netWorth)+'</b>')+field('理論淨值',fmt(p.theo))+field('淨增長',(p.growth<0?'−':'')+fmt(Math.abs(p.growth)))+field('額外支出',fmt(p.extra))+field('備註',noteHtml,true)+field('分配到六大需求',allocBar(p.alloc)+'<div class="lc-alloc-txt">'+logAllocText(p.alloc)+'</div>',true),
+      field('開始日',esc(p.label))+field('收入',fmt(p.income))+field('固定支出',fmt(p.fixed))+field('儲蓄',fmt(p.invest))+field('資產淨值','<b>'+fmt(p.netWorth)+'</b>')+field('身價已累積',pvFaceText(p.last))+field('理論淨值',fmt(p.theo))+field('淨增長',(p.growth<0?'−':'')+fmt(Math.abs(p.growth)))+field('額外支出',fmt(p.extra))+field('備註',noteHtml,true)+field('分配到六大需求',allocBar(p.alloc)+'<div class="lc-alloc-txt">'+logAllocText(p.alloc)+'</div>',true),
       editBtn(p.last.i));
   }).join('');
   const base=item('面談','期初', field('開始日',esc(BASE.date||'—'))+field('資產淨值',fmt(BASE.netWorth))+field('備註','期初淨值（金三角初次會談）',true), '');
@@ -2491,17 +2592,17 @@ function renderLogCards(P){
 }
 function renderLog(P){
   const editable=S.freq==='m';
-  const head=`<thead><tr><th class="l">開始日 <span class="sort-tag">新→舊</span></th><th>收入</th><th>固定支出</th><th>儲蓄</th><th>資產淨值</th><th>理論淨值</th><th>淨增長</th><th class="extra">額外支出</th><th class="l">備註</th><th class="l">分配到六大需求 <span style="font-weight:400;color:var(--muted)">(${S.selected.map(k=>`<i class="dot" style="background:${GOALS[k].c}"></i>`).join('')})</span></th><th class="edit-only"></th></tr></thead>`;
-  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="12" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);renderLogCards(P);}
+  const head=`<thead><tr><th class="l">開始日 <span class="sort-tag">新→舊</span></th><th>收入</th><th>固定支出</th><th>儲蓄</th><th>資產淨值</th><th>身價已累積</th><th>理論淨值</th><th>淨增長</th><th class="extra">額外支出</th><th class="l">備註</th><th class="l">分配到六大需求 <span style="font-weight:400;color:var(--muted)">(${S.selected.map(k=>`<i class="dot" style="background:${GOALS[k].c}"></i>`).join('')})</span></th><th class="edit-only"></th></tr></thead>`;
+  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="13" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);renderLogCards(P);}
   else{
-  const base=`<tr style="color:var(--muted)"><td class="l num">${BASE.date||'—'}<span class="gap-tag"> 面談</span></td><td colspan="4"></td><td class="num">${fmt(BASE.netWorth)}</td><td colspan="5" class="l gap-tag">期初淨值（金三角初次會談）</td><td class="edit-only"></td></tr>`;
+  const base=`<tr style="color:var(--muted)"><td class="l num">${BASE.date||'—'}<span class="gap-tag"> 面談</span></td><td colspan="3"></td><td class="num">${fmt(BASE.netWorth)}</td><td class="num face">${pvFaceText({date:BASE.date})}</td><td colspan="5" class="l gap-tag">期初淨值（金三角初次會談）</td><td class="edit-only"></td></tr>`;
   const body=P.slice().reverse().map(p=>{const notes=Object.keys(p.notes);const pi=p.first.i;const nd=pi>0?needDiff(S.rows[pi-1].needs,p.last.needs):{add:[],rm:[]};return `<tr><td class="l num">${esc(p.label)}${p.n>1?`<span class="gap-tag"> ・${p.n}期</span>`:''}</td><td class="num">${fmt(p.income)}</td><td class="num">${fmt(p.fixed)}</td><td class="num">${fmt(p.invest)}</td>
-    <td class="num"><b>${fmt(p.netWorth)}</b></td><td class="num" title="${esc(theoFormula(p))}">${fmt(p.theo)}</td><td class="num ${p.growth<0?'neg':''}">${p.growth<0?'−':''}${fmt(Math.abs(p.growth))}</td><td class="num extra">${fmt(p.extra)}</td>
+    <td class="num"><b>${fmt(p.netWorth)}</b></td><td class="num face">${pvFaceText(p.last)}</td><td class="num" title="${esc(theoFormula(p))}">${fmt(p.theo)}</td><td class="num ${p.growth<0?'neg':''}">${p.growth<0?'−':''}${fmt(Math.abs(p.growth))}</td><td class="num extra">${fmt(p.extra)}</td>
     <td class="l">${notes.map(n=>`<span class="note-chip">${esc(n)}</span>`).join(' ')}${nd.add.length||nd.rm.length?`<div style="margin-top:4px" title="本期調整了客戶選擇的需求">${needChips(nd)}</div>`:''}</td><td class="l">${allocBar(p.alloc)}</td>
     <td class="edit-only">${editable?`<button class="edit-btn" data-edit="${p.last.i}">編輯</button>`:'<span class="gap-tag">切換每月編輯</span>'}</td></tr>`;}).join('');
   const rows=rowsX();const T=k=>rows.reduce((s,r)=>s+r[k],0);const ta={};KEYS.forEach(k=>ta[k]=rows.reduce((s,r)=>s+r.alloc[k],0));
   const L=rows[rows.length-1];
-  const foot=`<tfoot><tr><td class="l">累計</td><td class="num">${fmt(T('income'))}</td><td class="num">${fmt(T('fixed'))}</td><td class="num">${fmt(T('invest'))}</td><td class="num">${fmt(L.netWorth)}</td><td class="num"></td><td class="num">${fmt(L.netWorth-BASE.netWorth)}</td><td class="num extra">${fmt(T('extra'))}</td><td></td><td class="l">${allocBar(ta)}</td><td class="edit-only"></td></tr></tfoot>`;
+  const foot=`<tfoot><tr><td class="l">累計</td><td class="num">${fmt(T('income'))}</td><td class="num">${fmt(T('fixed'))}</td><td class="num">${fmt(T('invest'))}</td><td class="num">${fmt(L.netWorth)}</td><td class="num face">${pvFaceText(L)}</td><td class="num"></td><td class="num">${fmt(L.netWorth-BASE.netWorth)}</td><td class="num extra">${fmt(T('extra'))}</td><td></td><td class="l">${allocBar(ta)}</td><td class="edit-only"></td></tr></tfoot>`;
   $('logTbl').innerHTML=head+'<tbody>'+body+base+'</tbody>'+foot;
   {let h=$('theoHow');if(!h){h=document.createElement('details');h.id='theoHow';h.className='theo-how';$('logTbl').closest('.tbl-wrap,div').after(h);}const Lp=P[P.length-1];const op=h.open;h.innerHTML=Lp?`<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div><div class="th-n num">${esc(Lp.label)}：${theoFormula(Lp)}</div><div class="th-d">與實際差異 ＝ 理論淨值 － 資產淨值（實際）＝ ${fmt(Lp.theo)} － ${fmt(Lp.netWorth)} ＝ ${Lp.extra<0?'−':''}${fmt(Math.abs(Lp.extra))}</div><div class="th-s">保費優先取自「保障」頁的年保費÷12；未填保單時可於檢視紀錄手動輸入。</div>`:'<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div>';h.open=op;}
   $('logTbl').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(+b.dataset.edit)); renderLogCards(P);}
@@ -2525,7 +2626,7 @@ function openModal(idx){
   $('modal').innerHTML=`<h3 class="serif">${isNew?'新增本期檢視':'編輯檢視紀錄・'+r.date}</h3><div class="lbl">${isNew?'已由「理財金三角」帶入收入／固定支出／儲蓄，可再調整。':'修改後，總覽、六大目標卡片與圖表會即時更新。'}</div>
    <div class="fgrid">
     ${isFirst?`<label>期初資產淨值（面談時）<input id="f_base" type="number" value="${BASE.netWorth||''}" placeholder="例 1000000"></label>`:''}<label>開始日（民國）<input id="f_date" value="${r.date}"></label><label>收入（月收入×月數）<input id="f_income" type="number" value="${r.income}"></label><label>年終（本期如有）<input id="f_ye" type="number" value="${r.ye||0}"></label><label>固定支出<input id="f_fixed" type="number" value="${r.fixed}"></label><label>保費<input id="f_prem" type="number" value="${r.prem||0}" title="預設取自保障頁年保費÷12"></label>
-    <label>儲蓄<input id="f_invest" type="number" value="${(+r.invest||0)+(+r.save||0)}"></label><label>資產淨值（實際）<input id="f_nw" type="number" value="${r.netWorth}"></label>
+    <label>儲蓄<input id="f_invest" type="number" value="${(+r.invest||0)+(+r.save||0)}"></label><label>資產淨值（實際）<input id="f_nw" type="number" value="${r.netWorth}"></label><label>身價已累積<input id="f_face" type="number" value="${r.faceAccum!=null&&r.faceAccum!==''?r.faceAccum:(pvFaceOf(r).v==null?'':pvFaceOf(r).v)}"><span class="lbl">${r.faceAccum!=null&&r.faceAccum!==''?'手填，可改':pvFaceOf(r).v!=null?'已依保單價值表帶入，可改':'填出生年月日與保單價值表後可自動帶入'}</span></label>
     <label>理論淨值（自動）<div class="calc num" id="c_theo"></div></label><label>淨增長（自動）<div class="calc num" id="c_growth"></div></label><label>與實際差異（自動）<div class="calc num" id="c_extra" style="background:#f4f7dd"></div></label>
     <details class="theo-how m" style="grid-column:1/-1"><summary>怎麼算？</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終）－ 固定支出 － 保費</div><div class="th-n num" id="c_how"></div></details><label>備註分類<input id="f_note" list="noteList" value="${esc(r.note)}" placeholder="例：旅遊、婚禮、機車"><datalist id="noteList">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></label></div>
    <div class="mod-sub">分配到已選需求 <span id="allocSum"></span><span>本期需求：${rn.map(k=>GOALS[k].label).join('、')}</span><button class="btn sm ghost" id="autoAlloc" style="margin-left:auto">依規劃比例自動分配</button></div>${isNew?allocNote(rn):''}
@@ -2540,7 +2641,7 @@ function openModal(idx){
   $('autoAlloc').onclick=()=>{const a=(isNew?allocActive:defaultAlloc)(val('f_invest'),0,rn);document.querySelectorAll('[data-al]').forEach(e=>e.value=a[e.dataset.al]);calc();};
   wdWire(r);ctWire(r);$('m_cancel').onclick=closeModal;
   if(!isNew)$('m_del').onclick=()=>{S.rows.splice(idx,1);closeModal();renderAll();};
-  $('m_save').onclick=()=>{const o={date:$('f_date').value.trim(),income:val('f_income'),ye:val('f_ye'),fixed:val('f_fixed'),prem:val('f_prem'),invest:val('f_invest'),netWorth:val('f_nw'),note:$('f_note').value.trim(),alloc:Object.assign({},...KEYS.map(k=>({[k]:0}))),tool:Object.assign({},r.tool),needs:rn.slice()};
+  $('m_save').onclick=()=>{const o={date:$('f_date').value.trim(),income:val('f_income'),ye:val('f_ye'),fixed:val('f_fixed'),prem:val('f_prem'),invest:val('f_invest'),netWorth:val('f_nw'),note:$('f_note').value.trim(),alloc:Object.assign({},...KEYS.map(k=>({[k]:0}))),tool:Object.assign({},r.tool),needs:rn.slice()};if($('f_face')&&$('f_face').value!=='')o.faceAccum=Number($('f_face').value)||0;
     document.querySelectorAll('[data-al]').forEach(e=>o.alloc[e.dataset.al]=Number(e.value)||0);document.querySelectorAll('[data-tl]').forEach(e=>o.tool[e.dataset.tl]=Number(e.value)||0);{const es=document.querySelectorAll('[data-eds]');if(es.length){o.eduSplit={};es.forEach(e=>o.eduSplit[e.dataset.eds]=Number(e.value)||0);}else if(r.eduSplit)o.eduSplit=r.eduSplit;const po=document.querySelectorAll('[data-po]');if(po.length){o.payout=Object.assign({},r.payout||{});po.forEach(e=>{const [id,f]=e.dataset.po.split('|');o.payout[id]=o.payout[id]||{p:'',d:''};o.payout[id][f]=e.value===''?'':Number(e.value);});}else if(r.payout)o.payout=r.payout;}
     if($('f_base'))BASE.netWorth=val('f_base');if(!BASE.date)BASE.date=o.date;{const W=wdCollect();if(W.length)o.wd=W;const CT=ctCollect();if(CT.length)o.contrib=CT;const ds=document.querySelectorAll('[data-dss]');if(ds.length){o.dsplit={};ds.forEach(e=>o.dsplit[e.dataset.dss]=Number(e.value)||0);}else if(r.dsplit)o.dsplit=r.dsplit;}if(isNew)S.rows.push(o);else S.rows[idx]=o;S.rows.sort((a,b)=>mIdx(a.date)-mIdx(b.date));closeModal();renderAll();};
   $('mb').classList.add('open');
@@ -2667,7 +2768,7 @@ function ftSeedClient(name,birth){
   if(ch){const prevH=window.__ftHydrating;window.__ftHydrating=true;try{renderAll();}finally{window.__ftHydrating=prevH;}}
   return ch;
 }
-window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,finishReview,toast,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,get S(){return S;},renderAll,openModal,setTab};
+window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,finishReview,toast,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,importPolicyTable:obj=>window.FT.importPolicyTable(obj),pvSum,pvFaceOf,pvLifeValue,get S(){return S;},renderAll,openModal,setTab};
 setTab(TAB,false);renderAll();
 })();
 </script>
