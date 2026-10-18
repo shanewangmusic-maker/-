@@ -393,15 +393,6 @@
     }
     return dayOf(c && c.createdAt) || '9999-99-99';
   }
-  function sumInsuredOf(c) {
-    if (!c) return 0;
-    const keys = ['sumInsured', 'coverage', 'faceAmount', 'insuredAmount', 'coverageAmount', 'sumAssured', 'sa', 'face', '保額'];
-    for (let i = 0; i < keys.length; i++) {
-      const v = c[keys[i]];
-      if (v != null && String(v).trim() !== '') return moneyNum(v);
-    }
-    return 0;
-  }
   function salesWon(c) {
     if (!c || c.category !== 'WON') return false;
     if (c.progress === 'LEAD' || c.progress === 'HOLD' || c.progress === 'LOST' || c.category === 'RECRUIT') return false;
@@ -438,14 +429,13 @@
     return 'ds';
   }
   function emptyRoll() {
-    return { deal: 0, client: 0, prem: 0, comm: 0, sa: 0, fyc: 0 };
+    return { deal: 0, client: 0, prem: 0, comm: 0, fyc: 0 };
   }
   function addRoll(bag, c, client) {
     bag.deal += 1;
     if (client) bag.client += 1;
     bag.prem += moneyNum(c.premium);
     bag.comm += moneyNum(c.commission);
-    bag.sa += sumInsuredOf(c);
     bag.fyc += moneyNum(c.fyc);
   }
   function inPeriod(p, period) {
@@ -526,7 +516,6 @@
     locateRow: locateRow,
     guardSave: guardSave,
     periodOf: periodOf,
-    sumInsuredOf: sumInsuredOf,
     wonRollup: wonRollup,
     wonMonths: wonMonths,
     memberAgentName: memberAgentName
