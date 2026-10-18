@@ -486,6 +486,195 @@
     if (!m || m.active === false) return null;
     return String(m.agentName || '').trim();
   }
+  function freshCustId() {
+    return 'cust-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  }
+  function sourceForSide(side) {
+    return side === 'rf' ? '緣故' : '陌生';
+  }
+  function scopeMatches(list, name, agent) {
+    const nm = String(name || '').trim();
+    const ag = String(agent == null ? '' : agent).trim();
+    return (list || []).filter(function (c) {
+      if (!c || c.category === 'RECRUIT') return false;
+      if (String(c.name || '').trim() !== nm) return false;
+      return String(c.agentName || '').trim() === ag;
+    });
+  }
+  function makeLead(name, agent, side, stage) {
+    return {
+      id: freshCustId(),
+      name: name,
+      category: 'NEW',
+      progress: 'LEAD',
+      createdAt: new Date().toISOString(),
+      tags: [],
+      history: [],
+      leadCls: [],
+      source: sourceForSide(side),
+      region: '',
+      acreStage: stage,
+      phone: '',
+      company: '',
+      notes: '',
+      birthday: '',
+      lastStage: 'NURTURE',
+      agentName: String(agent || '')
+    };
+  }
+  function makeDeal(L) {
+    return {
+      id: freshCustId(),
+      name: String((L && L.name) || '').trim(),
+      company: (L && L.company) || '',
+      phone: (L && L.phone) || '',
+      birthday: (L && L.birthday) || '',
+      nextContactDate: '',
+      agentName: String((L && L.agentName) || ''),
+      category: 'NEW',
+      progress: 'NURTURE',
+      tags: L && Array.isArray(L.tags) ? L.tags.slice() : [],
+      notes: (L && L.notes) || '',
+      createdAt: new Date().toISOString(),
+      history: [],
+      lastStage: 'NURTURE'
+    };
+  }
+  function carryContacts(L, C) {
+    const list = Array.isArray(L.contacts) ? L.contacts : [];
+    if (!list.length) return 0;
+    C.history = Array.isArray(C.history) ? C.history : [];
+    const have = {};
+    const ids = {};
+    C.history.forEach(function (h) {
+      if (h && h.srcContactId) have[h.srcContactId] = 1;
+      if (h && h.id) ids[h.id] = 1;
+    });
+    const keep = [];
+    let n = 0;
+    let seq = Date.now();
+    list.forEach(function (ct) {
+      if (!ct || typeof ct !== 'object') return;
+      const d = validDate(ct.date);
+      if (ct.id && have[ct.id]) return;
+      if (!d) { keep.push(ct); return; }
+      let hid = 'h-' + (seq++);
+      while (ids[hid]) hid = 'h-' + (seq++);
+      ids[hid] = 1;
+      const h = { id: hid, date: d, content: String(ct.content || ''), progress: C.progress || '' };
+      if (ct.method) h.method = String(ct.method);
+      if (ct.byEmail) h.byEmail = String(ct.byEmail);
+      if (actOf(ct.act)) h.act = actOf(ct.act);
+      const end = validDate(ct.endDate);
+      if (end && end > d) h.endDate = end;
+      if (validTime(ct.time)) h.time = validTime(ct.time);
+      if (validTime(ct.time) && validTime(ct.endTime)) h.endTime = validTime(ct.endTime);
+      if (ct.id) { h.srcContactId = String(ct.id); have[ct.id] = 1; }
+      C.history.push(h);
+      n++;
+    });
+    if (keep.length) L.contacts = keep;
+    else delete L.contacts;
+    return n;
+  }
+  function attachDeal(list, L, C) {
+    C.leadId = L.id;
+    const live = linkedDeals(list, L).map(function (d) { return d.id; });
+    if (live.indexOf(C.id) < 0) live.push(C.id);
+    L.coreIds = live;
+    L.coreId = live[0];
+    carryContacts(L, C);
+    if (Array.isArray(L.history) && L.history.length) {
+      C.history = Array.isArray(C.history) ? C.history : [];
+      const seen = {};
+      C.history.forEach(function (h) { if (h && h.id) seen[h.id] = 1; });
+      L.history.forEach(function (h) {
+        if (h && !(h.id && seen[h.id])) C.history.push(clone(h));
+      });
+      L.history = [];
+    }
+    if (!validDate(C.nextContactDate) && validDate(L.nextContactDate)) C.nextContactDate = validDate(L.nextContactDate);
+  }
+  function bumpState(state) {
+    state._rev = (Number(state._rev) || 0) + 1;
+    state._updatedAt = Date.now();
+    return state;
+  }
+  function syncListPerson(state, spec) {
+    spec = spec || {};
+    const name = String(spec.name || '').trim();
+    const kind = spec.kind === 'warm' ? 'warm' : 'call';
+    const side = spec.side === 'rf' ? 'rf' : 'ds';
+    if (!state || typeof state !== 'object' || !Array.isArray(state.cust)) return { ok: false, reason: 'missing', changed: false, custId: '', matches: [] };
+    if (!name) return { ok: false, reason: 'name', changed: false, custId: '', matches: [] };
+    if (spec.agentName == null) return { ok: false, reason: 'agent', changed: false, custId: '', matches: [] };
+    const agent = String(spec.agentName).trim();
+    const custId = String(spec.custId || '').trim();
+    const next = clone(state);
+    const list = next.cust;
+    function finish(reason, id, changed) {
+      if (changed) bumpState(next);
+      return { ok: true, reason: reason, changed: !!changed, custId: id || '', data: changed ? next : state, matches: [] };
+    }
+    function activate(L) {
+      const deals = linkedDeals(list, L);
+      if (deals.length) {
+        const pick = defaultDeal(list, L) || deals[0];
+        return finish('linked', pick.id, false);
+      }
+      const C = makeDeal(L);
+      list.push(C);
+      attachDeal(list, L, C);
+      L.acreStage = 'SAPLING';
+      C.history = Array.isArray(C.history) ? C.history : [];
+      C.history.push({
+        id: 'h-aq-' + Date.now(),
+        date: twDate(),
+        content: '從行動闖關轉約訪',
+        progress: 'NURTURE',
+        sys: true
+      });
+      return finish('activated', C.id, true);
+    }
+    if (custId) {
+      const cur = list.find(function (c) { return c && c.id === custId; });
+      if (!cur) return { ok: false, reason: 'missing', changed: false, custId: '', matches: [] };
+      if (String(cur.agentName || '').trim() !== agent) return finish('linked', cur.id, false);
+      if (cur.progress !== 'LEAD' || kind !== 'call') return finish('linked', cur.id, false);
+      return activate(cur);
+    }
+    const hits = scopeMatches(list, name, agent);
+    if (hits.length > 1) {
+      return {
+        ok: false,
+        reason: 'ambiguous',
+        changed: false,
+        custId: '',
+        data: state,
+        matches: hits.map(function (c) {
+          return { id: c.id, name: String(c.name || '').trim(), progress: c.progress || '', agentName: String(c.agentName || '') };
+        })
+      };
+    }
+    if (hits.length === 1) {
+      const hit = hits[0];
+      if (hit.progress === 'LEAD' && kind === 'call') return activate(hit);
+      return finish('linked', hit.id, false);
+    }
+    if (kind === 'warm') {
+      const L = makeLead(name, agent, side, 'SEED');
+      list.push(L);
+      return finish('created', L.id, true);
+    }
+    const L = makeLead(name, agent, side, 'SAPLING');
+    const C = makeDeal(L);
+    list.push(L);
+    list.push(C);
+    C.leadId = L.id;
+    L.coreIds = [C.id];
+    L.coreId = C.id;
+    return finish('created', C.id, true);
+  }
   function guardSave(expectedRev, fresh, memoryPayload, exists) {
     const cloudRev = fresh && fresh._rev != null ? (Number(fresh._rev) || 0) : 0;
     if (exists && cloudRev !== expectedRev) return { conflict: true, rev: cloudRev };
@@ -518,6 +707,7 @@
     periodOf: periodOf,
     wonRollup: wonRollup,
     wonMonths: wonMonths,
-    memberAgentName: memberAgentName
+    memberAgentName: memberAgentName,
+    syncListPerson: syncListPerson
   };
 })(typeof window !== 'undefined' ? window : globalThis);
