@@ -354,7 +354,7 @@ input.client-name{width:100%;max-width:340px}
 .step-tg{cursor:pointer}.step-tg:hover .t{color:var(--ink)}
 body.present .client-in{border-bottom-color:transparent;pointer-events:none}
 body.present .setup{display:none}
-.tl{max-width:min(560px,100%);overflow:hidden}
+.tl{max-width:min(560px,100%);overflow:visible;align-items:flex-start}
 .tl button{flex:1 1 0;min-width:0;max-width:120px}
 .tl button .lb{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tl button .lb.sm{font-size:10px;color:var(--muted);font-weight:400}
@@ -365,7 +365,7 @@ body.present .setup{display:none}
 .tl-more select{border:1px solid var(--line-2);border-radius:8px;padding:4px 8px;font-size:12px;color:var(--ink);max-width:200px;background:#fff}
 .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:all .25s;z-index:80;border:1px solid var(--gold)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-@media (max-width:640px){.tri-center{width:60%}.tri-in input{width:80px}.tl button .lb.sm{display:none}.tl button{font-size:10.5px;padding:0 1px}}
+@media (max-width:640px){.tri-center{width:60%}.tri-in input{width:80px}.tl button .lb.sm{display:none}.tl button{font-size:10.5px;padding:0 1px}.gt-tri .legend{gap:8px 10px}.tl-pick{width:100%;padding:0 2px}.tl-pick select{flex:1 1 160px}.tl-more{padding:0 2px}.tl-more select{max-width:100%}}
 body.present .tl-more select{pointer-events:auto}
 .sort-tag{font-size:10px;font-weight:600;color:var(--gold-ink);background:var(--gold-soft);border-radius:999px;padding:1px 7px;margin-left:4px}
 table.log tbody tr:first-child td{background:#fffdf6}
@@ -499,10 +499,12 @@ body.printing .stk *,body.printing .stk{animation:none!important}body.printing .
 body.adv-off #famStd,body.adv-off .std-panel,body.adv-off #esRulesBtn,body.adv-off .es-rules,body.adv-off #gtDraft,body.adv-off label:has(>.inl>[data-rset="threshold"]),body.adv-off #btnRedo{display:none!important}
 .adv-tg.on{background:var(--gold,#c9a02c);color:#1E2E3D}
 body:not(.np-all) .np-btn:not(.on){display:none}.np-more{margin:8px 0 0}
-.tl-pick{display:flex;gap:8px;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}.tl-pick select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.tl-pick{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:10px auto 0;max-width:min(560px,100%);position:relative;z-index:1}.tl-pick select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);max-width:100%;min-width:0}
 .more-h{font-size:13px;margin:14px 0 6px;color:var(--navy);border-bottom:1px solid var(--line);padding-bottom:4px}.es-sec:first-child .more-h{margin-top:4px}
 /* 簡報與 PDF 共用 */
 body.doc .help-q,body.doc .simple-more,body.doc #btnAdv,body.doc #npMore,body.doc .tl-pick{display:none!important}
+body.present:not(.printing):not(.pdfm) .tl-pick{display:flex!important}
+.tl-pick.is-off,body.present .tl-pick.is-off{display:none!important}
 
 .cs-note{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}.theo-how{margin:10px 0 0;font-size:12.5px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:8px 12px;background:#fbfaf6}.theo-how summary{cursor:pointer;color:var(--navy);font-weight:600}.theo-how .th-f{margin-top:6px;color:var(--ink)}.theo-how .th-n{margin-top:4px;color:var(--ink);font-weight:600;word-break:break-word}.theo-how .th-d,.theo-how .th-s{margin-top:4px}@media print{.theo-how{display:none}}body.present .theo-how{display:none}
 .goals > .estate-card{grid-column:1/-1}
@@ -2383,7 +2385,7 @@ function renderGT(){
   <div class="gt-tri"><div class="tri-host"><div id="triSvg"></div><div class="tri-center"><div class="t">總收入 100%</div>
      <div class="tri-in">月收入<input type="number" class="num" data-gt="income" value="${G.income}"></div><div class="tri-in">年終<input type="number" class="num" data-gt="yearEnd" value="${G.yearEnd}"></div><div class="tri-hint" id="triHint">↑ 輸入月收入開始建立金三角</div></div></div>
      <div class="legend" style="justify-content:center;margin-top:4px"><span><i class="sw" style="border-top:2px dashed #1E2E3D;height:0;background:none;opacity:.6"></i>理想 50/10/40</span><span><i class="sq" style="background:rgba(30,46,61,.18);outline:1.5px solid #1E2E3D"></i><span id="curName">現在</span></span><span><i class="sw" style="border-top:2px dashed #7a4a6b;height:0;background:none"></i>對照：<select id="cmpSel" class="cmp-sel" aria-label="對照快照"></select></span><span><i class="sq" style="background:#2f7a63;border-radius:50%"></i>合理</span><span><i class="sq" style="background:#55606e;border-radius:50%"></i>與合理有差</span></div>
-     <div class="tl" id="tl"></div><div class="tl-more" id="tlMore"></div><div class="tl-hint" id="tlHint">填好月收入與三大項目後，按下方按鈕存下第一個快照，作為之後比較的「初次會談」基準。</div>
+     <div class="tl" id="tl"></div><label class="tl-pick is-off">檢視時間點 <select id="tlSel" aria-label="檢視時間點"></select></label><div class="tl-more" id="tlMore"></div><div class="tl-hint" id="tlHint">填好月收入與三大項目後，按下方按鈕存下第一個快照，作為之後比較的「初次會談」基準。</div>
      <div style="text-align:center;margin-top:8px" class="edit-only"><button class="btn sm ghost" id="snapBtn">＋ 存為本期金三角快照</button></div></div>
   <div class="gt-riskC gt-card cat"><div class="cat-top"><span>風險規劃</span><span class="p">10%</span></div><div class="cat-body">
     <div class="cat-line"><span class="l">合理</span><span class="v num" id="riskR"></span></div><div class="cat-line"><span class="l">實際</span><input type="number" class="num" data-gt="risk" value="${G.risk}"></div><span class="st" id="riskS"></span>
@@ -2437,10 +2439,17 @@ function updateGT(){
   const all=SG.snaps.concat([now]);
   $('tl').style.display=SG.snaps.length?'':'none';$('tlHint').style.display=SG.snaps.length?'none':'';$('snapBtn').disabled=!inc;$('snapBtn').textContent=SG.snaps.length?'＋ 存為本期金三角快照':'＋ 存為「初次會談」快照';
   {const ns=SG.snaps.length;const vis=[];if(ns){vis.push(0);for(let q=Math.max(1,ns-4);q<ns;q++)vis.push(q);}const hidden=ns-vis.length;
-   const btn=(sn,idx,isNow)=>`<button data-s="${isNow?'now':idx}" class="${isNow?'now':idx===SG.cmp&&idx!==SG.view?'cmp':''}${isNow?(SG.view==null?' cur':''):(idx===SG.view?' cur view':'')}" title="${esc(sn.label)} · ${sn.date}"><i></i><span class="lb">${esc(sn.label)}</span><span class="lb sm">${isNow&&gtDirty()?'<span class="tl-dirty">● 未存變更</span>':sn.date+' · '+(sn.needs||S.selected).length+' 需求'}</span></button>`;
-   $('tl').innerHTML=`<label class="tl-pick">檢視時間點 <select id="tlSel" aria-label="檢視時間點"><option value="now" ${SG.view==null?'selected':''}>現在（工作中）${gtDirty()?'・未存變更':''}</option>${SG.snaps.map((sn,q)=>`<option value="${q}" ${q===SG.view?'selected':''}>${sn.date}｜${esc(sn.label)}</option>`).reverse().join('')}</select></label>`;void vis;void hidden;void btn;
-   $('tlMore').innerHTML='';
-   if($('tlSel'))$('tlSel').onchange=e=>setView(e.target.value==='now'?null:+e.target.value);}
+   const btn=(sn,idx,isNow)=>`<button type="button" data-s="${isNow?'now':idx}" class="${isNow?'now':idx===SG.cmp&&idx!==SG.view?'cmp':''}${isNow?(SG.view==null?' cur':''):(idx===SG.view?' cur view':'')}" title="${esc(sn.label)} · ${sn.date}"><i></i><span class="lb">${esc(sn.label)}</span><span class="lb sm">${isNow&&gtDirty()?'<span class="tl-dirty">● 未存變更</span>':sn.date+' · '+(sn.needs||S.selected).length+' 需求'}</span></button>`;
+   const dots=[];
+   vis.forEach(function(idx,i){if(i>0&&idx>vis[i-1]+1)dots.push('<span class="tl-gap" title="中間 '+hidden+' 筆在更多歷史">⋯<small>'+hidden+'</small></span>');dots.push(btn(SG.snaps[idx],idx,false));});
+   if(ns)dots.push(btn({label:'現在',date:refDate(),needs:S.selected},null,true));
+   $('tl').innerHTML=dots.join('');
+   $('tl').querySelectorAll('[data-s]').forEach(function(b){b.onclick=function(){setView(b.dataset.s==='now'?null:+b.dataset.s);};});
+   const pick=document.querySelector('#gt .tl-pick');if(pick)pick.classList.toggle('is-off',!ns);
+   if($('tlSel')){$('tlSel').innerHTML='<option value="now" '+(SG.view==null?'selected':'')+'>現在（工作中）'+(gtDirty()?'・未存變更':'')+'</option>'+SG.snaps.map(function(sn,q){return '<option value="'+q+'" '+(q===SG.view?'selected':'')+'>'+sn.date+'｜'+esc(sn.label)+'</option>';}).reverse().join('');$('tlSel').onchange=function(e){setView(e.target.value==='now'?null:+e.target.value);};}
+   const hid=[];for(let q=0;q<ns;q++)if(vis.indexOf(q)<0)hid.push(q);
+   $('tlMore').innerHTML=hid.length?'<label>更多歷史 <select id="tlMoreSel" aria-label="更多歷史"><option value="">較早的快照</option>'+hid.map(function(q){return '<option value="'+q+'" '+(q===SG.view?'selected':'')+'>'+SG.snaps[q].date+'｜'+esc(SG.snaps[q].label)+'</option>';}).join('')+'</select></label>':'';
+   const more=$('tlMoreSel');if(more)more.onchange=function(e){if(e.target.value!=='')setView(+e.target.value);};}
   $('curName').textContent=SG.view==null?'現在':now.label;
   $('cmpSel').innerHTML=SG.snaps.length?SG.snaps.map((sn,q)=>`<option value="${q}" ${q===SG.cmp?'selected':''}>${q===SG.view?'現在（工作中）':esc(sn.label)}</option>`).join(''):'<option>—</option>';$('cmpSel').disabled=!SG.snaps.length;
   $('cmpSel').onchange=e=>{SG.cmp=+e.target.value;updateGT();};
