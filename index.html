@@ -818,7 +818,7 @@
                                 </div>
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label>
-                                    <select id="historyAct" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select>
+                                    <select id="historyAct" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select>
                                 </div>
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-calendar-plus text-[#D4AF37]"></i> 結束日期 <span class="font-normal text-slate-400">(選填，跨多日才填)</span></label>
@@ -969,7 +969,7 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="lcDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
-                            <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="lcAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
+                            <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="lcAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
                         <textarea autocomplete="off" id="lcContent" rows="4" placeholder="聯絡內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea>
@@ -1086,7 +1086,7 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
+                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="初訪">初訪</option><option value="關鍵訪">關鍵訪</option><option value="定期檢視">定期檢視</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
@@ -1681,7 +1681,7 @@
             return !leadDeals(L).some(function (d) { return d && d.id !== c.id && d.category === 'WON'; });
         }
         function aqStamp(h) { if (h && aqByEmail()) h.byEmail = aqByEmail(); return h; }
-        function aqActOf(v) { return (v === 'call' || v === 'appt' || v === 'need') ? v : ''; }
+        function aqActOf(v) { return (v === 'warm' || v === 'call' || v === 'appt' || v === 'need') ? v : ''; }
         function aqPlanEvents(job, seen) {
             seen = seen || [];
             if (!job || !job.byEmail || !job.histId || !job.custId) return [];
@@ -1744,6 +1744,7 @@
                 histId: (h && h.id) || '',
                 custId: (c && c.id) || '',
                 name: String((c && c.name) || '').trim(),
+                agentName: c ? String(c.agentName || '').trim() : '',
                 side: c ? aqSideOf(c) : 'ds',
                 round: c ? (aqRoundOf(c) || 1) : 1,
                 leadId: (c && c.leadId) || '',
@@ -6771,7 +6772,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, runTransaction, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, runTransaction, collection, getDocs, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 🔥 請將您從 Firebase 控制台取得的配置填入這裡：
         const firebaseConfig = {
@@ -6808,12 +6809,34 @@
                 const snap = await tx.get(ref);
                 if (snap.exists()) return;
                 tx.set(ref, {
-                    uid: uid, teamId: teamId, email: ev.email || email,
+                    uid: uid, teamId: teamId, email: ev.email || email, byEmail: ev.byEmail || email,
                     custId: ev.custId, histId: ev.histId, action: ev.action, date: ev.date,
                     round: ev.round || 1, side: ev.side === 'rf' ? 'rf' : 'ds',
                     name: ev.name || '', leadId: ev.leadId || '', createdAt: Date.now()
                 });
             });
+        }
+        let aqTeamDoc = null;
+        let aqRoster = [];
+        let aqCtxLoaded = false;
+        async function aqLoadCtx(teamId) {
+            if (aqCtxLoaded) return;
+            aqCtxLoaded = true;
+            try {
+                const teamSnap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'meta', 'team'));
+                aqTeamDoc = teamSnap.exists() ? (teamSnap.data() || null) : null;
+            } catch (e) { console.warn('aq team', e); aqTeamDoc = null; }
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'board'));
+                const list = [];
+                snap.forEach(function (d) {
+                    const x = d.data() || {};
+                    const em = String(x.email || '').toLowerCase();
+                    const id = String(x.uid || d.id || '');
+                    if (em && id) list.push({ email: em, uid: id });
+                });
+                aqRoster = list;
+            } catch (e) { console.warn('aq roster', e); }
         }
         async function aqPump() {
             if (aqPumping) return;
@@ -6821,20 +6844,39 @@
             const teamId = (localStorage.getItem('crm_team_id') || '').trim();
             if (!user || user.isAnonymous || !user.uid || !teamId || !aqQueue.length) return;
             aqPumping = true;
+            const writer = (user.email || '').toLowerCase();
             try {
-                let seen = aqSeenMem.slice();
-                try {
-                    (await aqLoadSeen(teamId, user.uid)).forEach(function (e) { seen.push(e); });
-                } catch (e) {
-                    console.warn('aq auto read', e);
-                    if (!aqRuleTold && window.showToast) { aqRuleTold = true; window.showToast('歷程已儲存。闖關自動計入需要更新 Firestore 規則後才寫得進去。', 'error'); }
-                }
+                await aqLoadCtx(teamId);
+                const seenCache = {};
                 while (aqQueue.length) {
                     const job = aqQueue.shift();
+                    const credit = window.CrmLink && window.CrmLink.creditFor
+                        ? window.CrmLink.creditFor(aqTeamDoc, aqRoster, job.agentName == null ? null : job.agentName, { email: writer, uid: user.uid })
+                        : { email: writer, uid: user.uid, fallback: false, note: '' };
+                    if (credit.fallback && credit.note && window.showToast) {
+                        const note = credit.note;
+                        setTimeout(function () { if (window.showToast) window.showToast(note, 'info'); }, 0);
+                    }
+                    let seen = seenCache[credit.uid];
+                    if (!seen) {
+                        seen = aqSeenMem.filter(function (e) { return e && (e.uid === credit.uid || (!e.uid && credit.uid === user.uid)); });
+                        if (credit.uid === user.uid) {
+                            try { (await aqLoadSeen(teamId, user.uid)).forEach(function (e) { seen.push(e); }); }
+                            catch (e) {
+                                console.warn('aq auto read', e);
+                                if (!aqRuleTold && window.showToast) { aqRuleTold = true; window.showToast('歷程已儲存。闖關自動計入需要更新 Firestore 規則後才寫得進去。', 'error'); }
+                            }
+                        }
+                        seenCache[credit.uid] = seen;
+                    }
                     const evs = window.aqPlanEvents ? window.aqPlanEvents(job, seen) : [];
                     for (let i = 0; i < evs.length; i++) {
-                        seen.push(evs[i]); aqSeenMem.push(evs[i]);
-                        try { await aqCreate(teamId, user.uid, (user.email || '').toLowerCase(), evs[i]); }
+                        const ev = evs[i];
+                        ev.byEmail = writer;
+                        ev.email = credit.email || writer;
+                        ev.uid = credit.uid;
+                        seen.push(ev); aqSeenMem.push(ev);
+                        try { await aqCreate(teamId, credit.uid, credit.email || writer, ev); }
                         catch (err) {
                             console.warn('aq auto write', err);
                             if (!aqRuleTold && window.showToast) { aqRuleTold = true; window.showToast('歷程已儲存。闖關自動計入需要更新 Firestore 規則後才寫得進去。', 'error'); }
@@ -7047,7 +7089,7 @@
         const CRM_MOCK = !!(window.__CRM_TEST && window.__CRM_TEST.mock === true);
         if (CRM_MOCK) {
             window.currentUserEmail = String(window.__CRM_TEST.email || 'agent@example.com').toLowerCase();
-            window.currentUserUid = 'uid-mock';
+            window.currentUserUid = String(window.__CRM_TEST.uid || 'uid-mock');
             const startMock = function () {
                 if (typeof window.syncFromCloud !== 'function') { setTimeout(startMock, 20); return; }
                 const ov = document.getElementById('loadingOverlay');
@@ -7056,6 +7098,54 @@
                 if (lg) { lg.classList.add('hidden'); lg.classList.remove('flex'); }
                 window.__crmCloud = JSON.parse(JSON.stringify(window.__CRM_TEST.state || { cust: [] }));
                 window.syncFromCloud(window.__crmCloud);
+                function mockAutoKey(id) {
+                    const team = (localStorage.getItem('crm_team_id') || 'FISHTEAM').trim().toUpperCase();
+                    return 'aqmock:v1:' + team + ':' + id;
+                }
+                function mockReadAuto(id) {
+                    try {
+                        const bag = JSON.parse(sessionStorage.getItem(mockAutoKey(id)) || 'null') || {};
+                        return Array.isArray(bag.auto) ? bag.auto : [];
+                    } catch (e) { return []; }
+                }
+                function mockSaveAuto(id, ev) {
+                    const key = mockAutoKey(id);
+                    let bag = {};
+                    try { bag = JSON.parse(sessionStorage.getItem(key) || 'null') || {}; } catch (e) { bag = {}; }
+                    if (!bag || typeof bag !== 'object') bag = {};
+                    bag.auto = Array.isArray(bag.auto) ? bag.auto : [];
+                    const dup = bag.auto.some(function (e) {
+                        return e && (e.id === ev.id || (e.custId === ev.custId && e.action === ev.action && e.date === ev.date));
+                    });
+                    if (dup) return false;
+                    bag.auto.push(ev);
+                    sessionStorage.setItem(key, JSON.stringify(bag));
+                    return true;
+                }
+                window.__crmAuto = function (id) { return mockReadAuto(id); };
+                window.aqWriteEvents = function (jobs) {
+                    if (!jobs || !jobs.length) return;
+                    const writer = window.currentUserEmail;
+                    const self = { email: writer, uid: window.currentUserUid };
+                    const team = (window.__CRM_TEST && window.__CRM_TEST.team) || null;
+                    const roster = (window.__CRM_TEST && window.__CRM_TEST.roster) || [];
+                    jobs.forEach(function (job) {
+                        const credit = window.CrmLink.creditFor(team, roster, job.agentName == null ? null : job.agentName, self);
+                        if (credit.fallback && credit.note && window.showToast) {
+                            const note = credit.note;
+                            setTimeout(function () { if (window.showToast) window.showToast(note, 'info'); }, 0);
+                        }
+                        const seen = mockReadAuto(credit.uid);
+                        const evs = window.aqPlanEvents ? window.aqPlanEvents(job, seen) : [];
+                        evs.forEach(function (ev) {
+                            ev.byEmail = writer;
+                            ev.email = credit.email || writer;
+                            ev.uid = credit.uid;
+                            mockSaveAuto(credit.uid, ev);
+                        });
+                    });
+                };
+                if (window.__aqPending && window.__aqPending.length) window.aqWriteEvents(window.__aqPending.splice(0, window.__aqPending.length));
                 window.__crmTrySave = function (expectedRev, memoryPayload) {
                     return window.CrmLink.guardSave(expectedRev, window.__crmCloud, memoryPayload, true);
                 };

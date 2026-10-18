@@ -4,7 +4,7 @@
 (function (root) {
   const OWNER_AGENT = '王盛嶢'; // 擁有者「寫明」的負責業務，不是空白欄位的代稱。
   const BLANK_AGENT = '個人';
-  const ACT = { call: 'call', appt: 'appt', need: 'need' };
+  const ACT = { warm: 'warm', call: 'call', appt: 'appt', need: 'need' };
   const METHODS = ['電話', 'Line', '面談', '其他'];
   const AUTO_START = '2026-10-17';
 
@@ -92,7 +92,7 @@
     const s = String(q || '').trim().toLowerCase();
     if (!s) return [];
     return (Array.isArray(list) ? list : []).filter(function (c) {
-      return c && String(c.name || '').toLowerCase().indexOf(s) >= 0;
+      return c && c.category !== 'RECRUIT' && String(c.name || '').toLowerCase().indexOf(s) >= 0;
     }).slice(0, 12);
   }
   function pickMeta(c) {
@@ -314,7 +314,8 @@
         round: 1,
         side: entry.t === 'rf' ? 'rf' : 'ds',
         name: String(entry.name || '').trim(),
-        email: String(email || '').toLowerCase()
+        email: String(email || '').toLowerCase(),
+        byEmail: String(email || '').toLowerCase()
       });
     });
     return out;
@@ -332,9 +333,10 @@
       action: act,
       date: day,
       round: 1,
-      side: 'ds',
+      side: customer.side === 'rf' ? 'rf' : 'ds',
       name: String(customer.name || '').trim(),
       email: String(historyRow.byEmail).toLowerCase(),
+      byEmail: String(historyRow.byEmail).toLowerCase(),
       leadId: customer.leadId || ''
     }];
   }
@@ -477,6 +479,58 @@
       addRoll(months[p], c, !!first[String(c.id || '')]);
     });
     return months;
+  }
+  function membersInOrder(team) {
+    if (!team || !team.members) return [];
+    const order = Array.isArray(team.emails) && team.emails.length ? team.emails : Object.keys(team.members);
+    const out = [];
+    const seen = {};
+    order.forEach(function (raw) {
+      const key = String(raw || '').trim().toLowerCase();
+      if (!key || seen[key]) return;
+      const m = team.members[key] || team.members[raw];
+      if (!m || m.active === false) return;
+      seen[key] = 1;
+      out.push({
+        email: key,
+        agentName: String(m.agentName || '').trim(),
+        displayName: String(m.displayName || '').trim(),
+        uid: String(m.uid || '').trim()
+      });
+    });
+    return out;
+  }
+  function creditFor(team, roster, agentName, self) {
+    self = self || {};
+    const mine = {
+      email: String(self.email || '').toLowerCase(),
+      uid: String(self.uid || ''),
+      fallback: true,
+      note: '找不到對應的負責業務，這次自動次數先記在你自己的闖關。'
+    };
+    if (agentName == null || !mine.uid) return mine;
+    const want = String(agentName).trim();
+    const hits = membersInOrder(team).filter(function (m) { return m.agentName === want; });
+    if (hits.length !== 1) return mine;
+    const hit = hits[0];
+    let uid = hit.uid;
+    (Array.isArray(roster) ? roster : []).some(function (r) {
+      if (uid) return true;
+      if (!r || String(r.email || '').toLowerCase() !== hit.email) return false;
+      const id = String(r.uid || '').trim();
+      if (!id) return false;
+      uid = id;
+      return true;
+    });
+    if (!uid) {
+      return {
+        email: mine.email,
+        uid: mine.uid,
+        fallback: true,
+        note: '這位負責業務還沒有闖關帳號，次數先記在你自己的。'
+      };
+    }
+    return { email: hit.email, uid: uid, fallback: false, note: '', displayName: hit.displayName };
   }
   function memberAgentName(team, email) {
     if (!team || !team.members) return null;
@@ -708,6 +762,7 @@
     wonRollup: wonRollup,
     wonMonths: wonMonths,
     memberAgentName: memberAgentName,
+    creditFor: creditFor,
     syncListPerson: syncListPerson
   };
 })(typeof window !== 'undefined' ? window : globalThis);
