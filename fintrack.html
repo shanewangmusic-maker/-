@@ -803,6 +803,26 @@ body.present .pol-card .gap-row span{height:auto}
 .pv-chart .pv-cap{margin:0 0 4px;font-size:13px;font-weight:700}
 .pv-chart svg{width:100%;height:auto;display:block}
 .pv-chart.empty{font-size:12.5px;color:var(--muted);padding:8px 0}
+.ocr-mask{position:fixed;inset:0;z-index:80;background:rgba(20,30,42,.45);overflow:auto;padding:24px 12px}
+.ocr-mask[hidden]{display:none!important}
+.ocr-box{max-width:960px;margin:0 auto;background:#fff;border-radius:16px;padding:16px 16px 18px;border-top:3px solid var(--gold);box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.ocr-box h3{margin:0 0 4px}
+.ocr-note{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.ocr-tools{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:8px 0}
+.ocr-tools label{display:inline-flex;gap:6px;align-items:center;font-size:13px}
+.ocr-map{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-top:6px}
+.ocr-map label{display:flex;flex-direction:column;gap:4px;min-width:108px;font-size:11px;color:var(--muted)}
+.ocr-map select,.ocr-tools select,.ocr-tools input{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.ocr-grid{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.ocr-grid th{font-size:12px;text-align:right;color:var(--muted);padding:4px}
+.ocr-grid td{padding:3px}
+.ocr-grid input{width:100%;min-width:72px;box-sizing:border-box;text-align:right;border:1px solid var(--line-2);border-radius:7px;padding:4px 6px;font-size:13px}
+.ocr-grid input.ocr-bad{background:#fff4e5;border-color:#c8742e}
+.ocr-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px}
+.ocr-pages{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+@media(max-width:640px){.ocr-box{padding:14px 12px}.ocr-foot{justify-content:stretch}.ocr-foot .btn{flex:1}}
+@media print{.ocr-mask{display:none!important}}
+body.pdfm .ocr-mask{display:none!important}
 .pv-ret{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#f4faf7;border:1px solid #d5ebe3;border-radius:12px;padding:10px 12px;margin:8px 0 12px}
 .pv-ret .v{font-size:22px}
 table.log td.face .gap-tag{display:block;font-weight:500}
@@ -1396,16 +1416,16 @@ function pvParsePaste(text){const lines=String(text||'').split(/\r?\n/).map(s=>s
 function pvNewPolicy(src){src=src||{};const rows=Array.isArray(src.rows)?src.rows.map(pvNormRow):[];return {id:src.id||('pv'+Date.now().toString(36)+Math.floor(Math.random()*99)),name:String(src.name||''),currency:src.currency==='USD'?'USD':'TWD',rate:src.rate==null||src.rate===''?'':pvNum(src.rate),par:!!src.par,retire:src.retire==='manual'?'manual':'table',manual:!!src.manual,rows};}
 function pvImportPolicy(obj){obj=obj||{};const box=pvEnsure();const id=obj.id?String(obj.id):'';let cur=id?box.policies.find(p=>p.id===id):null;if(cur&&cur.manual&&!obj.replace)return {ok:false,reason:'manual',id:cur.id};const next=pvNewPolicy(Object.assign({},obj,{id:cur?cur.id:(id||undefined),manual:false}));if(cur){const i=box.policies.indexOf(cur);box.policies[i]=next;}else box.policies.push(next);return {ok:true,id:next.id};}
 function pvBoardHTML(){const ed=S.mode!=='client'&&!document.body.classList.contains('present')&&!document.body.classList.contains('printing')&&!document.body.classList.contains('pdfm');const box=pvBox();const age=pvClientAge();const face=pvSum('deathBenefit',age,'life');const sur=pvSum('surrenderTotal',pvRetireAge(),'retire');
-  const pol=(p)=>`<section class="pv-pol" data-pvid="${esc(p.id)}"><div class="pv-meta"><label>名稱 <input data-pvf="name" value="${esc(p.name)}" placeholder="保單名稱"${ed?'':' disabled'}></label><label>幣別 <select data-pvf="currency"${ed?'':' disabled'}><option value="TWD"${p.currency!=='USD'?' selected':''}>台幣</option><option value="USD"${p.currency==='USD'?' selected':''}>美元</option></select></label>${p.currency==='USD'||box.ccy!==(p.currency||'TWD')?`<label>1 美元＝ <input data-pvf="rate" type="number" value="${p.rate===''||p.rate==null?'':esc(p.rate)}" placeholder="匯率"${ed?'':' disabled'}> 元台幣</label>`:''}<label class="ck"><input type="checkbox" data-pvf="par"${p.par?' checked':''}${ed?'':' disabled'}>預估（假設中分紅）</label><label>退休 <select data-pvf="retire"${ed?'':' disabled'}><option value="table"${p.retire!=='manual'?' selected':''}>用表格解約金</option><option value="manual"${p.retire==='manual'?' selected':''}>手填（不計入表格）</option></select></label>${ed?`<button type="button" class="btn sm edit-only" data-pv-del="${esc(p.id)}">刪除此保單</button>`:''}</div>
+  const pol=(p)=>`<section class="pv-pol" data-pvid="${esc(p.id)}"><div class="pv-meta"><label>名稱 <input data-pvf="name" value="${esc(p.name)}" placeholder="保單名稱"${ed?'':' disabled'}></label><label>幣別 <select data-pvf="currency"${ed?'':' disabled'}><option value="TWD"${p.currency!=='USD'?' selected':''}>台幣</option><option value="USD"${p.currency==='USD'?' selected':''}>美元</option></select></label>${p.currency==='USD'||box.ccy!==(p.currency||'TWD')?`<label>1 美元＝ <input data-pvf="rate" type="number" value="${p.rate===''||p.rate==null?'':esc(p.rate)}" placeholder="匯率"${ed?'':' disabled'}> 元台幣</label>`:''}<label class="ck"><input type="checkbox" data-pvf="par"${p.par?' checked':''}${ed?'':' disabled'}>預估（假設中分紅）</label><label>退休 <select data-pvf="retire"${ed?'':' disabled'}><option value="table"${p.retire!=='manual'?' selected':''}>用表格解約金</option><option value="manual"${p.retire==='manual'?' selected':''}>手填（不計入表格）</option></select></label>${ed?`<button type="button" class="btn sm edit-only" data-pv-ocr="${esc(p.id)}">上傳建議書截圖</button><button type="button" class="btn sm edit-only" data-pv-del="${esc(p.id)}">刪除此保單</button>`:''}</div>
     <div class="pv-scroll"><table class="pv-t"><thead><tr><th>年度</th><th>年齡</th><th>累計所繳</th><th>身故保險金</th><th>解約金總和</th>${ed?'<th></th>':''}</tr></thead><tbody>${(p.rows||[]).map((r,i)=>`<tr><td data-h="年度"><input data-pvr="${i}|year" type="number" value="${r.year===''?'':r.year}"${ed?'':' disabled'}></td><td data-h="年齡"><input data-pvr="${i}|age" type="number" value="${r.age===''?'':r.age}"${ed?'':' disabled'}></td><td data-h="累計所繳"><input data-pvr="${i}|paidCum" type="number" value="${r.paidCum===''?'':r.paidCum}"${ed?'':' disabled'}></td><td data-h="身故保險金"><input data-pvr="${i}|deathBenefit" type="number" value="${r.deathBenefit===''?'':r.deathBenefit}"${ed?'':' disabled'}></td><td data-h="解約金總和"><input data-pvr="${i}|surrenderTotal" type="number" value="${r.surrenderTotal===''?'':r.surrenderTotal}"${ed?'':' disabled'}></td>${ed?`<td data-h=""><button type="button" class="rm" data-pvr-rm="${i}" title="刪除此列">×</button></td>`:''}</tr>`).join('')||`<tr><td colspan="6" class="l" style="text-align:left;color:var(--muted)">尚無列。可自行新增，或貼上試算表。</td></tr>`}</tbody></table></div>
     ${ed?`<div class="edit-only" style="margin-top:8px"><button type="button" class="btn sm" data-pv-addrow="${esc(p.id)}">＋新增一列</button></div><details class="pv-paste edit-only"><summary>貼上試算表（Tab 或逗號）</summary><textarea data-pv-paste placeholder="年度	年齡	累計所繳	身故保險金	解約金總和"></textarea><button type="button" class="btn sm" data-pv-apply>貼上並取代列</button></details>`:''}</section>`;
-  return `<article class="card pv-board" id="pvBoard"><div class="goal-in"><div class="pv-h"><div><div class="k">POLICY VALUE</div><h3>保單價值表</h3><p class="lbl" style="margin:4px 0 0">儲蓄、退休等保單的身價與解約金。不寫進「個人保障」的壽險；手改一律保留。</p></div><div class="pv-tools">${ed?`<label>加總顯示 <select id="pvCcy"><option value="TWD"${box.ccy!=='USD'?' selected':''}>台幣</option><option value="USD"${box.ccy==='USD'?' selected':''}>美元</option></select></label><button type="button" class="btn sm primary edit-only" id="pvAdd">＋新增保單</button>`:`<span class="lbl">加總顯示 ${pvCcyLabel(box.ccy)}</span>`}</div></div>
+  return `<article class="card pv-board" id="pvBoard"><div class="goal-in"><div class="pv-h"><div><div class="k">POLICY VALUE</div><h3>保單價值表</h3><p class="lbl" style="margin:4px 0 0">儲蓄、退休等保單的身價與解約金。不寫進「個人保障」的壽險；手改一律保留。建議書截圖只在這台電腦辨識，不會上傳。</p></div><div class="pv-tools">${ed?`<label>加總顯示 <select id="pvCcy"><option value="TWD"${box.ccy!=='USD'?' selected':''}>台幣</option><option value="USD"${box.ccy==='USD'?' selected':''}>美元</option></select></label><button type="button" class="btn sm edit-only" id="pvOcrNew">上傳建議書截圖</button><button type="button" class="btn sm primary edit-only" id="pvAdd">＋新增保單</button>`:`<span class="lbl">加總顯示 ${pvCcyLabel(box.ccy)}</span>`}</div></div>
     <div class="pv-sum"><div class="g-kpi"><div class="lbl">其他規劃身價${age==null?'':'・'+age+'歲'}</div><div class="v num">${face.n?fmt(Math.round(face.sum)):'—'}</div></div><div class="g-kpi"><div class="lbl">退休解約金・${pvRetireAge()}歲</div><div class="v num">${sur.n?fmt(Math.round(sur.sum)):'—'}</div><div class="s">${sur.par?'預估（假設中分紅）':'預估'}</div></div></div>
     ${box.policies.length?box.policies.map(pol).join(''):'<div class="empty-box" style="margin-top:12px"><div class="eb-t">尚未建立保單價值表</div><div class="eb-s">新增保單後，可逐列填寫或從試算表貼上。</div></div>'}
     ${pvChartHTML()}
   </div></article>`;}
 function pvTouch(p){if(p)p.manual=true;}
-function wirePv(){const root=document.getElementById('pvBoard');if(!root)return;
+function wirePv(){const root=document.getElementById('pvBoard');if(!root)return;ocrWire(root);
   const ccy=document.getElementById('pvCcy');if(ccy)ccy.onchange=()=>{pvEnsure().ccy=ccy.value==='USD'?'USD':'TWD';renderAll();};
   const add=document.getElementById('pvAdd');if(add)add.onclick=()=>{pvEnsure().policies.push(pvNewPolicy({name:'新保單',currency:'TWD',rows:[{year:'',age:'',paidCum:'',deathBenefit:'',surrenderTotal:''}]}));renderAll();};
   root.querySelectorAll('[data-pvid]').forEach(sec=>{const id=sec.dataset.pvid;const get=()=>pvEnsure().policies.find(x=>x.id===id);sec.querySelectorAll('[data-pvf]').forEach(el=>{el.onchange=()=>{const p=get();if(!p)return;const f=el.dataset.pvf;if(f==='par')p.par=el.checked;else if(f==='rate')p.rate=el.value===''?'':pvNum(el.value);else p[f]=el.value;pvTouch(p);renderAll();};});
@@ -1414,7 +1434,186 @@ function wirePv(){const root=document.getElementById('pvBoard');if(!root)return;
     const addR=sec.querySelector('[data-pv-addrow]');if(addR)addR.onclick=()=>{const p=get();if(!p)return;p.rows.push({year:'',age:'',paidCum:'',deathBenefit:'',surrenderTotal:''});pvTouch(p);renderAll();};
     const apply=sec.querySelector('[data-pv-apply]');if(apply)apply.onclick=()=>{const p=get();if(!p)return;const ta=sec.querySelector('[data-pv-paste]');const rows=pvParsePaste(ta?ta.value:'');if(!rows.length){toast('沒有讀到列。請用 Tab 或逗號分隔年度、年齡、累計保費、身故保險金、解約金。');return;}p.rows=rows;pvTouch(p);renderAll();toast('已貼上 '+rows.length+' 列');};});
   root.querySelectorAll('[data-pv-del]').forEach(b=>b.onclick=()=>{const box=pvEnsure();const p=box.policies.find(x=>x.id===b.dataset.pvDel);if(p&&!confirm('刪除「'+(p.name||'此保單')+'」？已存的檢視列不會被刪。'))return;box.policies=box.policies.filter(x=>x.id!==b.dataset.pvDel);renderAll();});}
+/* ===== 建議書截圖：只在瀏覽器辨識，圖片不進任何伺服器 ===== */
+const OCR_ROLES=[['ignore','忽略'],['year','年度'],['age','年齡'],['paid','累計所繳'],['death','身故保險金'],['deathPart','身故部分 A/D/E'],['sur','解約金總和'],['surPart','解約金部分 B/G/H']];
+const OCR_FIELDS=['year','age','paidCum','deathBenefit','surrenderTotal'];
+let ocrWorkerP=null, ocrTarget=null, ocrSess=null, ocrPdf=null;
+function ocrGuessRole(raw){const s=String(raw||'').replace(/\s+/g,'').normalize('NFKC');if(!s)return 'ignore';
+  if(/解約金總和|可能領取解約金|解約金合計/.test(s))return 'sur';
+  if(/壽險保障|當年度末身故/.test(s))return 'death';
+  if(/身故保險金|身價/.test(s))return 'death';
+  if(/累計所繳|累積實繳|累計已繳|已繳保費|所繳保費|折扣後累計|實繳保費|累計保費/.test(s))return 'paid';
+  if(/保險年齡|^年齡|年齡$/.test(s))return 'age';
+  if(/保單年度|^年度|年度$/.test(s))return 'year';
+  if(/^[ADE]$/.test(s))return 'deathPart';
+  if(/^[BGH]$/.test(s))return 'surPart';
+  return 'ignore';}
+function ocrRefineRoles(roles,headers){roles=roles.slice();
+  const death=[];roles.forEach((r,i)=>{if(r==='death')death.push(i);});
+  if(death.length>1){const pref=death.find(i=>/壽險保障|當年度末身故/.test(String(headers[i]||'').replace(/\s+/g,'')))??death[death.length-1];death.forEach(i=>{if(i!==pref)roles[i]='ignore';});}
+  const sur=[];roles.forEach((r,i)=>{if(r==='sur')sur.push(i);});
+  if(sur.length>1){const keep=sur[sur.length-1];sur.forEach(i=>{if(i!==keep)roles[i]='ignore';});}
+  return roles;}
+function ocrNum(raw){let s=String(raw==null?'':raw).normalize('NFKC');if(!s.trim())return '';
+  s=s.replace(/[Oo○〇]/g,'0').replace(/[Il|]/g,'1').replace(/[,\s，、]/g,'');
+  s=s.replace(/(\d)[.:;]+(?=\d{3}(\D|$))/g,'$1');
+  s=s.replace(/(\d)\.(?=\d{3}(\D|$))/g,'$1');
+  s=s.replace(/[^\d.\-]/g,'');if(!s||!/\d/.test(s))return '';
+  if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');
+  const n=Number(s);return isFinite(n)?n:'';}
+function ocrNormText(s){return String(s||'').replace(/\s+/g,'').normalize('NFKC');}
+const OCR_HEADER_KEYS=[['可能領取解約金總和','sur'],['解約金總和','sur'],['解約金合計','sur'],['可能領取解約金','sur'],['當年度末身故保險金','death'],['身故保險金總計','death'],['壽險保障小計','death'],['身故保險金','death'],['壽險保障','death'],['當年度末身故','death'],['累計所繳保費','paid'],['累積實繳保費','paid'],['累計已繳保費','paid'],['折扣後累計保費','paid'],['已繳保費','paid'],['所繳保費','paid'],['實繳保費','paid'],['累計保費','paid'],['累計所繳','paid'],['累積實繳','paid'],['保險年齡','age'],['保單年度','year'],['年齡','age'],['年度','year']].sort((a,b)=>b[0].length-a[0].length);
+function ocrHeaderFromItems(items){const chars=[];
+  items.slice().sort((a,b)=>a.x0-b.x0).forEach(it=>{const t=ocrNormText(it.text);if(!t)return;const n=t.length;const solo=n===1&&/^[A-H]$/.test(t);
+    for(let i=0;i<n;i++){const ch=t[i];if(/[\s|_.,，、:：;；"'“”「」［］\[\]()（）|｜\-－]/.test(ch))continue;const x0=it.x0+(it.x1-it.x0)*i/n,x1=it.x0+(it.x1-it.x0)*(i+1)/n;chars.push({ch,x0,x1,xc:(x0+x1)/2,solo});}});
+  const str=chars.map(c=>c.ch).join('');const found=[];let i=0;
+  while(i<chars.length){const ch=chars[i].ch;
+    if(/[\s|_.,，、:：;；"'“”「」［］\[\]()（）]/.test(ch)){i++;continue;}
+    let hit=null;for(let k=0;k<OCR_HEADER_KEYS.length;k++){const key=OCR_HEADER_KEYS[k][0];if(str.startsWith(key,i)){hit={key,role:OCR_HEADER_KEYS[k][1],a:i,b:i+key.length};break;}}
+    if(!hit&&chars[i].solo&&/^[ADE]$/.test(ch))hit={key:ch,role:'deathPart',a:i,b:i+1};
+    else if(!hit&&chars[i].solo&&/^[BGH]$/.test(ch))hit={key:ch,role:'surPart',a:i,b:i+1};
+    if(!hit){i++;continue;}
+    const slice=chars.slice(hit.a,hit.b);
+    found.push({header:hit.key,role:hit.role,x0:Math.min.apply(null,slice.map(c=>c.x0)),x1:Math.max.apply(null,slice.map(c=>c.x1)),xc:slice.reduce((s,c)=>s+c.xc,0)/slice.length});
+    i=hit.b;}
+  return found;}
+function ocrHeaderScore(found){let s=0;found.forEach(f=>{s+=(f.role==='deathPart'||f.role==='surPart')?1:10;});return s;}
+function ocrLines(words){const items=[];(words||[]).forEach(w=>{const text=String(w.text||'').replace(/\s+/g,' ').trim();if(!text)return;const b=w.bbox||{};const x0=+b.x0||0,y0=+b.y0||0,x1=+b.x1||0,y1=+b.y1||0;items.push({text,conf:+w.confidence||0,x0,y0,x1,y1,xc:(x0+x1)/2,yc:(y0+y1)/2});});
+  if(!items.length)return [];items.sort((a,b)=>a.yc-b.yc||a.x0-b.x0);const hs=items.map(i=>Math.max(4,i.y1-i.y0)).sort((a,b)=>a-b);const mh=hs[Math.floor(hs.length/2)]||16;const lines=[];
+  items.forEach(it=>{let ln=lines[lines.length-1];if(!ln||Math.abs(it.yc-ln.yc)>mh*0.65){ln={yc:it.yc,items:[it]};lines.push(ln);}else{ln.items.push(it);ln.yc=ln.items.reduce((s,x)=>s+x.yc,0)/ln.items.length;}});
+  lines.forEach(ln=>ln.items.sort((a,b)=>a.x0-b.x0));return lines;}
+function ocrCcyHint(lines){const t=lines.map(ln=>ln.items.map(i=>i.text).join(' ')).join('\n');return /USD|美金|美元/.test(t)?'USD':(/TWD|台幣|新臺幣|新台幣/.test(t)?'TWD':'');}
+function ocrHeaderIndex(lines){let best=-1,score=-1;lines.forEach((ln,i)=>{const sc=ocrHeaderScore(ocrHeaderFromItems(ln.items));if(sc>score){score=sc;best=i;}});return score>=20?best:-1;}
+function ocrClusters(lines){const pts=[];lines.forEach(ln=>ln.items.forEach(it=>pts.push(it)));if(!pts.length)return [];
+  const ws=pts.map(i=>Math.max(8,i.x1-i.x0)).sort((a,b)=>a-b);const gap=Math.max(16,ws[Math.floor(ws.length/2)]*0.55);const xs=pts.map(i=>i.xc).sort((a,b)=>a-b);const clusters=[];
+  xs.forEach(x=>{const c=clusters[clusters.length-1];if(!c||x-c.max>gap)clusters.push({min:x,max:x,sum:x,n:1});else{c.max=x;c.sum+=x;c.n++;}});
+  return clusters.map((c,i,arr)=>{const xc=c.sum/c.n;const prev=arr[i-1],next=arr[i+1];const left=prev?(prev.sum/prev.n+xc)/2:-1e9;const right=next?(xc+next.sum/next.n)/2:1e9;return {xc,left,right};});}
+function ocrBuildTable(words){const lines=ocrLines(words);const hi=ocrHeaderIndex(lines);let headerCells=[],start=0;
+  if(hi>=0){let items=lines[hi].items.slice();start=hi+1;
+    if(lines[hi+1]){const nxt=lines[hi+1];const letters=nxt.items.filter(it=>/^[A-H]$/.test(ocrNormText(it.text))).length;if(letters>=3&&letters>=nxt.items.length-1){items=items.concat(nxt.items);start=hi+2;}}
+    headerCells=ocrHeaderFromItems(items);}
+  const body=(hi<0?lines:lines.slice(start)).filter(ln=>ln.items.filter(it=>/\d/.test(it.text)).length>=2);
+  let cols;
+  if(headerCells.length>=2){const sorted=headerCells.slice().sort((a,b)=>a.xc-b.xc);cols=sorted.map((it,i)=>{const prev=sorted[i-1],next=sorted[i+1];const pad=Math.min(28,Math.max(8,(it.x1-it.x0)*0.2));return {left:prev?(prev.xc+it.xc)/2:it.x0-pad,right:next?(it.xc+next.xc)/2:it.x1+pad,header:it.header,role:it.role,xc:it.xc};});
+    const loose=[];body.forEach((ln,ri)=>ln.items.forEach(it=>{if(!/\d/.test(it.text)||cols.some(c=>it.xc>=c.left&&it.xc<c.right))return;loose.push({it,ri});}));
+    if(loose.length){const ws=loose.map(o=>Math.max(8,o.it.x1-o.it.x0)).sort((a,b)=>a-b);const near=Math.max(14,(ws[Math.floor(ws.length/2)]||24)*1.6);const groups=[];
+      loose.sort((a,b)=>a.it.xc-b.it.xc).forEach(o=>{let g=groups.find(g=>Math.abs(g.xc-o.it.xc)<near&&!g.hits.some(h=>h.ri===o.ri));if(!g){g={xc:o.it.xc,n:0,hits:[]};groups.push(g);}g.n++;g.xc=(g.xc*(g.n-1)+o.it.xc)/g.n;g.hits.push(o);});
+      const kindOf=texts=>{const nums=texts.map(ocrNum).filter(n=>n!=='');if(nums.length<2||!nums.every(n=>n===Math.round(n)&&n>=0&&n<=130))return '';for(let i=1;i<nums.length;i++){const d=nums[i]-nums[i-1];if(d<=0||d>3)return '';}if(nums[0]>=1&&nums[0]<=3&&nums[nums.length-1]<=nums.length+5)return 'year';if(nums[nums.length-1]<=120)return 'age';return '';};
+      const pending=groups.map(g=>{const texts=body.map(()=>'');g.hits.forEach(o=>{texts[o.ri]+=o.it.text;});return {g,texts,kind:kindOf(texts),role:''};});
+      const taken=()=>cols.map(c=>c.role).concat(pending.map(p=>p.role));
+      pending.forEach(p=>{if(p.kind==='year'&&!taken().includes('year'))p.role='year';});
+      pending.forEach(p=>{if(!p.role&&p.kind==='age'&&!taken().includes('age'))p.role='age';});
+      pending.forEach(p=>{if(!p.role)return;cols.push({left:p.g.xc-near,right:p.g.xc+near,header:p.role==='year'?'年度':'年齡',role:p.role,xc:p.g.xc});});
+      cols.sort((a,b)=>a.xc-b.xc);
+      for(let i=0;i<cols.length;i++){const prev=cols[i-1],next=cols[i+1];cols[i].left=prev?(prev.xc+cols[i].xc)/2:cols[i].xc-near;cols[i].right=next?(cols[i].xc+next.xc)/2:cols[i].xc+near;}}}
+  else {const clusters=ocrClusters(body.length?body:lines);cols=clusters.map((c,i)=>({left:c.left,right:c.right,header:'欄'+(i+1),role:'ignore',xc:c.xc}));}
+  if(!cols.length)return {headers:[],roles:[],grid:[],ccyHint:ocrCcyHint(lines),headerFound:false};
+  const headers=cols.map(c=>c.header||'');let roles=headerCells.length>=2?ocrRefineRoles(cols.map(c=>c.role),headers):ocrRefineRoles(headers.map(ocrGuessRole),headers);
+  const put=ln=>cols.map(c=>{const hits=ln.items.filter(it=>it.xc>=c.left&&it.xc<c.right);if(!hits.length)return {text:'',conf:100};return {text:hits.map(h=>h.text).join(''),conf:Math.min.apply(null,hits.map(h=>h.conf))};});
+  const grid=body.map(put).filter(row=>row.some(c=>c.text));
+  return {headers,roles,grid,ccyHint:ocrCcyHint(lines),headerFound:hi>=0};}
+function ocrOne(cells,i){if(i<0||!cells[i]||cells[i].text==='')return {n:'',conf:100};const n=ocrNum(cells[i].text);return {n,conf:cells[i].conf==null?100:+cells[i].conf};}
+function ocrCols(roles,kind,part){const totals=[],parts=[];roles.forEach((r,i)=>{if(r===kind)totals.push(i);if(r===part)parts.push(i);});if(totals.length)return [totals[totals.length-1]];return parts;}
+function ocrRowsFromGrid(grid,roles){const yearI=roles.indexOf('year'),ageI=roles.indexOf('age'),paidI=roles.indexOf('paid');const death=ocrCols(roles,'death','deathPart'),sur=ocrCols(roles,'sur','surPart');
+  const sumOf=(cells,idxs)=>{if(!idxs.length)return {n:'',conf:100};if(idxs.length===1)return ocrOne(cells,idxs[0]);let s=0,any=false,conf=100;idxs.forEach(i=>{const v=ocrOne(cells,i);if(v.n==='')return;s+=Number(v.n);any=true;conf=Math.min(conf,v.conf);});return any?{n:s,conf}:{n:'',conf:0};};
+  const rows=(grid||[]).map(cells=>{const y=ocrOne(cells,yearI),a=ocrOne(cells,ageI),p=ocrOne(cells,paidI),d=sumOf(cells,death),u=sumOf(cells,sur);
+    return {year:y.n,age:a.n,paidCum:p.n,deathBenefit:d.n,surrenderTotal:u.n,conf:{year:y.conf,age:a.conf,paidCum:p.conf,deathBenefit:d.conf,surrenderTotal:u.conf},touched:{},flags:{}};
+  }).filter(r=>OCR_FIELDS.some(f=>r[f]!==''));
+  ocrApplySanity(rows);return rows;}
+function ocrApplySanity(rows){rows.forEach((r,i)=>{r.flags={};OCR_FIELDS.forEach(f=>{const reasons=[];const n=r[f]===''||r[f]==null?null:Number(r[f]);
+    if(!(r.touched&&r.touched[f])&&r.conf&&r.conf[f]<70&&r[f]!=='')reasons.push('辨識不確定');
+    if(f==='age'&&n!=null&&(n<0||n>120))reasons.push('年齡不合理');
+    if(f==='year'&&n!=null&&(n<1||n>130))reasons.push('年度不合理');
+    if((f==='paidCum'||f==='deathBenefit'||f==='surrenderTotal')&&n!=null&&n<0)reasons.push('不應是負數');
+    const p=rows[i-1];if(p){if(f==='year'&&n!=null&&p.year!==''&&n<=Number(p.year))reasons.push('年度應往下增加');
+      if(f==='age'&&n!=null&&p.age!==''&&p.year!==''&&r.year!==''){const dy=Number(r.year)-Number(p.year);if(dy>0&&n-Number(p.age)!==dy)reasons.push('年齡應隨年度一年一年增加');}
+      if(f==='paidCum'&&n!=null&&p.paidCum!==''&&n<Number(p.paidCum))reasons.push('累計保費不應變少');}
+    if(f==='surrenderTotal'&&n!=null&&r.deathBenefit!==''&&Number(r.deathBenefit)>0&&n>Number(r.deathBenefit)*3)reasons.push('解約金遠高於身故保險金');
+    if(reasons.length)r.flags[f]=reasons[0];});});}
+function ocrLoadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[data-ocr="'+src+'"]')){res();return;}const s=document.createElement('script');s.src=src;s.async=true;s.dataset.ocr=src;s.onload=()=>res();s.onerror=()=>rej(new Error('load'));document.head.appendChild(s);});}
+function ocrStatus(msg){const el=document.getElementById('pvOcrStatus');if(el)el.textContent=msg;}
+function ocrOnLog(m){if(!m||!m.status)return;const map={ 'loading tesseract core':'正在準備辨識程式','initializing tesseract':'正在準備辨識','loading language traineddata':'正在下載辨識語料（圖片不會上傳）','initializing api':'正在準備辨識','recognizing text':'正在辨識表格'};ocrStatus((map[m.status]||'正在處理')+(m.progress? ' '+Math.round(m.progress*100)+'%':''));}
+function ocrWorker(){if(!ocrWorkerP){ocrWorkerP=(async()=>{await ocrLoadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');const worker=await window.Tesseract.createWorker('chi_tra+eng',1,{workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',langPath:'https://tessdata.projectnaptha.com/4.0.0',logger:ocrOnLog});await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});return worker;})();ocrWorkerP.catch(()=>{ocrWorkerP=null;});}return ocrWorkerP;}
+function ocrMask(){let el=document.getElementById('pvOcr');if(!el){el=document.createElement('div');el.id='pvOcr';el.className='ocr-mask';el.hidden=true;el.innerHTML='<div class="ocr-box" id="pvOcrBox"></div>';document.body.appendChild(el);}return el;}
+function ocrClose(){const el=document.getElementById('pvOcr');if(el)el.hidden=true;ocrSess=null;ocrPdf=null;}
+function ocrOpen(html){const el=ocrMask();el.hidden=false;document.getElementById('pvOcrBox').innerHTML=html;el.scrollTop=0;}
+function ocrFileInput(){let el=document.getElementById('pvOcrFile');if(!el){el=document.createElement('input');el.type='file';el.id='pvOcrFile';el.hidden=true;el.accept='image/*,.pdf,application/pdf,.heic,.heif';document.body.appendChild(el);el.addEventListener('change',()=>{const f=el.files&&el.files[0];el.value='';if(f)ocrStart(f);});}return el;}
+function ocrPick(policyId){ocrTarget=policyId||null;ocrFileInput().click();}
+function ocrWire(root){const n=document.getElementById('pvOcrNew');if(n)n.onclick=()=>ocrPick(null);root.querySelectorAll('[data-pv-ocr]').forEach(b=>b.onclick=()=>ocrPick(b.dataset.pvOcr));}
+function ocrReadImage(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{URL.revokeObjectURL(url);res(img);};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('image'));};img.src=url;});}
+function ocrCanvasFromImage(img){const scale=img.width<1800?Math.min(2.6,2000/Math.max(1,img.width)):1;const c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(img,0,0,c.width,c.height);return ocrPrep(c);}
+function ocrTrim(canvas){const w=canvas.width,h=canvas.height;const d=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;let x0=w,y0=h,x1=0,y1=0;
+  for(let y=0;y<h;y+=2){for(let x=0;x<w;x+=2){const i=(y*w+x)*4;if(d[i]<210||d[i+1]<210||d[i+2]<210){if(x<x0)x0=x;if(y<y0)y0=y;if(x>x1)x1=x;if(y>y1)y1=y;}}}
+  if(x1-x0<20||y1-y0<20)return canvas;const pad=16;x0=Math.max(0,x0-pad);y0=Math.max(0,y0-pad);x1=Math.min(w-1,x1+pad);y1=Math.min(h-1,y1+pad);
+  const c=document.createElement('canvas');c.width=x1-x0+1;c.height=y1-y0+1;c.getContext('2d').drawImage(canvas,x0,y0,c.width,c.height,0,0,c.width,c.height);return c;}
+function ocrLimit(canvas){const maxW=2400;if(canvas.width<=maxW)return canvas;const s=maxW/canvas.width;const c=document.createElement('canvas');c.width=maxW;c.height=Math.max(1,Math.round(canvas.height*s));const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(canvas,0,0,c.width,c.height);return c;}
+function ocrPrep(canvas){return ocrStripRules(ocrDeskew(ocrLimit(ocrTrim(canvas))));}
+function ocrRotate(canvas,deg){const w=canvas.width,h=canvas.height;const out=document.createElement('canvas');out.width=w;out.height=h;const g=out.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.translate(w/2,h/2);g.rotate(deg*Math.PI/180);g.drawImage(canvas,-w/2,-h/2);return out;}
+function ocrDeskew(canvas){const w=canvas.width,h=canvas.height;if(w*h>7000000)return canvas;const src=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const score=ang=>{const rad=ang*Math.PI/180,s=Math.sin(rad),c=Math.cos(rad);const bins=new Float64Array(h);let n=0;
+    for(let y=0;y<h;y+=4){for(let x=0;x<w;x+=4){const i=(y*w+x)*4;if(src[i]<150&&src[i+1]<150&&src[i+2]<150){const yy=((y-h/2)*c+(x-w/2)*s+h/2)|0;if(yy>=0&&yy<h){bins[yy]++;n++;}}}}
+    if(n<30)return 0;let mean=0;for(let i=0;i<h;i++)mean+=bins[i];mean/=h;let v=0;for(let i=0;i<h;i++){const z=bins[i]-mean;v+=z*z;}return v;};
+  let best=0,bestS=-1;for(let a=-8;a<=8;a+=0.5){const s=score(a);if(s>bestS){bestS=s;best=a;}}
+  const flat=score(0);
+  if(Math.abs(best)<0.4||bestS<flat*1.12)return canvas;const out=document.createElement('canvas');out.width=w;out.height=h;const g=out.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.translate(w/2,h/2);g.rotate(-best*Math.PI/180);g.drawImage(canvas,-w/2,-h/2);return out;}
+function ocrStripRules(canvas){const w=canvas.width,h=canvas.height;if(!w||!h||w*h>8000000)return canvas;const g=canvas.getContext('2d',{willReadFrequently:true});const img=g.getImageData(0,0,w,h),d=img.data;const ink=new Uint8Array(w*h),kill=new Uint8Array(w*h);
+  for(let p=0,i=0;p<w*h;p++,i+=4){if(d[i]<165&&d[i+1]<165&&d[i+2]<165)ink[p]=1;}
+  const hMin=Math.max(70,Math.round(w*0.08)),vMin=Math.max(48,Math.round(h*0.16));
+  for(let y=0;y<h;y++){let x=0;const row=y*w;while(x<w){if(!ink[row+x]){x++;continue;}let x2=x;while(x2<w&&ink[row+x2])x2++;if(x2-x>=hMin){let t=1;for(let yy=y+1;yy<h&&yy<y+10;yy++){let c=0;for(let xx=x;xx<x2;xx+=3)if(ink[yy*w+xx])c++;if(c>(x2-x)/3*0.55)t++;else break;}if(t<=7){for(let yy=y;yy<y+t&&yy<h;yy++)for(let xx=x;xx<x2;xx++)kill[yy*w+xx]=1;}}x=x2;}}
+  for(let x=0;x<w;x++){let y=0;while(y<h){if(!ink[y*w+x]){y++;continue;}let y2=y;while(y2<h&&ink[y2*w+x])y2++;if(y2-y>=vMin){let t=1;for(let xx=x+1;xx<w&&xx<x+10;xx++){let c=0;for(let yy=y;yy<y2;yy+=3)if(ink[yy*w+xx])c++;if(c>(y2-y)/3*0.55)t++;else break;}if(t<=7){for(let xx=x;xx<x+t&&xx<w;xx++)for(let yy=y;yy<y2;yy++)kill[yy*w+xx]=1;}}y=y2;}}
+  for(let p=0,i=0;p<w*h;p++,i+=4){if(kill[p])d[i]=d[i+1]=d[i+2]=255;}g.putImageData(img,0,0);return canvas;}
+async function ocrEnsurePdf(){if(window.pdfjsLib)return;await ocrLoadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';}
+async function ocrRenderPdfPage(n){const page=await ocrPdf.getPage(n);const view=page.getViewport({scale:2});const c=document.createElement('canvas');c.width=view.width;c.height=view.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await page.render({canvasContext:ctx,viewport:view}).promise;return ocrPrep(c);}
+function ocrShowPages(n){const btns=[];for(let i=1;i<=n;i++)btns.push('<button type="button" class="btn sm" data-ocr-page="'+i+'">第 '+i+' 頁</button>');
+  ocrOpen('<h3>選要辨識的那一頁</h3><p class="ocr-note">檔案只留在這台電腦。選一頁之後才開始辨識。</p><div class="ocr-pages">'+btns.join('')+'</div><div class="ocr-foot"><button type="button" class="btn" id="pvOcrCancel">取消</button></div>');
+  document.getElementById('pvOcrCancel').onclick=ocrClose;
+  document.getElementById('pvOcrBox').querySelectorAll('[data-ocr-page]').forEach(b=>b.onclick=async()=>{try{ocrStatusWait();const canvas=await ocrRenderPdfPage(+b.dataset.ocrPage);await ocrRun(canvas,'');}catch(e){ocrClose();toast('這一頁沒有讀成。檔案沒有上傳。');}});}
+function ocrStatusWait(){ocrOpen('<h3>正在辨識建議書</h3><p class="ocr-note" id="pvOcrStatus">圖片只在這台電腦處理，不會上傳。</p>');}
+async function ocrStart(file){const name=file.name||'';const isPdf=/pdf$/i.test(file.type)||/\.pdf$/i.test(name);const isHeic=/heic|heif/i.test(file.type)||/\.heic$|\.heif$/i.test(name);
+  ocrStatusWait();
+  try{if(isPdf){ocrStatus('正在讀取 PDF…檔案不會上傳。');const buf=await file.arrayBuffer();await ocrEnsurePdf();ocrPdf=await window.pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;if(ocrPdf.numPages>1){ocrShowPages(ocrPdf.numPages);return;}const canvas=await ocrRenderPdfPage(1);await ocrRun(canvas,name);}
+    else{let img;try{img=await ocrReadImage(file);}catch(e){ocrClose();toast(isHeic?'這個瀏覽器讀不了 HEIC，請改存成 JPG 或 PNG。圖片沒有上傳。':'讀不到這張圖，請改用 JPG 或 PNG。圖片沒有上傳。');return;}await ocrRun(ocrCanvasFromImage(img),name);}}
+  catch(e){ocrClose();toast('辨識沒有完成。圖片沒有上傳。');}}
+async function ocrRun(canvas,name){ocrStatus('正在這台電腦辨識…圖片不會上傳。');const worker=await ocrWorker();const t0=performance.now();
+  const read=async(img)=>{const ret=await worker.recognize(img);const words=ret&&ret.data&&ret.data.words||[];const built=ocrBuildTable(words);return {built,rows:ocrRowsFromGrid(built.grid,built.roles),digits:words.filter(w=>/\d/.test(w.text||'')).length};};
+  const rich=r=>r.rows.reduce((n,row)=>n+OCR_FIELDS.filter(f=>row[f]!==''&&row[f]!=null).length,0)*10+r.digits;
+  let best=await read(canvas);
+  if(rich(best)<12){for(const ang of [-3,-1.5,1.5,3]){const alt=await read(ocrRotate(canvas,ang));if(rich(alt)>rich(best))best=alt;}}
+  const ms=Math.round(performance.now()-t0);const built=best.built;const rows=best.rows;
+  const pol=ocrTarget?pvEnsure().policies.find(p=>p.id===ocrTarget):null;
+  ocrSess={policyId:ocrTarget,name:pol&&pol.name||String(name||'').replace(/\.[^.]+$/,'').slice(0,40)||'建議書',currency:(pol&&pol.currency)||built.ccyHint||'TWD',rate:pol&&pol.rate!=null?pol.rate:'',par:!!(pol&&pol.par),headers:built.headers,roles:built.roles.slice(),grid:built.grid,rows,ms,headerFound:built.headerFound,hasRows:!!(pol&&pol.rows&&pol.rows.some(r=>OCR_FIELDS.some(f=>r[f]!==''&&r[f]!=null)))};
+  ocrRender();}
+function ocrRender(){const s=ocrSess;if(!s)return;const roleSel=(i)=>'<select data-ocr-role="'+i+'">'+OCR_ROLES.map(([v,l])=>'<option value="'+v+'"'+(s.roles[i]===v?' selected':'')+'>'+l+'</option>').join('')+'</select>';
+  const map=s.headers.length?'<div class="ocr-map">'+s.headers.map((h,i)=>'<label>'+esc(h||('欄'+(i+1)))+roleSel(i)+'</label>').join('')+'</div>':'';
+  const head='<tr><th>年度</th><th>年齡</th><th>累計所繳</th><th>身故保險金</th><th>解約金總和</th><th></th></tr>';
+  const body=s.rows.map((r,i)=>'<tr>'+OCR_FIELDS.map(f=>'<td><input data-ocr-cell="'+i+'|'+f+'" value="'+(r[f]===''?'':esc(r[f]))+'" class="'+(r.flags&&r.flags[f]?'ocr-bad':'')+'" title="'+esc(r.flags&&r.flags[f]||'')+'"></td>').join('')+'<td><button type="button" class="rm" data-ocr-rm="'+i+'" title="刪除此列">×</button></td></tr>').join('')||'<tr><td colspan="6" class="l">沒有讀到列。可改上方欄位對應後再看。</td></tr>';
+  const mode=s.hasRows?'<div class="ocr-tools"><label><input type="radio" name="pvOcrMode" value="fill" checked>只補空白年齡（不覆蓋已經填過的列）</label><label><input type="radio" name="pvOcrMode" value="replace">取代這張保單的全部列</label></div>':'';
+  const bad=s.rows.reduce((n,r)=>n+OCR_FIELDS.filter(f=>r.flags&&r.flags[f]).length,0);
+  ocrOpen('<h3>確認辨識結果</h3><p class="ocr-note">圖片沒有上傳。請核對後再填入。橘色格子是辨識沒把握，或年度、年齡、累計保費對不太起來。</p>'
+    +'<div class="ocr-tools"><label>名稱 <input id="pvOcrName" type="text" value="'+esc(s.name)+'"></label><label>幣別 <select id="pvOcrCcy"><option value="TWD"'+(s.currency!=='USD'?' selected':'')+'>台幣</option><option value="USD"'+(s.currency==='USD'?' selected':'')+'>美元</option></select></label><label id="pvOcrRateLb">1 美元＝ <input id="pvOcrRate" type="number" value="'+esc(s.rate===''||s.rate==null?'':s.rate)+'" placeholder="匯率"> 元台幣</label><label class="ck"><input type="checkbox" id="pvOcrPar"'+(s.par?' checked':'')+'>預估（假設中分紅）</label></div>'
+    +(s.headerFound?'':'<p class="ocr-note">沒有自動對到表頭，請用每一欄的選單指定它是年度、年齡、保費、身故或解約金。</p>')
+    +map+mode+'<div class="pv-scroll"><table class="ocr-grid"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div><p class="ocr-note">'+(bad?bad+' 格需要看一下。':'格子看起來都合理。')+'辨識花了 '+(s.ms/1000).toFixed(1)+' 秒。</p><div class="ocr-foot"><button type="button" class="btn" id="pvOcrCancel">取消</button><button type="button" class="btn primary" id="pvOcrOk">填入這張保單</button></div>');
+  const box=document.getElementById('pvOcrBox');
+  const syncRate=()=>{const usd=document.getElementById('pvOcrCcy').value==='USD';document.getElementById('pvOcrRateLb').style.display=usd?'':'none';};syncRate();
+  document.getElementById('pvOcrCcy').onchange=syncRate;
+  document.getElementById('pvOcrCancel').onclick=ocrClose;
+  document.getElementById('pvOcrOk').onclick=ocrConfirm;
+  box.querySelectorAll('[data-ocr-role]').forEach(sel=>sel.onchange=()=>{s.roles[+sel.dataset.ocrRole]=sel.value;s.rows=ocrRowsFromGrid(s.grid,s.roles);ocrRender();});
+  box.querySelectorAll('[data-ocr-rm]').forEach(b=>b.onclick=()=>{s.rows.splice(+b.dataset.ocrRm,1);ocrApplySanity(s.rows);ocrRender();});
+  box.querySelectorAll('[data-ocr-cell]').forEach(inp=>inp.oninput=()=>{const q=inp.dataset.ocrCell.split('|');const r=s.rows[+q[0]];if(!r)return;const v=inp.value.trim();r[q[1]]=v===''?'':ocrNum(v);r.touched[q[1]]=true;ocrApplySanity(s.rows);inp.classList.toggle('ocr-bad',!!(r.flags&&r.flags[q[1]]));inp.title=(r.flags&&r.flags[q[1]])||'';});}
+function ocrConfirm(){const s=ocrSess;if(!s)return;const name=(document.getElementById('pvOcrName').value||'').trim()||'建議書';const currency=document.getElementById('pvOcrCcy').value==='USD'?'USD':'TWD';const par=!!document.getElementById('pvOcrPar').checked;const rateEl=document.getElementById('pvOcrRate');const rate=currency==='USD'?(rateEl&&rateEl.value!==''?pvNum(rateEl.value):''):'';
+  const modeEl=document.querySelector('input[name="pvOcrMode"]:checked');const mode=modeEl?modeEl.value:'replace';
+  const fresh=s.rows.map(r=>({year:r.year,age:r.age,paidCum:r.paidCum,deathBenefit:r.deathBenefit,surrenderTotal:r.surrenderTotal})).filter(r=>OCR_FIELDS.some(f=>r[f]!==''&&r[f]!=null));
+  if(!fresh.length){toast('沒有可填入的列。');return;}
+  const box=pvEnsure();const pol=s.policyId?box.policies.find(p=>p.id===s.policyId):null;const wasManual=!!(pol&&pol.manual);
+  let rows=fresh, id=pol?pol.id:undefined, replace=!!pol;
+  if(pol&&mode==='fill'){const have=new Set(pol.rows.map(r=>String(r.age)));const extra=fresh.filter(r=>r.age===''||r.age==null||!have.has(String(r.age)));rows=pol.rows.concat(extra);replace=true;}
+  const res=window.FT.importPolicyTable({id,name:pol&&mode==='fill'?pol.name:name,currency,rate:rate===''?(pol&&pol.rate!=null?pol.rate:''):rate,par,retire:pol?pol.retire:'table',rows,replace});
+  if(!res||!res.ok){toast('沒有寫入。這張保單若已手改，請改選「取代」或先確認。');return;}
+  if(wasManual&&mode==='fill'){const p=pvEnsure().policies.find(x=>x.id===res.id);if(p)p.manual=true;}
+  ocrClose();toast(mode==='fill'?'已補上空白年齡':'已填入保單價值表');}
 window.FT=window.FT||{};window.FT.importPolicyTable=function(policyObj){const r=pvImportPolicy(policyObj||{});if(r.ok)renderAll();return r;};
+window.FT.ocrBuildTable=ocrBuildTable;window.FT.ocrRowsFromGrid=ocrRowsFromGrid;
 {const _gv=gv;gv=function(k,i){return k==='personal'?polGv(i):_gv(k,i);};}
 
 
