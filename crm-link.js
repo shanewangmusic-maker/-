@@ -338,6 +338,164 @@
       leadId: customer.leadId || ''
     }];
   }
+  function moneyNum(v) {
+    if (v == null || v === '') return 0;
+    const n = Number(String(v).replace(/,/g, ''));
+    return isFinite(n) ? n : 0;
+  }
+  function dayOf(v) {
+    const s = String(v == null ? '' : v).trim().replace(/[/.]/g, '-');
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+    if (!m) return '';
+    const mo = +m[2], da = +m[3];
+    if (mo < 1 || mo > 12 || da < 1 || da > 31) return '';
+    return m[1] + '-' + (mo < 10 ? '0' : '') + mo + '-' + (da < 10 ? '0' : '') + da;
+  }
+  function firstFilled(c, keys) {
+    if (!c) return '';
+    for (let i = 0; i < keys.length; i++) {
+      const d = dayOf(c[keys[i]]);
+      if (d) return d;
+    }
+    return '';
+  }
+  function wonHistDay(c) {
+    const hist = c && Array.isArray(c.history) ? c.history : [];
+    for (let i = hist.length - 1; i >= 0; i--) {
+      const h = hist[i];
+      if (h && h.progress === 'WON') {
+        const d = dayOf(h.date);
+        if (d) return d;
+      }
+    }
+    return '';
+  }
+  function periodOf(c) {
+    if (!c || typeof c !== 'object') return 'Unknown';
+    if (c.category === 'WON') {
+      const sub = firstFilled(c, ['submitDate', '送件日', '送件日期']);
+      if (sub) return sub.slice(0, 7);
+      const deal = firstFilled(c, ['dealDate', '成交日', '成交日期']);
+      if (deal) return deal.slice(0, 7);
+      const hist = wonHistDay(c);
+      if (hist) return hist.slice(0, 7);
+    }
+    const created = String(c.createdAt || '');
+    return /^\d{4}-\d{2}/.test(created) ? created.substring(0, 7) : 'Unknown';
+  }
+  function perfDay(c) {
+    if (c && c.category === 'WON') {
+      return firstFilled(c, ['submitDate', '送件日', '送件日期'])
+        || firstFilled(c, ['dealDate', '成交日', '成交日期'])
+        || wonHistDay(c)
+        || dayOf(c.createdAt)
+        || '9999-99-99';
+    }
+    return dayOf(c && c.createdAt) || '9999-99-99';
+  }
+  function sumInsuredOf(c) {
+    if (!c) return 0;
+    const keys = ['sumInsured', 'coverage', 'faceAmount', 'insuredAmount', 'coverageAmount', 'sumAssured', 'sa', 'face', '保額'];
+    for (let i = 0; i < keys.length; i++) {
+      const v = c[keys[i]];
+      if (v != null && String(v).trim() !== '') return moneyNum(v);
+    }
+    return 0;
+  }
+  function salesWon(c) {
+    if (!c || c.category !== 'WON') return false;
+    if (c.progress === 'LEAD' || c.progress === 'HOLD' || c.progress === 'LOST' || c.category === 'RECRUIT') return false;
+    return true;
+  }
+  function personKey(c, list) {
+    const id = String((c && c.id) || '');
+    const leadId = String((c && c.leadId) || '').trim();
+    if (!leadId) return 'id:' + id;
+    const lead = (list || []).find(function (x) { return x && x.id === leadId && x.progress === 'LEAD'; });
+    if (!lead) return 'id:' + id;
+    const ids = [];
+    if (Array.isArray(lead.coreIds)) lead.coreIds.forEach(function (x) { if (x) ids.push(x); });
+    if (lead.coreId && ids.indexOf(lead.coreId) < 0) ids.push(lead.coreId);
+    if (ids.indexOf(id) < 0) return 'id:' + id;
+    return 'lead:' + leadId;
+  }
+  function firstWonIds(list) {
+    const best = {};
+    (list || []).forEach(function (c) {
+      if (!salesWon(c)) return;
+      const k = personKey(c, list);
+      const stamp = perfDay(c) + '|' + String(c.createdAt || '') + '|' + String(c.id || '');
+      if (!best[k] || stamp < best[k].stamp) best[k] = { id: String(c.id || ''), stamp: stamp };
+    });
+    const ids = {};
+    Object.keys(best).forEach(function (k) { if (best[k].id) ids[best[k].id] = 1; });
+    return ids;
+  }
+  function sideOf(c) {
+    const blob = String((c && c.source) || '');
+    if (/陌生/.test(blob)) return 'ds';
+    if (/緣故|轉介紹|家人|朋友|同學|同事/.test(blob)) return 'rf';
+    return 'ds';
+  }
+  function emptyRoll() {
+    return { deal: 0, client: 0, prem: 0, comm: 0, sa: 0, fyc: 0 };
+  }
+  function addRoll(bag, c, client) {
+    bag.deal += 1;
+    if (client) bag.client += 1;
+    bag.prem += moneyNum(c.premium);
+    bag.comm += moneyNum(c.commission);
+    bag.sa += sumInsuredOf(c);
+    bag.fyc += moneyNum(c.fyc);
+  }
+  function inPeriod(p, period) {
+    if (!period) return true;
+    if (String(period).length === 4) return p.slice(0, 4) === period;
+    return p === period;
+  }
+  function wonRollup(list, opts) {
+    opts = opts || {};
+    const period = String(opts.period || '');
+    const useAgent = Object.prototype.hasOwnProperty.call(opts, 'agentName');
+    const agent = String(opts.agentName || '').trim();
+    const first = firstWonIds(list);
+    const all = emptyRoll();
+    const ds = emptyRoll();
+    const rf = emptyRoll();
+    (list || []).forEach(function (c) {
+      if (!salesWon(c)) return;
+      if (useAgent && String(c.agentName || '').trim() !== agent) return;
+      if (!inPeriod(periodOf(c), period)) return;
+      const client = !!first[String(c.id || '')];
+      addRoll(all, c, client);
+      addRoll(sideOf(c) === 'rf' ? rf : ds, c, client);
+    });
+    all.ds = ds;
+    all.rf = rf;
+    return all;
+  }
+  function wonMonths(list, agentName) {
+    const months = {};
+    const first = firstWonIds(list);
+    const agent = String(agentName || '').trim();
+    (list || []).forEach(function (c) {
+      if (!salesWon(c)) return;
+      if (String(c.agentName || '').trim() !== agent) return;
+      const p = periodOf(c);
+      if (!/^\d{4}-\d{2}$/.test(p)) return;
+      if (!months[p]) months[p] = emptyRoll();
+      addRoll(months[p], c, !!first[String(c.id || '')]);
+    });
+    return months;
+  }
+  function memberAgentName(team, email) {
+    if (!team || !team.members) return null;
+    const em = String(email || '').trim().toLowerCase();
+    if (!em) return null;
+    const m = team.members[em];
+    if (!m || m.active === false) return null;
+    return String(m.agentName || '').trim();
+  }
   function guardSave(expectedRev, fresh, memoryPayload, exists) {
     const cloudRev = fresh && fresh._rev != null ? (Number(fresh._rev) || 0) : 0;
     if (exists && cloudRev !== expectedRev) return { conflict: true, rev: cloudRev };
@@ -366,6 +524,11 @@
     planListEvents: planListEvents,
     planActEvent: planActEvent,
     locateRow: locateRow,
-    guardSave: guardSave
+    guardSave: guardSave,
+    periodOf: periodOf,
+    sumInsuredOf: sumInsuredOf,
+    wonRollup: wonRollup,
+    wonMonths: wonMonths,
+    memberAgentName: memberAgentName
   };
 })(typeof window !== 'undefined' ? window : globalThis);
