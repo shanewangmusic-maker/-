@@ -584,13 +584,16 @@ function tlCustomers(){return Array.isArray(window.__aqCustomers)?window.__aqCus
 function tlRenderPick(sfx){const box=tlBox(sfx),input=$('tlName'+sfx);if(!box||!input||!window.CrmLink)return;const q=input.value.trim();const sel=tlPickSel[sfx];if(sel&&sel.name!==q)tlPickSel[sfx]=null;const hits=q?window.CrmLink.searchCustomers(tlCustomers(),q):[];if(!hits.length){box.hidden=true;box.innerHTML='';return}box.hidden=false;box.innerHTML=hits.map(c=>{const p=window.CrmLink.pickMeta(c);return`<button type="button" data-tlpick="${esc(c.id)}" data-sfx="${sfx}"><b>${esc(p.name)}</b><span class="sub">電話末${p.tail.length||0}碼 ${esc(p.tail||'—')} · 負責 ${esc(p.agent)}</span></button>`}).join('')}
 function tlChoose(sfx,id){const c=tlCustomers().find(x=>x&&x.id===id);const box=tlBox(sfx),input=$('tlName'+sfx);if(!c||!input)return;tlPickSel[sfx]={id:c.id,name:String(c.name||'').trim()};input.value=tlPickSel[sfx].name;if(box){box.hidden=true;box.innerHTML=''}}
 function tlPushAuto(i){if(!i||!i.custId||!window.CrmLink)return false;const evs=window.CrmLink.planListEvents(i,window.__aqEmail?window.__aqEmail():'',TODAY,AUTO);if(!evs.length)return false;evs.forEach(ev=>{if(AUTO.some(e=>e&&e.custId===ev.custId&&e.action===ev.action&&e.date===ev.date))return;AUTO.push(ev);if(window.__aqPersistAuto)window.__aqPersistAuto(ev)});return true}
-function tlAdd(sfx=''){const ni=$('tlName'+sfx),n=ni.value.trim();if(!n)return;const first=!TL.items.length;const ks=$('tlKind'+sfx);const item={id:Date.now()+Math.random(),name:n,t:$('tlType'+sfx).value,kind:ks&&ks.value==='warm'?'warm':'call',res:null};const sel=tlPickSel[sfx];if(sel&&sel.name===n)item.custId=sel.id;TL.items.push(item);ni.value='';tlPickSel[sfx]=null;const box=tlBox(sfx);if(box){box.hidden=true;box.innerHTML=''}if(first)$('todayCard').classList.remove('closed');tlSave();renderTL()}
+function tlMyAgent(){if(!window.CrmLink||!window.CrmLink.memberAgentName)return null;const team=window.__aqTeamDoc;const email=window.__aqEmail?window.__aqEmail():'';if(!team)return null;return window.CrmLink.memberAgentName(team,email)}
+async function tlSyncNew(name,kind,side,custId){if(!window.CrmLink||!window.__aqSyncPerson)return null;const agent=tlMyAgent();if(agent==null){toast('你還不在團隊名單，沒有寫入 CRM');return null}let res;try{res=await window.__aqSyncPerson({name:name,kind:kind,side:side==='rf'?'rf':'ds',agentName:agent,custId:custId||''})}catch(e){toast((e&&e.message)||'沒有寫入 CRM');return null}if(!res||res.ok===false){if(res&&res.reason==='ambiguous'){toast('CRM 有多位同名，請從名單選一位，沒有自動新增');return{stop:true}}return null}if(res.reason==='created'&&kind==='warm')toast(name+'：已加入一畝田（樹種）');else if(res.reason==='created')toast(name+'：已加入 CRM（經營＋樹苗）');else if(res.reason==='activated')toast(name+'：已從一畝田轉成經營客戶');return{custId:res.custId||''}}
+async function tlAdd(sfx=''){const ni=$('tlName'+sfx),n=ni.value.trim();if(!n)return;const ks=$('tlKind'+sfx);const kind=ks&&ks.value==='warm'?'warm':'call';const t=$('tlType'+sfx).value;const sel=tlPickSel[sfx];let custId='';if(sel&&sel.name===n)custId=sel.id;else{const synced=await tlSyncNew(n,kind,t,'');if(synced&&synced.stop){tlRenderPick(sfx);return}if(synced&&synced.custId)custId=synced.custId}const first=!TL.items.length;const item={id:Date.now()+Math.random(),name:n,t:t,kind:kind,res:null};if(custId)item.custId=custId;TL.items.push(item);ni.value='';tlPickSel[sfx]=null;const box=tlBox(sfx);if(box){box.hidden=true;box.innerHTML=''}if(first)$('todayCard').classList.remove('closed');tlSave();renderTL()}
+async function tlPromote(i){if(!i||tlKind(i)!=='call')return;const synced=await tlSyncNew(String(i.name||'').trim(),'call',i.t,i.custId||'');if(!synced)return;if(synced.custId)i.custId=synced.custId;tlSave();renderTL()}
 async function tlSaveNote(i,pn){i.note=pn.querySelector('.pnote').value.trim();const nx=pn.querySelector('.pnext');if(nx)i.next=nx.value||'';const ad=pn.querySelector('.pad');if(ad){i.appt={d:ad.value,t:pn.querySelector('.pat').value,loc:pn.querySelector('.pal').value.trim()};TL.appts=TL.appts.filter(a=>a.id!==i.id);if(i.appt.d)TL.appts.push({id:i.id,name:i.name,...i.appt})}const mdEl=pn.querySelector('.pmethod');if(mdEl)i.method=mdEl.value||'';tlOpen=null;tlSave();renderTL();if(!i.custId||!window.CrmLink||!window.__aqPatchCrm){toast('已儲存');return}const ops=window.CrmLink.buildWrite(i,window.__aqEmail?window.__aqEmail():'');try{const data=await window.__aqPatchCrm(i.custId,ops);const found=window.CrmLink.locateRow(data&&data.cust,i.custId,ops.history&&ops.history.id);if(found&&found.row){window.CrmLink.planActEvent({id:found.custId,name:found.name||i.name,leadId:found.leadId||''},found.row,AUTO).forEach(ev=>{if(AUTO.some(e=>e&&e.custId===ev.custId&&e.action===ev.action&&e.date===ev.date))return;AUTO.push(ev);if(window.__aqPersistAuto)window.__aqPersistAuto(ev)})}paintAuto();render();toast('已寫入 CRM 歷程')}catch(err){toast((err&&err.message)||'找不到這位客戶，沒有寫入')}}
 $('tlAdd').onclick=()=>tlAdd();$('tlAdd2').onclick=()=>tlAdd('2');$('tlEmptyBtn').onclick=()=>{const f=$('tlEmptyForm');f.style.display=f.style.display==='none'?'flex':'none';if(f.style.display==='flex')$('tlName2').focus()};
 document.addEventListener('click',ev=>{const pe=ev.target.closest('[data-pedit]');if(pe){tlOpen=TL.items.find(i=>String(i.id)===pe.dataset.pedit)?.id??null;tlFocus=true;renderTL();return}const b=ev.target.closest('button');if(!b)return;const f=id=>TL.items.find(i=>String(i.id)===String(id));
  if(b.dataset.tlf){tlFilter=b.dataset.tlf;[...$('tlSeg').children].forEach(x=>x.classList.toggle('on',x===b));renderTL();return}
- if(b.dataset.tlsw){const i=f(b.dataset.tlsw);if(!i||i.res)return;i.kind=tlKind(i)==='warm'?'call':'warm';tlSave();renderTL();toast(`${i.name}：已改為${i.kind==='warm'?'暖關係':'約訪'}`);return}
- if(b.dataset.tlr){const i=f(b.dataset.id);if(!i||i.res)return;const t=i.t||'ds',r=b.dataset.tlr;if(r==='move'){i.kind='call';tlSave();renderTL();toast(`${i.name}：已改為約訪`);return}if(r==='care')i.fx=[[t,'warm']];else if(r==='mute')i.fx=[];else i.fx=r==='ok'?[[t,'call'],[t,'appt']]:(r==='no'||r==='later')?[[t,'call']]:[];i.res=r;if(tlPushAuto(i))i.fx=[];if(r!=='nope'){tlOpen=i.id;tlFocus=true}tlSave();applyFx(i.fx,i.name,1);if(i.custId){paintAuto();render()}renderTL();toast(`${i.name}：${RL[r]||r}`)}
+ if(b.dataset.tlsw){const i=f(b.dataset.tlsw);if(!i||i.res)return;const promote=tlKind(i)==='warm';i.kind=promote?'call':'warm';tlSave();renderTL();toast(`${i.name}：已改為${i.kind==='warm'?'暖關係':'約訪'}`);if(promote)tlPromote(i);return}
+ if(b.dataset.tlr){const i=f(b.dataset.id);if(!i||i.res)return;const t=i.t||'ds',r=b.dataset.tlr;if(r==='move'){i.kind='call';tlSave();renderTL();toast(`${i.name}：已改為約訪`);tlPromote(i);return}if(r==='care')i.fx=[[t,'warm']];else if(r==='mute')i.fx=[];else i.fx=r==='ok'?[[t,'call'],[t,'appt']]:(r==='no'||r==='later')?[[t,'call']]:[];i.res=r;if(tlPushAuto(i))i.fx=[];if(r!=='nope'){tlOpen=i.id;tlFocus=true}tlSave();applyFx(i.fx,i.name,1);if(i.custId){paintAuto();render()}renderTL();toast(`${i.name}：${RL[r]||r}`)}
  if(b.dataset.tlu){const i=f(b.dataset.tlu);if(!i)return;applyFx(i.fx,i.name,-1);i.res=null;i.fx=null;delete i.note;delete i.next;delete i.appt;TL.appts=TL.appts.filter(a=>a.id!==i.id);if(tlOpen===i.id)tlOpen=null;tlSave();renderTL()}
  if(b.dataset.qd){const pn=b.closest('.tpan');pn.querySelector('.pnext').value=addD(TODAY,+b.dataset.qd)}
  if(b.dataset.pskip){tlOpen=null;renderTL()}
@@ -1260,6 +1263,13 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
       }
       return store.patchCrm(teamId, custId, ops);
     };
+    window.__aqSyncPerson = function (spec) {
+      if (!store || !store.syncPerson) {
+        const err = new Error('現在無法寫入 CRM');
+        return Promise.reject(err);
+      }
+      return store.syncPerson(teamId, spec);
+    };
     try {
       const crmDoc = store.loadCrm ? await store.loadCrm(teamId) : null;
       window.__aqCustomers = (crmDoc && Array.isArray(crmDoc.cust)) ? crmDoc.cust : [];
@@ -1338,7 +1348,7 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
             board: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/board/{uid}',
             auto: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/auto/{eventId}',
             crm: 'artifacts/' + APP_ID + '/public/data/global_state/' + teamId,
-            writesGlobalState: 'transaction: one customer history / nextContactDate only'
+            writesGlobalState: 'transaction: patch one customer, or append a new cust row for a new quest name'
           };
         },
         isOwner: function () { return isOwner; },
@@ -1635,6 +1645,22 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         window.__aqCustomers = result.data.cust || [];
         return result.data;
       },
+      syncPerson: async function (tid, spec) {
+        const k = 'aqmock:crm:' + tid;
+        const state = JSON.parse(sessionStorage.getItem(k) || 'null') || { _rev: 0, cust: [] };
+        if (!window.CrmLink || !window.CrmLink.syncListPerson) {
+          const err = new Error('現在無法寫入 CRM');
+          throw err;
+        }
+        const result = window.CrmLink.syncListPerson(state, spec);
+        if (result && result.ok && result.changed && result.data) {
+          sessionStorage.setItem(k, JSON.stringify(result.data));
+          crmWrites.n += 1;
+          window.__aqCustomers = result.data.cust || [];
+          crmWatchers.slice().forEach(function (fn) { try { fn(result.data); } catch (e) { console.warn('crm watch', e); } });
+        }
+        return result;
+      },
       createAuto: async function (tid, id, ev) {
         const bag = readBag(tid, id);
         bag.auto = Array.isArray(bag.auto) ? bag.auto : [];
@@ -1857,6 +1883,19 @@ const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){
         }
         window.__aqCustomers = written.cust || [];
         return written;
+      },
+      syncPerson: async function (tid, spec) {
+        const ref = fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid);
+        let result = null;
+        await fs.runTransaction(db, async function (tx) {
+          const snap = await tx.get(ref);
+          const state = snap.exists() ? snap.data() : { _rev: 0, cust: [] };
+          result = window.CrmLink.syncListPerson(state, spec);
+          if (!result || !result.ok || !result.changed || !result.data) return;
+          tx.set(ref, result.data);
+        });
+        if (result && result.ok && result.changed && result.data) window.__aqCustomers = result.data.cust || [];
+        return result;
       },
       createAuto: async function (tid, id, ev) {
         const eid = String(ev.id || '').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180);
