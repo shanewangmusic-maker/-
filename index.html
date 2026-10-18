@@ -2834,8 +2834,9 @@
         function closeModal(id) { document.getElementById(id).classList.replace('flex','hidden'); document.body.classList.remove('overflow-hidden'); }
 
         function getPeriod(c) {
-            if (c.category === 'WON') { const wh = c.history ? [...c.history].reverse().find(h => h.progress === 'WON') : null; if (wh && wh.date) return wh.date.substring(0, 7); }
-            return c.createdAt ? c.createdAt.substring(0, 7) : 'Unknown';
+            if (window.CrmLink && typeof window.CrmLink.periodOf === 'function') return window.CrmLink.periodOf(c);
+            if (c && c.category === 'WON') { const wh = c.history ? [...c.history].reverse().find(h => h.progress === 'WON') : null; if (wh && wh.date) return String(wh.date).substring(0, 7); }
+            return c && c.createdAt ? String(c.createdAt).substring(0, 7) : 'Unknown';
         }
 
         function calcComm(prefix) {
