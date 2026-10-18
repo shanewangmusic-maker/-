@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>行動闖關｜我的闖關＋團隊排行</title>
+<style>
+:root{--navy:#1E2E3D;--gold:#D4AF37;--bg:#F3F5F8;--g:#2EB872;--y:#F2B705;--r:#E5534B;--mut:#6B7785}
+*{box-sizing:border-box}body{margin:0;font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--navy)}
+header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:20px}header h1 span{color:var(--gold)}
+.hbtn{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px}
+.msel{font-size:14px;padding:5px 8px;border-radius:8px;border:1px solid var(--gold);background:var(--navy);color:#fff;font-family:inherit}
+.note{font-size:11px;color:var(--mut);font-weight:400}.quest .note{color:#AFC0D0}
+.up{color:var(--navy);font-size:11px}.dn{color:#8A96A3;font-size:11px}
+.ch{cursor:pointer;user-select:none}.ch .arr:before{content:'▾';color:var(--gold);font-size:14px;width:14px;display:inline-block}.card.closed .ch .arr:before{content:'▸'}.card.closed>:not(h2){display:none}.card.closed h2{margin:0}.card.closed{align-self:start}.card.closed .seg{display:none!important}
+.ch.fixed{cursor:default}.ch.fixed .arr{display:none}
+.mrow{cursor:pointer}.mrow:hover{background:#FBF7E8}
+.hbtn:hover{background:var(--gold);color:var(--navy)}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(30,46,61,.08);padding:16px;min-width:0}
+.card h2{margin:0 0 12px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.s12{grid-column:span 12}.s8{grid-column:span 8}.s4{grid-column:span 4}.s6{grid-column:span 6}.s7{grid-column:span 7}.s5{grid-column:span 5}
+@media(max-width:900px){.s8,.s4,.s6,.s7,.s5{grid-column:span 12}}
+.seg{display:inline-flex;border:1px solid #CBD3DC;border-radius:999px;overflow:hidden;margin-left:auto}
+.seg button{border:0;background:#fff;padding:5px 12px;cursor:pointer;font-size:13px;color:var(--navy)}
+.seg button.on{background:var(--navy);color:var(--gold)}
+/* XP */
+.xprow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.lvl{width:64px;height:64px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;border:3px solid var(--gold);flex:none}
+.lvl small{font-size:10px;color:#fff;font-weight:400}
+.bar{height:14px;background:#E6EAF0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#F1D77A);border-radius:99px;transition:width .6s}
+.titles{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.titles span{font-size:11px;padding:2px 8px;border-radius:99px;background:#EEF1F5;color:var(--mut)}.titles span.on{background:var(--gold);color:var(--navy);font-weight:700}
+.xptable{font-size:12px;color:var(--mut);margin-top:8px}
+/* map */
+.map{position:relative;background:linear-gradient(180deg,#EAF4EC,#F7F3E3);border-radius:12px;padding:20px 10px 10px}
+.path{display:flex;justify-content:space-between;align-items:flex-start;position:relative;gap:4px}
+.path:before{content:"";position:absolute;left:5%;right:5%;top:46px;border-top:6px dashed #C9B98A;z-index:0}
+.node{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.isle{width:84px;height:84px;border-radius:50%;background:#fff;border:4px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 4px 0 rgba(30,46,61,.2);position:relative}
+.light{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.1)}
+.light.g{background:var(--g);box-shadow:0 0 10px var(--g)}.light.y{background:var(--y);box-shadow:0 0 10px var(--y)}.light.r{background:var(--r);box-shadow:0 0 10px var(--r)}
+.nname{font-weight:700;margin-top:8px;font-size:14px}.ncount{font-size:22px;font-weight:800;color:var(--navy)}.ncount small{font-size:11px;color:var(--mut);font-weight:400}
+.nrate{font-size:12px;color:var(--mut)}
+.monster{position:absolute;z-index:3;top:22px;left:-34px;width:52px;height:50px;cursor:help;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.monster .tip{display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;padding:8px 10px;border-radius:8px;width:190px;line-height:1.5;text-align:left}
+.monster .tip:after{content:"";position:absolute;bottom:100%;left:50%;margin-left:-6px;border:6px solid transparent;border-bottom-color:var(--navy)}
+.monster .tip{z-index:5}.monster:hover .tip,.monster:focus .tip{display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:10px;flex-wrap:wrap}.legend b{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.alert{margin-top:10px;background:#FFF6E0;border-left:4px solid var(--y);padding:8px 12px;border-radius:6px;font-size:13px}
+@media(max-width:760px){.path{flex-direction:column;align-items:stretch;gap:18px}.path:before{left:46px;right:auto;top:20px;bottom:20px;border-top:0;border-left:6px dashed #C9B98A}
+.node{flex-direction:row;text-align:left;gap:12px}.isle{width:70px;height:70px;font-size:28px;flex:none;margin-left:10px}.ninfo{flex:1}.nname{margin-top:0}
+.monster{top:-30px;left:auto;right:10px}.monster .tip{left:auto;right:0;transform:none}.monster .tip:after{left:auto;right:18px}}
+/* quest */
+.quest{background:linear-gradient(135deg,var(--navy),#2C4257);color:#fff;position:relative;overflow:hidden}
+.quest h2{color:var(--gold)}.qitem{display:flex;align-items:center;gap:10px;margin:10px 0}
+.chk{width:24px;height:24px;border-radius:6px;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;flex:none;color:var(--navy);font-weight:900}
+.chk.on{background:var(--gold)}.qitem .bar{flex:1;background:rgba(255,255,255,.15)}.qtxt{width:120px;font-size:14px}.qn{width:44px;text-align:right;font-size:13px}
+.streak{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px}.flame{font-size:30px;animation:fl 1s infinite alternate}@keyframes fl{to{transform:scale(1.15) rotate(-4deg)}}
+.done{display:none;margin-top:8px;color:var(--gold);font-weight:700}.quest.complete .done{display:block}
+.confetti{position:absolute;width:8px;height:12px;top:-12px;animation:fall 1.8s ease-in forwards;pointer-events:none}@keyframes fall{to{transform:translateY(320px) rotate(540deg);opacity:0}}
+/* badges */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.badge{text-align:center;padding:10px 6px;border-radius:12px;background:#FBF7E8;border:1px solid #EADFAF}
+.badge .ic{font-size:30px}.badge .bn{font-size:13px;font-weight:700;margin-top:4px}.badge .bd{font-size:11px;color:var(--mut)}
+.badge.lock{background:#F1F2F4;border-color:#E1E4E8;filter:grayscale(1);opacity:.55}
+/* stats */
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid #EEF1F5;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+th{background:#F6F8FA;font-weight:600}.tw{overflow-x:auto}.pill{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;color:#fff}.pill.g{background:var(--g)}.pill.y{background:var(--y);color:var(--navy)}.pill.r{background:var(--r)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:#F6F8FA;border-radius:10px;padding:10px}.kpi .k{font-size:12px;color:var(--mut)}.kpi .v{font-size:20px;font-weight:800}
+/* form */
+.frow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+input[type=date],input[type=number]{border:1px solid #CBD3DC;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit}
+.ftab{width:100%;font-size:13px}.ftab td{padding:5px 4px}.ftab td:first-child{white-space:normal}@media(max-width:480px){.stp button{width:26px}.stp input{width:36px}.ftab td{padding:4px 2px}}
+.stp{display:inline-flex;align-items:center;border:1px solid #CBD3DC;border-radius:8px;overflow:hidden}
+.stp button{border:0;background:#EEF1F5;width:30px;height:30px;font-size:16px;cursor:pointer;color:var(--navy)}.stp button:hover{background:var(--gold)}
+.stp input{width:46px;border:0;text-align:center;border-radius:0;padding:4px}
+.btn{background:var(--navy);color:var(--gold);border:0;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer;font-weight:700}.btn.sec{background:#EEF1F5;color:var(--navy)}
+.money{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}.money label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+.days{max-height:340px;overflow:auto}.days td button{border:0;background:none;cursor:pointer;font-size:13px;color:#2F6FB0;padding:2px 4px}.days td button.del{color:var(--r)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:var(--gold);padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}.toast.on{opacity:1}
+.foot{grid-column:span 12;text-align:center;font-size:12px;color:var(--mut);padding:8px}
+.muted{color:var(--mut);font-size:12px}
+/* names */
+.chips{display:flex;flex-wrap:wrap;gap:3px;margin:4px auto 0;justify-content:center;max-width:170px}.chips:empty{display:none}
+.chip{background:#FBF7E8;border:1px solid #EADFAF;border-radius:99px;font-size:11px;padding:1px 2px 1px 7px;display:inline-flex;align-items:center;max-width:100%;overflow-wrap:anywhere}
+.chip button{border:0;background:none;cursor:pointer;color:var(--mut);padding:0 4px;font-size:12px}
+.nlink{display:block;margin:3px auto 0;border:0;background:none;color:#2F6FB0;font-size:12px;cursor:pointer;padding:3px 6px;font-family:inherit;min-height:24px}.nlink.empty{color:#9AA3AD}.nlink:hover{text-decoration:underline}
+.fnbox{max-width:400px;display:flex;flex-direction:column;gap:8px}.fnbox .nin{max-width:none;margin:0;font-size:14px;padding:7px 9px;border-style:solid}.fnmsg{font-size:12px;color:var(--r);min-height:16px}
+.fnlist{max-height:46vh;overflow-y:auto;border:1px solid #EEF1F5;border-radius:8px}.fnlist div{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid #EEF1F5;font-size:14px;overflow-wrap:anywhere}.fnlist div span.n{flex:1;min-width:0}.fnlist button{border:0;background:none;cursor:pointer;color:var(--mut);font-size:15px;min-width:32px;min-height:32px}
+.nin{display:block;width:100%;max-width:170px;margin:4px auto 0;font-size:12px;padding:4px 6px;border:1px dashed #CBD3DC;border-radius:6px;font-family:inherit;min-width:0}
+.node,[data-stage]{cursor:pointer}.node:hover .isle{border-color:var(--gold)}
+.modal{position:fixed;inset:0;background:rgba(30,46,61,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}.modal.on{display:flex}
+.mbox{background:#fff;border-radius:14px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:16px}.mbox h3{margin:0 0 6px;font-size:17px;display:flex;justify-content:space-between;gap:8px}
+.mbox h3 button{border:0;background:#EEF1F5;border-radius:8px;cursor:pointer;padding:2px 10px;font-size:16px}
+.nlist td,.nlist th{text-align:left!important}.nlist td{white-space:normal;vertical-align:top}.nlist td:first-child{white-space:nowrap}
+/* today list */
+.tlsum{display:none;margin-left:auto;font-weight:400}.card.closed .tlsum{display:inline}
+.tlempty{padding:8px 16px}
+.tlin{border:1px solid #CBD3DC;border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit;min-width:0;flex:1 1 140px;max-width:240px}
+.tlpick{position:relative;flex:1 1 180px;min-width:140px;max-width:320px}.tlpick .tlin{max-width:none;width:100%}
+.tlbox{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #CBD3DC;border-radius:10px;box-shadow:0 10px 28px rgba(30,46,61,.12);max-height:260px;overflow:auto}
+.tlbox button{display:block;width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid #EEF1F5;padding:8px 10px;font-family:inherit;cursor:pointer;color:var(--navy)}
+.tlbox button:hover,.tlbox button:focus{background:#FBF7E8}.tlbox .sub{display:block;font-size:11px;color:#5C6B7A;font-weight:400;margin-top:2px}
+@media(max-width:480px){.tlpick{max-width:none;flex-basis:100%}}
+.tlsel{border:1px solid #CBD3DC;border-radius:8px;padding:6px;font-size:14px;font-family:inherit}
+.tli{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #EEF1F5}.tli.done{opacity:.6}
+.tln{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}.tlb{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.tag{font-size:11px;padding:1px 7px;border-radius:99px;background:#EEF1F5;color:var(--mut)}.tag.ds{background:#E3EEF9;color:#2F6FB0}.tag.rf{background:#FBF1D6;color:#8A6D10}.tag.roll{background:#F3E8FA;color:#7A4E9C}.tag.auto{background:#E7F6EE;color:#1F7A4D}
+.aqplus{font-size:11px;color:#1F7A4D;min-height:14px;margin-top:2px}.autoBox{display:inline-flex;align-items:center;justify-content:center;gap:6px}.aqnote{font-size:10px;line-height:1.3;margin-top:2px}
+.tag.warm{background:#FFF3D6;color:#8A6D10}.tag.call{background:#E5F6EC;color:#1B7A43}
+.tag.nocrm{background:#F1F2F4;color:#5C6B7A}.tag.crmlink{background:#E5F0FA;color:#1E4E8C}
+button.tag.kind{border:0;font-family:inherit;cursor:pointer}.tseg{margin:0}.tlh{font-size:13px;font-weight:800;margin:8px 0 0}
+.rb{border:1px solid #CBD3DC;background:#fff;border-radius:7px;min-width:32px;height:32px;padding:0 6px;cursor:pointer;font-size:15px;font-family:inherit;color:var(--navy);display:inline-flex;align-items:center;gap:2px;line-height:1}.rb:hover{background:#FBF1D6}.rb.ok{border-color:var(--g)}.rb small{font-size:11px;color:var(--mut)}
+@media(max-width:767px){.rb small{display:none}.rb{width:34px;justify-content:center;padding:0}}
+.tlw{border-bottom:1px solid #EEF1F5}.tlw .tli{border-bottom:0}.tinfo{flex-basis:100%;min-width:0;overflow-wrap:anywhere;font-size:12px;color:#8A96A3;cursor:pointer;margin-top:-2px}.tinfo:hover{color:var(--navy);text-decoration:underline dotted}
+.tpan{background:#F6F8FA;border-radius:10px;padding:10px;margin:0 4px 10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.tpan textarea{width:100%;min-height:52px;border:1px solid #CBD3DC;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:13px;resize:vertical}
+.tpan .r{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.tpan input,.tpan select{border:1px solid #CBD3DC;border-radius:8px;padding:5px 7px;font-family:inherit;font-size:13px;min-width:0;max-width:100%;background:#fff}
+.qc{border:1px solid #CBD3DC;background:#fff;border-radius:99px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:inherit;min-height:28px}.qc:hover{background:#FBF1D6}
+.crm{font-size:10px;color:#9AA3AD;background:#EEF1F5;border-radius:99px;padding:1px 7px;white-space:nowrap}
+.upc{margin-top:12px;background:#FBF7E8;border:1px solid #EADFAF;border-radius:10px;padding:10px}.upc h4{margin:0 0 6px;font-size:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.upc div.u{font-size:13px;padding:3px 0;overflow-wrap:anywhere}
+.tlb .x,.tlb .undo{border:0;background:none;cursor:pointer;color:var(--mut);font-size:13px;padding:4px}
+.res{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:#EEF1F5}.res.ok{background:var(--g);color:#fff}
+.team{font-size:12px;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:2px 10px}
+.tabs{position:sticky;top:0;z-index:15;display:flex;gap:8px;justify-content:center;padding:8px 12px;background:rgba(243,245,248,.95);backdrop-filter:blur(4px);border-bottom:1px solid #E1E6EC}
+.tabs button{flex:0 1 200px;min-width:0;border:3px solid var(--navy);background:#fff;color:var(--navy);border-radius:99px;padding:7px 10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 3px 0 rgba(30,46,61,.2);white-space:nowrap}
+.tabs button.on{background:var(--navy);color:var(--gold);border-color:var(--gold)}
+body.tab-team #meView,body.tab-me #teamView{display:none}
+/* ===== 團隊排行（自 leaderboard_demo 併入，已限定範圍） ===== */
+#teamView{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+#teamView .card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(30,46,61,.08);padding:16px;min-width:0}
+#teamView .card h2{margin:0 0 10px;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#teamView .s12{grid-column:span 12}
+#teamView .s6{grid-column:span 6}
+#teamView .s8{grid-column:span 8}
+#teamView .s4{grid-column:span 4}
+@media(max-width:900px){#teamView .s6,#teamView .s8,#teamView .s4{grid-column:span 12}
+}
+#teamView .muted{color:var(--mut);font-size:12px}
+#teamView .note{font-size:11px;color:#9AA3AD}
+#teamView .bar{height:16px;background:#E6EAF0;border-radius:99px;overflow:hidden}
+#teamView .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#F1D77A);border-radius:99px}
+#teamView .goal{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:14px;margin-bottom:6px}
+#teamView .cd{background:linear-gradient(135deg,var(--navy),#2C4257);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+#teamView .cd b{font-size:40px;color:var(--gold);line-height:1.1}
+#teamView .cd .note{color:#AFC0D0}
+#teamView .podium{position:relative;background:linear-gradient(180deg,#EAF4EC,#F7F3E3);border-radius:12px;padding:16px 8px 12px;display:flex;justify-content:center;align-items:flex-end;gap:4px;margin:0 0 10px}
+#teamView .podium:before{content:"";position:absolute;left:18%;right:18%;top:62px;border-top:6px dashed #C9B98A;z-index:0}
+#teamView .pod{position:relative;z-index:1;flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+#teamView .isle{width:72px;height:72px;border-radius:50%;background:#fff;border:4px solid var(--navy);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 4px 0 rgba(30,46,61,.2);position:relative}
+#teamView .p1 .isle{width:96px;height:96px;font-size:42px;border-color:var(--gold);box-shadow:0 4px 0 rgba(30,46,61,.2),0 0 0 5px rgba(212,175,55,.25),0 0 18px rgba(212,175,55,.7)}
+#teamView .p1{order:2;margin-bottom:26px}
+#teamView .p2{order:1;margin-bottom:10px}
+#teamView .p3{order:3}
+#teamView .p2 .isle{width:76px;height:76px;border-color:#9AA5B1;box-shadow:0 4px 0 rgba(30,46,61,.2),0 0 0 4px rgba(174,182,191,.35)}
+#teamView .p2 .isle .ch1{font-size:30px}
+#teamView .p3 .isle{width:60px;height:60px;border-color:#B87745;box-shadow:0 4px 0 rgba(30,46,61,.2),0 0 0 3px rgba(201,139,90,.3)}
+#teamView .p3 .isle .ch1{font-size:23px}
+#teamView .p3 .ncount{font-size:18px}
+#teamView .p3 .nname{font-size:13px}
+#teamView .star{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+#teamView .light{position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;border-radius:99px;border:3px solid #fff;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+#teamView .light.l1{background:var(--gold);color:var(--navy);box-shadow:0 0 10px var(--gold)}
+#teamView .light.l2{background:#9AA5B1;box-shadow:0 0 8px #AEB6BF}
+#teamView .light.l3{background:#B87745;box-shadow:0 0 8px #C98B5A}
+#teamView .nname{font-weight:700;margin-top:8px;font-size:14px;overflow-wrap:anywhere}
+#teamView .ncount{font-size:22px;font-weight:800;color:var(--navy);line-height:1.2}
+#teamView .ncount small{font-size:11px;color:var(--mut);font-weight:400}
+#teamView .p1 .ncount{font-size:26px}
+#teamView .pod.me .nname{color:#2F6FB0}
+#teamView .badge{display:inline-flex;align-items:center;gap:3px;margin-top:4px;padding:2px 8px;border-radius:10px;background:#FBF7E8;border:1px solid #EADFAF;font-size:11px;font-weight:700;white-space:nowrap}
+@media(max-width:420px){#teamView .p1 .isle{width:82px;height:82px}
+#teamView .p1 .isle .ch1{font-size:34px}
+#teamView .p2 .isle{width:64px;height:64px}
+#teamView .p2 .isle .ch1{font-size:26px}
+#teamView .p3 .isle{width:50px;height:50px}
+#teamView .p3 .isle .ch1{font-size:20px}
+#teamView .podium:before{top:54px}
+#teamView .ncount{font-size:18px}
+#teamView .p1 .ncount{font-size:22px}
+}
+#teamView .mbar{flex:0 0 28%;height:8px;background:#E6EAF0;border-radius:99px;overflow:hidden}
+#teamView .mbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#F1D77A);border-radius:99px}
+#teamView .av{width:28px;height:28px;border-radius:50%;border:2px solid var(--navy);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none}
+#teamView .isle .ch1{font-weight:800;font-size:30px}
+#teamView .p1 .isle .ch1{font-size:40px}
+#teamView [data-p]{cursor:pointer}
+#teamView .pop{position:fixed;z-index:30;background:#fff;border:3px solid var(--navy);border-radius:14px;box-shadow:0 6px 0 rgba(30,46,61,.18),0 10px 30px rgba(30,46,61,.2);padding:12px 14px;width:300px;max-width:calc(100vw - 16px);display:none;font-size:13px}
+#teamView .pop.on{display:block}
+#teamView .pop h4{margin:0 0 8px;display:flex;align-items:center;gap:8px;font-size:15px}
+#teamView .pop h4 .sub{margin-left:auto}
+#teamView .pop table{width:100%;border-collapse:collapse}
+#teamView .pop td{padding:3px 2px;border-bottom:1px solid #EEF1F5}
+#teamView .pop td:nth-child(n+2){text-align:right;white-space:nowrap}
+#teamView .pop .sec{font-size:12px;color:var(--mut);margin:8px 0 2px;font-weight:700}
+#teamView .pop .x{display:none;margin-left:6px;border:0;background:#EEF1F5;border-radius:8px;cursor:pointer;padding:2px 10px;font-size:15px}
+#teamView .upa{color:var(--g);font-size:11px}
+#teamView .dna{color:#8A96A3;font-size:11px}
+#teamView .scrim{position:fixed;inset:0;background:rgba(30,46,61,.35);z-index:29;display:none}
+@media(max-width:767px){#teamView .pop{left:0!important;right:0;top:auto!important;bottom:0;width:auto;max-width:none;border-radius:16px 16px 0 0;border-width:3px 0 0;max-height:75vh;overflow:auto}
+#teamView .pop .x{display:inline-block}
+#teamView .scrim.on{display:block}
+}
+#teamView .rank{list-style:none;margin:0;padding:0}
+#teamView .rank li{display:flex;align-items:center;gap:8px;padding:7px 6px;border-bottom:1px solid #EEF1F5;font-size:14px}
+#teamView .rank .n{width:26px;color:var(--mut);font-weight:700;text-align:center;flex:none}
+#teamView .rank .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+#teamView .rank .v{font-weight:800;white-space:nowrap;min-width:52px;text-align:right}
+#teamView .rank li.me,#teamView .mebar{background:#E9F2FB;border-radius:8px}
+#teamView .me .nm b{color:#2F6FB0}
+#teamView .tagme{font-size:10px;background:#2F6FB0;color:#fff;border-radius:99px;padding:1px 6px;margin-left:4px}
+#teamView .mebar{margin-top:8px;padding:7px 10px;font-size:13px}
+#teamView .more{display:none;border:0;background:none;color:#2F6FB0;cursor:pointer;font-size:13px;padding:6px 0;font-family:inherit}
+#teamView .lch{cursor:pointer;user-select:none}
+#teamView .lch .arr:before{content:'▾';color:var(--gold);width:14px;display:inline-block}
+#teamView .card.closed .lch .arr:before{content:'▸'}
+#teamView .card.closed>:not(h2){display:none}
+#teamView .card.closed h2{margin:0}
+#lbTeamCard .th{cursor:pointer;user-select:none}
+#lbTeamCard .th .arr:before{content:'▾';color:var(--gold);width:14px;display:inline-block}
+#lbTeamCard.closed .th .arr:before{content:'▸'}
+@media(min-width:768px){#teamView .lch{cursor:default}
+#teamView .lch .arr{display:none}
+}
+@media(max-width:767px){#teamView .rank li.rest:not(.me){display:none}
+#teamView .rank.open li.rest{display:flex}
+#teamView .more{display:block}
+#teamView{padding:12px;gap:12px}
+}
+#teamView .sub{font-size:12px;color:var(--mut);font-weight:400}
+#teamView .up{color:var(--g)}
+#teamView .dn{color:#8A96A3}
+#teamView .foot{grid-column:span 12;text-align:center;font-size:12px;color:var(--mut);padding:4px 8px 12px;line-height:1.7}
+#cmp th,#cmp td{padding:5px 4px;font-size:12px}#cmp tr.fut td,#cmp tr.nod td{color:#B4BCC6}#cmp tr.cur{background:#FBF7E8;font-weight:700}
+@media(max-width:767px){#cmp th:first-child,#cmp td:first-child{position:sticky;left:0;background:#fff;z-index:1;box-shadow:1px 0 0 #EEF1F5}#cmp tr.cur td:first-child,#cmp tfoot td:first-child{background:#FBF7E8}#cmp thead th:first-child{background:#F6F8FA}}
+@media(min-width:901px){#daysCard{align-self:start;display:flex;flex-direction:column;overflow:hidden}#daysCard>h2{flex:none}#daysCard .days{flex:1 1 auto;min-height:0;max-height:none}#daysCard thead th{position:sticky;top:0;z-index:1}}
+#lbDenied{background:#FFF6E0;border-left:4px solid var(--gold)}
+#lbDenied p{margin:0;font-size:14px;line-height:1.7}
+#teamView .trow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
+#teamView .trow input[type=text]{border:1px solid #CBD3DC;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;min-width:0}
+#teamView .trow input.tem{flex:1 1 200px}#teamView .trow input.tn{flex:1 1 110px}
+#teamView .trow input.bad{border-color:#E5534B;background:#FFF1F0}
+#teamView .trow label{font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:4px}
+#teamView .gedit{margin-left:auto;border:2px solid var(--navy);background:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 0 rgba(30,46,61,.2)}
+#teamView .gedit:hover{background:#FBF1D6}#teamView .grow+.grow{margin-top:12px}
+#teamView .gpanel{background:#F6F8FA;border:2px solid var(--navy);border-radius:12px;padding:10px;margin-bottom:12px;font-size:13px;display:flex;flex-direction:column;gap:8px}
+#teamView .gpanel .gr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}#teamView .gpanel select,#teamView .gpanel input[type=number]{border:1px solid #CBD3DC;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;min-width:0}
+#teamView .gpanel input[type=number]{width:110px}#teamView .gpanel input.bad{border-color:var(--r,#E5534B);background:#FFF1F0}#teamView .gerr{color:#E5534B;font-size:12px;min-height:14px}
+#teamView .gpanel .gx{border:0;background:none;cursor:pointer;color:var(--mut);font-size:15px;min-width:32px;min-height:32px}
+#teamView .gbtn{border:0;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}#teamView .gbtn.p{background:var(--navy);color:var(--gold)}#teamView .gbtn.s{background:#EEF1F5;color:var(--navy)}
+#teamView .rank li{gap:8px}#teamView .rank .rk{width:26px;height:26px;border-radius:50%;background:#EEF1F5;color:var(--navy);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none;border:2px solid #CBD3DC}
+#teamView .rank .nm{display:flex;flex-direction:column;gap:2px}#teamView .lv{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);min-width:0}#teamView .lv em{font-style:normal;white-space:nowrap}
+#teamView .xb{flex:1;max-width:90px;min-width:30px;height:6px;background:#E6EAF0;border-radius:99px;overflow:hidden}#teamView .xb i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#F1D77A)}
+#teamView .dl{font-size:11px;font-weight:800;min-width:28px;text-align:center;border-radius:99px;padding:1px 4px;flex:none}#teamView .dl.up{color:#1E7F4E;background:#E2F4EA}#teamView .dl.dn{color:#B4453E;background:#FDE7E4}#teamView .dl.eq{color:#8A96A3}#teamView .dl.nw{color:#7A4E9C;background:#F3E8FA}
+@media(max-width:420px){#teamView .xb{display:none}#teamView .rank li{gap:6px;font-size:13px}}
+#teamView .A-rib{background:var(--ac);color:#fff;padding:4px 18px;font-size:15px;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%);box-shadow:0 2px 0 rgba(30,46,61,.2)}
+#teamView .A-stage{display:flex;align-items:flex-end;justify-content:center;gap:6px;background:linear-gradient(180deg,#EAF4EC,#F7F3E3);border-radius:12px;padding:26px 10px 0;margin-bottom:10px;border-bottom:8px solid #C9B98A}
+#teamView .A-col{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;cursor:pointer}
+#teamView .A-ava{width:62px;height:62px;border-radius:50%;border:4px solid #9AA5B1;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(30,46,61,.2);position:relative}
+#teamView .A-p1 .A-ava{width:76px;height:76px;font-size:32px;border-color:var(--gold);box-shadow:0 4px 0 rgba(30,46,61,.2),0 0 0 5px rgba(212,175,55,.25),0 0 16px rgba(212,175,55,.6)}
+#teamView .A-p3 .A-ava{border-color:#B87745}
+#teamView .A-crown{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:20px}
+#teamView .A-nm{font-size:13px;font-weight:700;margin-top:6px;overflow-wrap:anywhere}#teamView .A-col.me .A-nm{color:#2F6FB0}
+#teamView .A-val{font-size:20px;font-weight:800;line-height:1.2}#teamView .A-val small{font-size:11px;color:var(--mut);font-weight:400}
+#teamView .A-ped{width:100%;margin-top:6px;border:3px solid var(--navy);border-bottom:0;border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:6px;color:#fff;box-shadow:inset 0 -10px 0 rgba(0,0,0,.08),inset 0 6px 0 rgba(255,255,255,.25)}
+#teamView .A-ped b{font-size:26px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.15)}#teamView .A-ped span{font-size:11px;font-weight:700}
+#teamView .A-ped em{font-style:normal;font-size:10px;font-weight:700;background:#FBF7E8;border:1px solid #EADFAF;color:var(--navy);border-radius:8px;padding:1px 5px;margin-top:4px;white-space:nowrap}
+#teamView .A-p1 .A-ped{height:112px;background:linear-gradient(180deg,#E9C85A,#C9A227)}#teamView .A-p2 .A-ped{height:86px;background:linear-gradient(180deg,#C9D0D7,#9AA5B1)}#teamView .A-p3 .A-ped{height:68px;background:linear-gradient(180deg,#DDA77C,#B87745)}
+#teamView .A-empty{width:100%;padding:22px 12px 18px;text-align:center;color:#8A96A3;font-size:13px}
+#teamView .lbnote{grid-column:span 12;margin:0;text-align:center;font-size:12px;color:#9AA3AD}
+@media(max-width:420px){#teamView .A-ava{width:52px;height:52px;font-size:22px}#teamView .A-p1 .A-ava{width:64px;height:64px;font-size:27px}#teamView .A-val{font-size:17px}#teamView .A-p1 .A-ped{height:96px}#teamView .A-p2 .A-ped{height:74px}#teamView .A-p3 .A-ped{height:58px}}
+.mcard{position:fixed;z-index:31;display:none;width:320px;max-width:calc(100vw - 16px);background:#fff;border:3px solid var(--navy);border-radius:14px;box-shadow:0 6px 0 rgba(30,46,61,.18),0 10px 30px rgba(30,46,61,.2);padding:12px 14px;font-size:13px;line-height:1.6}
+.mcard.on{display:block}.mcard h4{margin:0 0 6px;display:flex;align-items:center;gap:8px;font-size:16px}.mcard h4 svg{flex:none}.mcard .x{margin-left:auto;border:0;background:#EEF1F5;border-radius:8px;cursor:pointer;padding:2px 10px;font-size:15px;display:none}
+.mcard .st{background:#FFF1F0;border-left:4px solid var(--r);border-radius:6px;padding:4px 8px;margin-bottom:6px}.mcard ul{margin:4px 0 6px;padding-left:20px}.mcard .hp{background:#FBF7E8;border:1px solid #EADFAF;border-radius:8px;padding:4px 8px}
+.mscrim{position:fixed;inset:0;background:rgba(30,46,61,.35);z-index:30;display:none}.monster{cursor:pointer}
+@media(max-width:767px){.mcard{left:0!important;right:0;top:auto!important;bottom:0;width:auto;max-width:none;border-radius:16px 16px 0 0;border-width:3px 0 0;max-height:75vh;overflow:auto}.mcard .x{display:inline-block}.mscrim.on{display:block}}
+#teamView .mebar[data-cmp]{cursor:pointer;border:2px dashed transparent}#teamView .mebar[data-cmp]:hover{border-color:#2F6FB0}#teamView .mebar[data-cmp]:after{content:' ›';color:#2F6FB0;font-weight:700}
+#teamView .pop.cmp{width:440px}#teamView .nudge{background:#FBF7E8;border:1px solid #EADFAF;border-radius:8px;padding:5px 8px;font-weight:700;margin-bottom:6px}
+#teamView .ctw{overflow-x:auto}#teamView .cmpt{width:100%;border-collapse:collapse;font-size:12px}#teamView .cmpt th{font-size:12px;background:#F6F8FA;text-align:right;padding:4px;white-space:normal;line-height:1.3}#teamView .cmpt th:first-child,#teamView .cmpt td:first-child{text-align:left;white-space:nowrap}
+#teamView .cmpt td{padding:4px;border-bottom:1px solid #EEF1F5;text-align:right;line-height:1.3;white-space:nowrap}#teamView .cmpt tr.hl td{background:#FFF6D6;font-weight:700}#teamView .cmpt tr.hl td:first-child{box-shadow:inset 4px 0 0 var(--gold)}#teamView .cmpt tr.cr td{color:var(--mut)}
+#teamView .g{font-size:10.5px;font-weight:700}#teamView .g.bad{color:#D9534F}#teamView .g.good{color:#1E7F4E}#teamView .g.eq{color:#9AA3AD}
+@media(max-width:767px){#teamView .pop.cmp{width:auto}}
+#aqGate{position:fixed;inset:0;z-index:80;background:rgba(30,46,61,.92);display:flex;align-items:center;justify-content:center;padding:16px}
+#aqGate .box{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:22px 20px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+#aqGate h2{margin:0 0 8px;font-size:20px}
+#aqGate p{margin:0 0 12px;color:var(--mut);font-size:14px;line-height:1.6}
+#aqGate label{display:block;font-size:13px;font-weight:700;margin:8px 0 4px}
+#aqGate input{width:100%;border:1px solid #CBD3DC;border-radius:8px;padding:8px 10px;font-size:15px;font-family:inherit}
+#aqGate .err{color:var(--r);font-size:13px;font-weight:700;margin:8px 0 0}
+#aqGate .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+#aqGate button,#aqGate .linkbtn{border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;text-decoration:none;display:inline-flex;align-items:center}
+#aqGate button.primary{background:var(--navy);color:var(--gold)}
+#aqGate .linkbtn,#aqGate button.ghost{background:#EEF1F5;color:var(--navy)}
+#aqImport{max-width:1200px;margin:12px auto 0;padding:0 16px}
+#aqImport .in{background:#FFF6E0;border:1px solid #EADFAF;border-left:4px solid var(--gold);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+#aqImport button{border:0;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-family:inherit}
+#aqImport .go{background:var(--navy);color:var(--gold)}
+#aqImport .later{background:#fff;color:var(--navy);border:1px solid #CBD3DC}
+body.aq-ready #aqGate{display:none}
+body:not(.aq-ready)>header,body:not(.aq-ready)>nav,body:not(.aq-ready)>main,body:not(.aq-ready)>#aqImport{display:none!important}
+#teamView .tagme.ex{background:#8A96A3}
+#aqSave.err{color:#ffb4ae}
+</style></head><body class="tab-me">
+<div id="aqGate"><div class="box">
+<h2 id="aqGateTitle">行動闖關</h2>
+<p id="aqGateMsg">正在確認登入狀態…</p>
+<form id="aqLogin" hidden>
+<label for="aqEmail">Email</label>
+<input id="aqEmail" type="email" autocomplete="username" required>
+<label for="aqPassword">密碼</label>
+<input id="aqPassword" type="password" autocomplete="current-password" required>
+<label for="aqTeam">團隊代碼</label>
+<input id="aqTeam" type="text" autocomplete="off" placeholder="與 CRM 相同" required>
+<p id="aqLoginError" class="err" hidden></p>
+<div class="row"><button class="primary" type="submit">登入</button></div>
+</form>
+<form id="aqTeamOnly" hidden>
+<label for="aqTeam2">團隊代碼</label>
+<input id="aqTeam2" type="text" autocomplete="off" placeholder="與 CRM 相同" required>
+<p id="aqLoginError2" class="err" hidden></p>
+<div class="row"><button class="primary" type="submit">連線</button></div>
+</form>
+<div class="row"><a class="linkbtn" href="index.html">回到 CRM</a><button type="button" class="ghost" id="aqLogoutBtn" hidden>登出</button></div>
+</div></div>
+<div id="aqImport" hidden><div class="in"><span id="aqImportText">這台電腦有先前的試用紀錄（只存在這台瀏覽器）。</span><button type="button" class="go" id="aqImportBtn">匯入到我的帳號</button><button type="button" class="later" id="aqImportLater">稍後再說</button><span class="note">不會刪除這台電腦上的試用資料。</span></div></div>
+<header><h1>⚔️ 行動<span>闖關</span> <small style="font-size:12px;opacity:.7;font-weight:400">每日業務行動追蹤</small> <span id="aqWho" class="note" style="color:#AFC0D0"></span> <span id="aqSave" class="note"></span></h1>
+<div id="meCtrl" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label style="font-size:14px">📆 月份 <select id="monthSel" class="msel"></select></label><button class="hbtn" id="loadDemo" hidden>載入假資料</button><button class="hbtn" id="clearAll" hidden>清空重來</button><a class="hbtn" href="index.html">回到 CRM</a></div><div id="lbCtrl" style="display:none;gap:8px;flex-wrap:wrap;align-items:center"><span class="team" id="aqTeamBadge">團隊</span><label style="font-size:14px">📆 <select id="lbMSel" class="msel"></select></label><a class="hbtn" href="index.html">回到 CRM</a></div></header><nav class="tabs" id="tabs"><button data-tab="me" class="on">🗺️ 我的闖關</button><button data-tab="team">🏆 團隊排行 <small style="font-size:11px;opacity:.8"></small></button></nav>
+<main id="meView">
+<section class="card s8" id="xpCard"><h2>🏅 經驗值與等級 <span class="note">（累計全部紀錄，不受月份影響）</span></h2><div class="xprow"><div class="lvl"><small>LV</small><span id="lvNum">1</span></div>
+<div style="flex:1;min-width:200px"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><b id="lvTitle">見習顧問</b><span id="xpTxt" class="muted"></span></div><div class="bar"><i id="xpBar"></i></div><div class="titles" id="titles"></div></div></div>
+<div class="xptable">計分：約訪 1・取得約會 3・面談 5・發掘需求 5・關鍵訪 10・成交 30・新名單 3（XP 僅作為行動量參考）</div></section>
+<section class="card s4 quest" id="quest"><h2>📜 今日任務 <span class="note">（連續天數為累計）</span></h2><div id="qList"></div><div class="streak"><span class="flame">🔥</span><span>連續達標 <b id="streak" style="font-size:20px;color:var(--gold)">0</b> 天</span></div><div class="done">🎉 今日任務完成！做得好！</div></section>
+<section class="card s12 tlempty" id="tlEmpty" style="display:none"><button class="nlink" id="tlEmptyBtn" style="margin:0;font-size:14px">＋新增聯繫名單</button><div class="frow" id="tlEmptyForm" style="display:none;margin:8px 0 0"><div class="tlpick"><input id="tlName2" class="tlin" placeholder="搜尋 CRM 客戶或輸入姓名" maxlength="40" autocomplete="off"><div id="tlPick2" class="tlbox" hidden></div></div><select id="tlKind2" class="tlsel" aria-label="聯繫類型"><option value="call" selected>📞 約訪</option><option value="warm">💛 暖關係</option></select><select id="tlType2" class="tlsel"><option value="">不指定類別</option><option value="ds">陌生</option><option value="rf">緣故</option></select><button class="btn" id="tlAdd2">加入名單</button></div></section>
+<section class="card s12" id="todayCard"><h2 class="ch" data-c="today"><span class="arr"></span>📋 今日聯繫名單<span class="tlsum muted" id="tlSum"></span></h2>
+<div class="kpis" id="tlStats"></div>
+<div class="frow"><div class="tlpick"><input id="tlName" class="tlin" placeholder="搜尋 CRM 客戶或輸入姓名" maxlength="40" autocomplete="off"><div id="tlPick" class="tlbox" hidden></div></div><select id="tlKind" class="tlsel" aria-label="聯繫類型"><option value="call" selected>📞 約訪</option><option value="warm">💛 暖關係</option></select><select id="tlType" class="tlsel"><option value="">不指定類別</option><option value="ds">陌生</option><option value="rf">緣故</option></select><button class="btn" id="tlAdd">加入名單</button></div>
+<div class="frow"><div class="seg tseg" id="tlSeg"><button type="button" data-tlf="all" class="on">全部</button><button type="button" data-tlf="warm">💛 暖關係</button><button type="button" data-tlf="call">📞 約訪</button></div></div>
+<div id="tlList"></div><div id="tlUp"></div>
+<p class="muted">約訪按「沒接」「再聯絡」「約到了」會在今天 +1 約訪並附上姓名（「約到了」另 +1 取得約會）。暖關係按「已關心」會 +1 暖關係。未指定類別時計入陌生。有設定下次聯絡日的人，會在那一天出現；沒接、再聯絡、沒回應且未設定者會延續到明天；「不需要」則移出名單。類型標籤可改；「轉約訪」會改成約訪並保留備註。</p>
+<p class="note" style="color:#9AA3AD;margin:4px 0 0">可搜尋 CRM 客戶加入。同名會顯示電話末三或末四碼，以及負責業務（空白顯示為個人；若團隊名單裡有人的負責業務留白，則顯示那位的顯示名字）。不在 CRM 的人仍可直接輸入，標示「未在 CRM」。</p></section>
+<section class="card s12"><h2>🗺️ 闖關地圖 <span class="muted" id="mapRange"></span><div class="seg" id="mapSeg"><button data-v="all" class="on">全部</button><button data-v="ds">陌生</button><button data-v="rf">緣故</button></div></h2>
+<div class="map" id="mapShot"><div class="path" id="path"></div><div class="legend"><span><b style="background:var(--g)"></b>轉換率健康</span><span><b style="background:var(--y)"></b>接近警戒</span><span><b style="background:var(--r)"></b>偏低（小怪獸擋路）</span><span>數字＝所選月份次數；百分比＝由上一關轉換</span></div></div><div id="mapAlert"></div></section>
+<section class="card s7" id="stats"><h2 class="ch" data-c="stats"><span class="arr"></span>📊 數據面板<div class="seg" id="statSeg"><button data-v="m" class="on">這個月</button><button data-v="w">這個月的每週</button></div></h2><div class="kpis" id="kpis"></div><div class="tw"><table id="funnel"></table></div><p class="muted">點選任一階段可查看本月對應的客戶姓名。轉換率＝本關次數 ÷ 上一關次數；新名單比率＝新名單 ÷ 初次面談。</p></section>
+<section class="card s5"><h2 class="ch" data-c="badges"><span class="arr"></span>🎖️ 徽章收藏 <span class="muted" id="bCount"></span> <span class="note">累計全部紀錄</span></h2><div class="badges" id="badges"></div></section>
+<section class="card s7" id="entry"><h2 class="ch" data-c="entry"><span class="arr"></span>✍️ 今天的行動</h2>
+<div class="frow"><label>日期 <input type="date" id="fDate"></label><span class="muted" id="fHint"></span></div>
+<p class="muted" style="margin:0 0 6px">每個項目都可登記「客戶姓名」（選填、可多位）：點「＋姓名」或「👤 N 位」開啟名單。次數以數字為準，約訪可只記數字不填姓名。</p><p class="note" style="color:#9AA3AD;margin:0 0 6px">在「今日聯繫名單」按過結果的人已自動計入，這裡只需補登不在聯繫名單上的人。</p><div class="tw"><table class="ftab"><thead><tr><th>項目</th><th style="text-align:center">陌生 (DS)</th><th style="text-align:center">緣故／轉介紹</th></tr></thead><tbody id="fBody"></tbody></table></div>
+<div class="money"><label>受理實收總保費（元）<input type="number" min="0" id="fPrem"></label><label>佣金（元）<input type="number" min="0" id="fComm"></label><label>保額（元）<input type="number" min="0" id="fSa"></label></div>
+<div class="frow"><button class="btn" id="save">儲存這一天</button><button class="btn sec" id="reset">重設表單</button><span class="muted">按 ＋／－ 會即時預覽地圖、XP 與任務；按「儲存」寫入你的帳號。每一天單獨保存，客戶之後改階段不會改寫舊日期。</span></div></section>
+<section class="card s5" id="daysCard"><h2 class="ch" data-c="days"><span class="arr"></span>📅 已登錄日期 <span class="muted" id="dCount"></span></h2><div class="days tw"><table id="days"></table></div></section>
+<section class="card s12"><h2 class="ch" data-c="cmp"><span class="arr"></span><span id="cmpTitle">📈 月份比較</span> <span class="note" id="cmpNote"></span></h2><div class="tw"><table id="cmp"></table></div></section>
+<div class="foot">僅記錄行動量，不涉及任何商品績效或報酬承諾。每一天的紀錄依日期單獨保存。<span id="aqDemoNote" hidden>「載入假資料」只寫入你自己的闖關紀錄，內容皆為虛構。</span></div>
+</main>
+<main id="teamView">
+<section class="card s12" id="lbDenied" hidden><p>團隊排行尚未開通，請管理者更新 Firebase 規則</p></section>
+<section class="card s12 closed" id="lbTeamCard" style="display:none"><h2 class="th" id="lbTeamHead" role="button" tabindex="0" aria-expanded="false"><span class="arr" aria-hidden="true"></span>👥 團隊成員設定 <span class="sub">只有管理者可以修改</span></h2><div class="tbody"><p class="note" id="lbTeamHint" style="margin:0 0 8px"></p><div id="lbTeamRows"></div><div class="gerr" id="lbTeamErr"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="gbtn s" data-tadd>＋新增成員</button><button type="button" class="gbtn p" data-tsave>儲存成員</button></div><p class="note" style="margin:8px 0 0">負責業務對應 CRM 的負責業務；留白代表「個人（空白）」，也就是沒填負責業務的客戶。顯示名字用在排行榜。取消「列入排行」的人仍留在名單裡，但不會出現在排名、也不會公布次數。</p></div></section>
+<section class="card s8"><h2>🎯 團隊目標 <span class="sub" id="lbGSub"></span><button class="gedit" id="lbGEdit" style="display:none">✏️ 設定</button></h2><div id="lbGPanel" class="gpanel" style="display:none"></div><div id="lbGoals"></div><p class="note" style="margin:8px 0 0">正式版只有團隊管理者登入時可以設定，其他人只能看。</p></section>
+<section class="card s4 cd" id="lbCd"></section>
+<p class="lbnote" id="lbSampleBanner">團隊夥伴的數字接上後會自動出現</p>
+<div id="lbBoards" style="display:contents"></div>
+<div class="foot">🔒 排行榜只顯示次數與名次，不顯示客戶姓名、保費或任何業績金額。</div>
+<div class="scrim" id="lbScrim"></div><div class="pop" id="lbPop" role="dialog"></div>
+</main><div class="toast" id="toast"></div><div class="mscrim" id="monScrim"></div><div class="mcard" id="monCard" role="dialog"></div><div class="modal" id="nModal"><div class="mbox"><h3><span id="nTitle"></span><button id="nClose" aria-label="關閉">✕</button></h3><div id="nBody"></div></div></div><div class="modal" id="fnModal"><div class="mbox fnbox"><h3><span id="fnTitle"></span><button id="fnClose" aria-label="關閉">✕</button></h3><input id="fnIn" class="nin" placeholder="輸入姓名按 Enter，逗號可一次加多位" maxlength="60"><div id="fnMsg" class="fnmsg"></div><div id="fnList" class="fnlist"></div><p class="muted" style="margin:0">移除姓名不會減少次數。</p></div></div>
+<script>
+// ===== 瓶頸小怪獸建議（可自行修改文字）=====
+// 每一關：name 怪獸名稱、cause 可能原因（一句）、tips 實用建議（2～3 條）、help 求助方式
+const CALL_DAILY_MIN=20; // 沉默怪門檻：本週平均每天暖關係未達此數就出現（仍站在約訪村）
+// 迷霧怪（面談→發掘需求）門檻在 MONSTERS.need.th：[健康值, 警戒值]
+const MONSTERS={
+ call:{name:'沉默怪',cause:'關係經營變冷了，問候和關心的次數還沒到健康標準。',tips:['每天安排固定時段問候','從生活話題開始','問「超業」要話術'],help:'請團隊夥伴一起固定問候時段，互相提醒把關心傳出去'},
+ appt:{name:'爽約怪',cause:'通話中沒有給對方明確的見面理由，或時間沒有當場敲定。',tips:['開場說明見面能帶給對方的具體好處（例如保單健檢）','用「二選一」問時間：週二晚上還是週四中午？','約好後前一天傳訊息確認並附上地點'],help:'問「超業」或主管助理要一份約訪話術範本'},
+ meet:{name:'猶豫怪',cause:'約到了但臨時取消或改期，對方對見面的必要性還不確定。',tips:['約見前一天再次確認，並說明會談大約 30 分鐘','提供線上會談或對方方便的地點作為選項'],help:'找主管陪訪，第一次見面由主管協助開場'},
+ need:{name:'迷霧怪',th:[.70,.55],cause:'面談時太快進入商品介紹，或問題問得不夠深，還沒找到客戶真正在意的需求。',tips:['熟練發掘需求演練：和夥伴角色演練提問流程','用六大需求或金三角當提問工具，逐一確認','面談後記下客戶說的重點，下次見面再確認'],help:'找主管協助或陪訪，或問「超業」助理要提問話術'},
+ prop:{name:'拖延怪',cause:'需求已找到，但關鍵訪遲遲沒有排出時間。',tips:['面談結束前就約好下次關鍵訪的時間','關鍵訪只聚焦 1～2 個對方最在意的需求，避免太複雜'],help:'請主管或資深夥伴幫忙看關鍵訪的呈現方式'},
+ deal:{name:'觀望怪',cause:'說明後對方還在比較或想再考慮，決定被一直延後。',tips:['主動詢問「還有哪些地方需要再確認？」並逐一釐清','給對方整理好的重點摘要，方便與家人討論','約好下一次回覆的時間，而不是等待對方聯絡'],help:'找主管陪訪，一起回答對方的疑問'},
+ lead:{name:'害羞怪',cause:'成交或面談後不好意思開口請對方介紹朋友。',tips:['在服務好的時刻自然提出：「身邊有沒有也需要整理保障的朋友？」','準備簡單的介紹卡或訊息，讓對方方便轉傳'],help:'問「超業」助理要轉介紹開口的話術'}
+};
+// 每隻怪獸的外型參數（原創簡單造型）
+const MONLOOK={call:{c:'#8FA3BF',f:'zip'},appt:{c:'#F2994A',f:'clock'},meet:{c:'#6FCF97',f:'q'},need:{c:'#B9A3E3',f:'fog'},prop:{c:'#C2A878',f:'zz'},deal:{c:'#4DB6AC',f:'look'},lead:{c:'#F4A9C0',f:'shy'}};
+function monSVG(k){const L=MONLOOK[k],c=L.c,f=L.f;let eyes='<circle cx="19" cy="27" r="5" fill="#fff"/><circle cx="33" cy="27" r="5" fill="#fff"/><circle cx="20" cy="28" r="2.4" fill="#1E2E3D"/><circle cx="32" cy="28" r="2.4" fill="#1E2E3D"/>',mouth='<path d="M21 38 Q26 35 31 38" stroke="#1E2E3D" stroke-width="2" fill="none"/>',extra='',body='<ellipse cx="26" cy="30" rx="21" ry="18" fill="'+c+'"/>';
+ if(f==='zip')mouth='<path d="M18 38 H34" stroke="#1E2E3D" stroke-width="2"/><path d="M21 36v4M25 36v4M29 36v4" stroke="#1E2E3D" stroke-width="1.4"/>';
+ if(f==='clock'){eyes='<circle cx="19" cy="27" r="5" fill="#fff"/><circle cx="20" cy="28" r="2.4" fill="#1E2E3D"/><path d="M29 27 Q33 24 37 27" stroke="#1E2E3D" stroke-width="2" fill="none"/>';extra='<path d="M26 12V5" stroke="#1E2E3D" stroke-width="2"/><circle cx="26" cy="5" r="4.5" fill="#fff" stroke="#1E2E3D" stroke-width="1.5"/><path d="M26 3v2.4h1.8" stroke="#1E2E3D" stroke-width="1.2" fill="none"/>'}
+ if(f==='q'){extra='<path d="M14 20 L22 22M38 20 L30 22" stroke="#1E2E3D" stroke-width="2"/><text x="40" y="12" font-size="13" font-weight="700" fill="#1E2E3D">?</text>';mouth='<path d="M21 39 Q24 36 27 39 Q30 42 33 39" stroke="#1E2E3D" stroke-width="2" fill="none"/>'}
+ if(f==='fog'){body='<path d="M6 34 Q5 12 26 12 Q47 12 46 34 Q44 46 38 44 Q34 49 28 45 Q22 49 17 45 Q10 47 6 34Z" fill="'+c+'"/>';eyes='<path d="M16 27 a3 3 0 1 1 3 3 a1.6 1.6 0 1 1 -1.6 -1.6" stroke="#1E2E3D" stroke-width="1.6" fill="none"/><path d="M30 27 a3 3 0 1 1 3 3 a1.6 1.6 0 1 1 -1.6 -1.6" stroke="#1E2E3D" stroke-width="1.6" fill="none"/>'}
+ if(f==='zz'){eyes='<path d="M15 28 H23M29 28 H37" stroke="#1E2E3D" stroke-width="2.2" stroke-linecap="round"/>';mouth='<ellipse cx="26" cy="38" rx="3" ry="2" fill="#1E2E3D"/>';extra='<text x="38" y="14" font-size="10" font-weight="700" fill="#1E2E3D">z</text><text x="44" y="8" font-size="7" font-weight="700" fill="#1E2E3D">z</text>'}
+ if(f==='look')eyes='<circle cx="18" cy="26" r="7" fill="#fff" stroke="#1E2E3D" stroke-width="1.5"/><circle cx="34" cy="26" r="7" fill="#fff" stroke="#1E2E3D" stroke-width="1.5"/><path d="M25 26h2" stroke="#1E2E3D" stroke-width="1.5"/><circle cx="20" cy="25" r="3" fill="#1E2E3D"/><circle cx="36" cy="25" r="3" fill="#1E2E3D"/>';
+ if(f==='shy'){eyes='<path d="M15 28 Q19 31 23 28M29 28 Q33 31 37 28" stroke="#1E2E3D" stroke-width="2" fill="none"/>';extra='<circle cx="13" cy="34" r="4" fill="#E5534B" opacity=".45"/><circle cx="39" cy="34" r="4" fill="#E5534B" opacity=".45"/>';mouth='<circle cx="26" cy="38" r="1.8" fill="#1E2E3D"/>'}
+ return`<svg viewBox="0 0 52 50" width="52" height="50" aria-hidden="true">${body}${eyes}${mouth}${extra}</svg>`}
+const KEY='actionquest_entries_v1';
+const ST=[{k:'call',n:'約訪',full:'約訪（通數）',town:'約訪村',ic:'📞',xp:1},{k:'appt',n:'取得約會',full:'取得約會',town:'約會小鎮',ic:'🗓️',xp:3},{k:'meet',n:'初次面談',full:'初次面談',town:'面談森林',ic:'🌲',xp:5},{k:'need',n:'發掘需求',full:'發掘需求',town:'需求山谷',ic:'⛰️',xp:5},{k:'prop',n:'關鍵訪',full:'關鍵訪',town:'關鍵訪高塔',ic:'🗼',xp:10},{k:'deal',n:'成交',full:'成交（件數）',town:'成交城堡',ic:'🏰',xp:30},{k:'lead',n:'取得新名單',full:'取得新名單',town:'轉介紹寶庫',ic:'💎',xp:3}];
+const WARM={k:'warm',n:'暖關係',town:'關係經營',ic:'🤝',full:'暖關係'};
+const FN=s=>s.replace(/<br>.*/,'');const FIELDS=[[WARM.k,WARM.full],...ST.slice(0,6).map(s=>[s.k,s.full]),['client','成交（客戶數）'],['lead','取得新名單<br><span class="muted">陌生＝DS取得／緣故＝要求推薦介紹取得</span>']];
+// [健康, 警戒] 門檻
+const TH={appt:[.30,.20],meet:[.70,.55],need:MONSTERS.need.th,prop:[.60,.45],deal:[.30,.20],lead:[.50,.30]};
+const TITLES=[[0,'見習顧問'],[1200,'新秀顧問'],[3000,'專業顧問'],[5500,'資深顧問'],[9000,'菁英顧問'],[14000,'傳說顧問']];
+let E={};let draft=null;let mapMode='all',statView='m',selMonth=null;
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const TODAY=ds(new Date());
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return ds(d)};
+const blank=()=>({ds:Object.fromEntries(FIELDS.map(f=>[f[0],0])),rf:Object.fromEntries(FIELDS.map(f=>[f[0],0])),prem:0,comm:0,sa:0,names:{ds:{},rf:{}},fl:{ds:{},rf:{}}});
+const NK=['warm',...ST.map(s=>s.k)];const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function stageOf(k){return k==='warm'?WARM:k==='client'?{k:'client',n:'成交客戶',full:'成交（客戶數）',town:'成交城堡',ic:'🏰'}:ST.find(x=>x.k===k)}
+function normNames(e){if(!e.names||typeof e.names!=='object')e.names={};for(const t of['ds','rf']){if(!e.names[t]||typeof e.names[t]!=='object')e.names[t]={};for(const k in e.names[t]){if(!Array.isArray(e.names[t][k]))delete e.names[t][k];else e.names[t][k]=[...new Set(e.names[t][k])]}}if(!e.fl||typeof e.fl!=='object')e.fl={};for(const t of['ds','rf']){if(!e.fl[t]||typeof e.fl[t]!=='object')e.fl[t]={};for(const k in e.fl[t])if(!Array.isArray(e.fl[t][k]))delete e.fl[t][k]}return e}
+const nmOf=(e,t,k)=>(e&&e.names&&e.names[t]&&Array.isArray(e.names[t][k]))?e.names[t][k]:[];
+function load(){try{E=JSON.parse(JSON.stringify(window.__aqInitialDays||{}))}catch(e){E={}}}
+function persist(){if(window.__aqHydrating)return;if(window.__aqSchedule)window.__aqSchedule('days');}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)}
+// 假資料：近 28 天，弱點在 發掘需求→關鍵訪
+function fake(){let s=20261017;const r=()=>(s=(s*1103515245+12345)%2147483648)/2147483648;const bin=(n,p)=>{let c=0;for(let i=0;i<n;i++)if(r()<p)c++;return c};
+ const out={};for(let i=Math.round((new Date(TODAY)-new Date(+TODAY.slice(0,4),+TODAY.slice(5,7)-3,1))/864e5);i>=0;i--){const ago=i>40?(i>70?2:1):0;const day=addD(TODAY,-i);const wd=new Date(day+'T00:00:00').getDay();const e=blank();
+  const P={ds:{n:4+ago+Math.floor(r()*6),appt:.32-ago*.03,meet:ago?.8:.5,need:ago?.82:.5,prop:.36+ago*.08,deal:.42},rf:{n:3+Math.floor(r()*3),appt:.55,meet:ago?.88:.52,need:ago?.88:.5,prop:.40+ago*.08,deal:.5}};
+  for(const t of['ds','rf']){const p=P[t],o=e[t];o.call=wd===0?Math.floor(p.n/3):p.n;if(i===0)o.call=t==='ds'?3:1;o.warm=wd===0?3+Math.floor(r()*3):6+Math.floor(r()*6);o.appt=bin(o.call,p.appt);o.meet=bin(o.appt,p.meet);o.need=bin(o.meet,p.need);o.prop=bin(o.need,p.prop);o.deal=bin(o.prop,p.deal);o.client=o.deal;o.lead=t==='ds'?bin(2,.3):bin(o.meet+1,ago?.45:.2)}
+  if(i<10&&i>0&&e.ds.meet+e.rf.meet<1){e.rf.appt=Math.max(1,e.rf.appt);e.rf.meet=1}
+  if(i===0){e.ds.appt=1;e.ds.meet=0;e.rf.appt=1;e.rf.meet=0;['need','prop','deal','client','lead'].forEach(k=>{e.ds[k]=0;e.rf[k]=0})}
+  if(i===20){e.rf.deal=Math.max(1,e.rf.deal);e.rf.client=e.rf.deal;e.rf.prop=Math.max(e.rf.prop,1)}
+  const deals=e.ds.deal+e.rf.deal;if(deals){e.prem=deals*(28000+Math.round(r()*40)*1000);e.comm=Math.round(e.prem*.25);e.sa=deals*(1000000+Math.round(r()*30)*100000)}
+  out[day]=e}return out}
+const GIV=['小明','阿美','大華','小芳','志強','雅婷','俊傑','怡君','建宏','淑芬','家豪','佩珊','冠宇','欣怡','宗翰','詩涵'],PRE=['測試','範例','示範','假名'];
+function fakeNames(out){let s=7;const r=()=>(s=(s*1103515245+12345)%2147483648)/2147483648;const nm=()=>PRE[Math.floor(r()*4)]+GIV[Math.floor(r()*16)];
+ for(const d in out){const e=out[d];for(const t of['ds','rf']){const o=e[t],N={};const ppl=[];const need=Math.max(o.appt,Math.ceil(o.call/2));while(ppl.length<need){const x=nm();if(!ppl.includes(x))ppl.push(x)}
+  if(need)N.call=ppl.slice(0,need);if(o.warm)N.warm=[nm(),nm()].slice(0,Math.min(2,o.warm));for(const k of['appt','meet','need','prop','deal'])if(o[k])N[k]=ppl.slice(0,o[k]);if(o.lead){N.lead=[];for(let i=0;i<o.lead;i++)N.lead.push(nm())}e.names[t]=N}}
+ const e=out[TODAY];if(e)e.names={ds:{call:['測試小明','示範大華','範例小王'],appt:['測試小明']},rf:{call:['範例阿美']}};e.fl={ds:{call:['測試小明','示範大華'],appt:['測試小明']},rf:{call:['範例阿美']}};return out}
+function fakeTL(){const it=(id,name,t,res,fx,roll,prev)=>({id,name,t,res,fx,roll,prev});const y=addD(TODAY,-1);const h={};for(let i=1;i<=4;i++){const p=4+i%3;h[addD(TODAY,-i)]={p,d:p,ok:1+i%2}}h[addD(TODAY,-5)]={p:6,d:4,ok:1};
+ const a1={d:addD(TODAY,2),t:'19:30',loc:'範例咖啡館'};const I1=it(1,'測試小明','ds','ok',[['ds','call'],['ds','appt']]);I1.appt=a1;I1.note='對儲蓄規劃有興趣';const I2=it(2,'範例阿美','rf','no',[['rf','call']]);I2.note='響很久沒接';I2.next=addD(TODAY,1);const I3=it(3,'示範大華','ds','later',[['ds','call']]);I3.note='出差中，下週再聯絡';I3.next=addD(TODAY,7);
+ const I4=it(4,'測試小芳','rf',null);I4.kind='warm';const I8=it(8,'範例心怡','ds',null);I8.kind='warm';I8.note='從生活近況問起';
+ return{date:TODAY,hist:h,pending:[{id:20,name:'假名建宏',t:'rf',res:null,roll:addD(TODAY,-2),prev:'later',note:'月底比較有空',due:addD(TODAY,3)}],appts:[{id:1,name:'測試小明',...a1},{id:21,name:'範例淑芬',d:addD(TODAY,1),t:'14:00',loc:'示範辦公室'},{id:22,name:'示範冠宇',d:addD(TODAY,4),t:'10:00',loc:''}],items:[I1,I2,I3,I4,it(5,'範例志強','ds',null),it(6,'假名雅婷','',null),it(7,'測試俊傑','rf',null,null,y,'later'),I8]}}
+// 計算
+let AUTO=[];
+const AQ_AUTO_START='2026-10-17'; // 與 CRM 相同：此日（含）之後的自動事件才計入。手記數字不改寫。
+const AQ_LOCK=['meet','prop','deal','client'];
+function autoLabel(ev){const n=String((ev&&ev.name)||'').trim()||'（未命名）';return n+((+ev.round||1)>=2?'（第'+ev.round+'輪）':'')}
+function isReversal(ev){if(!ev)return false;const d=ev.delta;if(d===-1||d==='-1')return true;return String(ev.id||'').indexOf('ar_')===0}
+function countableAutos(list){const undone={};(list||[]).forEach(ev=>{if(!ev||ev.undoOf==null||ev.undoOf==='')return;const u=String(ev.undoOf);if(u&&u!==String(ev.id||''))undone[u]=1});return (list||[]).filter(ev=>ev&&!isReversal(ev)&&!undone[String(ev.id||'')])}
+function autoList(date,t,k){const out=[],seen={};countableAutos(AUTO).forEach(ev=>{if(!ev||ev.date!==date||ev.date<AQ_AUTO_START||ev.action!==k)return;const side=ev.side==='rf'?'rf':'ds';if(side!==t)return;const label=autoLabel(ev);const key=(ev.custId||label)+'|'+label;if(seen[key])return;seen[key]=1;out.push(label)});return out}
+function applyAuto(v){v=JSON.parse(JSON.stringify(v));const seen={};countableAutos(AUTO).forEach(ev=>{if(!ev||!ev.date||ev.date<AQ_AUTO_START)return;if(!['warm','call','appt','meet','need','prop','deal','client','lead'].includes(ev.action))return;if(ev.custId){const dk=ev.custId+'|'+ev.action+'|'+ev.date;if(seen[dk])return;seen[dk]=1}const t=ev.side==='rf'?'rf':'ds';if(!v[ev.date])v[ev.date]=blank();const e=normNames(v[ev.date]);e[t][ev.action]=(+e[t][ev.action]||0)+1;const label=autoLabel(ev);if(!e.names[t][ev.action])e.names[t][ev.action]=[];if(label&&!e.names[t][ev.action].includes(label))e.names[t][ev.action].push(label);if(!e.autoMark)e.autoMark={ds:{},rf:{}};if(!e.autoMark[t][ev.action])e.autoMark[t][ev.action]=[];if(!e.autoMark[t][ev.action].includes(label))e.autoMark[t][ev.action].push(label);v[ev.date]=e});return v}
+const view=()=>{const v=JSON.parse(JSON.stringify(E));if(draft)v[draft.date]=JSON.parse(JSON.stringify(draft.e));return applyAuto(v)};
+const BOARD_KEYS=['warm','call','appt','meet','need','prop','deal','client','lead'];
+function boardMonths(days,autos){const months={};const touch=d=>{const m=String(d).slice(0,7);if(!months[m])months[m]=Object.fromEntries(BOARD_KEYS.map(k=>[k,0]));return months[m]};
+ Object.keys(days||{}).forEach(d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return;const e=days[d];if(!e||typeof e!=='object')return;const bag=touch(d);BOARD_KEYS.forEach(k=>{bag[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)})});
+ const seen={};countableAutos(autos).forEach(ev=>{if(!ev||!ev.date||ev.date<AQ_AUTO_START||!/^\d{4}-\d{2}-\d{2}$/.test(ev.date))return;if(BOARD_KEYS.indexOf(ev.action)<0)return;if(ev.custId){const dk=ev.custId+'|'+ev.action+'|'+ev.date;if(seen[dk])return;seen[dk]=1}touch(ev.date)[ev.action]+=1});
+ return months}
+window.__aqBoardMonths=boardMonths;
+function cohortRate(from,to,stageKey){const idx=ST.findIndex(s=>s.k===stageKey);if(idx<=0)return null;const prev=stageKey==='lead'?'meet':ST[idx-1].k;const first={};countableAutos(AUTO).forEach(ev=>{if(!ev||!ev.custId||!ev.action||!ev.date||ev.date<AQ_AUTO_START)return;const id=ev.custId+'#'+(ev.round||1);if(!first[id])first[id]={};if(!first[id][ev.action]||ev.date<first[id][ev.action])first[id][ev.action]=ev.date});let den=0,num=0;for(const id in first){const p=first[id][prev];if(!p||p<from||p>to)continue;den++;const s=first[id][stageKey];if(s&&s>=p)num++}if(!den)return null;return Math.min(1,num/den)}
+const CURM=TODAY.slice(0,7);const isY=m=>m.length===4;const mLabel=m=>isY(m)?`${m} 全年`:`${m.slice(0,4)} 年 ${+m.slice(5)} 月`;const mEnd=m=>{const d=new Date(+m.slice(0,4),+m.slice(5),0);return ds(d)};
+function sumRange(V,days,mode){return days?sumBetween(V,addD(TODAY,-(days-1)),TODAY,mode):sumBetween(V,null,null,mode)}
+const sumMonth=(V,m,mode)=>isY(m)?sumBetween(V,m+'-01-01',m+'-12-31',mode):sumBetween(V,m+'-01',mEnd(m),mode);
+function sumBetween(V,from,to,mode){const o={};FIELDS.forEach(f=>o[f[0]]=0);o.prem=o.comm=o.sa=0;
+ for(const d in V){if(from&&(d<from||d>to))continue;const e=V[d];for(const f of FIELDS){const k=f[0];o[k]+=(mode!=='rf'?+e.ds[k]||0:0)+(mode!=='ds'?+e.rf[k]||0:0)}o.prem+=+e.prem||0;o.comm+=+e.comm||0;o.sa+=+e.sa||0}return o}
+const dayTot=(e,k)=>e?(+e.ds[k]||0)+(+e.rf[k]||0):0;
+const rate=(s,i)=>{if(i===0)return null;const prev=s.k==='lead'?'meet':ST[i-1].k;return{prev,v:null}};
+function rateOf(o,i,from,to){const s=ST[i];if(!s||i===0)return null;if(from&&to&&s.k!=='lead'){const c=cohortRate(from,to,s.k);if(c!=null)return c}const den=s.k==='lead'?o.meet:o[ST[i-1].k];return den?Math.min(1,o[s.k]/den):null}
+function lightOf(k,v){if(v==null)return'';const t=TH[k];return v>=t[0]?'g':v>=t[1]?'y':'r'}
+const pct=v=>v==null?'—':(v*100).toFixed(0)+'%';
+function xpOf(V){let x=0;for(const d in V)for(const s of ST)x+=dayTot(V[d],s.k)*s.xp;return x}
+const questDone=e=>dayTot(e,'call')>=5&&dayTot(e,'appt')>=2;
+function streakOf(V){let d=questDone(V[TODAY])?TODAY:addD(TODAY,-1),n=0;while(questDone(V[d])){n++;d=addD(d,-1)}return n}
+function maxStreak(V){const ks=Object.keys(V).sort();let best=0,cur=0,prev=null;for(const k of ks){if(questDone(V[k])){cur=(prev&&addD(prev,1)===k&&cur)?cur+1:1;best=Math.max(best,cur)}else cur=0;prev=k}return best}
+function maxWindow(V,k,len,mode){let best=0;for(const d in V){let s=0;for(let i=0;i<len;i++){const e=V[addD(d,i)];if(e)s+=mode?(+e[mode][k]||0):dayTot(e,k)}best=Math.max(best,s)}return best}
+// 繪製
+function renderMonthSel(V){const ms=[...new Set([CURM,...Object.keys(V).map(k=>k.slice(0,7))])].sort().reverse();const ys=[...new Set(ms.map(m=>m.slice(0,4)))];if(!selMonth||!(ms.includes(selMonth)||ys.includes(selMonth)))selMonth=CURM;const op=m=>`<option value="${m}" ${m===selMonth?'selected':''}>${mLabel(m)}</option>`;$('monthSel').innerHTML=ys.map(y=>`<optgroup label="${y} 年">${op(y)}${ms.filter(m=>m.startsWith(y)).map(op).join('')}</optgroup>`).join('');$('statSeg').style.display=isY(selMonth)?'none':'';$('cmpTitle').textContent=isY(selMonth)?`📋 ${selMonth} 全年總表`:`📈 月份比較（${selMonth.slice(0,4)} 年）`;$('cmpNote').textContent='（只列出有紀錄的月份；▲▼ 為與前一個月相比，前一個月無資料則不比較）'}
+function render(){const V=view();renderTL();renderMonthSel(V);renderCmp(V);renderXP(V);renderQuest(V);renderMap(V);renderStats(V);renderBadges(V);renderDays();if($('fBody'))paintAuto()}
+function renderXP(V){const x=xpOf(V);let li=0;TITLES.forEach((t,i)=>{if(x>=t[0])li=i});const cur=TITLES[li][0],nx=TITLES[li+1]?TITLES[li+1][0]:null;
+ $('lvNum').textContent=li+1;$('lvTitle').textContent=TITLES[li][1];$('xpTxt').textContent=nx?`${x.toLocaleString()} / ${nx.toLocaleString()} XP，距離「${TITLES[li+1][1]}」還差 ${(nx-x).toLocaleString()}`:`${x.toLocaleString()} XP・已達最高稱號`;
+ $('xpBar').style.width=(nx?(x-cur)/(nx-cur)*100:100)+'%';$('titles').innerHTML=TITLES.map((t,i)=>`<span class="${i<=li?'on':''}">${t[1]}</span>`).join('')}
+let lastDone=null;
+function renderQuest(V){const e=V[TODAY];const q=[['約訪','call',5,'通'],['取得約會','appt',2,'位']];
+ $('qList').innerHTML=`<div class="muted" style="color:#C9D3DD">今日任務：約訪 5 通、取得約會 2 位</div>`+q.map(([n,k,g,u])=>{const c=dayTot(e,k);return`<div class="qitem"><span class="chk ${c>=g?'on':''}">${c>=g?'✓':''}</span><span class="qtxt">${n} ${g} ${u}</span><div class="bar"><i style="width:${Math.min(100,c/g*100)}%"></i></div><span class="qn">${c}/${g}</span></div>`}).join('');
+ $('streak').textContent=streakOf(V);const d=questDone(e);$('quest').classList.toggle('complete',d);if(lastDone===false&&d)celebrate();lastDone=d}
+function celebrate(){const q=$('quest');for(let i=0;i<40;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.background=['#D4AF37','#fff','#2EB872','#F1D77A'][i%4];c.style.animationDelay=Math.random()*.5+'s';q.appendChild(c);setTimeout(()=>c.remove(),2600)}toast('🎉 今日任務完成！')}
+const MON=`<svg viewBox="0 0 52 50" width="52" height="50"><ellipse cx="26" cy="30" rx="22" ry="18" fill="#9B7FD1"/><path d="M8 18 L12 6 L18 15Z M44 18 L40 6 L34 15Z" fill="#9B7FD1"/><circle cx="19" cy="27" r="5" fill="#fff"/><circle cx="33" cy="27" r="5" fill="#fff"/><circle cx="20" cy="28" r="2.4" fill="#1E2E3D"/><circle cx="32" cy="28" r="2.4" fill="#1E2E3D"/><path d="M20 38 Q26 34 32 38" stroke="#1E2E3D" stroke-width="2" fill="none"/><circle cx="12" cy="34" r="3" fill="#F4A9C0" opacity=".7"/><circle cx="40" cy="34" r="3" fill="#F4A9C0" opacity=".7"/></svg>`;
+function weekAvg(V,mode){const y=selMonth.slice(0,4);let ref=isY(selMonth)?(y===CURM.slice(0,4)?TODAY:y+'-12-31'):(selMonth===CURM?TODAY:mEnd(selMonth));const wd=(new Date(ref+'T00:00:00').getDay()+6)%7;const from=addD(ref,-wd);let n=0;for(let d=from;d<=ref;d=addD(d,1)){const e=V[d];if(e)n+=(mode!=='rf'?+e.ds.warm||0:0)+(mode!=='ds'?+e.rf.warm||0:0)}return{avg:n/(wd+1),from,to:ref}}
+function renderMap(V){const o=sumMonth(V,selMonth,mapMode);$('mapRange').textContent=`（${mLabel(selMonth)}）`;const rf=isY(selMonth)?selMonth+'-01-01':selMonth+'-01',rt=isY(selMonth)?selMonth+'-12-31':mEnd(selMonth);let bad=[];
+ $('path').innerHTML=ST.map((s,i)=>{const r=rateOf(o,i,rf,rt);let l=lightOf(s.k,r);const from=s.k==='lead'?'初次面談':ST[i-1]?.n;let wk=null;if(i===0){wk=weekAvg(V,mapMode);if(wk.avg<CALL_DAILY_MIN)l='r'}if(l==='r')bad.push(i===0?`本週暖關係（平均每天 ${wk.avg.toFixed(1)} 次）`:`${from} → ${s.n}`);
+  const mon=l==='r'?`<div class="monster" tabindex="0" role="button" aria-label="${MONSTERS[s.k].name}：查看建議" data-mk="${s.k}" data-mn="${o[s.k]}" data-mr="${r}" data-mf="${from}"${wk?` data-wk="${wk.avg.toFixed(1)}" data-wr="${wk.from.slice(5).replace('-','/')}～${wk.to.slice(5).replace('-','/')}"`:''}>${monSVG(s.k)}</div>`:'';
+  return`<div class="node" data-stage="${s.k}" data-mode="${mapMode}" title="點擊查看客戶姓名">${mon}<div class="isle">${s.ic}${l?`<span class="light ${l}"></span>`:''}</div><div class="ninfo"><div class="nname">${i+1}. ${s.town}</div><div class="ncount">${o[s.k]}<small> ${s.n}${s.k==='deal'?'（'+o.client+' 位客戶）':''}</small></div><div class="nrate">${i===0?'起點':(s.k==='lead'?'÷面談 ':'轉換 ')+pct(r)}</div></div></div>`}).join('');
+ $('mapAlert').innerHTML=bad.length?`<div class="alert">👾 小怪獸出沒：<b>${bad.join('、')}</b> 是本月瓶頸（轉換率或本週暖關係還沒到健康標準）。</div>`:''}
+function weeksOf(m){const out=[];let d=m+'-01';const e=mEnd(m);while(d<=e){let st=d,en=d;while(en<e&&new Date(en+'T00:00:00').getDay()!==0)en=addD(en,1);out.push([st,en]);d=addD(en,1)}return out}
+function renderStats(V){if(isY(selMonth))statView='m';const a=sumMonth(V,selMonth,'all'),d=sumMonth(V,selMonth,'ds'),r=sumMonth(V,selMonth,'rf');
+ const avg=(o)=>o.deal?(o.meet/o.deal).toFixed(1):'—';const avgC=o=>o.deal?(o.call/o.deal).toFixed(1):'—';
+ $('kpis').innerHTML=[['平均約幾個人成交一件',`${avg(a)} 人`,'初次面談數 ÷ 成交件數'],['平均幾通約訪成交一件',`${avgC(a)} 通`,''],['成交',`${a.deal} 件／${a.client} 位`,''],['受理實收總保費',`$${a.prem.toLocaleString()}`,''],['佣金',`$${a.comm.toLocaleString()}`,''],['保額',`$${a.sa.toLocaleString()}`,'']].map(k=>`<div class="kpi"><div class="k">${k[0]}</div><div class="v">${k[1]}</div>${k[2]?`<div class="muted">${k[2]}</div>`:''}</div>`).join('');
+ const rf=selMonth+'-01',rt=mEnd(selMonth);const cell=(o,i,s)=>{const v=rateOf(o,i,rf,rt),l=lightOf(s.k,v);return`<td>${o[s.k]}</td><td>${i?(v==null?'<span class="muted">—</span>':`<span class="pill ${l}">${pct(v)}</span>`):'—'}</td>`};
+ let rows=ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}" title="點擊查看客戶姓名"><td>${s.full} ›</td>${cell(d,i,s)}${cell(r,i,s)}${cell(a,i,s)}</tr>`);
+ rows.splice(6,0,`<tr><td>成交（客戶數）</td><td>${d.client}</td><td></td><td>${r.client}</td><td></td><td>${a.client}</td><td></td></tr>`);
+ rows.unshift(`<tr class="mrow" data-stage="warm" title="點擊查看客戶姓名"><td>暖關係 ›<div class="muted">每日目標 20</div></td><td>${d.warm||0}</td><td>—</td><td>${r.warm||0}</td><td>—</td><td>${a.warm||0}</td><td>—</td></tr>`);
+ if(statView==='w'){const W=weeksOf(selMonth).map(w=>sumBetween(V,w[0],w[1],'all'));const wk=weeksOf(selMonth);
+  const warmWk=`<tr class="mrow" data-stage="warm"><td>暖關係 ›<div class="muted">每日目標 20</div></td>${W.map(o=>`<td>${o.warm||0}</td>`).join('')}</tr>`;
+  $('funnel').innerHTML=`<thead><tr><th>階段（合計）</th>${wk.map((w,i)=>`<th>第${i+1}週<br><span class="note">${w[0].slice(5).replace('-','/')}～${w[1].slice(8)}</span></th>`).join('')}</tr></thead><tbody>${warmWk}${ST.map((s,i)=>`<tr class="mrow" data-stage="${s.k}"><td>${s.full} ›</td>${W.map((o,wi)=>{const v=rateOf(o,i,wk[wi][0],wk[wi][1]),l=lightOf(s.k,v);return`<td>${o[s.k]}${i&&v!=null?` <span class="pill ${l}">${pct(v)}</span>`:''}</td>`}).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td>${W.map(o=>`<td>${avg(o)}</td>`).join('')}</tr></tfoot>`;return}
+ $('funnel').innerHTML=`<thead><tr><th rowspan="2">階段</th><th colspan="2" style="text-align:center">陌生 (DS)</th><th colspan="2" style="text-align:center">緣故／轉介紹</th><th colspan="2" style="text-align:center">合計</th></tr><tr><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th><th>次數</th><th>轉換</th></tr></thead><tbody>${rows.join('')}</tbody><tfoot><tr><td>平均約幾人成交一件</td><td colspan="2">${avg(d)}</td><td colspan="2">${avg(r)}</td><td colspan="2">${avg(a)}</td></tr></tfoot>`}
+function renderBadges(V){const all=sumRange(V,0,'all');const lv=TITLES.filter(t=>xpOf(V)>=t[0]).length;
+ const B=[['🥇','第一次成交','完成第 1 件成交',all.deal>=1],['🌲','單週面談 10 次','任 7 天內面談 ≥ 10',maxWindow(V,'meet',7)>=10],['💎','單月 5 份轉介紹','任 30 天內轉介紹名單 ≥ 5',maxWindow(V,'lead',30,'rf')>=5],['🔥','連續 7 天達標','每日任務連續 7 天',maxStreak(V)>=7],['📞','百通約訪','累積約訪 ≥ 100',all.call>=100],['🗼','關鍵訪達人','累積關鍵訪 ≥ 20',all.prop>=20],['🏰','十件成交','累積成交 ≥ 10',all.deal>=10],['⚡','單日約訪 20 通','一天約訪 ≥ 20',maxWindow(V,'call',1)>=20],['🌟','連續 30 天達標','每日任務連續 30 天',maxStreak(V)>=30],['👑','傳說顧問','等級達到 Lv6',lv>=6]];
+ $('bCount').textContent=`（已解鎖 ${B.filter(b=>b[3]).length}/${B.length}）`;$('badges').innerHTML=B.map(b=>`<div class="badge ${b[3]?'':'lock'}" title="${b[2]}"><div class="ic">${b[3]?b[0]:'🔒'}</div><div class="bn">${b[1]}</div><div class="bd">${b[2]}</div></div>`).join('')}
+function renderDays(){const V=view();if(isY(selMonth)){const y=selMonth;const ms=[];for(let i=1;i<=12;i++)ms.push(y+'-'+pad(i));const rows=ms.map(m=>{const MT={};Object.keys(V).filter(k=>k.startsWith(m)).forEach(k=>MT[k]=V[k]);return[m,MT,Object.keys(MT).length]}).filter(r=>r[2]);const YT={};rows.forEach(r=>Object.assign(YT,r[1]));const t=sumBetween(YT,null,null,'all');$('dCount').textContent=`（${y} 全年・${rows.length} 個月）`;
+ $('days').innerHTML=rows.length?`<thead><tr><th>月份</th><th>天數</th><th>暖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th></tr></thead><tbody>`+rows.map(([m,MT,n])=>{const o=sumBetween(MT,null,null,'all');return`<tr class="mrow" data-gom="${m}" title="切換到 ${mLabel(m)}"><td>${mLabel(m)} ›</td><td>${n}</td><td>${o.warm||0}</td><td>${o.call}</td><td>${o.meet}</td><td>${o.deal}</td><td>${xpOf(MT)}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>全年合計</td><td>${Object.keys(YT).length}</td><td>${t.warm||0}</td><td>${t.call}</td><td>${t.meet}</td><td>${t.deal}</td><td>${xpOf(YT)}</td></tr></tfoot>`:'<tr><td class="muted">這一年尚無資料。</td></tr>';return}
+ const ks=Object.keys(V).filter(k=>k.startsWith(selMonth)).sort().reverse();$('dCount').textContent=`（${mLabel(selMonth)}・${ks.length} 天）`;const MT={};ks.forEach(k=>MT[k]=V[k]);const tot=sumBetween(MT,null,null,'all');
+ $('days').innerHTML=ks.length?`<thead><tr><th>日期</th><th>暖關係</th><th>約訪</th><th>面談</th><th>成交</th><th>XP</th><th></th></tr></thead><tbody>`+ks.map(k=>{const e=V[k];return`<tr><td>${k}${questDone(e)?' ✅':''}</td><td>${dayTot(e,'warm')}</td><td>${dayTot(e,'call')}</td><td>${dayTot(e,'meet')}</td><td>${dayTot(e,'deal')}</td><td>${xpOf({x:e})}</td><td><button data-ed="${k}">編輯</button>${E[k]?`<button class="del" data-del="${k}">刪除</button>`:''}</td></tr>`}).join('')+`</tbody><tfoot><tr style="font-weight:700;background:#FBF7E8"><td>本月合計</td><td>${tot.warm||0}</td><td>${tot.call}</td><td>${tot.meet}</td><td>${tot.deal}</td><td>${xpOf(MT)}</td><td></td></tr></tfoot>`:'<tr><td class="muted">這個月尚無資料，請在左側登錄。</td></tr>'}
+function renderCmp(V){const Y=isY(selMonth),y=selMonth.slice(0,4);const ms=new Set(Object.keys(V).map(k=>k.slice(0,7)));const show=[];for(let i=1;i<=12;i++){const m=y+'-'+pad(i);if(ms.has(m)&&m<=CURM)show.push(m)}if(!show.length){$('cmp').innerHTML=`<tr><td class="muted">${y} 年尚無任何月份的紀錄。</td></tr>`;return}
+ const rateAt=key=>(o,span)=>{let from='',to='';if(span&&String(span).length===4){from=span+'-01-01';to=span+'-12-31'}else if(span&&String(span).length===7){from=span+'-01';to=mEnd(span)}if(from){const c=cohortRate(from,to,key);if(c!=null)return c}const i=ST.findIndex(s=>s.k===key);if(i<=0)return null;const den=o[ST[i-1].k];return den?Math.min(1,o[key]/den):null};
+ const C=[['暖關係',o=>o.warm||0,0],['約訪',o=>o.call,0],['取得約會',o=>o.appt,0],['初次面談',o=>o.meet,0],['關鍵訪',o=>o.prop,0],['成交件數',o=>o.deal,0],['受理實收保費',o=>o.prem,2],['約訪→約會',rateAt('appt'),1],['需求→關鍵訪',rateAt('prop'),1],['關鍵訪→成交',rateAt('deal'),1]];
+ const fmt=(v,t)=>v==null?'—':t===1?pct(v):t===2?'$'+v.toLocaleString():v;const prevM=m=>{const d=new Date(+m.slice(0,4),+m.slice(5)-2,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
+ $('cmp').innerHTML=`<thead><tr><th>月份</th>${C.map(c=>`<th>${c[0]}</th>`).join('')}</tr></thead><tbody>`+show.map(m=>{const lab=`${+m.slice(5)} 月`;
+  if(m>CURM)return`<tr class="fut"><td>${lab} <span class="note">（未到）</span></td>${C.map(()=>'<td>—</td>').join('')}</tr>`;
+  if(!ms.has(m))return`<tr class="nod"><td>${lab}</td>${C.map(c=>`<td>${c[2]===1?'—':0}</td>`).join('')}</tr>`;
+  const o=sumMonth(V,m,'all'),pm=prevM(m),po=ms.has(pm)?sumMonth(V,pm,'all'):null;
+  return`<tr class="mrow${m===selMonth?' cur':''}" data-gom="${m}"><td>${lab}${m===CURM?' <span class="note">（進行中）</span>':''}</td>${C.map(c=>{const v=c[1](o,m),p=po?c[1](po,pm):null;const ar=(v==null||p==null||v===p)?'':v>p?' <span class="up">▲</span>':' <span class="dn">▼</span>';return`<td>${fmt(v,c[2])}${ar}</td>`}).join('')}</tr>`}).join('')+'</tbody>'+(()=>{const o=sumMonth(V,y,'all');return`<tfoot><tr style="font-weight:700;background:#FBF7E8"><td>${y} 合計</td>${C.map(c=>`<td>${fmt(c[1](o,y),c[2])}</td>`).join('')}</tr></tfoot>`})()}
+// 表單
+function buildForm(){$('fBody').innerHTML=FIELDS.map(([k,n])=>`<tr><td>${n}</td>${['ds','rf'].map(t=>{const names=NK.includes(k)||k==='client'?`<button class="nlink" id="c_${t}_${k}" data-fn="${t}.${k}"></button>`:'';if(AQ_LOCK.includes(k))return `<td style="text-align:center"><div class="autoBox"><b id="f_${t}_${k}_show">0</b><span class="tag auto">自動</span></div><div class="aqnote" id="aqn_${t}_${k}">從 CRM 歷程帶入</div><input type="hidden" id="f_${t}_${k}" value="0">${names}</td>`;return `<td style="text-align:center"><span class="stp"><button data-s="${t}.${k}" data-d="-1">－</button><input type="number" min="0" id="f_${t}_${k}" value="0"><button data-s="${t}.${k}" data-d="1">＋</button></span><div class="aqplus" id="aq_${t}_${k}"></div>${names}</td>`}).join('')}</tr>`).join('')}
+let FNm={ds:{},rf:{}},FFl={ds:{},rf:{}},fnCur=null;
+function renderChips(t,k){const el=$(`c_${t}_${k}`),a=FNm[t][k]||[];const autos=autoList($('fDate')&&$('fDate').value||TODAY,t,k);const n=a.length+autos.length;if(el){el.textContent=n?`👤 ${n} 位`:'＋姓名';el.classList.toggle('empty',!n);el.title=n?[...a,...autos].join('、'):'新增客戶姓名'}
+ if(fnCur&&fnCur[0]===t&&fnCur[1]===k){const fl=FFl[t][k]||[];const rows=a.map((n,i)=>`<div><span class="n">${esc(n)}</span>${fl.includes(n)?'<span class="tag roll">來自聯繫名單</span>':''}<button data-rmn="${t}.${k}.${i}" title="移除" aria-label="移除 ${esc(n)}">×</button></div>`);const marks=autos.map(n=>`<div><span class="n">${esc(n)}</span><span class="tag auto">自動</span></div>`);$('fnList').innerHTML=(rows.length||marks.length)?rows.join('')+marks.join(''):'<div class="muted">尚未登記姓名。</div>'}}
+function paintAuto(){const date=$('fDate')&&$('fDate').value||TODAY;for(const t of['ds','rf'])for(const[k]of FIELDS){const man=parseInt($(`f_${t}_${k}`).value)||0;const names=autoList(date,t,k);const add=names.length;const who=names.slice(0,2).join('、');if(AQ_LOCK.includes(k)){const show=$(`f_${t}_${k}_show`);if(show)show.textContent=String(man+add);const note=$(`aqn_${t}_${k}`);if(note)note.textContent=add?((man?`手記 ${man}＋自動 ${add}`:`自動 ${add}・從 CRM 歷程帶入`)+(who?'・'+who:'')):'從 CRM 歷程帶入'}else{const plus=$(`aq_${t}_${k}`);if(plus)plus.textContent=add?('自動 +'+add+(who?'・'+who:'')):''}renderChips(t,k)}}
+let fnMsgT;function fnMsg(t){$('fnMsg').textContent=t;clearTimeout(fnMsgT);fnMsgT=setTimeout(()=>$('fnMsg').textContent='',2200)}
+function addName(t,k,v){const ns=v.split(/[,，、]/).map(x=>x.trim()).filter(Boolean);if(!ns.length)return;const a=FNm[t][k]||(FNm[t][k]=[]);const dup=[];for(const n of ns){if(a.includes(n)){if(!dup.includes(n))dup.push(n)}else a.push(n)}if(dup.length)fnMsg(`已在名單中：${dup.join('、')}`);const inp=$(`f_${t}_${k}`);if((parseInt(inp.value)||0)<a.length)inp.value=a.length;renderChips(t,k);preview()}
+function openFn(t,k){fnCur=[t,k];const d=$('fDate').value||TODAY;$('fnTitle').textContent=`${stageOf(k).n}・${t==='ds'?'陌生':'緣故'}・${md(d)}`;const i=$('fnIn');i.dataset.nt=t;i.dataset.nk=k;i.value='';$('fnMsg').textContent='';$('fnModal').classList.add('on');renderChips(t,k);i.focus()}
+function closeFn(){const i=$('fnIn');if(fnCur&&i.value.trim()){addName(fnCur[0],fnCur[1],i.value);i.value=''}fnCur=null;$('fnModal').classList.remove('on')}
+function fillForm(date){const e=normNames(JSON.parse(JSON.stringify(E[date]||blank())));FNm=e.names;FFl=e.fl;NK.forEach(k=>['ds','rf'].forEach(t=>renderChips(t,k)));document.querySelectorAll('.nin').forEach(i=>i.value='');$('fDate').value=date;for(const t of['ds','rf'])for(const[k]of FIELDS)$(`f_${t}_${k}`).value=e[t][k]||0;$('fPrem').value=e.prem||'';$('fComm').value=e.comm||'';$('fSa').value=e.sa||'';$('fHint').textContent=E[date]?'（編輯已登錄的日期）':'（新的一天）';draft=null;render()}
+function readForm(){const e=blank();for(const t of['ds','rf'])for(const[k]of FIELDS)e[t][k]=Math.max(0,parseInt($(`f_${t}_${k}`).value)||0);e.prem=+$('fPrem').value||0;e.comm=+$('fComm').value||0;e.sa=+$('fSa').value||0;for(const t of['ds','rf'])for(const k of NK){const a=FNm[t][k];if(a&&a.length)e.names[t][k]=a.slice();const f=(FFl[t][k]||[]).filter(n=>a&&a.includes(n));if(f.length){e.fl=e.fl||{ds:{},rf:{}};e.fl[t][k]=f}}return e}
+function preview(){draft={date:$('fDate').value||TODAY,e:readForm()};render()}
+document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;
+ if(b.dataset.s){const[t,k]=b.dataset.s.split('.');const inp=$(`f_${t}_${k}`);inp.value=Math.max(0,(parseInt(inp.value)||0)+ +b.dataset.d);preview()}
+ if(b.dataset.fn){const[t,k]=b.dataset.fn.split('.');openFn(t,k)}
+ if(b.dataset.rmn){const[t,k,i]=b.dataset.rmn.split('.');const[n]=FNm[t][k].splice(+i,1);if(FFl[t][k])FFl[t][k]=FFl[t][k].filter(x=>x!==n);renderChips(t,k);preview()}
+ if(b.dataset.ed){fillForm(b.dataset.ed);$('entry').scrollIntoView({behavior:'smooth'})}
+ if(b.dataset.del&&confirm(`確定刪除 ${b.dataset.del} 的手記？CRM 自動計入的次數會留下。`)){delete E[b.dataset.del];persist();fillForm($('fDate').value);toast('已刪除手記')}});
+document.addEventListener('input',ev=>{if(ev.target.closest('#entry')&&ev.target.id!=='fDate')preview();if(ev.target.id==='tlName')tlRenderPick('');if(ev.target.id==='tlName2')tlRenderPick('2')});
+document.addEventListener('mousedown',ev=>{const pk=ev.target.closest('[data-tlpick]');if(!pk)return;ev.preventDefault();tlChoose(pk.dataset.sfx||'',pk.dataset.tlpick)});
+document.addEventListener('keydown',ev=>{const i=ev.target;if(i.classList&&i.classList.contains('nin')&&ev.key==='Enter'&&!ev.isComposing&&ev.keyCode!==229){ev.preventDefault();addName(i.dataset.nt,i.dataset.nk,i.value);i.value=''}
+ if((i.id==='tlName'||i.id==='tlName2')&&ev.key==='Enter'&&!ev.isComposing&&ev.keyCode!==229){ev.preventDefault();tlAdd(i.id==='tlName2'?'2':'')}
+ if(ev.key==='Escape'){$('nModal').classList.remove('on');if(fnCur)closeFn()}});
+document.addEventListener('click',ev=>{if(ev.target.id==='fnModal'||ev.target.closest('#fnClose'))closeFn()});
+document.addEventListener('focusout',ev=>{const i=ev.target;if(i.id!=='fnIn'&&i.classList&&i.classList.contains('nin')&&i.value.trim()){addName(i.dataset.nt,i.dataset.nk,i.value);i.value=''}});
+// 姓名清單
+function showNames(k,mode){const V=view();const s=stageOf(k);if(!s)return;const m=selMonth;const from=isY(m)?m+'-01-01':m+'-01',to=isY(m)?m+'-12-31':mEnd(m);const ts=mode==='ds'?['ds']:mode==='rf'?['rf']:['ds','rf'];
+ let tot=0,cnt=0;const rows=[];Object.keys(V).filter(d=>d>=from&&d<=to).sort().reverse().forEach(d=>{const e=V[d];for(const t of ts){tot+=+e[t][k]||0;const a=nmOf(e,t,k);if(a.length){cnt+=a.length;const mark=(e.autoMark&&e.autoMark[t]&&e.autoMark[t][k])||[];rows.push(`<tr><td>${d.slice(5).replace('-','/')}</td><td><span class="tag ${t}">${t==='ds'?'陌生':'緣故'}</span></td><td>${a.map(n=>esc(n)+(mark.includes(n)?' <span class="tag auto">自動</span>':'')).join('、')}</td></tr>`)}}});
+ $('nTitle').textContent=`${s.ic} ${s.town}・${s.n}（${mLabel(m)}${mode==='ds'?'・陌生':mode==='rf'?'・緣故':''}）`;
+ $('nBody').innerHTML=`<p class="muted" style="margin:0 0 8px">共 ${tot} 次，其中 ${cnt} 筆有登記客戶姓名${tot>cnt?'（其餘只記次數）':''}。</p>`+(rows.length?`<div class="tw"><table class="nlist"><thead><tr><th>日期</th><th>類別</th><th>客戶姓名</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="muted">這段期間沒有登記姓名。</p>');$('nModal').classList.add('on')}
+document.addEventListener('click',ev=>{const n=ev.target.closest('[data-stage]');if(n&&!ev.target.closest('.monster')){showNames(n.dataset.stage,n.dataset.mode||'all');return}if(ev.target.id==='nModal'||ev.target.closest('#nClose'))$('nModal').classList.remove('on')});
+// 今日聯繫名單
+const TK='actionquest_today_v1';const RL={no:'沒接',ok:'約到了',later:'再聯絡',nope:'不需要',care:'已關心',mute:'沒回應'};let TL;
+function tlSave(){if(window.__aqHydrating)return;if(window.__aqSchedule)window.__aqSchedule('today');}
+function tlStat(items){return{p:items.length,d:items.filter(i=>i.res).length,ok:items.filter(i=>i.res==='ok').length}}
+function tlRoll(){TL.date=TL.date||TODAY;let ch=false;if(TL.date<TODAY){const from=TL.date;TL.hist[from]=tlStat(TL.items);const old=TL.items;TL.items=[];old.filter(i=>!i.res||i.res==='no'||i.res==='later'||i.res==='mute'||(i.res==='care'&&i.next)).forEach(i=>{const n={id:i.id,name:i.name,t:i.t,res:null,roll:from,prev:i.res||'none',note:i.note||''};if(i.kind==='warm'||i.kind==='call')n.kind=i.kind;if(i.custId)n.custId=i.custId;if(i.next&&i.next>TODAY){n.due=i.next;TL.pending.push(n)}else TL.items.push(n)});TL.date=TODAY;ch=true}
+ const due=TL.pending.filter(i=>i.due<=TODAY);if(due.length){TL.pending=TL.pending.filter(i=>i.due>TODAY);due.forEach(i=>{delete i.due;i.byDate=true;TL.items.push(i)});ch=true}if(ch)tlSave()}
+function tlLoad(){try{TL=window.__aqInitialToday?JSON.parse(JSON.stringify(window.__aqInitialToday)):null}catch(e){TL=null}if(!TL||typeof TL!=='object')TL={date:TODAY,items:[],hist:{}};if(!Array.isArray(TL.items))TL.items=[];if(!TL.hist||typeof TL.hist!=='object')TL.hist={};if(!Array.isArray(TL.pending))TL.pending=[];if(!Array.isArray(TL.appts))TL.appts=[];tlRoll()}
+function tlStreak(){const cl=s=>s&&s.p>0&&s.d===s.p;let n=cl(tlStat(TL.items))?1:0,d=addD(TODAY,-1);while(cl(TL.hist[d])){n++;d=addD(d,-1)}return n}
+let tlOpen=null,tlFilter='all';const RI={no:'📵',ok:'✅',later:'🔁',nope:'🚫',care:'💛',mute:'😶'};const md=d=>d?(+d.slice(5,7))+'/'+(+d.slice(8)):'';
+const tlKind=i=>i&&i.kind==='warm'?'warm':'call';
+function tlInfo(i){const p=[];if(tlKind(i)==='call'&&i.res==='ok'&&i.appt&&i.appt.d)p.push(`約見 ${md(i.appt.d)}${i.appt.t?' '+i.appt.t:''}${i.appt.loc?' @'+esc(i.appt.loc):''}`);if(i.note)p.push('備註：'+esc(i.note));if(i.next&&i.res!=='ok')p.push('下次 '+md(i.next));return p.join(' ・')}
+function tlMethodSel(i){const cur=i.method||(tlKind(i)==='call'?'電話':'');return ['','電話','Line','面談','其他'].map(m=>`<option value="${m}"${m===cur?' selected':''}>${m||'不指定'}</option>`).join('')}
+function tlPanel(i){const warm=tlKind(i)==='warm',nx=warm?(i.res==='care'||i.res==='mute'):(i.res==='no'||i.res==='later'),ok=!warm&&i.res==='ok',a=i.appt||{},linked=!!i.custId;return`<div class="tpan" data-pid="${i.id}"><label class="r" style="justify-content:space-between">${warm?'聯繫備註':'約訪狀況備註'} <span class="crm">${linked?'寫入這位客戶的歷程':'未在 CRM，只留在這份名單'}</span></label><textarea class="pnote" maxlength="200" placeholder="${warm?'例如：問了近況，下週再關心':'例如：對方在開會，說晚上再打'}">${esc(i.note||'')}</textarea>
+${linked?`<div class="r"><span>聯絡方式</span><select class="pmethod" aria-label="聯絡方式">${tlMethodSel(i)}</select></div>`:''}
+${nx?`<div class="r"><span>下次聯絡日</span><input type="date" class="pnext" value="${i.next||''}"><button class="qc" data-qd="1">明天</button><button class="qc" data-qd="3">3天後</button><button class="qc" data-qd="7">下週</button>${linked?'<span class="crm">更新 CRM 下次聯絡日</span>':''}</div>`:''}
+${ok?`<div class="r"><span>約見</span><input type="date" class="pad" value="${a.d||''}"><input type="time" class="pat" value="${a.t||''}"><input class="pal" placeholder="地點（選填）" maxlength="30" value="${esc(a.loc||'')}" style="flex:1 1 120px"><span class="crm">${linked?'排入 CRM 週行程與 Google 日曆':'只記在這份名單'}</span></div>`:''}
+<div class="r"><button class="btn" data-psave="${i.id}" style="padding:6px 14px">儲存</button><button class="btn sec" data-pskip="${i.id}" style="padding:6px 14px">略過</button></div></div>`}
+function renderTL(){const emp=!TL.items.length;$('todayCard').style.display=emp?'none':'';$('tlEmpty').style.display=emp?'':'none';if(!emp)$('tlEmptyForm').style.display='none';const{p,d,ok}=tlStat(TL.items);const P=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+ $('tlSum').textContent=`已處理 ${d}／${p}，約到 ${ok}`;$('tlStats').innerHTML=[['名單完成率',`${P(d,p)}`,`已處理 ${d}／今日 ${p} 位`],['約到比例',`${P(ok,d)}`,`約到 ${ok}／已處理 ${d}`],['連續清空名單',`${tlStreak()} 天`,'當天名單全部處理完']].map(k=>`<div class="kpi"><div class="k">${k[0]}</div><div class="v">${k[1]}</div><div class="muted">${k[2]}</div></div>`).join('');
+ const PV={none:'未處理',no:'沒接',later:'再聯絡',mute:'沒回應',care:'已關心'};
+ const specs=k=>k==='warm'?[['care','💛','已關心'],['mute','😶','沒回應'],['move','↪️','轉約訪']]:[['no','📵','沒接'],['ok','✅','約到了'],['later','🔁','再聯絡'],['nope','🚫','不需要']];
+ const row=i=>{const k=tlKind(i),inf=tlInfo(i),lab=k==='warm'?'💛 暖關係':'📞 約訪';const tag=!i.res?`<button type="button" class="tag kind ${k}" data-tlsw="${i.id}" title="改為${k==='warm'?'約訪':'暖關係'}">${lab}</button>`:`<span class="tag kind ${k}">${lab}</span>`;const who=i.custId?'<span class="tag crmlink">CRM</span>':'<span class="tag nocrm">未在 CRM</span>';
+  const btns=i.res?`<span class="res ${i.res}">${RI[i.res]||''} ${RL[i.res]||''}</span><button class="undo" data-tlu="${i.id}">↩ 復原</button>`:specs(k).map(([r,ic,n])=>`<button class="rb ${r}" data-tlr="${r}" data-id="${i.id}" title="${n}" aria-label="${n}">${ic}<small>${n}</small></button>`).join('')+`<button class="x" data-tld="${i.id}" title="從名單移除">✕</button>`;
+  return`<div class="tlw" data-kind="${k}"><div class="tli ${i.res?'done':''}"><div class="tln"><b>${esc(i.name)}</b>${who}${tag}<span class="tag ${i.t}">${i.t==='ds'?'陌生':i.t==='rf'?'緣故':'未指定'}</span>${i.roll?`<span class="tag roll">${i.byDate?'約定今天聯絡':`延續自 ${md(i.roll)}（${PV[i.prev]||'未處理'}）`}</span>`:''}</div><div class="tlb">${btns}</div>${(inf||(i.res&&i.res!=='nope'))&&tlOpen!==i.id?`<div class="tinfo" data-pedit="${i.id}" title="點擊編輯">${inf||'＋新增備註'}</div>`:''}</div>${tlOpen===i.id&&i.res?tlPanel(i):''}</div>`};
+ const groups=tlFilter==='all'?['warm','call']:[tlFilter];
+ const html=groups.map(g=>{const rows=TL.items.filter(i=>tlKind(i)===g).sort((a,b)=>(!!a.res)-(!!b.res));if(!rows.length)return tlFilter==='all'?'':`<p class="muted">這個類型目前沒有人。</p>`;return (tlFilter==='all'?`<div class="tlh">${g==='warm'?'💛 暖關係':'📞 約訪'}</div>`:'')+rows.map(row).join('')}).join('');
+ $('tlList').innerHTML=html||'<p class="muted">今天的名單是空的，請在上方加入要聯繫的人。</p>';
+ const up=TL.appts.filter(a=>a.d>=TODAY).sort((a,b)=>(a.d+(a.t||'')).localeCompare(b.d+(b.t||'')));const W='日一二三四五六';
+ $('tlUp').innerHTML=`<div class="upc"><h4>📅 即將約見 <span class="crm">CRM 客戶的約見寫入週行程</span></h4>${up.length?up.map(a=>`<div class="u"><b>${md(a.d)}（${W[new Date(a.d+'T00:00:00').getDay()]}）${a.t||''}</b>　${esc(a.name)}${a.loc?` <span class="muted">@${esc(a.loc)}</span>`:''}</div>`).join(''):'<div class="muted">目前沒有即將到來的約見。</div>'}</div>`;
+ if(tlFocus){tlFocus=false;setTimeout(()=>{const pn=document.querySelector('.tpan textarea');if(pn)pn.focus({preventScroll:true})},0)}}
+let tlFocus=false;
+function applyFx(fx,name,sg){if(!fx||!fx.length)return;const e=normNames(E[TODAY]||blank());const ed=(N,F,t,k)=>{const a=N[t][k]||(N[t][k]=[]),f=F[t][k]||(F[t][k]=[]);if(sg>0){if(!a.includes(name))a.push(name);if(!f.includes(name))f.push(name)}else if(f.includes(name)){F[t][k]=f.filter(x=>x!==name);const j=a.indexOf(name);if(j>=0)a.splice(j,1)}};
+ for(const[t,k]of fx){e[t][k]=Math.max(0,(+e[t][k]||0)+sg);ed(e.names,e.fl,t,k)}E[TODAY]=e;persist();
+ if(($('fDate').value||TODAY)===TODAY){for(const[t,k]of fx){const inp=$(`f_${t}_${k}`);inp.value=Math.max(0,(parseInt(inp.value)||0)+sg);ed(FNm,FFl,t,k);renderChips(t,k)}$('fHint').textContent='（編輯已登錄的日期）';preview()}else render()}
+const tlPickSel={'':null,'2':null};
+function tlBox(sfx){return $(sfx==='2'?'tlPick2':'tlPick')}
+function tlCustomers(){return Array.isArray(window.__aqCustomers)?window.__aqCustomers:[]}
+function tlRenderPick(sfx){const box=tlBox(sfx),input=$('tlName'+sfx);if(!box||!input||!window.CrmLink)return;const q=input.value.trim();const sel=tlPickSel[sfx];if(sel&&sel.name!==q)tlPickSel[sfx]=null;const hits=q?window.CrmLink.searchCustomers(tlCustomers(),q):[];if(!hits.length){box.hidden=true;box.innerHTML='';return}box.hidden=false;box.innerHTML=hits.map(c=>{const p=window.CrmLink.pickMeta(c);return`<button type="button" data-tlpick="${esc(c.id)}" data-sfx="${sfx}"><b>${esc(p.name)}</b><span class="sub">電話末${p.tail.length||0}碼 ${esc(p.tail||'—')} · 負責 ${esc(p.agent)}</span></button>`}).join('')}
+function tlChoose(sfx,id){const c=tlCustomers().find(x=>x&&x.id===id);const box=tlBox(sfx),input=$('tlName'+sfx);if(!c||!input)return;tlPickSel[sfx]={id:c.id,name:String(c.name||'').trim()};input.value=tlPickSel[sfx].name;if(box){box.hidden=true;box.innerHTML=''}}
+function tlPushAuto(i){if(!i||!i.custId||!window.CrmLink)return false;const evs=window.CrmLink.planListEvents(i,window.__aqEmail?window.__aqEmail():'',TODAY,AUTO);if(!evs.length)return false;evs.forEach(ev=>{if(AUTO.some(e=>e&&e.custId===ev.custId&&e.action===ev.action&&e.date===ev.date))return;AUTO.push(ev);if(window.__aqPersistAuto)window.__aqPersistAuto(ev)});return true}
+function tlAdd(sfx=''){const ni=$('tlName'+sfx),n=ni.value.trim();if(!n)return;const first=!TL.items.length;const ks=$('tlKind'+sfx);const item={id:Date.now()+Math.random(),name:n,t:$('tlType'+sfx).value,kind:ks&&ks.value==='warm'?'warm':'call',res:null};const sel=tlPickSel[sfx];if(sel&&sel.name===n)item.custId=sel.id;TL.items.push(item);ni.value='';tlPickSel[sfx]=null;const box=tlBox(sfx);if(box){box.hidden=true;box.innerHTML=''}if(first)$('todayCard').classList.remove('closed');tlSave();renderTL()}
+async function tlSaveNote(i,pn){i.note=pn.querySelector('.pnote').value.trim();const nx=pn.querySelector('.pnext');if(nx)i.next=nx.value||'';const ad=pn.querySelector('.pad');if(ad){i.appt={d:ad.value,t:pn.querySelector('.pat').value,loc:pn.querySelector('.pal').value.trim()};TL.appts=TL.appts.filter(a=>a.id!==i.id);if(i.appt.d)TL.appts.push({id:i.id,name:i.name,...i.appt})}const mdEl=pn.querySelector('.pmethod');if(mdEl)i.method=mdEl.value||'';tlOpen=null;tlSave();renderTL();if(!i.custId||!window.CrmLink||!window.__aqPatchCrm){toast('已儲存');return}const ops=window.CrmLink.buildWrite(i,window.__aqEmail?window.__aqEmail():'');try{const data=await window.__aqPatchCrm(i.custId,ops);const found=window.CrmLink.locateRow(data&&data.cust,i.custId,ops.history&&ops.history.id);if(found&&found.row){window.CrmLink.planActEvent({id:found.custId,name:found.name||i.name,leadId:found.leadId||''},found.row,AUTO).forEach(ev=>{if(AUTO.some(e=>e&&e.custId===ev.custId&&e.action===ev.action&&e.date===ev.date))return;AUTO.push(ev);if(window.__aqPersistAuto)window.__aqPersistAuto(ev)})}paintAuto();render();toast('已寫入 CRM 歷程')}catch(err){toast((err&&err.message)||'找不到這位客戶，沒有寫入')}}
+$('tlAdd').onclick=()=>tlAdd();$('tlAdd2').onclick=()=>tlAdd('2');$('tlEmptyBtn').onclick=()=>{const f=$('tlEmptyForm');f.style.display=f.style.display==='none'?'flex':'none';if(f.style.display==='flex')$('tlName2').focus()};
+document.addEventListener('click',ev=>{const pe=ev.target.closest('[data-pedit]');if(pe){tlOpen=TL.items.find(i=>String(i.id)===pe.dataset.pedit)?.id??null;tlFocus=true;renderTL();return}const b=ev.target.closest('button');if(!b)return;const f=id=>TL.items.find(i=>String(i.id)===String(id));
+ if(b.dataset.tlf){tlFilter=b.dataset.tlf;[...$('tlSeg').children].forEach(x=>x.classList.toggle('on',x===b));renderTL();return}
+ if(b.dataset.tlsw){const i=f(b.dataset.tlsw);if(!i||i.res)return;i.kind=tlKind(i)==='warm'?'call':'warm';tlSave();renderTL();toast(`${i.name}：已改為${i.kind==='warm'?'暖關係':'約訪'}`);return}
+ if(b.dataset.tlr){const i=f(b.dataset.id);if(!i||i.res)return;const t=i.t||'ds',r=b.dataset.tlr;if(r==='move'){i.kind='call';tlSave();renderTL();toast(`${i.name}：已改為約訪`);return}if(r==='care')i.fx=[[t,'warm']];else if(r==='mute')i.fx=[];else i.fx=r==='ok'?[[t,'call'],[t,'appt']]:(r==='no'||r==='later')?[[t,'call']]:[];i.res=r;if(tlPushAuto(i))i.fx=[];if(r!=='nope'){tlOpen=i.id;tlFocus=true}tlSave();applyFx(i.fx,i.name,1);if(i.custId){paintAuto();render()}renderTL();toast(`${i.name}：${RL[r]||r}`)}
+ if(b.dataset.tlu){const i=f(b.dataset.tlu);if(!i)return;applyFx(i.fx,i.name,-1);i.res=null;i.fx=null;delete i.note;delete i.next;delete i.appt;TL.appts=TL.appts.filter(a=>a.id!==i.id);if(tlOpen===i.id)tlOpen=null;tlSave();renderTL()}
+ if(b.dataset.qd){const pn=b.closest('.tpan');pn.querySelector('.pnext').value=addD(TODAY,+b.dataset.qd)}
+ if(b.dataset.pskip){tlOpen=null;renderTL()}
+ if(b.dataset.psave){const i=f(b.dataset.psave),pn=b.closest('.tpan');if(!i||!pn)return;tlSaveNote(i,pn);return}
+ if(b.dataset.tld){TL.items=TL.items.filter(i=>String(i.id)!==b.dataset.tld);tlSave();renderTL()}});
+$('fDate').addEventListener('change',()=>fillForm($('fDate').value||TODAY));
+$('save').onclick=()=>{const d=$('fDate').value||TODAY;E[d]=readForm();persist();draft=null;toast(`已儲存 ${d}`);fillForm(d)};
+$('reset').onclick=()=>fillForm($('fDate').value||TODAY);
+// 正式版關閉。網址加上 ?demo=1 才顯示並啟用「載入假資料」「清空重來」。
+const AQ_DEMO=new URLSearchParams(location.search).get('demo')==='1';
+if(AQ_DEMO){$('loadDemo').hidden=false;$('clearAll').hidden=false;const n=$('aqDemoNote');if(n)n.hidden=false}
+$('loadDemo').onclick=()=>{if(!AQ_DEMO)return;if(Object.keys(E).length&&!confirm('載入假資料會覆蓋目前所有紀錄，確定嗎？'))return;E=fakeNames(fake());persist();TL=fakeTL();tlSave();lastDone=null;fillForm(TODAY);selMonth=CURM;toast('已載入約 3 個月假資料')};
+$('clearAll').onclick=()=>{if(!AQ_DEMO)return;if(!confirm('確定要清空所有紀錄重新開始嗎？此動作無法復原。'))return;E={};persist();TL={date:TODAY,items:[],hist:{},pending:[],appts:[]};tlSave();lastDone=null;fillForm(TODAY);toast('已清空')};
+const CK='actionquest_collapsed_v1';let COL;try{COL=JSON.parse(localStorage.getItem(CK))}catch(e){}COL=COL||{stats:false,entry:false,badges:true,days:true,cmp:true,today:true};if(COL.today===undefined)COL.today=true;
+const DESK=matchMedia('(min-width:768px)');const applyCol=()=>document.querySelectorAll('.ch').forEach(h=>{const fx=DESK.matches&&h.dataset.c!=='cmp'&&h.dataset.c!=='today';h.classList.toggle('fixed',fx);h.closest('.card').classList.toggle('closed',!fx&&!!COL[h.dataset.c])});applyCol();DESK.addEventListener('change',applyCol);
+document.addEventListener('click',ev=>{const g=ev.target.closest('[data-gom]');if(g){selMonth=g.dataset.gom;render();return}const h=ev.target.closest('.ch');if(h&&!h.classList.contains('fixed')&&!ev.target.closest('button')){COL[h.dataset.c]=!COL[h.dataset.c];try{localStorage.setItem(CK,JSON.stringify(COL))}catch(e){}applyCol()}});
+{const fit=()=>{const dc=$('daysCard');const on=matchMedia('(min-width:901px)').matches;dc.style.maxHeight=dc.style.height=on?$('entry').offsetHeight+'px':''};if(window.ResizeObserver)new ResizeObserver(fit).observe($('entry'));addEventListener('resize',fit);fit()}
+{const HV=matchMedia('(hover:hover) and (min-width:768px)');let cur=null;const card=$('monCard');
+ const show=el=>{const k=el.dataset.mk,M=MONSTERS[k],s=ST.find(x=>x.k===k),r=+el.dataset.mr;cur=el;
+  card.innerHTML=`<h4>${monSVG(k).replace('width="52" height="50"','width="40" height="38"')}<span>${M.name}<br><span class="muted" style="font-weight:400">${s.town}的瓶頸</span></span><button class="x" data-mclose aria-label="關閉">✕</button></h4><div class="st">${el.dataset.wk!=null?`本週（${el.dataset.wr}）平均每天暖關係 <b>${el.dataset.wk}</b> 次（目標 ≥ ${CALL_DAILY_MIN} 次）`:`${mLabel(selMonth)}：${s.n} <b>${el.dataset.mn}</b> 次・${el.dataset.mf} → ${s.n} 轉換率 <b>${pct(r)}</b>（健康值 ≥ ${pct(TH[k][0])}）`}</div><div><b>可能原因：</b>${M.cause}</div><div style="margin-top:4px"><b>可以試試：</b></div><ul>${M.tips.map(t=>`<li>${t}</li>`).join('')}</ul><div class="hp">🙋 <b>求助：</b>${M.help}</div>`;card.classList.add('on');
+  if(HV.matches){const b=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight;let x=b.left+b.width/2-w/2,y=b.bottom+8;if(y+h>innerHeight-8)y=b.top-h-8;if(y<8)y=Math.max(8,innerHeight-h-8);card.style.left=Math.max(8,Math.min(x,innerWidth-w-8))+'px';card.style.top=y+'px'}else $('monScrim').classList.add('on')};
+ const hide=()=>{card.classList.remove('on');$('monScrim').classList.remove('on');cur=null};
+ document.addEventListener('mouseover',e=>{if(!HV.matches)return;const m=e.target.closest('.monster');if(m&&m!==cur)show(m);else if(!m&&cur&&!e.target.closest('#monCard'))hide()});
+ document.addEventListener('click',e=>{if(e.target.closest('[data-mclose]')||e.target.id==='monScrim'){hide();return}const m=e.target.closest('.monster');if(m){e.stopPropagation();show(m);return}if(cur&&!e.target.closest('#monCard'))hide()},true);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')hide();if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('monster'))show(e.target)});addEventListener('scroll',()=>{if(HV.matches&&cur)hide()},{passive:true})}
+$('monthSel').onchange=e=>{selMonth=e.target.value;render()};
+for(const[id,fn]of[['mapSeg',v=>mapMode=v],['statSeg',v=>statView=v]])$(id).onclick=ev=>{const b=ev.target.closest('button');if(!b)return;[...$(id).children].forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.v);render()};
+function loadAuto(){try{AUTO=Array.isArray(window.__aqInitialAuto)?window.__aqInitialAuto.map(x=>Object.assign({},x)):[];}catch(e){AUTO=[]}}
+function aqStart(){load();loadAuto();for(const d in E)normNames(E[d]);tlLoad();buildForm();fillForm(TODAY);if(window.lbRender)window.lbRender();}
+window.aqStart=aqStart;
+window.__aqTODAY=TODAY;
+window.__aqBind={
+  getDays:()=>E,
+  setDays:(v)=>{E=v;},
+  getToday:()=>TL,
+  setToday:(v)=>{TL=v;},
+  norm:(e)=>normNames(e),
+  blank:()=>blank(),
+  cohort:(from,to,k)=>cohortRate(from,to,k),
+  auto:()=>AUTO.slice(),
+  roll:()=>tlRoll(),
+  fill:(d)=>fillForm(d),
+  toast:(t)=>toast(t)
+};
+/* 今日聯繫名單可挑選 CRM 客戶。備註、下次聯絡日、約見由交易寫回該客戶，不整包覆蓋。 */
+</script>
+<script>
+(()=>{'use strict';
+
+let ME='我';
+// 正式版只排登入者自己的真實紀錄。?demo=1 才加入示範隊友。之後接上團隊時，把真實夥伴併入 PPL，不要把示範名單放回正式版。
+const LB_DEMO=new URLSearchParams(location.search).get('demo')==='1';
+const SAMPLE=LB_DEMO?['測試業務A','範例小陳','示範阿華','測試業務B','範例小林','示範佳佳','範例新人']:[];
+let PPL=['我',...SAMPLE];
+function recentMonths(n){const out=[];let y=+CURM.slice(0,4),m=+CURM.slice(5);for(let i=n-1;i>=0;i--){let yy=y,mm=m-i;while(mm<=0){mm+=12;yy--;}out.push(yy+'-'+pad(mm));}return out;}
+const MS=recentMonths(6);
+const K=['warm','call','appt','meet','need','prop','deal','lead'];
+const dim=m=>new Date(+m.slice(0,4),+m.slice(5),0).getDate();
+const elapsed=m=>m===CURM?+TODAY.slice(8):dim(m);
+// 假資料：只在 ?demo=1 產生示範隊友。正式版的數字由 syncMe 從登入者自己的日期紀錄寫入。
+let sd=11;const r=()=>(sd=(sd*1103515245+12345)%2147483648)/2147483648;
+const D={};
+if(LB_DEMO)MS.forEach((m,mi)=>{D[m]={};PPL.forEach((p,pi)=>{const f=elapsed(m)/dim(m);if(p==='範例新人'&&mi<3){D[m][p]=Object.fromEntries(K.map(k=>[k,0]));return}
+ const base=(70+pi*9+r()*60+mi*6)*(p==='測試自己'?0.9+mi*.06:1);const c=Math.round(base*f),a=Math.round(c*(.25+r()*.15)),me=Math.round(a*(.7+r()*.2)),n=Math.round(me*(.75+r()*.15)),pr=Math.round(n*(.35+r()*.25)),dl=Math.round(pr*(.25+r()*.25)),ld=Math.round(me*(.3+r()*.3)),wm=Math.round((10+r()*8)*f);
+ D[m][p]={warm:wm,call:c,appt:a,meet:me,need:n,prop:pr,deal:dl,lead:ld}})});
+let meHas={};
+let LIVE=false,LABELS={},STARTED={},REAL={};
+function ensureMonth(m){if(!D[m])D[m]={};PPL.forEach(p=>{if(!D[m][p])D[m][p]=Object.fromEntries(K.map(k=>[k,0]));});}
+function labelOf(p){return LABELS[p]||p}
+function tagHtml(p){if(p===ME)return' <span class="tagme">我</span>';if(!REAL[p]&&(LB_DEMO||!LIVE))return' <span class="tagme ex">範例</span>';return''}
+function setMeName(name){name=String(name||'').trim()||'我';if(LIVE){if(ME&&!LABELS[ME])LABELS[ME]=name;return}if(name===ME)return;const old=ME;ME=name;const i=PPL.indexOf(old);if(i>=0)PPL[i]=name;else if(PPL.indexOf(name)<0)PPL.unshift(name);Object.keys(D).forEach(m=>{if(D[m]&&D[m][old]){D[m][name]=D[m][old];delete D[m][old];}});}
+window.__aqSetMe=setMeName;
+function installLive(team,boards,meEmail){const members=team&&team.members?team.members:{};const active=[];Object.keys(members).forEach(em=>{const m=members[em]||{};if(m.active===false)return;const key=String(em).toLowerCase();active.push(key);LABELS[key]=String(m.displayName||'').trim()||key;REAL[key]=true;STARTED[key]=false});const order=(Array.isArray(team.emails)?team.emails:active).map(e=>String(e).toLowerCase());const list=[];order.forEach(e=>{if(active.indexOf(e)>=0&&list.indexOf(e)<0)list.push(e)});active.forEach(e=>{if(list.indexOf(e)<0)list.push(e)});if(LB_DEMO)SAMPLE.forEach(s=>{if(list.indexOf(s)<0)list.push(s)});PPL=list;ME=String(meEmail||'').toLowerCase();if(ME&&LABELS[ME]==null)LABELS[ME]=ME;LIVE=true;(Array.isArray(boards)?boards:[]).forEach(b=>{if(!b||!b.email)return;const em=String(b.email).toLowerCase();STARTED[em]=true;if(b.displayName)LABELS[em]=String(b.displayName).trim()||LABELS[em]||em;const months=b.months||{};Object.keys(months).forEach(m=>{if(!/^\d{4}-\d{2}$/.test(m))return;ensureMonth(m);const src=months[m]||{},o=Object.fromEntries(K.map(k=>[k,+src[k]||0]));D[m][em]=o})})}
+window.__aqApplyTeam=function(team,boards,meEmail,denied){window.__aqTeamDenied=!!denied;window.__aqTeamDoc=denied?null:(team||null);const skip=!!denied||window.__aqTeamMissing===true||window.__aqTeamOut===true||window.__aqBoardDenied===true||!(team&&team.members&&Object.keys(team.members).length);if(!skip)installLive(team,boards,meEmail);else LIVE=false;if(window.lbRender)window.lbRender();openTeamEditor()};
+function syncMe(){let V={};try{V=typeof view==='function'?view():{}}catch(e){V={}}meHas={};const months=new Set(MS);Object.keys(V).forEach(d=>{if(/^\d{4}-\d{2}/.test(d))months.add(d.slice(0,7));});months.forEach(m=>{ensureMonth(m);const o=Object.fromEntries(K.map(k=>[k,0]));for(const d in V){if(!d.startsWith(m))continue;meHas[m]=true;const e=V[d];for(const k of K)o[k]+=(+(e.ds&&e.ds[k])||0)+(+(e.rf&&e.rf[k])||0)}if(ME)D[m][ME]=o;});if(LIVE&&ME&&Object.keys(meHas).length)STARTED[ME]=true;}
+const tot=o=>K.reduce((s,k)=>s+(+o[k]||0),0);
+const zeroBag=()=>Object.fromEntries(K.map(k=>[k,0]));
+const bag=(m,p)=>(D[m]&&D[m][p])||zeroBag();
+const AW=[{id:'call',ic:'📞',n:'約訪王',d:'約訪通數',u:'通',f:o=>o.call},{id:'meet',ic:'🤝',n:'面談王',d:'初次面談＋發掘需求次數',u:'次',f:o=>o.meet+o.need},{id:'deal',ic:'🏰',n:'成交王',d:'成交件數（不計保費金額）',u:'件',f:o=>o.deal},{id:'grow',ic:'🚀',n:'進步獎',d:'總行動量成長率（與上個月相比）',u:'',grow:true}];
+const pct=v=>(v>=0?'+':'')+Math.round(v*100)+'%';
+function rows(m,a){const pm=MS[MS.indexOf(m)-1];return PPL.map(p=>{if(LIVE&&REAL[p]&&!STARTED[p])return{p,v:null,txt:'尚未開始',idle:true};const o=bag(m,p);if(!a.grow){const v=a.f(o);return v?{p,v,txt:v+' '+a.u}:{p,v:null,txt:'—'}}
+ if(!pm)return{p,v:null,txt:'無上月資料'};const cur=tot(o)/elapsed(m),prev=tot(bag(pm,p))/dim(pm);if(!prev)return{p,v:null,txt:cur?'首月加入，下月起列入':'—'};const g=cur/prev-1;return{p,v:g,txt:pct(g)}})
+ .sort((x,y)=>(y.v??-1e9)-(x.v??-1e9)||PPL.indexOf(x.p)-PPL.indexOf(y.p))}
+function rankOf(rs){let last=null,rk=0;return rs.map((x,i)=>{if(x.v==null)return{...x,rk:null};if(x.v!==last){rk=i+1;last=x.v}return{...x,rk}})}
+const COL=['#FBF1D6','#E3EEF9','#E2F4EA','#F3E8FA','#FDE7E4','#EAF4EC','#FFF6E0','#E9EEF3'];const col=p=>COL[Math.max(0,PPL.indexOf(p))%COL.length];const av=p=>`<span class="av" style="background:${col(p)}">${esc((labelOf(p)||'')[0]||'')}</span>`;
+const nm=p=>p===ME?`<b>${esc(labelOf(p))}</b>${tagHtml(p)}`:`${esc(labelOf(p))}${tagHtml(p)}`;
+const GM=[['warm','暖關係','次'],['call','約訪通數','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
+const gv=(o,k)=>+o[k]||0;let GS={months:{}};
+function setGoals(g){GS=(g&&typeof g==='object'&&g.months)?g:{months:{}};}
+window.__aqGetGoals=()=>GS;window.__aqSetGoals=function(g){setGoals(g);if(window.lbRender)window.lbRender();};
+function goalsFor(m){if(GS.months[m])return{goals:GS.months[m].goals,carry:!!GS.months[m].carry,src:'此月份自訂的目標'};const prev=Object.keys(GS.months).filter(x=>x<m&&GS.months[x].carry).sort().pop();if(prev)return{goals:GS.months[prev].goals,carry:false,src:`沿用 ${prev.slice(0,4)} 年 ${+prev.slice(5)} 月設定的目標`};return{goals:[{k:'call',n:1200}],carry:false,src:'預設目標'}}
+function gRow(g){return`<div class="gr"><select class="gk">${GM.map(x=>`<option value="${x[0]}"${x[0]===g.k?' selected':''}>${x[1]}</option>`).join('')}</select><input type="number" class="gn" min="1" step="1" inputmode="numeric" value="${g.n||''}" placeholder="目標數"><button class="gx" data-gdel title="刪除這個目標">✕</button></div>`}
+function openGoal(){const m=$('lbMSel').value,gs=goalsFor(m),P=$('lbGPanel');P.innerHTML=`<b>設定 ${m.slice(0,4)} 年 ${+m.slice(5)} 月的團隊目標（最多 3 個）</b><div id="lbGRows">${gs.goals.map(gRow).join('')}</div><button class="gbtn s" data-gadd style="align-self:flex-start">＋新增目標</button><label class="gr"><input type="checkbox" id="lbGCarry"${gs.carry||!GS.months[m]?' checked':''}> 套用到之後每個月（之後沒有自訂目標的月份沿用）</label><div class="gerr" id="lbGErr"></div><div class="gr"><button class="gbtn p" data-gsave>儲存</button><button class="gbtn s" data-gcancel>取消</button></div>`;P.style.display='flex';gBtns()}
+function gBtns(){const n=$('lbGRows').children.length;document.querySelector('[data-gadd]').style.display=n>=3?'none':'';document.querySelectorAll('[data-gdel]').forEach(b=>b.style.visibility=n<=1?'hidden':'')}
+function saveGoal(){const m=$('lbMSel').value,rows=[...$('lbGRows').children];let ok=true;const goals=rows.map(r=>{const i=r.querySelector('.gn'),v=i.value.trim(),good=/^\d+$/.test(v)&&+v>0&&+v<=1e7;i.classList.toggle('bad',!good);if(!good)ok=false;return{k:r.querySelector('.gk').value,n:+v}});
+ if(!ok){$('lbGErr').textContent='目標數請輸入正整數。';return}if(new Set(goals.map(g=>g.k)).size!==goals.length){$('lbGErr').textContent='同一個項目只能設定一個目標。';return}
+ if(window.__aqIsOwner!==true){$('lbGErr').textContent='只有團隊擁有者可以設定目標。';return}
+ GS.months[m]={goals,carry:$('lbGCarry').checked};if(window.__aqSchedule)window.__aqSchedule('goals');$('lbGPanel').style.display='none';render()}
+document.addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||!b.closest('#teamView'))return;if(b.dataset.tdel!=null){const row=b.closest('.trow');if(row)row.remove();editorStamp='dirty';return}if(b.dataset.tadd!=null){$('lbTeamRows').insertAdjacentHTML('beforeend',tRow());editorStamp='dirty';return}if(b.dataset.tsave!=null){saveTeamEditor();return}if(b.id==='lbGEdit'){if(window.__aqIsOwner!==true)return;const P=$('lbGPanel');if(P.style.display==='none')openGoal();else P.style.display='none'}
+ if(b.dataset.gadd!=null){const used=[...document.querySelectorAll('#lbGRows .gk')].map(x=>x.value);$('lbGRows').insertAdjacentHTML('beforeend',gRow({k:(GM.find(x=>!used.includes(x[0]))||GM[0])[0],n:''}));gBtns()}
+ if(b.dataset.gdel!=null){b.closest('.gr').remove();gBtns()}if(b.dataset.gsave!=null)saveGoal();if(b.dataset.gcancel!=null)$('lbGPanel').style.display='none'});
+const XPW={call:1,appt:3,meet:5,need:5,prop:10,deal:30,lead:3};const BASEXP=[0,2600,6200,900,4100,9800,1500,0];
+const AC={call:'#2F6FB0',meet:'#2EB872',deal:'#C9A227',grow:'#8E6CC9'};
+function xpP(p){if(p===ME&&typeof view==='function'&&typeof xpOf==='function')return xpOf(view());let x=BASEXP[PPL.indexOf(p)]||0;const sm=$('lbMSel').value;MS.forEach(m=>{if(m<=sm)for(const k in XPW)x+=(bag(m,p)[k]||0)*XPW[k]});return x}
+function lvl(p){const x=xpP(p);let i=0;TITLES.forEach((t,j)=>{if(x>=t[0])i=j});const nx=TITLES[i+1];return{i,t:TITLES[i][1],pc:nx?Math.round((x-TITLES[i][0])/(nx[0]-TITLES[i][0])*100):100,x}}
+function delta(m,a,p,rk){const pm=MS[MS.indexOf(m)-1];if(!pm||rk==null)return'<span class="dl eq" title="無上月排名">－</span>';const pr=rankOf(rows(pm,a)).find(x=>x.p===p);if(!pr||pr.rk==null)return'<span class="dl nw" title="上月未列入排名">新</span>';const d=pr.rk-rk;return d>0?`<span class="dl up" title="比上月進步 ${d} 名">▲${d}</span>`:d<0?`<span class="dl dn" title="比上月退後 ${-d} 名">▼${-d}</span>`:'<span class="dl eq" title="名次與上月相同">－</span>'}
+function lvH(p){const L=lvl(p);return`<span class="lv"><em>Lv${L.i+1} ${L.t}</em><span class="xb"><i style="width:${L.pc}%"></i></span></span>`}
+function rowH(x,P){if(x.idle)return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">—</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span></span><span class="v">尚未開始</span></li>`;return`<li class="rest ${x.p===ME?'me':''}" data-p="${x.p}"><span class="rk">${x.rk??'—'}</span>${av(x.p)}<span class="nm"><span class="nmt">${nm(x.p)}</span>${lvH(x.p)}</span><span class="v">${x.txt}</span>${delta(P.m,P.a,x.p,x.rk)}</li>`}
+function parts(m,a,past){const rs=rankOf(rows(m,a));const top=rs.filter(x=>x.rk&&x.rk<=3).slice(0,3);const meR=rs.find(x=>x.p===ME);const rest=rs.filter(x=>x.rk&&!top.includes(x));const idle=rs.filter(x=>x.idle);
+ const num=x=>a.grow?x.txt:`${x.v}<small> ${a.u}</small>`;
+ const meLine=!meR?'我本月尚未列入此項排名':meR.rk&&meR.rk<=3?`🎉 我目前是第 ${meR.rk} 名`:meR.rk?(()=>{const ab=rs.find(x=>x.rk===meR.rk-1)||rs[rs.indexOf(meR)-1];return`我目前第 ${meR.rk} 名${ab&&ab.v!=null&&!a.grow?`，再 ${ab.v-meR.v+1} ${a.u}可超越前一名`:''}`})():'我本月尚未列入此項排名';
+ const rankList=(rest.length||idle.length)?`<ol class="rank">${rest.map(x=>rowH(x,{m,a})).join('')}${idle.map(x=>rowH(x,{m,a})).join('')}</ol><button class="more" data-more>查看完整排名 ▾</button>`:'';
+ const list=`${rankList}<div class="mebar" data-cmp="${a.id}" tabindex="0" title="查看我與前後名次的比較">👤 ${past?meLine.replace('目前',''):meLine}${meHas[m]?'':' <span class="note">（這個月沒有紀錄，先到我的闖關登錄行動）</span>'}</div>${a.grow?`<p class="note" style="margin:6px 0 0">${past?'以當月與上個月的每日平均行動量比較。':'本月以「至今每日平均」與上個月每日平均比較；上個月無資料者不列入排名。'}</p>`:''}`;
+ return{m,a,past,rs,top,rest,num,list,ac:AC[a.id]}}
+const medal=['金','銀','銅'];
+function card(P){const{a,top,num,past,ac}=P;const order=top.length>=3?[1,0,2]:top.length===2?[1,0]:top.length===1?[0]:[];
+ const pod=order.length?order.map(i=>{const x=top[i];return`<div class="A-col A-p${i+1}${x.p===ME?' me':''}" data-p="${x.p}"><div class="A-ava" style="background:${col(x.p)}">${i===0?'<span class="A-crown">👑</span>':''}${esc((labelOf(x.p)||'')[0]||'')}</div><div class="A-nm">${esc(labelOf(x.p))}${tagHtml(x.p)}</div><div class="A-val">${num(x)}</div><div class="A-ped"><b>${x.rk}</b><span>${medal[i]}牌</span>${past?'<em>🎖️ 當月徽章</em>':''}</div></div>`}).join(''):'<div class="A-empty">這個月還沒有可頒發的獎項。</div>';
+ return`<section class="card s6 A-card" style="--ac:${ac}"><h2 class="lch"><span class="arr"></span><span class="A-rib">${a.ic} ${a.n}</span><span class="sub">${a.d}</span></h2><div class="A-stage">${pod}</div>${P.list}</section>`}
+
+function cmpHTML(aid){const m=$('lbMSel').value,a=AW.find(x=>x.id===aid),rs=rankOf(rows(m,a)),i=rs.findIndex(x=>x.p===ME),me=rs[i];if(!me)return`<h4>${a?a.ic+' '+a.n+'・':''}我的位置<button class="x" data-close aria-label="關閉">✕</button></h4><p class="note">目前沒有可比較的對象。</p>`;const ranked=rs.filter(x=>x.rk!=null);
+ let T=[];const add=(x,lab)=>{if(!x||x.p===ME)return;const e=T.find(t=>t.x.p===x.p);if(e)e.lab+='・'+lab;else T.push({x,lab})};
+ if(me.rk===1){add(ranked.find(x=>x.p!==ME&&x.rk>=1&&ranked.indexOf(x)===ranked.findIndex(y=>y.p!==ME)),'第 2 名');add(ranked.filter(x=>x.p!==ME)[1],'第 3 名')}
+ else{add(ranked[0],'第 1 名');if(me.rk!=null){add(rs[i-1],'前一名');const b=rs[i+1];if(b&&b.rk!=null)add(b,'後一名')}}
+ T.forEach(t=>{if(t.lab==='第 2 名'||t.lab==='第 3 名')t.lab=`第 ${t.x.rk} 名`});
+ const ab=me.rk>1?rs[i-1]:null;let nudge;
+ if(me.rk===1){const s2=T[0]?.x;nudge=s2?(a.grow?`🎉 目前第 1 名，領先第 2 名 ${Math.round((me.v-s2.v)*100)} 個百分點`:`🎉 目前第 1 名，領先第 2 名 ${me.v-s2.v} ${a.u}`):'🎉 目前第 1 名'}
+ else if(me.rk==null)nudge='這個月還沒有列入此項排名，先到我的闖關登錄行動。';
+ else if(!ab)nudge='目前沒有可比較的對象。';
+ else nudge=a.grow?`成長率再提高 ${Math.max(1,Math.ceil((ab.v-me.v)*100+0.01))} 個百分點就能超越前一名`:`再 ${ab.v-me.v+1} ${a.u}${a.id==='call'?'約訪':a.id==='deal'?'成交':'面談／需求'}就能超越前一名`;
+ const SLx=[['warm','暖關係','次'],['call','約訪','通'],['appt','取得約會','位'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
+ const HL={call:['call'],meet:['meet','need'],deal:['deal'],grow:['_tot']};const rowsM=[...SLx,['_tot','總行動量','次']];const val=(p,k)=>k==='_tot'?tot(bag(m,p)):bag(m,p)[k];
+ const gap=(d,u)=>d<0?`<span class="g bad">還差 ${-d} ${u}</span>`:d>0?`<span class="g good">多 ${d} ${u}</span>`:'<span class="g eq">一樣</span>';
+ const cr=(p,x,y)=>{const o=bag(m,p);return o[y]?Math.round(o[x]/o[y]*100):null};const CRs=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→成交','deal','meet']];
+ const pg=(d)=>d==null?'<span class="g eq">—</span>':d<0?`<span class="g bad">低 ${-d} 個百分點</span>`:d>0?`<span class="g good">高 ${d} 個百分點</span>`:'<span class="g eq">一樣</span>';
+ return`<h4>${a.ic} ${a.n}・我的位置<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4><div class="nudge">${nudge}</div>
+ <div class="ctw"><table class="cmpt"><thead><tr><th>項目</th><th>我<br><span class="note">第 ${me.rk??'—'} 名</span></th>${T.map(t=>`<th>${esc(labelOf(t.x.p))}<br><span class="note">${t.lab}</span></th>`).join('')}</tr></thead><tbody>
+ ${rowsM.map(([k,n,u])=>`<tr class="${HL[aid].includes(k)?'hl':''}"><td>${n}</td><td><b>${val(ME,k)}</b></td>${T.map(t=>`<td>${val(t.x.p,k)}<br>${gap(val(ME,k)-val(t.x.p,k),u)}</td>`).join('')}</tr>`).join('')}
+ ${CRs.map(([n,x,y])=>{const mv=cr(ME,x,y);return`<tr class="cr"><td>${n}</td><td><b>${mv==null?'—':mv+'%'}</b></td>${T.map(t=>{const tv=cr(t.x.p,x,y);return`<td>${tv==null?'—':tv+'%'}<br>${mv==null||tv==null?pg(null):pg(mv-tv)}</td>`}).join('')}</tr>`}).join('')}
+ </tbody></table></div><p class="note" style="margin:6px 0 0">${T.length?'':'目前沒有可比較的對象。'}只比較次數與比率，不含客戶姓名與金額。</p>`}
+
+function rankHold(){if(window.__aqTeamDenied||window.__aqBoardDenied)return'團隊排行尚未開通，請管理者更新 Firebase 規則';if(window.__aqTeamOut)return'你還不在這個團隊的排行名單';if(window.__aqTeamMissing){if(LB_DEMO)return null;return window.__aqIsOwner===true?'':'管理者尚未設定團隊成員'}return null}
+function render(){const hold=rankHold();const note=$('lbDenied');const banner=$('lbSampleBanner');if(hold!=null){if(note){const p=note.querySelector('p');if(p)p.textContent=hold;note.hidden=!hold}if(banner)banner.hidden=true;$('lbBoards').innerHTML='';$('lbGoals').innerHTML='';$('lbCd').innerHTML='';syncOwner();return}if(note)note.hidden=true;if(banner)banner.hidden=false;if(LIVE&&banner){banner.className='lbnote';banner.removeAttribute('style');banner.textContent='排名只加總次數。標示「尚未開始」的夥伴還沒有登入過行動闖關。'}syncMe();const m=$('lbMSel').value,past=m!==CURM;const e=elapsed(m),left=dim(m)-e;
+ $('lbGSub').textContent=past?`（${+m.slice(5)} 月最終結果）`:'（本月進行中）';const gs=goalsFor(m);
+ $('lbGoals').innerHTML=gs.goals.map(g=>{const M=GM.find(x=>x[0]===g.k);const tc=PPL.reduce((s,p)=>s+gv(bag(m,p),g.k),0),mine=gv(bag(m,ME),g.k),pc=g.n?tc/g.n*100:0;return`<div class="grow"><div class="goal"><span>全團隊${past?'當月':'本月'}${M[1]} <b>${tc}</b> / ${g.n} ${M[2]}</span><b>${Math.round(pc)}%${tc>=g.n?' 🎉 達成':''}</b></div><div class="bar"><i style="width:${Math.min(100,pc)}%"></i></div><p class="muted" style="margin:4px 0 0">我貢獻了 ${mine} ${M[2]}${tc?`（占團隊 ${Math.round(mine/tc*100)}%）`:''}</p></div>`}).join('')+`<p class="note" style="margin:6px 0 0">${gs.src}</p>`;
+ $('lbCd').innerHTML=past?`<div>🏁 ${+m.slice(5)} 月已結算</div><b>完賽</b><div class="note">前三名獲得「當月徽章」</div>`:`<div>⏳ 本月剩下</div><b>${left}</b><div>天</div><div class="note">結算日 ${m.slice(5)}/${dim(m)}・排名每日更新</div>`;
+ $('lbBoards').innerHTML=AW.map(a=>card(parts(m,a,past))).join('');syncOwner()}
+const $=id=>document.getElementById(id);
+if(LB_DEMO){const b=$('lbSampleBanner');if(b){b.className='card s12';b.style.cssText='background:#FFF6E0;border-left:4px solid var(--y)';b.innerHTML='<b>範例資料（之後接上團隊真實資料）</b><span class="muted">　「我」是你登入後的真實闖關紀錄。其餘隊友是示範用假資料，名字旁標示「範例」。</span>';}}
+$('lbMSel').innerHTML=[...MS].reverse().map(m=>`<option value="${m}">${m.slice(0,4)} 年 ${+m.slice(5)} 月${m===CURM?'（進行中）':''}</option>`).join('');
+$('lbMSel').onchange=render;
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-more]');if(b){const o=b.previousElementSibling.classList.toggle('open');b.textContent=o?'收合排名 ▴':'查看完整排名 ▾';return}
+ const h=ev.target.closest('#teamView .lch');if(h&&!matchMedia('(min-width:768px)').matches)h.closest('.card').classList.toggle('closed')});
+function teamCardSet(open){const card=$('lbTeamCard');if(!card)return;card.classList.toggle('closed',!open);const head=$('lbTeamHead');if(head)head.setAttribute('aria-expanded',open?'true':'false');try{localStorage.setItem('aq_teamcard_open',open?'1':'0')}catch(e){}}
+(function(){let open=false;try{open=localStorage.getItem('aq_teamcard_open')==='1'}catch(e){}const card=$('lbTeamCard');if(card)card.classList.toggle('closed',!open);const head=$('lbTeamHead');if(head)head.setAttribute('aria-expanded',open?'true':'false')})();
+document.addEventListener('click',ev=>{if(!ev.target.closest('#lbTeamHead'))return;const card=$('lbTeamCard');if(card)teamCardSet(card.classList.contains('closed'))});
+document.addEventListener('keydown',ev=>{if((ev.key!=='Enter'&&ev.key!==' ')||ev.target.id!=='lbTeamHead')return;ev.preventDefault();ev.target.click()});
+const FISH_ROWS=[{email:'shanewangmusic@gmail.com',agentName:'王盛嶢',displayName:'盛嶢',active:true},{email:'jimi810@gmail.com',agentName:'',displayName:'小魚',active:true},{email:'yinhsuanyt25@gmail.com',agentName:'茵琁 Allie',displayName:'Allie',active:true},{email:'angel180325@gmail.com',agentName:'小孟Jenny',displayName:'小孟',active:true}];
+function tRow(r){r=r||{email:'',agentName:'',displayName:'',active:true};return`<div class="trow"><input class="tem" type="text" inputmode="email" autocomplete="off" placeholder="Email" value="${esc(r.email)}"><input class="tn ta" type="text" maxlength="40" autocomplete="off" placeholder="個人（空白）" title="留白代表個人（空白），也就是 CRM 沒填負責業務的客戶" value="${esc(r.agentName)}"><input class="tn td" type="text" maxlength="40" autocomplete="off" placeholder="顯示名字" value="${esc(r.displayName)}"><label><input class="tc" type="checkbox"${r.active?' checked':''}> 列入排行</label><button type="button" class="gx" data-tdel title="移出名單">移除</button></div>`}
+function memberRowsFrom(doc){const out=[];if(!doc||!doc.members)return out;const order=Array.isArray(doc.emails)&&doc.emails.length?doc.emails:Object.keys(doc.members);order.forEach(em=>{const key=String(em).toLowerCase();const m=doc.members[key]||doc.members[em];if(!m)return;out.push({email:key,agentName:m.agentName||'',displayName:m.displayName||'',active:m.active!==false})});return out}
+let editorStamp='';
+function openTeamEditor(){const card=$('lbTeamCard');if(!card)return;const owner=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;card.style.display=owner?'':'none';if(!owner)return;const saved=window.__aqTeamDoc;const seeded=!saved&&window.__aqTeamId==='FISHTEAM';const stamp=saved?JSON.stringify(saved.members):(seeded?'seed':'empty');if(stamp===editorStamp)return;editorStamp=stamp;const rows=saved?memberRowsFrom(saved):(seeded?FISH_ROWS.map(r=>Object.assign({},r)):[]);$('lbTeamHint').textContent=saved?'這是已儲存的名單。改完後按「儲存成員」才會更新。':(seeded?'這是 FISHTEAM 的建議名單，尚未寫入。按「儲存成員」後才會生效。':'尚未設定成員。加入 Email 後按「儲存成員」。');$('lbTeamRows').innerHTML=rows.map(tRow).join('')||tRow();$('lbTeamErr').textContent=''}
+function readTeamEditor(){const rows=[...$('lbTeamRows').querySelectorAll('.trow')];const emails=[],members={},seen={};let ok=rows.length>0;rows.forEach(row=>{const emEl=row.querySelector('.tem'),nmEl=row.querySelector('.td');const em=emEl.value.trim().toLowerCase();const displayName=nmEl.value.trim();const emailOk=/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/.test(em);emEl.classList.toggle('bad',!emailOk||!!seen[em]);nmEl.classList.toggle('bad',!displayName);if(!emailOk||!displayName||seen[em])ok=false;if(emailOk)seen[em]=1;if(emailOk&&displayName&&!members[em]){emails.push(em);members[em]={agentName:row.querySelector('.ta').value.trim(),displayName:displayName,active:!!row.querySelector('.tc').checked}}});return ok?{emails:emails,members:members}:null}
+async function saveTeamEditor(){if(window.__aqIsOwner!==true)return;const doc=readTeamEditor();const err=$('lbTeamErr');if(!doc){err.textContent='請填寫不重複的 Email，並填上顯示名字。';return}err.textContent='';if(!window.__aqSaveTeam){err.textContent='現在無法儲存，請稍後再試。';return}try{await window.__aqSaveTeam(doc);editorStamp='';openTeamEditor()}catch(e){err.textContent=(e&&e.message)||'儲存失敗'}}
+function syncOwner(){const b=$('lbGEdit');const teamOpen=window.__aqIsOwner===true&&window.__aqTeamDenied!==true;if(b){b.style.display=teamOpen?'':'none';if(!teamOpen&&$('lbGPanel'))$('lbGPanel').style.display='none';}openTeamEditor();}
+window.__aqSyncOwner=syncOwner;
+window.lbRender=render;render();
+const SL=[['warm','暖關係','次'],['call','約訪','通'],['appt','取得約會','次'],['meet','初次面談','次'],['need','發掘需求','次'],['prop','關鍵訪','次'],['deal','成交件數','件'],['lead','新名單','位']];
+const CV=[['約訪→約會','appt','call'],['約會→面談','meet','appt'],['面談→需求','need','meet'],['需求→關鍵訪','prop','need'],['面談→成交','deal','meet']];
+const HOV=matchMedia('(hover:hover) and (min-width:768px)');let popFor=null;
+function popHTML(p){const m=$('lbMSel').value,pm=MS[MS.indexOf(m)-1],o=bag(m,p),sc=m===CURM&&pm?elapsed(m)/dim(pm):1,prev=pm?bag(pm,p):null,q=prev?Object.fromEntries(K.map(k=>[k,Math.round((prev[k]||0)*sc)])):null;
+ const ar=(v,w)=>w==null||v===w?'':v>w?` <span class="upa">▲${+(v-w).toFixed(1)}</span>`:` <span class="dna">▼${+(w-v).toFixed(1)}</span>`;
+ const r=(x,a,b)=>x&&x[b]?Math.min(100,x[a]/x[b]*100):null;const P=v=>v==null?'—':Math.round(v)+'%';
+ return`<h4><span class="av" style="background:${col(p)}">${esc((labelOf(p)||'')[0]||'')}</span>${esc(labelOf(p))}${tagHtml(p)}<span class="sub">${+m.slice(5)} 月${m===CURM?'（至今）':''}</span><button class="x" data-close aria-label="關閉">✕</button></h4>
+ <div class="sec">行動次數 <span class="note" style="font-weight:400">▲▼ ${m===CURM?'與上個月同期（按天數比例）相比':'與上個月相比'}</span></div><table>${SL.map(([k,n,u])=>`<tr><td>${n}</td><td><b>${o[k]}</b> <span class="note">${u}</span>${q?ar(o[k],q[k]):''}</td></tr>`).join('')}</table>
+ <div class="sec">轉換率</div><table>${CV.map(([n,a,b])=>{const v=r(o,a,b),w=q?r(q,a,b):null;return`<tr><td>${n}</td><td><b>${P(v)}</b>${v!=null&&w!=null?ar(Math.round(v),Math.round(w)).replace(/(▲|▼)([\d.]+)/,'$1$2 個百分點'):''}</td></tr>`}).join('')}</table>
+ <p class="note" style="margin:8px 0 0">${q&&tot(q)?'':'上個月無資料，無法比較。'}只顯示次數與比率，不含客戶姓名與金額。</p>`}
+function showPop(el){const p=el.dataset.p,pop=$('lbPop');popFor=el;pop.classList.toggle('cmp',!!el.dataset.cmp);pop.innerHTML=el.dataset.cmp?cmpHTML(el.dataset.cmp):popHTML(p);pop.classList.add('on');
+ if(HOV.matches){const r=el.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;let x=r.left+r.width/2-w/2,y=r.bottom+8;if(y+h>innerHeight-8)y=r.top-h-8;if(y<8)y=Math.max(8,innerHeight-h-8);x=Math.max(8,Math.min(x,innerWidth-w-8));pop.style.left=x+'px';pop.style.top=y+'px'}else $('lbScrim').classList.add('on')}
+function hidePop(){$('lbPop').classList.remove('on');$('lbScrim').classList.remove('on');popFor=null}
+document.addEventListener('mouseover',ev=>{if(!HOV.matches)return;const el=ev.target.closest('[data-p],[data-cmp]');if(el&&el!==popFor)showPop(el);else if(!el&&!ev.target.closest('#pop'))hidePop()});
+document.addEventListener('click',ev=>{if(ev.target.closest('[data-close]')||ev.target.id==='lbScrim'){hidePop();return}const el=ev.target.closest('[data-p],[data-cmp]');if(el){showPop(el);return}if(!ev.target.closest('#pop'))hidePop()},true);
+addEventListener('keydown',e=>{if(e.key==='Escape')hidePop()});addEventListener('scroll',()=>{if(HOV.matches)hidePop()},{passive:true});
+$('lbMSel').addEventListener('change',()=>{hidePop();$('lbGPanel').style.display='none'});
+
+})();
+(()=>{const TK2='actionquest_tab_v1';const set=(t,push)=>{if(t!=='team')t='me';document.body.classList.remove('tab-me','tab-team');document.body.classList.add('tab-'+(t==='team'?'team':'me'));document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.getElementById('meCtrl').style.display=t==='me'?'flex':'none';document.getElementById('lbCtrl').style.display=t==='team'?'flex':'none';try{localStorage.setItem(TK2,t)}catch(e){}if(push&&location.hash!=='#'+t)history.replaceState(null,'','#'+t);if(t==='team'&&window.lbRender)window.lbRender();scrollTo(0,0)};
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(b)set(b.dataset.tab,true)});
+addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h==='team'||h==='me')set(h)});
+const h=location.hash.slice(1);let t0;try{t0=localStorage.getItem(TK2)}catch(e){}set(h==='team'||h==='me'?h:(t0||'me'));window.setTab=set})();
+</script>
+<script src="crm-link.js"></script>
+<script type="module">
+/* 行動闖關雲端儲存。跟 fintrack.html 同一套 Firebase 登入。
+   測試：先設定 window.__AQ_TEST = { mock:true, user:{email,uid,name}, teamId, crm:{cust:[...]} }
+   可讀 global_state 的客戶名單供挑選，並用交易只改到那一位客戶。
+   mock 只用 sessionStorage，不會連線 Firebase。
+
+   資料位置（全新，不在 global_state 底下，也不會寫入 global_state）：
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/users/{uid}
+     這位使用者的聯繫名單（todayJson 字串）
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/users/{uid}/days/{YYYY-MM-DD}
+     每一天一筆，只在該天有改動時覆寫那一天。客戶之後改階段不得回寫舊日期。
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/meta/goals
+     團隊目標。全員可讀，只有擁有者可寫。
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/meta/team
+     團隊成員。白名單可讀，只有擁有者可寫。FISHTEAM 的建議名單只預填編輯器，按儲存才寫入。
+     小魚的負責業務留白，代表 CRM 裡空白的負責業務（顯示為個人，有名單時顯示小魚）。王盛嶢只對應寫明「王盛嶢」的客戶。
+   artifacts/youtrend-crm/public/data/actionquest/{teamId}/board/{uid}
+     只公布次數。不含客戶姓名、名單、保費或佣金。
+
+   若 Firestore 規則還沒有這段路徑，預設會拒絕。不要在這個專案裡改規則或部署。
+   需要的規則見這個檔案底部的註解，以及 PR 說明。 */
+(function () {
+  const OWNER_EMAIL = 'shanewangmusic@gmail.com';
+  const APP_ID = 'youtrend-crm';
+  const TEST = (window.__AQ_TEST && window.__AQ_TEST.mock === true) ? window.__AQ_TEST : null;
+  const TRIAL_DAYS = 'actionquest_entries_v1';
+  const TRIAL_TODAY = 'actionquest_today_v1';
+  const TRIAL_GOALS = 'actionquest_team_goals_v1';
+  const IMPORT_FLAG = 'actionquest_import_done_v1';
+
+  const $ = function (id) { return document.getElementById(id); };
+  let store = null;
+  let authApi = null;
+  let email = '';
+  let uid = '';
+  let teamId = '';
+  let displayName = '';
+  let isOwner = false;
+  let booted = false;
+  let saving = false;
+  let pending = false;
+  let timer = null;
+  let dirtyDays = false;
+  let dirtyToday = false;
+  let dirtyGoals = false;
+  let teamDoc = null;
+  let boardReads = 0;
+  let lastDays = {};
+  let lastToday = '';
+  let lastGoals = '';
+  let skipImport = false;
+  let wired = false;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function setStatus(kind, text) {
+    const el = $('aqSave');
+    if (!el) return;
+    el.classList.toggle('err', kind === 'err');
+    el.textContent = text || '';
+  }
+  function gate(mode, title, msg) {
+    document.body.classList.remove('aq-ready');
+    const t = $('aqGateTitle');
+    const m = $('aqGateMsg');
+    if (t && title) t.textContent = title;
+    if (m) m.textContent = msg || '';
+    const login = $('aqLogin');
+    const team = $('aqTeamOnly');
+    const out = $('aqLogoutBtn');
+    if (login) login.hidden = mode !== 'login';
+    if (team) team.hidden = mode !== 'team';
+    if (out) out.hidden = !(email && mode !== 'login');
+  }
+  function showApp() { document.body.classList.add('aq-ready'); }
+  function safeId(s) {
+    s = String(s || '').trim();
+    if (!s || s === '.' || s === '..' || s.length > 80 || /[\/\\#?\s\u0000]/.test(s)) return '';
+    return s;
+  }
+  function readTeam() {
+    try { return String(localStorage.getItem('crm_team_id') || '').trim().toUpperCase(); } catch (e) { return ''; }
+  }
+  function writeTeam(id) {
+    try { localStorage.setItem('crm_team_id', id); } catch (e) {}
+  }
+  function loginErrorText(err) {
+    const c = (err && err.code) ? err.code : '';
+    if (c.indexOf('invalid-credential') >= 0 || c.indexOf('wrong-password') >= 0 || c.indexOf('user-not-found') >= 0) return '帳號或密碼錯誤。';
+    if (c.indexOf('too-many-requests') >= 0) return '嘗試次數過多，請稍後再試。';
+    if (c.indexOf('invalid-email') >= 0) return 'Email 格式不正確。';
+    return '登入失敗：' + ((err && err.message) ? err.message : c || '請再試一次');
+  }
+  function ruleHint(err) {
+    const code = (err && err.code) ? String(err.code) : '';
+    if (code.indexOf('permission-denied') >= 0) {
+      return 'Firestore 規則還沒有開放「行動闖關」的資料位置，所以現在讀不到、也寫不進。請帳號擁有者到 Firebase 主控台貼上 PR 說明裡的規則。這次更新不會自行修改規則，也不會寫入客戶資料。';
+    }
+    return (err && err.message) ? String(err.message) : '讀取失敗';
+  }
+  function assertNoNested(value, inArray) {
+    if (value == null || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      if (inArray) {
+        const err = new Error('Firestore 不接受陣列裡再放陣列');
+        err.code = 'invalid-argument';
+        throw err;
+      }
+      value.forEach(function (v) { assertNoNested(v, true); });
+      return;
+    }
+    Object.keys(value).forEach(function (k) { assertNoNested(value[k], false); });
+  }
+  function refuseGlobal(path) {
+    if (String(path).indexOf('global_state') >= 0) {
+      throw new Error('行動闖關不可寫入 global_state');
+    }
+  }
+  function isDayId(d) { return /^\d{4}-\d{2}-\d{2}$/.test(d); }
+  function permissionDenied(err) {
+    const c = String((err && err.code) || '') + ' ' + String((err && err.message) || '');
+    return c.indexOf('permission-denied') >= 0 || c.indexOf('permission_denied') >= 0 || c.indexOf('Missing or insufficient permissions') >= 0;
+  }
+  function isEmailAddr(s) {
+    return /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/.test(String(s || '').toLowerCase());
+  }
+  const COUNT_KEYS = ['warm', 'call', 'appt', 'meet', 'need', 'prop', 'deal', 'client', 'lead'];
+  function sanitizeTeam(raw, by) {
+    const members = {};
+    const emails = [];
+    const order = raw && Array.isArray(raw.emails) ? raw.emails : (raw && raw.members ? Object.keys(raw.members) : []);
+    order.forEach(function (em) {
+      const key = String(em || '').trim().toLowerCase();
+      if (!isEmailAddr(key) || members[key]) return;
+      const m = (raw.members && (raw.members[key] || raw.members[em])) || {};
+      const displayName = String(m.displayName || '').trim().slice(0, 40);
+      if (!displayName) return;
+      members[key] = {
+        agentName: String(m.agentName || '').trim().slice(0, 40),
+        displayName: displayName,
+        active: m.active !== false
+      };
+      emails.push(key);
+    });
+    return { emails: emails, members: members, updatedAt: Date.now(), updatedBy: by || email };
+  }
+  function sanitizeBoard(raw) {
+    const months = {};
+    const src = (raw && raw.months) || {};
+    Object.keys(src).forEach(function (m) {
+      if (!/^\d{4}-\d{2}$/.test(m) || !src[m] || typeof src[m] !== 'object') return;
+      const o = {};
+      COUNT_KEYS.forEach(function (k) { o[k] = Math.max(0, Math.round(+src[m][k] || 0)); });
+      months[m] = o;
+    });
+    return {
+      uid: String((raw && raw.uid) || ''),
+      teamId: String((raw && raw.teamId) || ''),
+      email: String((raw && raw.email) || '').toLowerCase(),
+      displayName: String((raw && raw.displayName) || '').trim().slice(0, 40),
+      agentName: String((raw && raw.agentName) || '').trim().slice(0, 40),
+      months: months,
+      updatedAt: Date.now()
+    };
+  }
+  function emailListed(team, em) {
+    if (!team || !Array.isArray(team.emails)) return false;
+    em = String(em || '').toLowerCase();
+    return team.emails.some(function (x) { return String(x).toLowerCase() === em; });
+  }
+  function memberOf(team, em) {
+    if (!emailListed(team, em)) return null;
+    em = String(em || '').toLowerCase();
+    const m = team.members && team.members[em];
+    if (!m || m.active === false) return null;
+    return m;
+  }
+  function setRankFlags(team, teamDenied, boardDenied) {
+    window.__aqTeamDenied = !!teamDenied;
+    window.__aqBoardDenied = !!boardDenied;
+    window.__aqTeamMissing = !teamDenied && !team;
+    window.__aqTeamOut = !teamDenied && !!team && !emailListed(team, email);
+    window.__aqTeamDoc = teamDenied ? null : (team || null);
+  }
+  function canUseBoard() {
+    return !!(teamDoc && !window.__aqTeamDenied && !window.__aqTeamMissing && !window.__aqTeamOut && !window.__aqBoardDenied && emailListed(teamDoc, email));
+  }
+  function denyErr() {
+    const err = new Error('Missing or insufficient permissions.');
+    err.code = 'permission-denied';
+    return err;
+  }
+
+  function trialSummary() {
+    let days = 0;
+    let today = false;
+    try {
+      const e = JSON.parse(localStorage.getItem(TRIAL_DAYS) || 'null');
+      if (e && typeof e === 'object') {
+        days = Object.keys(e).filter(isDayId).length;
+      }
+    } catch (err) {}
+    try {
+      const t = JSON.parse(localStorage.getItem(TRIAL_TODAY) || 'null');
+      today = !!(t && ((t.items && t.items.length) || (t.hist && Object.keys(t.hist).length) || (t.pending && t.pending.length)));
+    } catch (err) {}
+    let done = false;
+    try { done = !!localStorage.getItem(IMPORT_FLAG); } catch (err) {}
+    return { days: days, today: today, done: done };
+  }
+  function hideImport() {
+    const b = $('aqImport');
+    if (b) b.hidden = true;
+  }
+  function offerImport() {
+    if (skipImport) { hideImport(); return; }
+    const s = trialSummary();
+    const box = $('aqImport');
+    if (!box) return;
+    if (s.done || (!s.days && !s.today)) { box.hidden = true; return; }
+    const text = $('aqImportText');
+    if (text) {
+      text.textContent = '這台電腦有先前的試用紀錄（' + (s.days ? (s.days + ' 天') : '聯繫名單') + (s.today && s.days ? '，含聯繫名單' : '') + '），只存在這台瀏覽器。';
+    }
+    const btn = $('aqImportBtn');
+    if (btn) btn.textContent = s.days ? ('匯入到我的帳號（' + s.days + ' 天）') : '匯入到我的帳號';
+    box.hidden = false;
+  }
+
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+  function diffDays(prev, next) {
+    const puts = [];
+    const dels = [];
+    Object.keys(next || {}).forEach(function (d) {
+      if (!isDayId(d)) return;
+      if (JSON.stringify(prev[d]) !== JSON.stringify(next[d])) puts.push(d);
+    });
+    Object.keys(prev || {}).forEach(function (d) {
+      if (!Object.prototype.hasOwnProperty.call(next || {}, d)) dels.push(d);
+    });
+    return { puts: puts, dels: dels };
+  }
+
+  function schedule(kind) {
+    if (window.__aqHydrating || !booted) return;
+    if (kind === 'days' || kind === 'all') dirtyDays = true;
+    if (kind === 'today' || kind === 'all') dirtyToday = true;
+    if (kind === 'goals' || kind === 'all') dirtyGoals = true;
+    setStatus('saving', '儲存中');
+    if (saving) { pending = true; return; }
+    clearTimeout(timer);
+    timer = setTimeout(function () { flush(); }, 350);
+  }
+  window.__aqSchedule = schedule;
+
+  async function flush() {
+    if (!booted || window.__aqHydrating || !store) return;
+    if (saving) { pending = true; return; }
+    const bind = window.__aqBind;
+    if (!bind) return;
+    saving = true;
+    let wroteDays = false;
+    const wantDays = dirtyDays;
+    const wantToday = dirtyToday;
+    const wantGoals = dirtyGoals && isOwner;
+    dirtyDays = false;
+    dirtyToday = false;
+    dirtyGoals = false;
+    clearTimeout(timer);
+    try {
+      if (wantDays) {
+        const now = bind.getDays() || {};
+        const ops = diffDays(lastDays, now);
+        if (ops.puts.length || ops.dels.length) {
+          await store.writeDays(teamId, uid, ops.puts.map(function (d) { return { date: d, entry: now[d] }; }), ops.dels);
+          lastDays = clone(now);
+          wroteDays = true;
+        }
+      }
+      if (wantToday) {
+        const j = JSON.stringify(bind.getToday() || {});
+        if (j !== lastToday) {
+          await store.saveUser(teamId, uid, {
+            uid: uid,
+            email: email,
+            teamId: teamId,
+            displayName: displayName,
+            todayJson: j,
+            updatedAt: Date.now(),
+            updatedBy: email
+          });
+          lastToday = j;
+        }
+      }
+      if (wantGoals) {
+        const g = window.__aqGetGoals ? window.__aqGetGoals() : { months: {} };
+        const j = JSON.stringify(g && g.months ? g : { months: {} });
+        if (j !== lastGoals) {
+          await store.saveGoals(teamId, g, email);
+          lastGoals = j;
+        }
+      }
+      setStatus('saved', '已儲存');
+      if (wroteDays) await publishBoard();
+    } catch (err) {
+      console.error(err);
+      if (wantDays) dirtyDays = true;
+      if (wantToday) dirtyToday = true;
+      if (wantGoals) dirtyGoals = true;
+      setStatus('err', ruleHint(err));
+    } finally {
+      saving = false;
+      if (pending) {
+        pending = false;
+        if (dirtyDays || dirtyToday || dirtyGoals) schedule('all');
+      }
+    }
+  }
+
+  async function importLocal() {
+    const bind = window.__aqBind;
+    if (!bind || !booted) return;
+    const days = bind.getDays();
+    let added = 0;
+    let skipped = 0;
+    let entries = {};
+    try { entries = JSON.parse(localStorage.getItem(TRIAL_DAYS) || '{}') || {}; } catch (e) { entries = {}; }
+    Object.keys(entries).forEach(function (d) {
+      if (!isDayId(d) || !entries[d] || typeof entries[d] !== 'object' || Array.isArray(entries[d])) return;
+      if (days[d]) { skipped++; return; }
+      try {
+        const copy = JSON.parse(JSON.stringify(entries[d]));
+        days[d] = bind.norm(copy);
+        added++;
+      } catch (e) {}
+    });
+    let todayNote = '';
+    try {
+      const t = JSON.parse(localStorage.getItem(TRIAL_TODAY) || 'null');
+      const cur = bind.getToday() || {};
+      const empty = !(cur.items && cur.items.length) && !(cur.hist && Object.keys(cur.hist).length) && !(cur.pending && cur.pending.length);
+      const has = t && ((t.items && t.items.length) || (t.hist && Object.keys(t.hist).length) || (t.pending && t.pending.length));
+      if (empty && has) {
+        bind.setToday(t);
+        bind.roll();
+        todayNote = '，並帶入聯繫名單';
+      }
+    } catch (e) {}
+    if (isOwner) {
+      try {
+        const g = JSON.parse(localStorage.getItem(TRIAL_GOALS) || 'null');
+        const curG = window.__aqGetGoals ? window.__aqGetGoals() : { months: {} };
+        const hasG = curG && curG.months && Object.keys(curG.months).length;
+        if (g && g.months && Object.keys(g.months).length && !hasG && window.__aqSetGoals) {
+          window.__aqSetGoals(g);
+          dirtyGoals = true;
+        }
+      } catch (e) {}
+    }
+    try { localStorage.setItem(IMPORT_FLAG, String(Date.now())); } catch (e) {}
+    hideImport();
+    const dateEl = $('fDate');
+    bind.fill((dateEl && dateEl.value) || window.__aqTODAY);
+    dirtyDays = true;
+    dirtyToday = true;
+    await flush();
+    bind.toast('已匯入 ' + added + ' 天' + (skipped ? ('，' + skipped + ' 天雲端已有紀錄，保留原樣') : '') + todayNote + '。這台電腦的試用資料仍保留。');
+  }
+
+  async function publishBoard() {
+    if (!store || !store.saveBoard || !canUseBoard()) return;
+    const mem = memberOf(teamDoc, email);
+    if (!mem || !window.__aqBoardMonths || !window.__aqBind) return;
+    const months = window.__aqBoardMonths(window.__aqBind.getDays() || {}, window.__aqBind.auto ? window.__aqBind.auto() : []);
+    const doc = sanitizeBoard({
+      uid: uid,
+      teamId: teamId,
+      email: email,
+      displayName: mem.displayName || displayName,
+      agentName: mem.agentName || '',
+      months: months
+    });
+    if (doc.uid !== uid || doc.email !== email || doc.teamId !== teamId) return;
+    try {
+      await store.saveBoard(teamId, uid, doc);
+    } catch (err) {
+      if (permissionDenied(err)) {
+        window.__aqBoardDenied = true;
+        if (window.lbRender) window.lbRender();
+      } else console.warn('board', err);
+    }
+  }
+  async function refreshBoard() {
+    if (!canUseBoard() || !store || !store.loadBoard) return [];
+    try {
+      return await store.loadBoard(teamId);
+    } catch (err) {
+      if (permissionDenied(err)) {
+        window.__aqBoardDenied = true;
+        return [];
+      }
+      throw err;
+    }
+  }
+  window.__aqSaveTeam = async function (raw) {
+    if (!isOwner) {
+      const err = new Error('只有團隊擁有者可以設定成員');
+      err.code = 'permission-denied';
+      throw err;
+    }
+    const clean = sanitizeTeam(raw, email);
+    if (!clean.emails.length) throw new Error('請至少留下一位成員');
+    await store.saveTeam(teamId, clean);
+    teamDoc = clean;
+    setRankFlags(clean, false, false);
+    await publishBoard();
+    const boards = window.__aqBoardDenied ? [] : await refreshBoard();
+    if (window.__aqApplyTeam) window.__aqApplyTeam(clean, boards, email, false);
+  };
+
+  function updateChrome() {
+    const who = $('aqWho');
+    if (who) who.textContent = displayName + ' · ' + email;
+    const badge = $('aqTeamBadge');
+    if (badge) badge.textContent = '團隊代碼 ' + teamId;
+    window.__aqIsOwner = isOwner;
+    if (window.__aqSyncOwner) window.__aqSyncOwner();
+  }
+
+  async function openApp() {
+    if (!email || !uid) { showLogin(false); return; }
+    teamId = readTeam();
+    if (!safeId(teamId)) { showLogin(true); return; }
+    gate('wait', '正在讀取闖關紀錄', '連線至 ' + teamId + ' …');
+    isOwner = email === OWNER_EMAIL;
+    window.__aqIsOwner = isOwner;
+    const authName = (authApi && authApi.current && authApi.current() && authApi.current().displayName) || '';
+    displayName = (TEST && TEST.user && String(TEST.user.name || '').trim()) || String(authName).trim() || (email.split('@')[0] || '我');
+    let days = {};
+    let user = null;
+    let goals = null;
+    try {
+      days = await store.loadDays(teamId, uid);
+      user = await store.loadUser(teamId, uid);
+      goals = await store.loadGoals(teamId);
+    } catch (err) {
+      console.error(err);
+      gate('deny', '雲端拒絕讀取', ruleHint(err));
+      return;
+    }
+    let autos = [];
+    try { autos = store.loadAuto ? await store.loadAuto(teamId, uid) : []; }
+    catch (e) { console.warn('auto events', e); autos = []; }
+    let today = null;
+    if (user && typeof user.todayJson === 'string' && user.todayJson) {
+      try { today = JSON.parse(user.todayJson); } catch (e) { today = null; }
+    }
+    if (window.__aqSetMe) window.__aqSetMe(displayName);
+    window.__aqInitialDays = days || {};
+    window.__aqInitialAuto = autos || [];
+    window.__aqInitialToday = today;
+    window.__aqEmail = function () { return email; };
+    window.__aqPersistAuto = function (ev) {
+      if (!store || !store.createAuto) return Promise.resolve();
+      ev.email = ev.email || email;
+      return store.createAuto(teamId, uid, ev);
+    };
+    window.__aqPatchCrm = function (custId, ops) {
+      if (!store || !store.patchCrm) {
+        const err = new Error('找不到這位客戶，沒有寫入。');
+        err.code = 'not-found';
+        return Promise.reject(err);
+      }
+      return store.patchCrm(teamId, custId, ops);
+    };
+    try {
+      const crmDoc = store.loadCrm ? await store.loadCrm(teamId) : null;
+      window.__aqCustomers = (crmDoc && Array.isArray(crmDoc.cust)) ? crmDoc.cust : [];
+    } catch (e) {
+      console.warn('crm list', e);
+      window.__aqCustomers = [];
+    }
+    teamDoc = null;
+    let boards = [];
+    let teamDenied = false;
+    let boardDenied = false;
+    try {
+      if (store.loadTeam) teamDoc = await store.loadTeam(teamId);
+    } catch (err) {
+      if (permissionDenied(err)) teamDenied = true;
+      else console.warn('team rank', err);
+    }
+    const listed = !teamDenied && emailListed(teamDoc, email);
+    if (!teamDenied && listed && store.loadBoard) {
+      try { boards = await store.loadBoard(teamId); }
+      catch (err) {
+        if (permissionDenied(err)) boardDenied = true;
+        else console.warn('team rank', err);
+        boards = [];
+      }
+    }
+    window.__aqTeamId = teamId;
+    setRankFlags(teamDenied ? null : teamDoc, teamDenied, boardDenied);
+    if (teamDenied) teamDoc = null;
+    window.__aqHydrating = true;
+    try {
+      if (window.aqStart) window.aqStart();
+      if (window.__aqSetGoals) window.__aqSetGoals(goals && goals.months ? goals : { months: {} });
+      if (window.__aqApplyTeam) window.__aqApplyTeam(teamDenied ? null : teamDoc, boards, email, teamDenied);
+    } finally {
+      window.__aqHydrating = false;
+    }
+    const bind = window.__aqBind;
+    lastDays = clone((bind && bind.getDays()) || {});
+    lastToday = JSON.stringify((bind && bind.getToday()) || {});
+    lastGoals = JSON.stringify((window.__aqGetGoals && window.__aqGetGoals()) || { months: {} });
+    booted = true;
+    updateChrome();
+    showApp();
+    const n = Object.keys(days || {}).length;
+    setStatus('', n ? '已從雲端讀取' : '尚未儲存');
+    if (canUseBoard()) {
+      await publishBoard();
+      if (canUseBoard()) {
+        const again = await refreshBoard();
+        if (window.__aqApplyTeam) window.__aqApplyTeam(teamDoc, again, email, false);
+      } else if (window.lbRender) window.lbRender();
+    }
+    window.__aqRankReady = true;
+    offerImport();
+    if (TEST) {
+      window.__aqDebug = {
+        flush: flush,
+        dump: function () { return store.dump(teamId, uid); },
+        paths: function () {
+          return {
+            user: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid,
+            day: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/days/{YYYY-MM-DD}',
+            goals: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/meta/goals',
+            team: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/meta/team',
+            board: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/board/{uid}',
+            auto: 'artifacts/' + APP_ID + '/public/data/actionquest/' + teamId + '/users/' + uid + '/auto/{eventId}',
+            crm: 'artifacts/' + APP_ID + '/public/data/global_state/' + teamId,
+            writesGlobalState: 'transaction: one customer history / nextContactDate only'
+          };
+        },
+        isOwner: function () { return isOwner; },
+        email: function () { return email; },
+        uid: function () { return uid; },
+        teamId: function () { return teamId; }
+      };
+    }
+  }
+
+  function showLogin(teamOnly) {
+    const saved = readTeam();
+    const a = $('aqTeam');
+    const b = $('aqTeam2');
+    if (a && saved && !a.value) a.value = saved;
+    if (b && saved && !b.value) b.value = saved;
+    if (teamOnly) gate('team', '選擇團隊', '已登入 ' + email + '。請輸入與 CRM 相同的團隊代碼。');
+    else gate('login', '登入後才能使用行動闖關', '使用與 CRM 相同的 Email、密碼與團隊代碼。每個人的闖關紀錄存在自己的帳號。');
+  }
+
+  async function submitLogin(teamOnly) {
+    const errEl = teamOnly ? $('aqLoginError2') : $('aqLoginError');
+    [$('aqLoginError'), $('aqLoginError2')].forEach(function (n) { if (n) { n.hidden = true; n.textContent = ''; } });
+    const teamEl = teamOnly ? $('aqTeam2') : $('aqTeam');
+    const team = String((teamEl && teamEl.value) || '').trim().toUpperCase();
+    if (!safeId(team)) {
+      if (errEl) { errEl.hidden = false; errEl.textContent = '請填寫團隊代碼。'; }
+      return;
+    }
+    writeTeam(team);
+    try {
+      if (!teamOnly) {
+        const em = String(($('aqEmail') && $('aqEmail').value) || '').trim();
+        const pw = String(($('aqPassword') && $('aqPassword').value) || '');
+        if (!em || !pw) {
+          if (errEl) { errEl.hidden = false; errEl.textContent = '請填寫 Email 與密碼。'; }
+          return;
+        }
+        if (TEST) {
+          email = em.toLowerCase();
+          uid = (TEST.user && TEST.user.uid) || ('uid-' + email.replace(/[^a-z0-9]+/g, '-').slice(0, 40));
+        } else {
+          await authApi.signIn(em, pw);
+          const u = authApi.current();
+          email = String((u && u.email) || em).toLowerCase();
+          uid = u && u.uid;
+        }
+      }
+      await openApp();
+    } catch (err) {
+      if (errEl) { errEl.hidden = false; errEl.textContent = loginErrorText(err); }
+    }
+  }
+
+  async function doLogout() {
+    try { if (authApi) await authApi.signOut(); } catch (e) {}
+    try { localStorage.removeItem('crm_team_id'); } catch (e) {}
+    location.href = 'index.html';
+  }
+
+  function wire() {
+    if (wired) return;
+    wired = true;
+    const form = $('aqLogin');
+    if (form) form.onsubmit = function (e) { e.preventDefault(); submitLogin(false); };
+    const teamForm = $('aqTeamOnly');
+    if (teamForm) teamForm.onsubmit = function (e) { e.preventDefault(); submitLogin(true); };
+    const out = $('aqLogoutBtn');
+    if (out) out.onclick = doLogout;
+    const imp = $('aqImportBtn');
+    if (imp) imp.onclick = function () { importLocal(); };
+    const later = $('aqImportLater');
+    if (later) later.onclick = function () { skipImport = true; hideImport(); };
+  }
+
+  function sessionStore() {
+    const crmWrites = { n: 0 };
+    function key(tid, id) { return 'aqmock:v1:' + tid + ':' + id; }
+    function readBag(tid, id) {
+      try { return JSON.parse(sessionStorage.getItem(key(tid, id)) || 'null') || { user: null, days: {} }; }
+      catch (e) { return { user: null, days: {} }; }
+    }
+    function writeBag(tid, id, bag) { sessionStorage.setItem(key(tid, id), JSON.stringify(bag)); }
+    return {
+      loadUser: async function (tid, id) { return readBag(tid, id).user; },
+      saveUser: async function (tid, id, data) {
+        refuseGlobal('actionquest/' + tid + '/users/' + id);
+        assertNoNested(data, false);
+        const bag = readBag(tid, id);
+        bag.user = data;
+        writeBag(tid, id, bag);
+      },
+      loadAuto: async function (tid, id) {
+        if (TEST && Array.isArray(TEST.auto)) return JSON.parse(JSON.stringify(TEST.auto));
+        const bag = readBag(tid, id);
+        return Array.isArray(bag.auto) ? bag.auto : [];
+      },
+      loadDays: async function (tid, id) {
+        if (TEST && TEST.days && typeof TEST.days === 'object') {
+          const out = {};
+          Object.keys(TEST.days).forEach(function (d) {
+            if (!isDayId(d)) return;
+            const raw = TEST.days[d];
+            const e = window.__aqBind.blank();
+            if (raw.ds) Object.assign(e.ds, raw.ds);
+            if (raw.rf) Object.assign(e.rf, raw.rf);
+            e.prem = +raw.prem || 0; e.comm = +raw.comm || 0; e.sa = +raw.sa || 0;
+            e.names = raw.names || { ds: {}, rf: {} };
+            e.fl = raw.fl || { ds: {}, rf: {} };
+            out[d] = window.__aqBind.norm(e);
+          });
+          return out;
+        }
+        const bag = readBag(tid, id);
+        const out = {};
+        Object.keys(bag.days || {}).forEach(function (d) {
+          if (!isDayId(d)) return;
+          const raw = bag.days[d];
+          const e = window.__aqBind.blank();
+          if (raw.ds) Object.assign(e.ds, raw.ds);
+          if (raw.rf) Object.assign(e.rf, raw.rf);
+          e.prem = +raw.prem || 0;
+          e.comm = +raw.comm || 0;
+          e.sa = +raw.sa || 0;
+          e.names = raw.names || { ds: {}, rf: {} };
+          e.fl = raw.fl || { ds: {}, rf: {} };
+          out[d] = window.__aqBind.norm(e);
+        });
+        return out;
+      },
+      writeDays: async function (tid, id, puts, dels) {
+        refuseGlobal('actionquest/' + tid + '/users/' + id + '/days');
+        const bag = readBag(tid, id);
+        bag.days = bag.days || {};
+        puts.forEach(function (p) {
+          if (!isDayId(p.date)) return;
+          const e = JSON.parse(JSON.stringify(p.entry));
+          window.__aqBind.norm(e);
+          const data = {
+            date: p.date,
+            uid: id,
+            teamId: tid,
+            ds: e.ds,
+            rf: e.rf,
+            prem: +e.prem || 0,
+            comm: +e.comm || 0,
+            sa: +e.sa || 0,
+            names: e.names,
+            fl: e.fl,
+            updatedAt: Date.now(),
+            updatedBy: email
+          };
+          assertNoNested(data, false);
+          bag.days[p.date] = data;
+        });
+        (dels || []).forEach(function (d) { delete bag.days[d]; });
+        writeBag(tid, id, bag);
+      },
+      loadGoals: async function (tid) {
+        try { return JSON.parse(sessionStorage.getItem(key(tid, 'goals')) || 'null'); }
+        catch (e) { return null; }
+      },
+      saveGoals: async function (tid, g, by) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以寫入團隊目標');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        refuseGlobal('actionquest/' + tid + '/meta/goals');
+        const data = {
+          months: (g && g.months) || {},
+          updatedAt: Date.now(),
+          updatedBy: by || email
+        };
+        assertNoNested(data, false);
+        sessionStorage.setItem(key(tid, 'goals'), JSON.stringify(data));
+      },
+      dump: function (tid, id) {
+        let team = null;
+        let board = null;
+        try { team = JSON.parse(sessionStorage.getItem('aqmock:team:' + tid) || 'null'); } catch (e) { team = null; }
+        try { board = JSON.parse(sessionStorage.getItem('aqmock:board:' + tid) || 'null'); } catch (e) { board = null; }
+        return {
+          user: readBag(tid, id).user,
+          days: readBag(tid, id).days,
+          goals: JSON.parse(sessionStorage.getItem(key(tid, 'goals')) || 'null'),
+          auto: readBag(tid, id).auto || [],
+          team: team,
+          board: board || {},
+          boardReads: boardReads,
+          crm: JSON.parse(sessionStorage.getItem('aqmock:crm:' + tid) || 'null'),
+          crmWrites: crmWrites.n
+        };
+      },
+      loadTeam: async function (tid) {
+        if (TEST && TEST.denyTeam) throw denyErr();
+        const k = 'aqmock:team:' + tid;
+        let cur = null;
+        try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
+        if (!cur && TEST && TEST.team) {
+          cur = JSON.parse(JSON.stringify(TEST.team));
+          sessionStorage.setItem(k, JSON.stringify(cur));
+        }
+        return cur;
+      },
+      saveTeam: async function (tid, data) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以設定成員');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        if (TEST && TEST.denyTeam) throw denyErr();
+        refuseGlobal('actionquest/' + tid + '/meta/team');
+        const clean = sanitizeTeam(data, email);
+        assertNoNested(clean, false);
+        sessionStorage.setItem('aqmock:team:' + tid, JSON.stringify(clean));
+        return clean;
+      },
+      loadBoard: async function (tid) {
+        boardReads += 1;
+        if (TEST && TEST.denyTeam) throw denyErr();
+        let teamNow = null;
+        try { teamNow = JSON.parse(sessionStorage.getItem('aqmock:team:' + tid) || 'null'); } catch (e) { teamNow = null; }
+        if (!emailListed(teamNow, email)) throw denyErr();
+        if (TEST && TEST.denyBoard) throw denyErr();
+        const k = 'aqmock:board:' + tid;
+        let cur = null;
+        try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
+        if (!cur && TEST && Array.isArray(TEST.board)) {
+          cur = {};
+          TEST.board.forEach(function (b) { if (b && b.uid) cur[b.uid] = JSON.parse(JSON.stringify(b)); });
+          sessionStorage.setItem(k, JSON.stringify(cur));
+        }
+        cur = cur || {};
+        return Object.keys(cur).map(function (id) { return cur[id]; });
+      },
+      saveBoard: async function (tid, id, data) {
+        if (TEST && TEST.denyTeam) throw denyErr();
+        const clean = sanitizeBoard(data);
+        if (clean.uid !== id || clean.teamId !== tid || clean.email !== email || !memberOf(teamDoc, email)) throw denyErr();
+        refuseGlobal('actionquest/' + tid + '/board/' + id);
+        assertNoNested(clean, false);
+        const k = 'aqmock:board:' + tid;
+        let cur = {};
+        try { cur = JSON.parse(sessionStorage.getItem(k) || '{}') || {}; } catch (e) { cur = {}; }
+        cur[id] = clean;
+        sessionStorage.setItem(k, JSON.stringify(cur));
+        return clean;
+      },
+      loadCrm: async function (tid) {
+        const k = 'aqmock:crm:' + tid;
+        let cur = null;
+        try { cur = JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { cur = null; }
+        if (!cur && TEST && TEST.crm) {
+          cur = JSON.parse(JSON.stringify(TEST.crm));
+          sessionStorage.setItem(k, JSON.stringify(cur));
+        }
+        return cur || { _rev: 0, cust: [] };
+      },
+      patchCrm: async function (tid, custId, ops) {
+        const k = 'aqmock:crm:' + tid;
+        const state = JSON.parse(sessionStorage.getItem(k) || 'null') || { _rev: 0, cust: [] };
+        const result = window.CrmLink.patchState(state, custId, ops);
+        if (!result.ok) {
+          const err = new Error('找不到這位客戶，沒有寫入。請重新從 CRM 挑選。');
+          err.code = 'not-found';
+          throw err;
+        }
+        sessionStorage.setItem(k, JSON.stringify(result.data));
+        crmWrites.n += 1;
+        window.__aqCustomers = result.data.cust || [];
+        return result.data;
+      },
+      createAuto: async function (tid, id, ev) {
+        const bag = readBag(tid, id);
+        bag.auto = Array.isArray(bag.auto) ? bag.auto : [];
+        const dup = bag.auto.some(function (e) {
+          return e && (e.id === ev.id || (e.custId === ev.custId && e.action === ev.action && e.date === ev.date));
+        });
+        if (dup) return false;
+        const row = {
+          id: ev.id, uid: id, teamId: tid, email: ev.email || email,
+          custId: ev.custId, histId: ev.histId || '', action: ev.action, date: ev.date,
+          round: ev.round || 1, side: ev.side === 'rf' ? 'rf' : 'ds',
+          name: ev.name || '', leadId: ev.leadId || '', createdAt: Date.now()
+        };
+        bag.auto.push(row);
+        writeBag(tid, id, bag);
+        return true;
+      }
+    };
+  }
+
+  async function firebaseStore() {
+    const appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+    const authMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+    const fs = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBBvyKFhQOcgndQclbpnPv1npF2wpxudfU',
+      authDomain: 'fish-teem.firebaseapp.com',
+      projectId: 'fish-teem',
+      storageBucket: 'fish-teem.firebasestorage.app',
+      messagingSenderId: '318120498514',
+      appId: '1:318120498514:web:b0766e54e4749f4dea968b',
+      measurementId: 'G-GCTNYLTS5M'
+    };
+    const app = appMod.initializeApp(firebaseConfig);
+    const auth = authMod.getAuth(app);
+    const db = fs.getFirestore(app);
+    await authMod.setPersistence(auth, authMod.browserLocalPersistence).catch(function () {});
+    authApi = {
+      signIn: function (em, pw) { return authMod.signInWithEmailAndPassword(auth, em, pw); },
+      signOut: function () { return authMod.signOut(auth); },
+      current: function () { return auth.currentUser; }
+    };
+    const user = await new Promise(function (resolve) {
+      const unsub = authMod.onAuthStateChanged(auth, function (u) { unsub(); resolve(u); });
+    });
+    if (user && !user.isAnonymous && user.email) {
+      email = String(user.email).toLowerCase();
+      uid = user.uid;
+    }
+    function userRef(tid, id) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id);
+    }
+    function dayRef(tid, id, day) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'days', day);
+    }
+    function goalsRef(tid) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'meta', 'goals');
+    }
+    function teamRef(tid) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'meta', 'team');
+    }
+    function boardRef(tid, id) {
+      return fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'board', id);
+    }
+    return {
+      loadUser: async function (tid, id) {
+        const snap = await fs.getDoc(userRef(tid, id));
+        return snap.exists() ? snap.data() : null;
+      },
+      saveUser: async function (tid, id, data) {
+        refuseGlobal(userRef(tid, id).path);
+        assertNoNested(data, false);
+        await fs.setDoc(userRef(tid, id), data);
+      },
+      loadAuto: async function (tid, id) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'auto');
+        const snap = await fs.getDocs(col);
+        const out = [];
+        snap.forEach(function (d) { const x = d.data() || {}; if (!x.id) x.id = d.id; out.push(x); });
+        return out;
+      },
+      loadDays: async function (tid, id) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'days');
+        const snap = await fs.getDocs(col);
+        const out = {};
+        snap.forEach(function (d) {
+          if (!isDayId(d.id)) return;
+          const raw = d.data() || {};
+          const e = window.__aqBind.blank();
+          if (raw.ds) Object.assign(e.ds, raw.ds);
+          if (raw.rf) Object.assign(e.rf, raw.rf);
+          e.prem = +raw.prem || 0;
+          e.comm = +raw.comm || 0;
+          e.sa = +raw.sa || 0;
+          e.names = raw.names || { ds: {}, rf: {} };
+          e.fl = raw.fl || { ds: {}, rf: {} };
+          out[d.id] = window.__aqBind.norm(e);
+        });
+        return out;
+      },
+      writeDays: async function (tid, id, puts, dels) {
+        const ops = [];
+        puts.forEach(function (p) {
+          if (!isDayId(p.date)) return;
+          const e = JSON.parse(JSON.stringify(p.entry));
+          window.__aqBind.norm(e);
+          const data = {
+            date: p.date,
+            uid: id,
+            teamId: tid,
+            ds: e.ds,
+            rf: e.rf,
+            prem: +e.prem || 0,
+            comm: +e.comm || 0,
+            sa: +e.sa || 0,
+            names: e.names,
+            fl: e.fl,
+            updatedAt: Date.now(),
+            updatedBy: email
+          };
+          assertNoNested(data, false);
+          ops.push({ type: 'set', ref: dayRef(tid, id, p.date), data: data });
+        });
+        (dels || []).forEach(function (d) {
+          if (!isDayId(d)) return;
+          ops.push({ type: 'del', ref: dayRef(tid, id, d) });
+        });
+        for (let i = 0; i < ops.length; i += 400) {
+          const chunk = ops.slice(i, i + 400);
+          const batch = fs.writeBatch(db);
+          chunk.forEach(function (op) {
+            refuseGlobal(op.ref.path);
+            if (op.type === 'del') batch.delete(op.ref);
+            else batch.set(op.ref, op.data);
+          });
+          await batch.commit();
+        }
+      },
+      loadGoals: async function (tid) {
+        const snap = await fs.getDoc(goalsRef(tid));
+        return snap.exists() ? snap.data() : null;
+      },
+      saveGoals: async function (tid, g, by) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以寫入團隊目標');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        const data = {
+          months: (g && g.months) || {},
+          updatedAt: Date.now(),
+          updatedBy: by || email
+        };
+        assertNoNested(data, false);
+        const ref = goalsRef(tid);
+        refuseGlobal(ref.path);
+        await fs.setDoc(ref, data);
+      },
+      loadTeam: async function (tid) {
+        const snap = await fs.getDoc(teamRef(tid));
+        return snap.exists() ? snap.data() : null;
+      },
+      saveTeam: async function (tid, data) {
+        if (email !== OWNER_EMAIL) {
+          const err = new Error('只有擁有者可以設定成員');
+          err.code = 'permission-denied';
+          throw err;
+        }
+        const clean = sanitizeTeam(data, email);
+        assertNoNested(clean, false);
+        const ref = teamRef(tid);
+        refuseGlobal(ref.path);
+        await fs.setDoc(ref, clean);
+        return clean;
+      },
+      loadBoard: async function (tid) {
+        const col = fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'board');
+        const snap = await fs.getDocs(col);
+        const out = [];
+        snap.forEach(function (d) { const x = d.data() || {}; if (!x.uid) x.uid = d.id; out.push(x); });
+        return out;
+      },
+      saveBoard: async function (tid, id, data) {
+        const clean = sanitizeBoard(data);
+        if (clean.uid !== id || clean.teamId !== tid || clean.email !== email || !memberOf(teamDoc, email)) throw denyErr();
+        const ref = boardRef(tid, id);
+        refuseGlobal(ref.path);
+        assertNoNested(clean, false);
+        await fs.setDoc(ref, clean);
+        return clean;
+      },
+      loadCrm: async function (tid) {
+        const ref = fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid);
+        const snap = await fs.getDoc(ref);
+        return snap.exists() ? snap.data() : { _rev: 0, cust: [] };
+      },
+      patchCrm: async function (tid, custId, ops) {
+        const ref = fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid);
+        let missing = false;
+        let written = null;
+        await fs.runTransaction(db, async function (tx) {
+          const snap = await tx.get(ref);
+          const state = snap.exists() ? snap.data() : { _rev: 0, cust: [] };
+          const result = window.CrmLink.patchState(state, custId, ops);
+          if (!result.ok) { missing = true; return; }
+          written = result.data;
+          tx.set(ref, result.data);
+        });
+        if (missing || !written) {
+          const err = new Error('找不到這位客戶，沒有寫入。請重新從 CRM 挑選。');
+          err.code = 'not-found';
+          throw err;
+        }
+        window.__aqCustomers = written.cust || [];
+        return written;
+      },
+      createAuto: async function (tid, id, ev) {
+        const eid = String(ev.id || '').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180);
+        if (!eid) return false;
+        const ref = fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', tid, 'users', id, 'auto', eid);
+        let created = false;
+        await fs.runTransaction(db, async function (tx) {
+          const snap = await tx.get(ref);
+          if (snap.exists()) return;
+          created = true;
+          tx.set(ref, {
+            uid: id, teamId: tid, email: (ev.email || email || '').toLowerCase(),
+            custId: ev.custId, histId: ev.histId || '', action: ev.action, date: ev.date,
+            round: ev.round || 1, side: ev.side === 'rf' ? 'rf' : 'ds',
+            name: ev.name || '', leadId: ev.leadId || '', createdAt: Date.now()
+          });
+        });
+        return created;
+      }
+    };
+  }
+
+  wire();
+  (async function boot() {
+    try {
+      if (TEST) {
+        store = sessionStore();
+        if (TEST.user && TEST.user.email) {
+          email = String(TEST.user.email).toLowerCase();
+          uid = String(TEST.user.uid || ('uid-' + email.replace(/[^a-z0-9]+/g, '-').slice(0, 40)));
+        }
+        if (TEST.teamId) writeTeam(String(TEST.teamId).toUpperCase());
+        if (!email) { showLogin(false); return; }
+        await openApp();
+      } else {
+        gate('wait', '正在確認登入狀態', '與 CRM 使用同一個 Firebase 帳號。');
+        store = await firebaseStore();
+        await openApp();
+      }
+    } catch (err) {
+      console.error(err);
+      gate('deny', '無法啟動', esc((err && err.message) || err));
+    }
+  })();
+})();
+/*
+Firestore 規則（請貼到 Firebase 主控台既有的 match /databases/{database}/documents 裡面，
+不要覆蓋其他路徑，也不要由這個專案部署）。
+signedIn() 請改成「global_state 已經在用的那一份白名單檢查」。
+若目前沒有這個函式名稱，就把 global_state 那段的條件原樣貼上來取代 signedIn()。
+沒有這段時，新路徑會被預設拒絕。
+
+match /artifacts/youtrend-crm/public/data/actionquest/{teamId} {
+  allow read, write: if false;
+
+  match /users/{userId} {
+    allow read: if signedIn() && request.auth.uid == userId;
+    allow create, update: if signedIn()
+      && request.auth.uid == userId
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.teamId == teamId;
+    allow delete: if signedIn() && request.auth.uid == userId;
+
+    match /days/{dayId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create, update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.teamId == teamId
+        && request.resource.data.date == dayId
+        && dayId.matches('^\\d{4}-\\d{2}-\\d{2}$');
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /auto/{eventId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.teamId == teamId
+        && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && eventId.matches('^[A-Za-z0-9_\\-]{1,200}$');
+      allow update, delete: if false;
+    }
+  }
+
+  match /meta/goals {
+    allow read: if signedIn();
+    allow create, update, delete: if signedIn()
+      && request.auth.token.email.lower() == 'shanewangmusic@gmail.com';
+  }
+
+  match /meta/team {
+    allow read: if signedIn();
+    allow create, update: if signedIn()
+      && request.auth.token.email.lower() == 'shanewangmusic@gmail.com';
+    allow delete: if false;
+  }
+
+  match /board/{userId} {
+    allow read: if signedIn()
+      && request.auth.token.email.lower() in get(/databases/$(database)/documents/artifacts/youtrend-crm/public/data/actionquest/$(teamId)/meta/team).data.emails;
+    allow create, update: if signedIn()
+      && request.auth.uid == userId
+      && request.auth.token.email.lower() in get(/databases/$(database)/documents/artifacts/youtrend-crm/public/data/actionquest/$(teamId)/meta/team).data.emails
+      && request.resource.data.uid == request.auth.uid
+      && request.resource.data.teamId == teamId
+      && request.resource.data.email == request.auth.token.email.lower()
+      && request.resource.data.keys().hasOnly(['uid', 'teamId', 'email', 'displayName', 'agentName', 'months', 'updatedAt']);
+    allow delete: if false;
+  }
+}
+*/
+</script>
+
+</body></html>
