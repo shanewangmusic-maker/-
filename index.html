@@ -41,13 +41,13 @@
         .at-chip.at-personal .at-visit { border-color: #fff !important; }
         .at-chip.at-personal .at-cat-pers { box-shadow: inset 0 0 0 1px rgba(255,255,255,.75); }
         .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
-/* 有結束時間的行程：同一色塊接過每一個被覆蓋的小時列（含 12:00、17:00 粗線） */
-#atTimeGrid .at-hourcell:has(> .at-span-go) { padding-bottom: 0; }
-#atTimeGrid .at-hourcell:has(> .at-span-more) { padding-top: 0; }
-#atTimeGrid .at-chip.at-span-go { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; margin-bottom: 0; }
-#atTimeGrid .at-chip.at-span-more { border-top-left-radius: 0; border-top-right-radius: 0; border-top-color: transparent; margin-top: -1px; position: relative; z-index: 2; box-shadow: none; }
-#atTimeGrid .at-hourcell.at-thick > .at-chip.at-span-more { margin-top: -3px; }
-#atTimeGrid .at-chip.at-span-more.at-span-go { border-radius: 0; }
+        /* 桌面時間格：固定列高，行程是對齊開始／結束的連續色塊（淺色底＋左側色條，不是實心填滿） */
+        #atTimeGrid .at-hourlabel, #atTimeGrid .at-hourcell { box-sizing: border-box; height: 48px; }
+        #atTimeGrid .at-daycol { position: relative; min-width: 0; }
+        #atTimeGrid .at-hourcell { position: relative; padding: 0; }
+        #atTimeGrid .at-hourplus { position: absolute; left: 0; right: 0; bottom: 2px; pointer-events: none; }
+        #atTimeGrid .at-block { position: absolute; z-index: 3; overflow: hidden; box-sizing: border-box; padding: 1px 6px; }
+        #atTimeGrid .at-block.at-fit-tight .at-badges, #atTimeGrid .at-block.at-fit-tiny .at-badges, #atTimeGrid .at-block.at-fit-tiny .at-time { display: none; }
         /* v19：搜尋框改為 type="search"（減少瀏覽器自動填入），隱藏 Chrome 內建清除鈕，外觀維持 v18 */
         #searchInput::-webkit-search-cancel-button, #atAddSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
         a.fintrack-open, a.fintrack-open:hover { text-decoration: none; }
@@ -1052,6 +1052,10 @@
                 </div>
                 <div class="p-4 sm:p-5 overflow-y-auto space-y-3 text-sm">
                     <div id="atEdWho" class="flex items-center gap-2 flex-wrap min-w-0"></div>
+                    <div id="atEdTitleWrap" class="hidden">
+                        <label for="atEdEvtTitle" class="block text-[11px] font-bold text-slate-500 mb-1">標題</label>
+                        <input autocomplete="off" id="atEdEvtTitle" maxlength="200" placeholder="例如：夕會" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                    </div>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atEdDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div id="atEdMore" class="contents">
@@ -1089,6 +1093,10 @@
                         <div id="atAddList" role="listbox" class="mt-1 border border-slate-200 rounded-lg max-h-40 overflow-y-auto bg-white"></div>
                         <p id="atAddPicked" class="text-xs mt-1"></p>
                     </div>
+                    <div id="atAddTitleWrap" class="hidden">
+                        <label for="atAddTitle" class="block text-[11px] font-bold text-slate-500 mb-1">標題</label>
+                        <input autocomplete="off" id="atAddTitle" maxlength="200" placeholder="例如：夕會" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                    </div>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
@@ -1097,7 +1105,7 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="初訪">初訪</option><option value="關鍵訪">關鍵訪</option><option value="定期檢視">定期檢視</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
-                        <div class="col-span-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atAddContent" rows="4" placeholder="內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea></div>
+                        <div class="col-span-2"><label id="atAddLblContent" class="block text-[11px] font-bold text-slate-500 mb-1">內容</label><textarea autocomplete="off" id="atAddContent" rows="4" placeholder="內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea></div>
                     </div>
                 </div>
                 <div class="px-4 sm:px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0">
@@ -5438,17 +5446,51 @@
         const AT_H0 = 8, AT_H1 = 23;     // 時間格：08:00 ~ 23:00（每小時一列）
         function atValidTime(v) { const m = /^(\d{1,2}):(\d{2})/.exec(String(v == null ? '' : v).trim()); if (!m) return ''; const h = +m[1], mi = +m[2]; if (h > 23 || mi > 59) return ''; return atPad(h) + ':' + atPad(mi); }
         function atHourOf(t) { return Math.min(AT_H1, Math.max(AT_H0, +String(t).substring(0, 2))); }
-function atMins(t) { const v = atValidTime(t); if (!v) return -1; return (+v.substring(0, 2)) * 60 + (+v.substring(3)); }
-function atHourHit(ev, hr) {
-    if (!ev || !ev.time) return false;
-    const st = atMins(ev.time); if (st < 0) return false;
-    const en = atMins(ev.endTime);
-    if (en < 0 || en <= st) return atHourOf(ev.time) === hr;
-    return st < (hr + 1) * 60 && en > hr * 60;
-}
-function atHourCont(ev, hr) { return hr > AT_H0 && atHourHit(ev, hr) && atHourHit(ev, hr - 1); }
-function atHourNext(ev, hr) { return hr < AT_H1 && atHourHit(ev, hr) && atHourHit(ev, hr + 1); }
-function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').replace(/\s+/g, ' ').trim(); return n || '行程'; }
+        function atMins(t) { const v = atValidTime(t); if (!v) return -1; return (+v.substring(0, 2)) * 60 + (+v.substring(3)); }
+        function atPlanTitle(r) { return String(r && r.title != null ? r.title : '').replace(/\s+/g, ' ').trim(); }
+        function atPlanLabel(r) {
+            const t = atPlanTitle(r); if (t) return t;
+            const line = String(r && r.content != null ? r.content : '').replace(/\r\n?/g, '\n').split('\n').map(function (s) { return s.trim(); }).filter(Boolean)[0] || '';
+            return line || '(未命名)';
+        }
+        const AT_RH = 48;
+        function atTimedRange(ev) {
+            const s = atMins(ev && ev.time); if (s < 0) return null;
+            let e = atMins(ev.endTime);
+            if (!(e > s)) e = (Math.floor(s / 60) + 1) * 60;
+            return { s: s, e: e };
+        }
+        function atPlaceTimed(list) {
+            const g0 = AT_H0 * 60, g1 = (AT_H1 + 1) * 60, items = [];
+            (list || []).forEach(function (ev) {
+                const r = atTimedRange(ev);
+                if (!r || r.e <= g0 || r.s >= g1) return;
+                items.push({ ev: ev, s: r.s, e: r.e, col: 0, cols: 1 });
+            });
+            items.sort(function (a, b) { return a.s - b.s || a.e - b.e; });
+            const groups = [];
+            items.forEach(function (it) {
+                const g = groups.length ? groups[groups.length - 1] : null;
+                if (!g || it.s >= g.end) groups.push({ items: [it], end: it.e });
+                else { g.items.push(it); if (it.e > g.end) g.end = it.e; }
+            });
+            groups.forEach(function (g) {
+                const ends = [];
+                g.items.forEach(function (it) {
+                    let c = 0;
+                    while (c < ends.length && ends[c] > it.s) c++;
+                    it.col = c; ends[c] = it.e;
+                });
+                const n = ends.length || 1;
+                g.items.forEach(function (it) { it.cols = n; });
+            });
+            return items;
+        }
+        function atBlockBox(it) {
+            const g0 = AT_H0 * 60, g1 = (AT_H1 + 1) * 60;
+            const s = Math.max(it.s, g0), e = Math.min(it.e, g1);
+            return { top: (s - g0) / 60 * AT_RH, height: Math.max(0, (e - s) / 60 * AT_RH) };
+        }
         function atRecOf(c, src, idx) {
             if (!c) return null;
             if (src === 'n') return leadValidDate(c.nextContactDate) ? { date: c.nextContactDate } : null;
@@ -5471,7 +5513,12 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
                 (isNext ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>' : '');
             $('atEdTitle').textContent = isNext ? '調整下次聯絡日' : (isLead ? '編輯聯絡紀錄' : '編輯跟進紀錄');
             const isEvt = src === 'e';
-            $('atEdMethodWrap').classList.toggle('hidden', isEvt); $('atEdLblContent').textContent = isEvt ? '標題' : '內容';
+            $('atEdMethodWrap').classList.toggle('hidden', isEvt);
+            $('atEdTitleWrap').classList.toggle('hidden', !isEvt);
+            $('atEdLblContent').textContent = isEvt ? '備注' : '內容';
+            $('atEdContent').rows = isEvt ? 7 : 4;
+            $('atEdContent').placeholder = isEvt ? '備注…（按 Enter 換行）' : '內容…（按 Enter 換行）';
+            if ($('atEdEvtTitle')) $('atEdEvtTitle').value = isEvt ? (r.title || '') : '';
             if (isEvt) { $('atEdWho').innerHTML = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">個人行程</span>' + (r.src === 'photo' ? '<span class="text-[10px] text-slate-400">由手寫週計畫匯入</span>' : ''); $('atEdTitle').textContent = '編輯行程'; }
             $('atEdDate').value = leadValidDate(r.date);
             $('atEdMore').classList.toggle('hidden', isNext);
@@ -5497,7 +5544,13 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             if (!atParse(date)) return showToast('請選擇日期', 'error');
             if (ref.src === 'n') nxtSet(c, date);
             else {
-                if (ref.src === 'e' && !$('atEdContent').value.trim()) return showToast('請輸入標題', 'error');
+                if (ref.src === 'e') {
+                    const title = atPlanTitle({ title: $('atEdEvtTitle').value });
+                    const note = normHistText($('atEdContent').value);
+                    if (!title && !note) return showToast('請輸入標題', 'error');
+                    if (title) r.title = title; else delete r.title;
+                    r.content = note;
+                }
                 r.date = date;
                 const t = atValidTime($('atEdTime').value); if (t) r.time = t; else delete r.time;
                 const et = atValidTime($('atEdEndTime').value); if (t && et && et > t) r.endTime = et; else delete r.endTime;
@@ -5505,7 +5558,7 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
                 const vi = $('atEdVisit').value; if (AT_VISITS.indexOf(vi) >= 0) r.visitType = vi; else delete r.visitType;
                 if (ref.src !== 'e') { const m = $('atEdMethod').value; if (m) r.method = m; else delete r.method; }
                 const end = $('atEdEnd').value; if (atParse(end) && end > date) r.endDate = end; else delete r.endDate;
-                const ct = normHistText($('atEdContent').value); if (ct !== normHistText(r.content)) r.content = ct;
+                if (ref.src !== 'e') { const ct = normHistText($('atEdContent').value); if (ct !== normHistText(r.content)) r.content = ct; }
             }
             closeModal('atEditModal'); atEditRef = null; atSaved('已儲存修改');
         }
@@ -5544,11 +5597,19 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
                     (c.agentName ? '<span class="text-[10px] text-indigo-600 flex-shrink-0">' + esc(c.agentName) + '</span>' : '') +
                     (c.company ? '<span class="text-[10px] text-slate-400 truncate">' + esc(c.company) + '</span>' : '') + '</button>';
             }).join('') + (total > 40 ? '<p class="text-[11px] text-slate-400 px-2.5 py-1">還有 ' + (total - 40) + ' 位，請輸入更多關鍵字</p>' : '') : '<p class="text-xs text-slate-400 px-2.5 py-3">找不到符合的客戶／名單</p>';
-            document.getElementById('atAddList').insertAdjacentHTML('afterbegin', '<button type="button" role="option" class="at-add-evt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-50 border-b border-slate-100 text-sm' + (atAddPick === '__evt__' ? ' bg-blue-50' : '') + '" data-id="__evt__" onclick="atAddPickPerson(this.dataset.id)"><span class="font-bold text-[#1E2E3D]">＋ 個人行程</span><span class="text-[10px] text-slate-400">（不綁客戶，例如公事、夥伴聚會、個人時間；標題寫在「內容」）</span></button>');
+            document.getElementById('atAddList').insertAdjacentHTML('afterbegin', '<button type="button" role="option" class="at-add-evt w-full text-left px-2.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-50 border-b border-slate-100 text-sm' + (atAddPick === '__evt__' ? ' bg-blue-50' : '') + '" data-id="__evt__" onclick="atAddPickPerson(this.dataset.id)"><span class="font-bold text-[#1E2E3D]">＋ 個人行程</span><span class="text-[10px] text-slate-400">（不綁客戶，例如公事、夥伴聚會、個人時間）</span></button>');
+            atAddSyncEvt();
             const pc = atAddPick === '__evt__' ? { name: '個人行程', progress: 'EVT' } : customers.find(function (x) { return x.id === atAddPick; });
             document.getElementById('atAddPicked').innerHTML = pc ? '已選擇：<b class="text-[#1E2E3D]">' + esc(pc.name) + '</b> ' + (pc.progress === 'EVT' ? '<span class="text-blue-700 font-bold">（個人行程 → 存成獨立行程）</span>' : '<span class="text-slate-500 font-bold">（存成聯絡／跟進紀錄）</span>') : '<span class="text-slate-400">尚未選擇（請在上方搜尋並點選）</span>';
         }
         function atAddPickPerson(id) { atAddPick = id; atAddRender(); }
+        function atAddSyncEvt() {
+            const evt = atAddPick === '__evt__';
+            const w = document.getElementById('atAddTitleWrap'); if (w) w.classList.toggle('hidden', !evt);
+            const lab = document.getElementById('atAddLblContent'); if (lab) lab.textContent = evt ? '備注' : '內容';
+            const ta = document.getElementById('atAddContent');
+            if (ta) { ta.rows = evt ? 7 : 4; ta.placeholder = evt ? '備注…（按 Enter 換行）' : '內容…（按 Enter 換行）'; }
+        }
         function atAddPickFirst() { const b = document.querySelector('#atAddList .at-add-opt'); if (b) atAddPickPerson(b.dataset.id); }
         function atOpenAdd(date, time, presetId) {
             const $ = function (n) { return document.getElementById(n); };
@@ -5557,6 +5618,7 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             $('atAddDate').value = leadValidDate(date) || atToday();
             $('atAddTime').value = atValidTime(time);
             $('atAddMethod').value = 'Line'; $('atAddCat').value = ''; $('atAddEnd').value = ''; $('atAddContent').value = '';
+            if ($('atAddTitle')) $('atAddTitle').value = '';
             if ($('atAddAct')) $('atAddAct').value = ''; if ($('atAddVisit')) $('atAddVisit').value = '';
             atAddRender();
             openModal('atAddModal');
@@ -5566,9 +5628,13 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             const $ = function (n) { return document.getElementById(n); };
             if (atAddPick === '__evt__') {
                 const edate = $('atAddDate').value; if (!atParse(edate)) return showToast('請選擇日期', 'error');
-                const econtent = normHistText($('atAddContent').value); if (!econtent) return showToast('個人行程請在「內容」輸入標題', 'error');
+                const etitle = atPlanTitle({ title: $('atAddTitle').value });
+                const econtent = normHistText($('atAddContent').value);
+                if (!etitle && !econtent) return showToast('請輸入標題', 'error');
                 const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value;
-                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, content: econtent, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
+                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
+                if (etitle) er.title = etitle;
+                if (econtent) er.content = econtent;
                 if (etime) er.time = etime; if (atParse(eend) && eend > edate) er.endDate = eend;
                 { const ecat = $('atAddCat').value; if (atCatOf({ cat: ecat })) er.cat = ecat; }
                 atEnsureUndoBase();
@@ -5637,19 +5703,28 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             let drag = null;
             const clr = function () { area.querySelectorAll('.at-drop-hl').forEach(function (x) { x.classList.remove('at-drop-hl'); }); };
             area.addEventListener('dragstart', function (e) {
-                const el = e.target.closest && e.target.closest('.at-chip[data-src]'); if (!el || el.getAttribute('draggable') === 'false' || el.classList.contains('at-span-more')) { if (el) e.preventDefault(); return; }
+                const el = e.target.closest && e.target.closest('.at-chip[data-src]'); if (!el || el.getAttribute('draggable') === 'false') { if (el) e.preventDefault(); return; }
                 drag = { cid: el.getAttribute('data-cid'), src: el.getAttribute('data-src'), idx: +el.getAttribute('data-hi') };
                 e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', JSON.stringify(drag)); } catch (x) {}
                 setTimeout(function () { el.classList.add('opacity-40'); }, 0);
             });
             area.addEventListener('dragend', function () { drag = null; clr(); area.querySelectorAll('.opacity-40').forEach(function (x) { x.classList.remove('opacity-40'); }); });
+            const dropCell = function (e) {
+                const nodes = document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : [e.target];
+                for (let i = 0; i < nodes.length; i++) {
+                    const n = nodes[i];
+                    const cell = n && n.closest && n.closest('[data-drop]');
+                    if (cell && area.contains(cell)) return cell;
+                }
+                return null;
+            };
             area.addEventListener('dragover', function (e) {
-                if (!drag) return; const cell = e.target.closest && e.target.closest('[data-drop]'); if (!cell) return;
+                if (!drag) return; const cell = dropCell(e); if (!cell) return;
                 e.preventDefault(); e.dataTransfer.dropEffect = 'move';
                 if (!cell.classList.contains('at-drop-hl')) { clr(); cell.classList.add('at-drop-hl'); }
             });
             area.addEventListener('drop', function (e) {
-                if (!drag) return; const cell = e.target.closest && e.target.closest('[data-drop]'); if (!cell) return;
+                if (!drag) return; const cell = dropCell(e); if (!cell) return;
                 e.preventDefault(); const d = drag; drag = null; clr();
                 atMove(d.cid, d.src, d.idx, cell.getAttribute('data-date'), cell.getAttribute('data-hour'));
             });
@@ -5839,7 +5914,7 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
         function atEvtColor(cat) { return cat ? AT_CATS[cat] : '#64748B'; }
         function atSetCat(k) { atCat = AT_CATS[k] ? k : 'ALL'; renderAirtableCalendar(); }
         function atPlanRaw() { return (annualGoals && Array.isArray(annualGoals.planEvents)) ? annualGoals.planEvents : null; }
-        function atEvtPseudo(r) { return { id: r.id, name: String(r.content || '(未命名)'), agentName: String(r.agent || ''), progress: '', company: '', phone: '', isEvt: true }; }
+        function atEvtPseudo(r) { return { id: r.id, name: atPlanLabel(r), agentName: String(r.agent || ''), progress: '', company: '', phone: '', isEvt: true }; }
         // 依 (客戶/行程 id, 來源, 位置) 找到紀錄：src = h / c / n（客戶底下）或 e（獨立行程）
         function atResolve(cid, src, idx) {
             if (src === 'e') {
@@ -6010,7 +6085,7 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
         function atPhExists(date, time, title) {
             const tt = String(title || '').trim(); if (!tt || !atParse(date)) return false;
             const t = atValidTime(time);
-            const same = function (r) { return r && leadValidDate(r.date) === date && atValidTime(r.time) === t && String(r.content || '').trim() === tt; };
+            const same = function (r) { return r && leadValidDate(r.date) === date && atValidTime(r.time) === t && (String(r.content || '').trim() === tt || String(r.title || '').trim() === tt); };
             if (customers.some(function (c) { return (Array.isArray(c.history) && c.history.some(same)) || (Array.isArray(c.contacts) && c.contacts.some(same)); })) return true;
             const L = atPlanRaw(); return !!(L && L.some(same));
         }
@@ -6206,15 +6281,15 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             let seq = Date.now(); const nid = function (p) { let id; do { id = p + (seq++); } while (usedIds.has(id)); usedIds.add(id); return id; };
             let nLinked = 0, nSolo = 0, minDate = '';
             rows.forEach(function (r) {
-                const rec = { date: r.date, content: r.title };
+                const rec = { date: r.date };
                 if (r.start) { rec.time = r.start; if (r.end) rec.endTime = r.end; }
                 if (r.cat) rec.cat = r.cat; if (r.visit) rec.visitType = r.visit;
                 rec.by = me; rec.src = 'photo'; aqStamp(rec);
                 const c0 = r.link ? customers.find(function (x) { return x.id === r.link; }) : null;
                 const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;
-                if (c && c.progress === 'LEAD') { rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
-                else if (c) { rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); aqEmit(c, rec, { changed: false }); nLinked++; }
-                else { rec.id = 'pe-' + nid(''); rec.agent = agent; rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
+                if (c && c.progress === 'LEAD') { rec.content = r.title; rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
+                else if (c) { rec.content = r.title; rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); aqEmit(c, rec, { changed: false }); nLinked++; }
+                else { rec.title = r.title; rec.id = 'pe-' + nid(''); rec.agent = agent; rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
                 if (!minDate || r.date < minDate) minDate = r.date;
             });
             let nLoc = 0;
@@ -6235,14 +6310,16 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
             const rs = atResolve(el.getAttribute('data-cid'), 'e', -1); if (!rs) return;
             const h = rs.r, end = (h.endDate && h.endDate > h.date) ? h.endDate : '', t = atValidTime(h.time);
             document.getElementById('airtableDetailTitle').innerHTML = '<i class="fa-regular fa-calendar-check text-[#D4AF37]"></i> 個人行程';
+            const shownTitle = atPlanTitle(h) || atPlanLabel(h);
             document.getElementById('airtableDetailBody').innerHTML =
-                '<div class="flex items-center justify-between gap-2"><p class="hist-text text-lg font-bold font-editorial text-[#1E2E3D] break-words min-w-0">' + esc(h.content || '') + '</p><span class="flex items-center gap-1">' + atCatPills(h) + '</span></div>' +
+                '<div class="flex items-center justify-between gap-2"><p class="hist-text text-lg font-bold font-editorial text-[#1E2E3D] break-words min-w-0">' + esc(shownTitle) + '</p><span class="flex items-center gap-1">' + atCatPills(h) + '</span></div>' +
                 '<div class="grid grid-cols-2 gap-2 text-xs text-slate-500">' +
+                    '<div class="col-span-2"><span class="font-bold">標題：</span>' + esc(shownTitle) + (atPlanTitle(h) ? '' : ' <span class="text-slate-400">（沿用備注第一行）</span>') + '</div>' +
                     '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
                     (t ? '<div><span class="font-bold">時間：</span>' + esc(t + (atValidTime(h.endTime) ? '–' + atValidTime(h.endTime) : '')) + '</div>' : '') +
                     '<div><span class="font-bold">負責業務：</span>' + (h.agent ? esc(h.agent) : '個人') + '</div>' +
                     (h.by ? '<div><span class="font-bold">建立者：</span>' + esc(h.by) + '</div>' : '') +
-                '</div><div id="atDetailContent" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-500 text-xs">這是不屬於任何客戶的獨立行程' + (h.src === 'photo' ? '（由手寫週計畫匯入）' : '') + '。</div>';
+                '</div><div id="atDetailContent" class="hist-text bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 break-words"><div class="text-[11px] font-bold text-slate-500 mb-1">備注</div>' + (String(h.content || '').trim() ? esc(h.content) : '<span class="text-slate-400">（無）</span>') + '<p class="mt-2 text-slate-400 text-xs">這是不屬於任何客戶的獨立行程' + (h.src === 'photo' ? '（由手寫週計畫匯入）' : '') + '。</p></div>';
             const ebtn = document.getElementById('airtableDetailEditBtn');
             ebtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 編輯';
             ebtn.onclick = function () { closeModal('airtableDetailModal'); atOpenEdit(h.id, 'e', -1); };
@@ -6330,7 +6407,7 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
                     let end = leadValidDate(pe.endDate); if (!end || end < ds) end = ds;
                     const pc = atEvtPseudo(pe);
                     if (!matchAgentFilter(pc, fAgent)) return;
-                    if (!hit(pc, '', pe.content)) return;
+                    if (!hit(pc, '', (pe.title ? pe.title + '\n' : '') + (pe.content || ''))) return;
                     if (atCat !== 'ALL' && atCatOf(pe) !== atCat) return;
                     const ts = /^pe-(\d+)/.exec(pe.id || '');
                     out.push({ c: pc, h: pe, idx: -1, start: ds, end: end, method: '', ts: ts ? +ts[1] : 0, pk: '', src: 'e', time: atValidTime(pe.time), endTime: atValidTime(pe.time) ? atValidTime(pe.endTime) : '', cat: atCatOf(pe), xcat: atCatOf(pe) });
@@ -6357,12 +6434,21 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
         function atChipAttrs(ev, drag) {
             return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-time="' + esc(ev.time || '') + '" draggable="' + (drag === false ? 'false' : 'true') + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
         }
-        function atSpanMoreHtml(ev, go) {
+        function atBlockHtml(it) {
+            const ev = it.ev, box = atBlockBox(it);
+            if (!(box.height > 0)) return '';
             const isEvt = ev.src === 'e';
-            const color = isEvt ? atEvtColor(ev.cat) : ((ev.cat && AT_CATS[ev.cat]) || AT_METHODS[ev.method] || '#64748B');
-            const skin = ev.cat === '個人' ? 'at-personal border border-slate-900' : 'bg-white border border-slate-200';
-            return '<button type="button" class="at-chip at-span-more' + (go ? ' at-span-go' : '') + ' at-chip-' + (isEvt ? 'evt' : 'rec') + ' block w-full text-left px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px solid ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev, false) + '>' +
-                '<div class="font-bold truncate">↳ ' + esc(atSpanName(ev)) + '（續，至' + esc(ev.endTime) + '）</div></button>';
+            const mcolor = AT_METHODS[ev.method] || '#64748B';
+            const color = isEvt ? atEvtColor(ev.cat) : ((ev.cat && AT_CATS[ev.cat]) || mcolor);
+            const bg = ev.cat ? 'background:linear-gradient(' + color + '14,' + color + '14),#fff;' : 'background:#fff;';
+            const fit = box.height < 28 ? ' at-fit-tiny' : (box.height < 46 ? ' at-fit-tight' : '');
+            const w = 100 / it.cols, left = it.col * w;
+            const unknown = ev.method === '未註明';
+            const method = (!isEvt && ev.src !== 'n' && ev.method) ? '<span class="flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + mcolor + '"') + '>' + esc(ev.method) + '</span>' : '';
+            const style = bg + 'border-left:4px solid ' + color + ';top:' + box.top.toFixed(2) + 'px;height:' + box.height.toFixed(2) + 'px;left:calc(' + left + '% + 2px);width:calc(' + w + '% - 4px);';
+            return '<button type="button" class="at-chip at-block at-chip-' + (isEvt ? 'evt' : 'rec') + fit + ' text-left rounded-md border border-slate-200 hover:shadow-md transition text-[11px] leading-snug" style="' + style + '" ' + atChipAttrs(ev) + '>' +
+                '<div class="flex items-center gap-1 min-w-0"><span class="at-time font-mono text-slate-500 flex-shrink-0">' + esc(atTimeTxt(ev)) + '</span><span class="font-bold text-[#1E2E3D] truncate min-w-0">' + esc(ev.c.name || '') + '</span></div>' +
+                '<div class="at-badges mt-0.5 flex items-center gap-1 flex-wrap min-w-0">' + atKindPill(ev) + atDealPill(ev) + atCatPills(ev.h) + method + '</div></button>';
         }
         function atChipHtml(ev, dayStr, mode, span) {
             const isNext = ev.src === 'n', isEvt = ev.src === 'e';
@@ -6473,25 +6559,32 @@ function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').repl
                     evs.map(function (e) { return atChipHtml(e, null); }).join('') + (evs.length ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
             });
             html += '</div></div></div>';
-            // ---- 時間格：08:00 ~ 23:00，每小時一列；12:00 與 17:00 列上緣為粗線（上午｜下午｜晚上）----
+            // ---- 時間格：固定 48px 列高。有時間的當日行程畫成一條，上緣對開始、下緣對結束；重疊左右並排。----
             html += '<div id="atTimeGrid" class="grid" style="grid-template-columns:3.5rem repeat(7,minmax(0,1fr))">';
+            html += '<div class="at-hourlabs" style="grid-column:1;grid-row:1">';
             for (let hr = AT_H0; hr <= AT_H1; hr++) {
                 const thick = (hr === 12 || hr === 17);
                 const topSt = thick ? 'border-top:3px solid #1E2E3D' : 'border-top:1px solid #e2e8f0';
                 const part = hr === AT_H0 ? '上午' : hr === 12 ? '下午' : hr === 17 ? '晚上' : '';
-                html += '<div class="at-hourlabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-1" data-hour="' + hr + '" style="' + topSt + ';min-height:46px"><div class="text-[11px] font-mono font-bold text-slate-500 leading-none">' + atPad(hr) + ':00</div>' + (part ? '<div class="text-[9px] font-bold text-[#8a6d0a] leading-tight mt-0.5">' + part + '</div>' : '') + '</div>';
-                days.forEach(function (d, i) {
-                    const evs = single.filter(function (e) { return e.start === d && atHourHit(e, hr); });
-                    evs.sort(function (a, b) { const ac = atHourCont(a, hr) ? 0 : 1, bc = atHourCont(b, hr) ? 0 : 1; return ac - bc || (a.time < b.time ? -1 : a.time > b.time ? 1 : 0); });
-                    const goes = evs.some(function (e) { return atHourNext(e, hr); });
-                    html += '<div class="at-hourcell at-addable border-r border-slate-100 p-1 space-y-1 ' + dayBg(d, i) + (thick ? ' at-thick' : '') + '" style="' + topSt + ';min-height:46px" data-drop="1" data-date="' + d + '" data-hour="' + hr + '" onclick="atCellClick(event,this)">' +
-                        evs.map(function (e) { const cont = atHourCont(e, hr), go = atHourNext(e, hr); return cont ? atSpanMoreHtml(e, go) : atChipHtml(e, null, 'hour', go ? 'go' : ''); }).join('') + (evs.length && !goes ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
-                });
+                html += '<div class="at-hourlabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-1" data-hour="' + hr + '" style="' + topSt + '"><div class="text-[11px] font-mono font-bold text-slate-500 leading-none">' + atPad(hr) + ':00</div>' + (part ? '<div class="text-[9px] font-bold text-[#8a6d0a] leading-tight mt-0.5">' + part + '</div>' : '') + '</div>';
             }
-            // ---- v10：每日備注列（23:00 列之下，每天一格）----
-            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div>' + (atNoteIsMine() ? '<div class="text-[9px] text-slate-400 leading-tight mt-0.5" title="每個人只看得到、也只改得到自己的備注">僅自己</div>' : '<div class="at-notewho text-[9px] font-bold text-amber-700 leading-tight mt-0.5">' + esc(atNoteKeyName(atNoteTarget())) + ' 的</div>') + '</div>';
+            html += '</div>';
             days.forEach(function (d, i) {
-                html += '<div class="at-notecell border-r border-slate-100 p-1 ' + dayBg(d, i) + '" style="border-top:2px solid #94a3b8" data-date="' + d + '">' + atNoteHtml(d, false) + '</div>';
+                const timed = atPlaceTimed(single.filter(function (e) { return e.start === d && e.time; }));
+                const covered = function (hr) { const a = hr * 60, b = (hr + 1) * 60; return timed.some(function (it) { return it.s < b && it.e > a; }); };
+                html += '<div class="at-daycol" data-date="' + d + '" style="grid-column:' + (i + 2) + ';grid-row:1">';
+                for (let hr = AT_H0; hr <= AT_H1; hr++) {
+                    const thick = (hr === 12 || hr === 17);
+                    const topSt = thick ? 'border-top:3px solid #1E2E3D' : 'border-top:1px solid #e2e8f0';
+                    html += '<div class="at-hourcell at-addable border-r border-slate-100 ' + dayBg(d, i) + (thick ? ' at-thick' : '') + '" style="' + topSt + '" data-drop="1" data-date="' + d + '" data-hour="' + hr + '" onclick="atCellClick(event,this)">' +
+                        (covered(hr) ? '' : '<div class="at-addstrip at-hourplus text-center text-[10px] text-slate-300 leading-none select-none" title="在這格新增">＋</div>') + '</div>';
+                }
+                html += timed.map(atBlockHtml).join('') + '</div>';
+            });
+            // ---- v10：每日備注列（23:00 列之下，每天一格）----
+            html += '<div class="at-notelabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-2" style="grid-column:1;grid-row:2;border-top:2px solid #94a3b8"><div class="text-[11px] font-bold text-slate-500 leading-none">備注</div>' + (atNoteIsMine() ? '<div class="text-[9px] text-slate-400 leading-tight mt-0.5" title="每個人只看得到、也只改得到自己的備注">僅自己</div>' : '<div class="at-notewho text-[9px] font-bold text-amber-700 leading-tight mt-0.5">' + esc(atNoteKeyName(atNoteTarget())) + ' 的</div>') + '</div>';
+            days.forEach(function (d, i) {
+                html += '<div class="at-notecell border-r border-slate-100 p-1 ' + dayBg(d, i) + '" style="grid-column:' + (i + 2) + ';grid-row:2;border-top:2px solid #94a3b8" data-date="' + d + '">' + atNoteHtml(d, false) + '</div>';
             });
             html += '</div></div>';
 
