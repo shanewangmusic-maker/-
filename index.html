@@ -5638,7 +5638,7 @@
                 const econtent = normHistText($('atAddContent').value);
                 if (!etitle && !econtent) return showToast('請輸入標題', 'error');
                 const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value, savedEnd = atAddSavedEnd(etime);
-                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
+                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atPlanAgent(), by: atMyName(), createdAt: new Date().toISOString() };
                 if (etitle) er.title = etitle;
                 if (econtent) er.content = econtent;
                 if (etime) er.time = etime; if (savedEnd) er.endTime = savedEnd; if (atParse(eend) && eend > edate) er.endDate = eend;
@@ -5931,6 +5931,13 @@
             return (c && r) ? { c: c, r: r } : null;
         }
         function atMyAgent() { const e = myEmail(); if (!e || e === OWNER_EMAIL) return ''; const m = findMember(e); return m ? String(m.name || '') : ''; }   // 擁有者＝「個人」（agentName 空白）；其他成員＝自己的姓名
+        // 只用於新的個人行程。擁有者的 atMyAgent() 仍是空白，客戶與跟進紀錄不受影響；這裡改掛成員名單上的名字，才會出現在「負責業務」。
+        function atPlanAgent() {
+            if ((myEmail() || '').toLowerCase() !== OWNER_EMAIL) return atMyAgent();
+            const m = findMember(OWNER_EMAIL);
+            const name = m && String(m.name || '').trim();
+            return name || '王盛嶢';
+        }
         function atMyName() { const e = myEmail(); const m = e ? findMember(e) : null; return (m && m.name) ? String(m.name) : (e || ''); }
         function atCatPills(r, small) {
             const cat = atCatOf(r), v = atVisitOf(r); let s = '';
@@ -6282,7 +6289,7 @@
                 if (!rows[k].title) return showToast('有一列沒有標題，請修正或取消勾選', 'error');
             }
             atEnsureUndoBase();
-            const me = atMyName(), agent = atMyAgent(), usedIds = new Set(); customers.forEach(function (c) { (c.history || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); (c.contacts || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); });
+            const me = atMyName(), agent = atPlanAgent(), usedIds = new Set(); customers.forEach(function (c) { (c.history || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); (c.contacts || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); });
             (atPlanRaw() || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); });
             let seq = Date.now(); const nid = function (p) { let id; do { id = p + (seq++); } while (usedIds.has(id)); usedIds.add(id); return id; };
             let nLinked = 0, nSolo = 0, minDate = '';
