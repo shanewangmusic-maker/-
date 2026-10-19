@@ -1100,6 +1100,7 @@
                     <div class="grid grid-cols-2 gap-2.5">
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
+                        <div class="col-start-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="初訪">初訪</option><option value="關鍵訪">關鍵訪</option><option value="定期檢視">定期檢視</option></select></div>
@@ -5617,12 +5618,17 @@
             $('atAddSearch').value = '';
             $('atAddDate').value = leadValidDate(date) || atToday();
             $('atAddTime').value = atValidTime(time);
+            if ($('atAddEndTime')) $('atAddEndTime').value = '';
             $('atAddMethod').value = 'Line'; $('atAddCat').value = ''; $('atAddEnd').value = ''; $('atAddContent').value = '';
             if ($('atAddTitle')) $('atAddTitle').value = '';
             if ($('atAddAct')) $('atAddAct').value = ''; if ($('atAddVisit')) $('atAddVisit').value = '';
             atAddRender();
             openModal('atAddModal');
             setTimeout(function () { try { $('atAddSearch').focus(); } catch (e) {} }, 30);
+        }
+        function atAddSavedEnd(start) {
+            const et = atValidTime((document.getElementById('atAddEndTime') || {}).value);
+            return (start && et && et > start) ? et : '';
         }
         function atAddSave() {
             const $ = function (n) { return document.getElementById(n); };
@@ -5631,11 +5637,11 @@
                 const etitle = atPlanTitle({ title: $('atAddTitle').value });
                 const econtent = normHistText($('atAddContent').value);
                 if (!etitle && !econtent) return showToast('請輸入標題', 'error');
-                const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value;
+                const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value, savedEnd = atAddSavedEnd(etime);
                 const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
                 if (etitle) er.title = etitle;
                 if (econtent) er.content = econtent;
-                if (etime) er.time = etime; if (atParse(eend) && eend > edate) er.endDate = eend;
+                if (etime) er.time = etime; if (savedEnd) er.endTime = savedEnd; if (atParse(eend) && eend > edate) er.endDate = eend;
                 { const ecat = $('atAddCat').value; if (atCatOf({ cat: ecat })) er.cat = ecat; }
                 atEnsureUndoBase();
                 if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; }
@@ -5646,12 +5652,12 @@
             const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;      // v12：已連結的名單 → 寫進核心客戶的 history（同一份）
             if (!c) return showToast('請先選擇客戶或名單', 'error');
             const date = $('atAddDate').value; if (!atParse(date)) return showToast('請選擇日期', 'error');
-            const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = normHistText($('atAddContent').value);
+            const time = atValidTime($('atAddTime').value), method = $('atAddMethod').value || 'Line', end = $('atAddEnd').value, content = normHistText($('atAddContent').value), savedEnd = atAddSavedEnd(time);
             if (c.progress === 'LEAD') {
                 const r = { id: leadNewContactId(), date: date, method: method, content: content };
                 aqStamp(r);
                 { const av = $('atAddAct'); if (av && aqActOf(av.value)) r.act = aqActOf(av.value); }
-                if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
+                if (time) r.time = time; if (savedEnd) r.endTime = savedEnd; if (atParse(end) && end > date) r.endDate = end;
                 { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 if (!Array.isArray(c.contacts)) c.contacts = [];
                 c.contacts.push(r);
@@ -5662,7 +5668,7 @@
                 aqStamp(r);
                 { const av = $('atAddAct'); if (av && aqActOf(av.value)) r.act = aqActOf(av.value); }
                 { const vv = $('atAddVisit'); if (vv && atVisitOf({ visitType: vv.value })) r.visitType = vv.value; }
-                if (time) r.time = time; if (atParse(end) && end > date) r.endDate = end;
+                if (time) r.time = time; if (savedEnd) r.endTime = savedEnd; if (atParse(end) && end > date) r.endDate = end;
                 { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 c.history.push(r);
                 aqEmit(c, r, { changed: false });
