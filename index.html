@@ -1056,6 +1056,10 @@
                         <label for="atEdEvtTitle" class="block text-[11px] font-bold text-slate-500 mb-1">標題</label>
                         <input autocomplete="off" id="atEdEvtTitle" maxlength="200" placeholder="例如：夕會" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
                     </div>
+                    <div id="atEdAgentWrap" class="hidden">
+                        <label for="atEdAgent" class="block text-[11px] font-bold text-slate-500 mb-1">負責業務</label>
+                        <select id="atEdAgent" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"></select>
+                    </div>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atEdDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div id="atEdMore" class="contents">
@@ -1096,6 +1100,10 @@
                     <div id="atAddTitleWrap" class="hidden">
                         <label for="atAddTitle" class="block text-[11px] font-bold text-slate-500 mb-1">標題</label>
                         <input autocomplete="off" id="atAddTitle" maxlength="200" placeholder="例如：夕會" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                    </div>
+                    <div id="atAddAgentWrap" class="hidden">
+                        <label for="atAddAgent" class="block text-[11px] font-bold text-slate-500 mb-1">負責業務</label>
+                        <select id="atAddAgent" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"></select>
                     </div>
                     <div class="grid grid-cols-2 gap-2.5">
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
@@ -2896,7 +2904,7 @@
             const currentVal = boardLoadDefaultsPending ? 'PERSONAL' : (agentFilter.value || 'ALL');
             
             // 抓出所有客戶資料中已存在的「負責業務」名稱並去重複
-            const agents = [...new Set(customers.map(c => c.agentName).filter(name => name && name.trim() !== ''))].sort();
+            const agents = atAgentNames();
             
             // 控制刪除按鈕顯示：只有選取特定成員時才顯示
             if (btnDeleteAgent) {
@@ -5520,6 +5528,8 @@
             $('atEdContent').rows = isEvt ? 7 : 4;
             $('atEdContent').placeholder = isEvt ? '備注…（按 Enter 換行）' : '內容…（按 Enter 換行）';
             if ($('atEdEvtTitle')) $('atEdEvtTitle').value = isEvt ? (r.title || '') : '';
+            if (isEvt && atPlanAgentPickable()) atPlanAgentFill('atEdAgent', 'atEdAgentWrap', r.agent || '');
+            else { const agw = $('atEdAgentWrap'); if (agw) agw.classList.add('hidden'); }
             if (isEvt) { $('atEdWho').innerHTML = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">個人行程</span>' + (r.src === 'photo' ? '<span class="text-[10px] text-slate-400">由手寫週計畫匯入</span>' : ''); $('atEdTitle').textContent = '編輯行程'; }
             $('atEdDate').value = leadValidDate(r.date);
             $('atEdMore').classList.toggle('hidden', isNext);
@@ -5551,6 +5561,7 @@
                     if (!title && !note) return showToast('請輸入標題', 'error');
                     if (title) r.title = title; else delete r.title;
                     r.content = note;
+                    if (atPlanAgentPickable()) r.agent = atPlanAgentChosen('atEdAgent');
                 }
                 r.date = date;
                 const t = atValidTime($('atEdTime').value); if (t) r.time = t; else delete r.time;
@@ -5607,6 +5618,13 @@
         function atAddSyncEvt() {
             const evt = atAddPick === '__evt__';
             const w = document.getElementById('atAddTitleWrap'); if (w) w.classList.toggle('hidden', !evt);
+            const aw = document.getElementById('atAddAgentWrap');
+            const pick = evt && atPlanAgentPickable();
+            if (aw) {
+                const wasHidden = aw.classList.contains('hidden');
+                aw.classList.toggle('hidden', !pick);
+                if (pick && wasHidden) atPlanAgentFill('atAddAgent', 'atAddAgentWrap', atPlanAgentDefault());
+            }
             const lab = document.getElementById('atAddLblContent'); if (lab) lab.textContent = evt ? '備注' : '內容';
             const ta = document.getElementById('atAddContent');
             if (ta) { ta.rows = evt ? 7 : 4; ta.placeholder = evt ? '備注…（按 Enter 換行）' : '內容…（按 Enter 換行）'; }
@@ -5638,7 +5656,7 @@
                 const econtent = normHistText($('atAddContent').value);
                 if (!etitle && !econtent) return showToast('請輸入標題', 'error');
                 const etime = atValidTime($('atAddTime').value), eend = $('atAddEnd').value, savedEnd = atAddSavedEnd(etime);
-                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atMyAgent(), by: atMyName(), createdAt: new Date().toISOString() };
+                const er = { id: 'pe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5), date: edate, agent: atPlanAgentChosen('atAddAgent'), by: atMyName(), createdAt: new Date().toISOString() };
                 if (etitle) er.title = etitle;
                 if (econtent) er.content = econtent;
                 if (etime) er.time = etime; if (savedEnd) er.endTime = savedEnd; if (atParse(eend) && eend > edate) er.endDate = eend;
@@ -5931,6 +5949,44 @@
             return (c && r) ? { c: c, r: r } : null;
         }
         function atMyAgent() { const e = myEmail(); if (!e || e === OWNER_EMAIL) return ''; const m = findMember(e); return m ? String(m.name || '') : ''; }   // 擁有者＝「個人」（agentName 空白）；其他成員＝自己的姓名
+        function atAgentNames() {
+            return [...new Set(customers.map(function (c) { return c && c.agentName; }).filter(function (name) { return name && String(name).trim() !== ''; }))].sort();
+        }
+        function atPlanAgentPickable() { return isAdmin(); }
+        function atPlanAgentDefault() {
+            if (!atPlanAgentPickable()) return atMyAgent();
+            const f = (document.getElementById('filterAgent') || {}).value || 'ALL';
+            if (f && f !== 'ALL' && f !== 'PERSONAL' && f !== 'TEAM_ONLY' && atAgentNames().indexOf(f) >= 0) return f;
+            return atMyAgent();
+        }
+        function atPlanAgentOptions(selected) {
+            const names = atAgentNames().slice();
+            const cur = selected == null ? '' : String(selected);
+            if (cur && names.indexOf(cur) < 0) names.push(cur);
+            names.sort();
+            let html = '<option value="">我的個人業績</option>';
+            names.forEach(function (n) { html += '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>'; });
+            return html;
+        }
+        function atPlanAgentChosen(selectId) {
+            if (!atPlanAgentPickable()) return atMyAgent();
+            const el = document.getElementById(selectId);
+            if (!el) return atPlanAgentDefault();
+            const v = el.value || '';
+            if (!v) return '';
+            if (atAgentNames().indexOf(v) >= 0) return v;
+            for (let i = 0; i < el.options.length; i++) if (el.options[i].value === v) return v;
+            return atMyAgent();
+        }
+        function atPlanAgentFill(selectId, wrapId, selected) {
+            const wrap = document.getElementById(wrapId);
+            const sel = document.getElementById(selectId);
+            if (wrap) wrap.classList.remove('hidden');
+            if (!sel) return;
+            const cur = selected == null ? '' : String(selected);
+            sel.innerHTML = atPlanAgentOptions(cur);
+            sel.value = cur;
+        }
         function atMyName() { const e = myEmail(); const m = e ? findMember(e) : null; return (m && m.name) ? String(m.name) : (e || ''); }
         function atCatPills(r, small) {
             const cat = atCatOf(r), v = atVisitOf(r); let s = '';
@@ -6282,7 +6338,7 @@
                 if (!rows[k].title) return showToast('有一列沒有標題，請修正或取消勾選', 'error');
             }
             atEnsureUndoBase();
-            const me = atMyName(), agent = atMyAgent(), usedIds = new Set(); customers.forEach(function (c) { (c.history || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); (c.contacts || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); });
+            const me = atMyName(), usedIds = new Set(); customers.forEach(function (c) { (c.history || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); (c.contacts || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); }); });
             (atPlanRaw() || []).forEach(function (h) { if (h && h.id) usedIds.add(h.id); });
             let seq = Date.now(); const nid = function (p) { let id; do { id = p + (seq++); } while (usedIds.has(id)); usedIds.add(id); return id; };
             let nLinked = 0, nSolo = 0, minDate = '';
@@ -6295,7 +6351,7 @@
                 const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;
                 if (c && c.progress === 'LEAD') { rec.content = r.title; rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
                 else if (c) { rec.content = r.title; rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); aqEmit(c, rec, { changed: false }); nLinked++; }
-                else { rec.title = r.title; rec.id = 'pe-' + nid(''); rec.agent = agent; rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
+                else { rec.title = r.title; rec.id = 'pe-' + nid(''); rec.agent = atPlanAgentDefault(); rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
                 if (!minDate || r.date < minDate) minDate = r.date;
             });
             let nLoc = 0;
@@ -6323,8 +6379,8 @@
                     '<div class="col-span-2"><span class="font-bold">標題：</span>' + esc(shownTitle) + (atPlanTitle(h) ? '' : ' <span class="text-slate-400">（沿用備注第一行）</span>') + '</div>' +
                     '<div><span class="font-bold">日期：</span>' + esc(h.date) + (end ? ' ~ ' + esc(end) : '') + '</div>' +
                     (t ? '<div><span class="font-bold">時間：</span>' + esc(t + (atValidTime(h.endTime) ? '–' + atValidTime(h.endTime) : '')) + '</div>' : '') +
-                    '<div><span class="font-bold">負責業務：</span>' + (h.agent ? esc(h.agent) : '個人') + '</div>' +
-                    (h.by ? '<div><span class="font-bold">建立者：</span>' + esc(h.by) + '</div>' : '') +
+                    '<div><span class="font-bold">負責業務：</span>' + (h.agent ? esc(h.agent) : '我的個人業績') + '</div>' +
+                    '<div><span class="font-bold">新增者：</span>' + (h.by ? esc(h.by) : '') + '</div>' +
                 '</div><div id="atDetailContent" class="hist-text bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 break-words"><div class="text-[11px] font-bold text-slate-500 mb-1">備注</div>' + (String(h.content || '').trim() ? esc(h.content) : '<span class="text-slate-400">（無）</span>') + '<p class="mt-2 text-slate-400 text-xs">這是不屬於任何客戶的獨立行程' + (h.src === 'photo' ? '（由手寫週計畫匯入）' : '') + '。</p></div>';
             const ebtn = document.getElementById('airtableDetailEditBtn');
             ebtn.innerHTML = '<i class="fa-regular fa-pen-to-square"></i> 編輯';
