@@ -6574,7 +6574,7 @@
                         '</div>' +
                         '<button id="atToday" type="button" onclick="atGoToday()" class="px-3 py-2 rounded-lg text-sm font-bold border border-[#D4AF37] text-[#8a6d0a] bg-amber-50 hover:bg-amber-100 transition"><i class="fa-solid fa-location-crosshairs mr-1"></i>今天 / 本週</button>' +
                         '<div class="ml-1"><h2 id="atTitle" class="font-bold font-editorial text-lg text-slate-800 leading-tight">' + ws.replace(/-/g, '/') + ' – ' + atMD(we) + '</h2>' +
-                        '<p id="atWeekNo" class="text-xs text-slate-500">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
+                        '<p id="atWeekNo" class="text-xs text-slate-500 mt-1.5">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 flex-wrap text-xs text-slate-500">' +
                         '<label class="flex items-center gap-1 font-bold">跳至日期 <input id="atJumpDate" type="date" value="' + ws + '" onchange="atJumpDate(this.value)" class="px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-normal text-slate-700"></label>' +
