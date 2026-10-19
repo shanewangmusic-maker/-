@@ -5843,10 +5843,7 @@
             atNoteViewKey = ''; atNoteViewBy = '';
             renderApp();
         }
-        function atNoteBannerHtml() {
-            if (atNoteIsMine()) return '';
-            return '<div id="atNoteWho" class="mt-3 px-3 py-2 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs font-bold flex flex-wrap items-center gap-2"><i class="fa-solid fa-user-pen"></i><span>正在查看／編輯 ' + esc(atNoteKeyName(atNoteTarget())) + ' 的備注</span><span class="font-normal text-amber-700">（下方 備注 列與「上傳手寫週計畫」寫入的地點備註都屬於他；其他行程資料不受影響。改上方「負責業務」可切換對象）</span><button type="button" onclick="atNoteBackToMine()" class="ml-auto px-2 py-1 rounded-md bg-white border border-amber-300 text-amber-800 font-bold hover:bg-amber-100">回到我自己的備注</button></div>';
-        }
+        function atNoteBannerHtml() { return ''; }
         function atNoteWhoText() { return atNoteIsMine() ? '你自己' : atNoteKeyName(atNoteTarget()) + '（你代他編輯）'; }
         function atLegacyObj() { const o = annualGoals && annualGoals.dayNotes; return atIsPlain(o) ? o : null; }          // 舊的共用備注（唯讀、保留）
         function atNotesBy() { const o = annualGoals && annualGoals.dayNotesBy; return atIsPlain(o) ? o : null; }
@@ -6564,11 +6561,6 @@
                 let li = 0; while (lanes[li] && lanes[li].some(function (o) { return !(ce < o.cs || cs > o.ce); })) li++;
                 (lanes[li] = lanes[li] || []).push({ e: e, cs: cs, ce: ce });
             });
-            const custCount = new Set(inWeek.filter(function (e) { return e.src !== 'e'; }).map(function (e) { return e.pk || e.c.id; })).size;
-            const recWeek = inWeek.filter(function (e) { return e.src !== 'n'; }), nextCnt = inWeek.length - recWeek.length;
-            const evtRec = recWeek.filter(function (e) { return e.src === 'e'; }).length;
-            const unknownCnt = recWeek.filter(function (e) { return e.method === '未註明'; }).length;
-
             const catBtn = function (k, label, color) { return '<button type="button" id="atCat' + (k === 'ALL' ? 'All' : k === '公事' ? 'Biz' : k === '客戶' ? 'Cust' : k === '個人' ? 'Pers' : 'Part') + '" data-cat="' + k + '" onclick="atSetCat(\'' + k + '\')" aria-pressed="' + (atCat === k) + '" class="at-cat-btn px-2.5 py-1.5 text-xs font-bold border-l first:border-l-0 border-slate-200 transition ' + (atCat === k ? 'text-white' : 'bg-white text-slate-500 hover:bg-slate-100') + '"' + (atCat === k ? ' style="background:' + color + '"' : '') + '>' + (k === 'ALL' ? '' : '<span class="inline-block w-2 h-2 rounded-full mr-1 align-middle" style="background:' + (atCat === k ? '#fff' : color) + '"></span>') + label + '</button>'; };
             const dayBg = function (d, i) { return d === today ? 'bg-amber-50/70' : (i === 5 || i === 6 ? 'bg-slate-50/70' : 'bg-white'); };
 
@@ -6581,7 +6573,6 @@
                             '<button id="atNext" type="button" onclick="atNav(1)" class="px-3 py-2 hover:bg-slate-100 text-[#1E2E3D] border-l border-slate-200" title="下一週"><i class="fa-solid fa-chevron-right"></i></button>' +
                         '</div>' +
                         '<button id="atToday" type="button" onclick="atGoToday()" class="px-3 py-2 rounded-lg text-sm font-bold border border-[#D4AF37] text-[#8a6d0a] bg-amber-50 hover:bg-amber-100 transition"><i class="fa-solid fa-location-crosshairs mr-1"></i>今天 / 本週</button>' +
-                        '<button id="atPhotoBtn" type="button" onclick="atOpenPhoto()" class="px-3 py-2 rounded-lg text-sm font-bold bg-[#1E2E3D] text-white hover:bg-[#2C3E50] transition" title="拍照或選擇手寫週計畫，AI 辨識後預覽核對再寫入">📷 上傳手寫週計畫</button>' +
                         '<div class="ml-1"><h2 id="atTitle" class="font-bold font-editorial text-lg text-slate-800 leading-tight">' + ws.replace(/-/g, '/') + ' – ' + atMD(we) + '</h2>' +
                         '<p id="atWeekNo" class="text-xs text-slate-500">' + info.year + ' 年第 ' + info.week + ' 週' + (ws <= today && today <= we ? ' <span class="px-1.5 py-0.5 rounded bg-[#D4AF37] text-white font-bold">本週</span>' : '') + '</p></div>' +
                     '</div>' +
@@ -6591,14 +6582,8 @@
                         '<button id="atJumpWeekBtn" type="button" onclick="atJumpWeek()" class="px-2.5 py-1.5 bg-[#1E2E3D] text-white rounded-lg font-bold">前往</button></span>' +
                     '</div>' +
                 '</div>' +
-                atNoteBannerHtml() +
                 '<div class="mt-3 pt-2 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">' +
-                    '<span id="atSummary" class="font-bold text-[#1E2E3D]"><i class="fa-solid fa-clipboard-list text-[#D4AF37]"></i> 本週 ' + recWeek.length + ' 筆紀錄 · ' + custCount + ' 位客戶' + (evtRec ? '（含個人行程 ' + evtRec + ' 筆）' : '') + (nextCnt ? ' · ' + nextCnt + ' 個下次聯絡' : '') + (unknownCnt ? ' · ' + unknownCnt + ' 筆未註明聯絡方式' : '') + '</span>' +
-
                     '<div id="atCatFilter" class="flex items-center border border-slate-200 rounded-lg overflow-hidden" role="group" aria-label="分類">' + catBtn('ALL', '全部分類', '#1E2E3D') + catBtn('公事', '公事', AT_CATS['公事']) + catBtn('客戶', '客戶', AT_CATS['客戶']) + catBtn('夥伴', '夥伴', AT_CATS['夥伴']) + catBtn('個人', '個人', AT_CATS['個人']) + '</div>' +
-                    '<span class="flex items-center gap-1"><span class="at-kind px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span></span>' +
-                    Object.keys(AT_METHODS).map(function (m) { return '<span class="flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-sm" style="background:' + AT_METHODS[m] + '"></span>' + m + '</span>'; }).join('') +
-                    '<span class="ml-auto hidden sm:inline">點紀錄可看詳情／編輯；點空白格新增；拖曳可移動；粗線＝12:00、17:00 分隔上午・下午・晚上；每天最下方可寫備注（每人各自一份，僅自己看得到）；紅＝公事、藍＝客戶、綠＝夥伴、黑＝個人</span>' +
                 '</div></div>';
 
             // ---- 桌機：7 欄週格 ----
