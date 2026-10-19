@@ -3718,6 +3718,7 @@
         }
         let personLinkFromId = '';
         let personLinkToId = '';
+        let personLinkComposing = false;
         function personLinkRowHtml(row, hinted) {
             const plan = personHasPlan(row) ? '已有規劃' : (fintrackDocsKnown() ? '尚無規劃' : '規劃清單尚未載入');
             const hint = hinted ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex-shrink-0">可能是同一人</span>' : '';
@@ -3726,12 +3727,24 @@
                 '<span class="text-[10px] font-bold text-slate-500 ml-auto">' + esc(plan) + '</span></div>' +
                 '<div class="text-[11px] text-slate-500 mt-0.5">' + esc(row.phone || '無電話') + ' · ' + esc(row.birthday || '無生日') + ' · 負責業務 ' + esc(personAgentLabel(row)) + '</div></button>';
         }
-        function renderPersonLinkList() {
+        function renderPersonLinkList(ev) {
+            if (personLinkComposing || (ev && ev.isComposing)) return;
             const me = customers.find(function (c) { return c && c.id === personLinkFromId; });
             const body = document.getElementById('personLinkBody');
             if (!me || !body) return;
-            const typing = document.activeElement && document.activeElement.id === 'personLinkQ';
-            const q = String((document.getElementById('personLinkQ') || {}).value || '').trim().toLowerCase();
+            let inp = document.getElementById('personLinkQ');
+            let list = document.getElementById('personLinkList');
+            if (!inp || !list || !body.contains(inp)) {
+                body.innerHTML = '<input id="personLinkQ" autocomplete="off" placeholder="搜尋姓名、電話、生日、負責業務" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none">' +
+                    '<p class="text-[11px] text-slate-400 mt-2">同名不會自動建議。電話或生日也相同時，才標成「可能是同一人」。選了之後才會連結。</p>' +
+                    '<div id="personLinkList"></div>';
+                inp = document.getElementById('personLinkQ');
+                list = document.getElementById('personLinkList');
+                inp.addEventListener('compositionstart', function () { personLinkComposing = true; });
+                inp.addEventListener('compositionend', function () { personLinkComposing = false; renderPersonLinkList(); });
+                inp.addEventListener('input', function (e) { renderPersonLinkList(e); });
+            }
+            const q = String(inp.value || '').trim().toLowerCase();
             let others = customers.filter(function (c) { return c && c.id !== me.id; });
             if (q) others = others.filter(function (c) {
                 return ((c.name || '') + ' ' + (c.phone || '') + ' ' + (c.birthday || '') + ' ' + personAgentLabel(c)).toLowerCase().indexOf(q) >= 0;
@@ -3742,15 +3755,11 @@
                 if (!rows.length) return '';
                 return '<div class="mt-3"><div class="text-[11px] font-bold text-slate-400 mb-1">' + title + '</div><div class="space-y-2">' + rows.map(function (r) { return personLinkRowHtml(r, hint); }).join('') + '</div></div>';
             };
-            body.innerHTML = '<input id="personLinkQ" autocomplete="off" placeholder="搜尋姓名、電話、生日、負責業務" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none" oninput="renderPersonLinkList()">' +
-                '<p class="text-[11px] text-slate-400 mt-2">同名不會自動建議。電話或生日也相同時，才標成「可能是同一人」。選了之後才會連結。</p>' +
-                sec('可能是同一人', hinted, true) + sec('其他客戶', rest, false) +
+            list.innerHTML = sec('可能是同一人', hinted, true) + sec('其他客戶', rest, false) +
                 (!others.length ? '<p class="text-sm text-slate-400 mt-3">沒有符合的客戶。</p>' : '');
-            const inp = document.getElementById('personLinkQ');
-            if (typing && inp) { inp.focus(); inp.value = q; inp.setSelectionRange(q.length, q.length); }
         }
         window.openPersonLink = function (id) {
-            personLinkFromId = id; personLinkToId = '';
+            personLinkFromId = id; personLinkToId = ''; personLinkComposing = false;
             const t = document.getElementById('personLinkTitle');
             if (t) t.textContent = '連結同一位客戶';
             renderPersonLinkList();
