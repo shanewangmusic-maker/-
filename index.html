@@ -6453,7 +6453,7 @@
             const method = (!isEvt && ev.src !== 'n' && ev.method) ? '<span class="flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + mcolor + '"') + '>' + esc(ev.method) + '</span>' : '';
             const style = bg + 'border-left:4px solid ' + color + ';top:' + box.top.toFixed(2) + 'px;height:' + box.height.toFixed(2) + 'px;left:calc(' + left + '% + 2px);width:calc(' + w + '% - 4px);';
             return '<button type="button" class="at-chip at-block at-chip-' + (isEvt ? 'evt' : 'rec') + fit + ' text-left rounded-md border border-slate-200 hover:shadow-md transition text-[11px] leading-snug" style="' + style + '" ' + atChipAttrs(ev) + '>' +
-                '<div class="flex items-center gap-1 min-w-0"><span class="at-time font-mono text-slate-500 flex-shrink-0">' + esc(atTimeTxt(ev)) + '</span><span class="font-bold text-[#1E2E3D] truncate min-w-0">' + esc(ev.c.name || '') + '</span></div>' +
+                '<div class="flex items-center gap-1 min-w-0"><span class="at-time font-mono text-slate-500 flex-shrink-0">' + esc(ev.time || '') + '</span><span class="font-bold text-[#1E2E3D] truncate min-w-0">' + esc(ev.c.name || '') + '</span></div>' +
                 '<div class="at-badges mt-0.5 flex items-center gap-1 flex-wrap min-w-0">' + atKindPill(ev) + atDealPill(ev) + atCatPills(ev.h) + method + '</div></button>';
         }
         function atChipHtml(ev, dayStr, mode, span) {
