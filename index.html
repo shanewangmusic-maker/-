@@ -41,6 +41,13 @@
         .at-chip.at-personal .at-visit { border-color: #fff !important; }
         .at-chip.at-personal .at-cat-pers { box-shadow: inset 0 0 0 1px rgba(255,255,255,.75); }
         .at-drop-hl { outline: 2px dashed #D4AF37; outline-offset: -2px; background-color: rgba(212,175,55,.22) !important; }
+/* 有結束時間的行程：同一色塊接過每一個被覆蓋的小時列（含 12:00、17:00 粗線） */
+#atTimeGrid .at-hourcell:has(> .at-span-go) { padding-bottom: 0; }
+#atTimeGrid .at-hourcell:has(> .at-span-more) { padding-top: 0; }
+#atTimeGrid .at-chip.at-span-go { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; margin-bottom: 0; }
+#atTimeGrid .at-chip.at-span-more { border-top-left-radius: 0; border-top-right-radius: 0; border-top-color: transparent; margin-top: -1px; position: relative; z-index: 2; box-shadow: none; }
+#atTimeGrid .at-hourcell.at-thick > .at-chip.at-span-more { margin-top: -3px; }
+#atTimeGrid .at-chip.at-span-more.at-span-go { border-radius: 0; }
         /* v19：搜尋框改為 type="search"（減少瀏覽器自動填入），隱藏 Chrome 內建清除鈕，外觀維持 v18 */
         #searchInput::-webkit-search-cancel-button, #atAddSearch::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
         a.fintrack-open, a.fintrack-open:hover { text-decoration: none; }
@@ -5431,6 +5438,17 @@
         const AT_H0 = 8, AT_H1 = 23;     // 時間格：08:00 ~ 23:00（每小時一列）
         function atValidTime(v) { const m = /^(\d{1,2}):(\d{2})/.exec(String(v == null ? '' : v).trim()); if (!m) return ''; const h = +m[1], mi = +m[2]; if (h > 23 || mi > 59) return ''; return atPad(h) + ':' + atPad(mi); }
         function atHourOf(t) { return Math.min(AT_H1, Math.max(AT_H0, +String(t).substring(0, 2))); }
+function atMins(t) { const v = atValidTime(t); if (!v) return -1; return (+v.substring(0, 2)) * 60 + (+v.substring(3)); }
+function atHourHit(ev, hr) {
+    if (!ev || !ev.time) return false;
+    const st = atMins(ev.time); if (st < 0) return false;
+    const en = atMins(ev.endTime);
+    if (en < 0 || en <= st) return atHourOf(ev.time) === hr;
+    return st < (hr + 1) * 60 && en > hr * 60;
+}
+function atHourCont(ev, hr) { return hr > AT_H0 && atHourHit(ev, hr) && atHourHit(ev, hr - 1); }
+function atHourNext(ev, hr) { return hr < AT_H1 && atHourHit(ev, hr) && atHourHit(ev, hr + 1); }
+function atSpanName(ev) { const n = String((ev && ev.c && ev.c.name) || '').replace(/\s+/g, ' ').trim(); return n || '行程'; }
         function atRecOf(c, src, idx) {
             if (!c) return null;
             if (src === 'n') return leadValidDate(c.nextContactDate) ? { date: c.nextContactDate } : null;
@@ -5619,7 +5637,7 @@
             let drag = null;
             const clr = function () { area.querySelectorAll('.at-drop-hl').forEach(function (x) { x.classList.remove('at-drop-hl'); }); };
             area.addEventListener('dragstart', function (e) {
-                const el = e.target.closest && e.target.closest('.at-chip[data-src]'); if (!el) return;
+                const el = e.target.closest && e.target.closest('.at-chip[data-src]'); if (!el || el.getAttribute('draggable') === 'false' || el.classList.contains('at-span-more')) { if (el) e.preventDefault(); return; }
                 drag = { cid: el.getAttribute('data-cid'), src: el.getAttribute('data-src'), idx: +el.getAttribute('data-hi') };
                 e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', JSON.stringify(drag)); } catch (x) {}
                 setTimeout(function () { el.classList.add('opacity-40'); }, 0);
@@ -6336,10 +6354,17 @@
             if (ev.src === 'n') return '<span class="at-kind at-kind-next flex-shrink-0 px-1 rounded text-[9px] font-bold text-white" style="background:' + atNextColor() + '"><i class="fa-regular fa-bell"></i> 下次聯絡</span>';
             return '';
         }
-        function atChipAttrs(ev) {
-            return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-time="' + esc(ev.time || '') + '" draggable="true" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
+        function atChipAttrs(ev, drag) {
+            return 'data-cid="' + esc(ev.c.id) + '" data-hi="' + ev.idx + '" data-src="' + ev.src + '" data-time="' + esc(ev.time || '') + '" draggable="' + (drag === false ? 'false' : 'true') + '" title="' + esc(atEvTitle(ev)) + '" onclick="atOpenDetail(this)"';
         }
-        function atChipHtml(ev, dayStr, mode) {
+        function atSpanMoreHtml(ev, go) {
+            const isEvt = ev.src === 'e';
+            const color = isEvt ? atEvtColor(ev.cat) : ((ev.cat && AT_CATS[ev.cat]) || AT_METHODS[ev.method] || '#64748B');
+            const skin = ev.cat === '個人' ? 'at-personal border border-slate-900' : 'bg-white border border-slate-200';
+            return '<button type="button" class="at-chip at-span-more' + (go ? ' at-span-go' : '') + ' at-chip-' + (isEvt ? 'evt' : 'rec') + ' block w-full text-left px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px solid ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev, false) + '>' +
+                '<div class="font-bold truncate">↳ ' + esc(atSpanName(ev)) + '（續，至' + esc(ev.endTime) + '）</div></button>';
+        }
+        function atChipHtml(ev, dayStr, mode, span) {
             const isNext = ev.src === 'n', isEvt = ev.src === 'e';
             const mcolor = AT_METHODS[ev.method] || '#64748B';
             const color = isEvt ? atEvtColor(ev.cat) : ((ev.cat && AT_CATS[ev.cat]) || mcolor);
@@ -6352,7 +6377,7 @@
             const right = (isNext || isEvt) ? '' : '<span class="ml-auto flex-shrink-0 px-1 rounded text-[10px] font-bold ' + (unknown ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (unknown ? '' : ' style="background:' + mcolor + '"') + '>' + esc(ev.method) + '</span>';
             const body = isEvt ? '' : isNext ? '<div class="text-sky-700">預定下次聯絡' + (ev.c.agentName ? '・' + esc(ev.c.agentName) : '') + '</div>'
                 : '<div class="hist-text text-slate-600 break-words" style="display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap">' + esc(String(ev.h.content || '').substring(0, 400)) + '</div>';
-            return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isEvt ? 'evt' : 'rec')) + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev) + '>' +
+            return '<button type="button" class="at-chip at-chip-' + (isNext ? 'next' : (isEvt ? 'evt' : 'rec')) + (span === 'go' ? ' at-span-go' : '') + ' block w-full text-left rounded-md hover:shadow-md transition px-2 py-1 text-[11px] leading-snug ' + skin + '" style="border-left:4px ' + (isNext ? 'dashed' : 'solid') + ' ' + color + (ev.cat ? ';background:' + color + '14' : '') + '" ' + atChipAttrs(ev) + '>' +
                 '<div class="flex items-center gap-1 min-w-0 flex-wrap"><span class="font-mono text-slate-500 flex-shrink-0">' + dateTxt + '</span>' +
                 '<span class="font-bold text-[#1E2E3D] ' + (isEvt ? 'break-words hist-text' : 'truncate') + '">' + esc(ev.c.name) + '</span>' + right + '</div>' +
                 '<div class="mt-0.5 flex items-center gap-1 flex-wrap">' + atKindPill(ev) + atDealPill(ev) + atCatPills(ev.h) + '</div>' + body + (dayHint ? '<div class="text-[10px]">' + dayHint + '</div>' : '') +
@@ -6456,9 +6481,11 @@
                 const part = hr === AT_H0 ? '上午' : hr === 12 ? '下午' : hr === 17 ? '晚上' : '';
                 html += '<div class="at-hourlabel bg-slate-50 border-r border-slate-200 text-right pr-1.5 pt-1" data-hour="' + hr + '" style="' + topSt + ';min-height:46px"><div class="text-[11px] font-mono font-bold text-slate-500 leading-none">' + atPad(hr) + ':00</div>' + (part ? '<div class="text-[9px] font-bold text-[#8a6d0a] leading-tight mt-0.5">' + part + '</div>' : '') + '</div>';
                 days.forEach(function (d, i) {
-                    const evs = single.filter(function (e) { return e.start === d && e.time && atHourOf(e.time) === hr; });
+                    const evs = single.filter(function (e) { return e.start === d && atHourHit(e, hr); });
+                    evs.sort(function (a, b) { const ac = atHourCont(a, hr) ? 0 : 1, bc = atHourCont(b, hr) ? 0 : 1; return ac - bc || (a.time < b.time ? -1 : a.time > b.time ? 1 : 0); });
+                    const goes = evs.some(function (e) { return atHourNext(e, hr); });
                     html += '<div class="at-hourcell at-addable border-r border-slate-100 p-1 space-y-1 ' + dayBg(d, i) + (thick ? ' at-thick' : '') + '" style="' + topSt + ';min-height:46px" data-drop="1" data-date="' + d + '" data-hour="' + hr + '" onclick="atCellClick(event,this)">' +
-                        evs.map(function (e) { return atChipHtml(e, null, 'hour'); }).join('') + (evs.length ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
+                        evs.map(function (e) { const cont = atHourCont(e, hr), go = atHourNext(e, hr); return cont ? atSpanMoreHtml(e, go) : atChipHtml(e, null, 'hour', go ? 'go' : ''); }).join('') + (evs.length && !goes ? '<div class="at-addstrip text-center text-[10px] text-slate-300 hover:text-[#8a6d0a] leading-4 select-none" title="在這格新增">＋</div>' : '') + '</div>';
                 });
             }
             // ---- v10：每日備注列（23:00 列之下，每天一格）----
