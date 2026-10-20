@@ -5708,12 +5708,27 @@
             atOpenAdd(el.getAttribute('data-date'), h ? atPad(+h) + ':00' : '');
         }
 
+        // 下次聯絡丟到時間格：不改提醒日，改開「新增紀錄」讓使用者確認後存成有時間的跟進（藍＝客戶）。
+        // 有連結的核心單就預選第一單（負責業務跟單走，可能和名單不同）；沒有單才預選名單本身。
+        function atReminderBookId(c) {
+            if (!c) return '';
+            const L = c.progress === 'LEAD' ? c : coreLeadOf(c);
+            if (L) {
+                const deals = leadDeals(L);
+                if (deals.length) return deals[0].id;
+                return L.id;
+            }
+            return c.id;
+        }
         // ---- 拖曳移動（桌機；HTML5 drag & drop）----
         function atMove(cid, src, idx, date, hour) {
             const _rs = atResolve(cid, src, idx); const c = _rs && _rs.c, r = _rs && _rs.r;
             if (!c || !r || !atParse(date)) return;
             const before = [r.date, r.time, r.endDate, c.nextContactDate].join('|');
-            if (src === 'n') nxtSet(c, date);
+            if (src === 'n') {
+                if (hour != null && hour !== '') { atOpenAdd(date, atPad(+hour) + ':00', atReminderBookId(c)); return; }
+                nxtSet(c, date);
+            }
             else {
                 const od = leadValidDate(r.date), oe = leadValidDate(r.endDate), multi = !!(oe && oe > od);
                 const delta = Math.round((atParse(date) - atParse(od)) / 86400000);
