@@ -814,16 +814,20 @@
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-clock text-[#D4AF37]"></i> 時間 <span class="font-normal text-slate-400">(選填)</span></label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-clock text-[#D4AF37]"></i> 開始時間 <span class="font-normal text-slate-400">(選填)</span></label>
                                     <input type="time" id="historyTime" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none">
                                 </div>
-                                <div class="col-span-2 sm:col-span-1">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-comments text-[#D4AF37]"></i> 聯絡方式</label>
-                                    <select id="historyMethod" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label>
+                                    <input type="time" id="historyEndTime" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none">
                                 </div>
-                                <div class="col-span-2 sm:col-span-1">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-comments text-[#D4AF37]"></i> 聯絡方式</label>
+                                    <select id="historyMethod" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select>
+                                </div>
+                                <div>
                                     <label class="block text-xs font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label>
                                     <select id="historyAct" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select>
                                 </div>
@@ -974,8 +978,9 @@
                         <div id="lcDealRow" class="hidden flex items-center gap-2 bg-emerald-50/60 border border-emerald-200 rounded-lg px-2.5 py-1.5"><label for="lcDeal" class="text-[11px] font-bold text-emerald-700 flex-shrink-0"><i class="fa-solid fa-link"></i> 記到哪一單</label><select id="lcDeal" class="flex-1 min-w-0 px-2 py-1 border border-slate-200 bg-white rounded-lg text-xs font-bold text-[#1E2E3D] outline-none"></select></div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="lcDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
+                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select></div>
+                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">開始時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
+                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="lcAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
@@ -1109,7 +1114,7 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">日期 <span class="text-rose-500">*</span></label><input type="date" id="atAddDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-start-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="其他">其他</option></select></div>
+                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="初訪">初訪</option><option value="關鍵訪">關鍵訪</option><option value="定期檢視">定期檢視</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
@@ -1181,6 +1186,37 @@
                         <button type="submit" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-md transition"><i class="fa-solid fa-trophy"></i> 結案</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- 約訪時間：推進／改階段／轉成交之後選填，略過則維持當天、不寫時間 -->
+        <div id="stageTimeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[70] p-4" onclick="if(event.target===this)stageTimeSkip()">
+            <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+                <div class="bg-[#1E2E3D] text-white px-5 py-3 flex justify-between items-center">
+                    <h3 class="font-bold font-editorial text-base flex items-center gap-2"><i class="fa-regular fa-clock text-[#D4AF37]"></i> 約訪時間（選填）</h3>
+                    <button type="button" onclick="stageTimeSkip()" class="text-white/80 hover:text-white" aria-label="略過"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-4 space-y-3 text-sm">
+                    <p class="text-xs text-slate-500 leading-relaxed">有約好時段就填上，會出現在週行程的那個格子。略過則維持今天、不寫時間。</p>
+                    <div>
+                        <label for="stageTimeDate" class="block text-[11px] font-bold text-slate-500 mb-1">日期</label>
+                        <input type="date" id="stageTimeDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label for="stageTimeStart" class="block text-[11px] font-bold text-slate-500 mb-1">開始時間</label>
+                            <input type="time" id="stageTimeStart" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                        </div>
+                        <div>
+                            <label for="stageTimeEnd" class="block text-[11px] font-bold text-slate-500 mb-1">結束時間</label>
+                            <input type="time" id="stageTimeEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white">
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="stageTimeSkip()" class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold">略過</button>
+                    <button type="button" id="stageTimeSaveBtn" onclick="stageTimeSave()" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold">儲存</button>
+                </div>
             </div>
         </div>
 
@@ -1787,10 +1823,10 @@
             else { window.__aqPending = window.__aqPending || []; window.__aqPending.push(job); }
         }
         function aqLogStageEdit(c, prevCat, prevProg) {
-            if (!c) return;
+            if (!c) return null;
             const before = prevCat === 'WON' ? 'WON' : (prevProg || '');
             const after = c.category === 'WON' ? 'WON' : (c.progress || '');
-            if (before === after) return;
+            if (before === after) return null;
             const h = aqStamp({
                 id: 'h-' + Date.now(),
                 date: aqTwDate(),
@@ -1800,6 +1836,7 @@
             c.history = Array.isArray(c.history) ? c.history : [];
             c.history.push(h);
             aqEmit(c, h, { changed: true, stageFrom: before, stageTo: after, dealDate: c.dealDate || '' });
+            return h;
         }
         window.aqPlanEvents = aqPlanEvents;
         window.aqTwDate = aqTwDate;
@@ -4176,6 +4213,7 @@
             document.getElementById('lcMethod').innerHTML = LEAD_CT_METHODS.map(m => '<option value="' + m + '">' + m + '</option>').join('');
             document.getElementById('lcMethod').value = 'Line';
             document.getElementById('lcEndDate').value = ''; document.getElementById('lcTime').value = '';
+            { const ee = document.getElementById('lcEndTime'); if (ee) ee.value = ''; }
             document.getElementById('lcContent').value = '';
             const lcActEl = document.getElementById('lcAct'); if (lcActEl) lcActEl.value = '';
             document.getElementById('lcFormTitle').textContent = '新增聯絡紀錄';
@@ -4200,7 +4238,7 @@
             items.forEach(function (o) {
                 const ct = o.ct, m = atMethodOf(ct), color = AT_METHODS[m] || '#64748B', end = leadValidDate(ct.endDate);
                 h += '<div class="lc-item flex items-start gap-2 bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs" style="border-left:4px solid ' + color + '" data-lc-idx="' + o.i + '">' +
-                    '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono font-bold text-slate-700">' + esc(o.d || String(ct.date || '(無日期)')) + (atValidTime(ct.time) ? ' ' + atValidTime(ct.time) : '') + (end && end > o.d ? ' ~ ' + esc(end) : '') + '</span>' +
+                    '<div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono font-bold text-slate-700">' + esc(o.d || String(ct.date || '(無日期)')) + (function () { const t = atValidTime(ct.time), te = atValidTime(ct.endTime); return t ? ' ' + t + (te && te > t ? '–' + te : '') : ''; })() + (end && end > o.d ? ' ~ ' + esc(end) : '') + '</span>' +
                     '<span class="px-1.5 rounded text-[10px] font-bold ' + (m === '未註明' ? 'bg-slate-100 text-slate-400 border border-dashed border-slate-300' : 'text-white') + '"' + (m === '未註明' ? '' : ' style="background:' + color + '"') + '>' + esc(m) + '</span>' + (multi && o.deal ? '<span class="lc-dealtag px-1.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">' + esc(leadDealLabel(c, o.deal)) + '</span>' : '') + '</div>' +
                     '<div class="hist-text text-slate-600 break-words mt-0.5">' + esc(ct.content || '') + '</div></div>' +
                     '<button type="button" class="lc-edit text-slate-400 hover:text-[#1E2E3D] px-1.5 py-1" title="編輯" onclick="lcEdit(' + o.i + ')"><i class="fa-regular fa-pen-to-square"></i></button>' +
@@ -4275,6 +4313,7 @@
             let method = document.getElementById('lcMethod').value; if (!method) method = 'Line';
             const end = document.getElementById('lcEndDate').value;
             const time = atValidTime(document.getElementById('lcTime').value);
+            const savedEnd = atEndAfter(time, (document.getElementById('lcEndTime') || {}).value);
             const content = normHistText(document.getElementById('lcContent').value);
             const idxStr = document.getElementById('lcEditIdx').value;
             const deals = leadDeals(c), flat = leadRecFlat(c, true);
@@ -4283,7 +4322,7 @@
                 const ct = tgt.ct;
                 ct.date = date; ct.method = method; ct.content = content;
                 if (atParse(end) && end > date) ct.endDate = end; else delete ct.endDate;
-                if (time) ct.time = time; else { delete ct.time; delete ct.endTime; }
+                if (time) { ct.time = time; if (savedEnd) ct.endTime = savedEnd; else delete ct.endTime; } else { delete ct.time; delete ct.endTime; }
                 if (!ct.id) ct.id = tgt.deal ? ('h-' + Date.now()) : leadNewContactId();
                 lcResetForm(); lcAfterChange('聯絡紀錄已更新');
             } else {
@@ -4301,6 +4340,7 @@
                 } else { arr = Array.isArray(c.contacts) ? c.contacts : (c.contacts = []); ct = { id: leadNewContactId(), date: date, method: method, content: content }; aqStamp(ct); if (act) ct.act = act; }
                 if (atParse(end) && end > date) ct.endDate = end;
                 if (time) ct.time = time;
+                if (savedEnd) ct.endTime = savedEnd;
                 arr.push(ct);
                 if (C) aqEmit(C, ct, { changed: false });
                 lcResetForm(); lcAfterChange('聯絡紀錄已新增' + (deals.length > 1 ? '（記在 ' + leadDealLabel(c, C) + '）' : ''));
@@ -4314,6 +4354,7 @@
             document.getElementById('lcEditIdx').value = String(i);
             document.getElementById('lcDate').value = leadCtDate(ct);
             document.getElementById('lcEndDate').value = leadValidDate(ct.endDate); document.getElementById('lcTime').value = atValidTime(ct.time);
+            { const ee = document.getElementById('lcEndTime'); if (ee) ee.value = atValidTime(ct.endTime); }
             document.getElementById('lcContent').value = ct.content || '';
             { const ds = document.getElementById('lcDeal'); if (ds && o.deal && !document.getElementById('lcDealRow').classList.contains('hidden')) { ds.value = o.deal.id; ds.disabled = true; } }
             document.getElementById('lcFormTitle').textContent = '編輯聯絡紀錄';
@@ -5119,8 +5160,9 @@
             
             c.phone = document.getElementById('editPhone').value; c.company = document.getElementById('editCompany').value; c.notes = document.getElementById('editNotes').value;
             c.links = tempLinks.map(function (l) { return { name: l.name, url: l.url }; });
-            aqLogStageEdit(c, prevCat, prevProg);
+            const stageRow = aqLogStageEdit(c, prevCat, prevProg);
             recordState(); renderApp(); closeModal('editCustomerModal'); showToast('資料已更新');
+            if (stageRow) stageTimeOpen(stageRow);
         }
 
         function confirmDeleteCustomer() {
@@ -5136,6 +5178,41 @@
             aqEmit(c, h, { changed: true, stageFrom: prev || '', stageTo: nextStage, dealDate: '' });
             if (nextStage !== 'KEY_VISIT') { c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = ''; }
             recordState(); renderApp(); showToast('已推進進度');
+            stageTimeOpen(h);
+        }
+
+        let stageTimeTarget = null;
+        function stageTimeOpen(h) {
+            if (!h) return;
+            stageTimeTarget = h;
+            const d = document.getElementById('stageTimeDate');
+            const s = document.getElementById('stageTimeStart');
+            const e = document.getElementById('stageTimeEnd');
+            if (d) d.value = leadValidDate(h.date) || aqTwDate();
+            if (s) s.value = '';
+            if (e) e.value = '';
+            openModal('stageTimeModal');
+        }
+        function stageTimeSkip() {
+            stageTimeTarget = null;
+            closeModal('stageTimeModal');
+        }
+        function stageTimeSave() {
+            const h = stageTimeTarget;
+            stageTimeTarget = null;
+            closeModal('stageTimeModal');
+            if (!h) return;
+            const date = leadValidDate((document.getElementById('stageTimeDate') || {}).value);
+            const time = atValidTime((document.getElementById('stageTimeStart') || {}).value);
+            const end = atEndAfter(time, (document.getElementById('stageTimeEnd') || {}).value);
+            let changed = false;
+            if (date && date !== h.date) { h.date = date; changed = true; }
+            if (time) {
+                h.time = time;
+                changed = true;
+                if (end) h.endTime = end; else delete h.endTime;
+            }
+            if (changed) { recordState(); renderApp(); }
         }
 
         function openQuickWon(id) { 
@@ -5167,6 +5244,7 @@
             c.history.push(h);
             aqEmit(c, h, { changed: prevStage !== 'WON', stageFrom: prevStage, stageTo: 'WON', dealDate: c.dealDate || '' });
             recordState(); renderApp(); closeModal('quickWonModal'); showToast('案件已成交！', 'success');
+            stageTimeOpen(h);
         }
 
         // ---- v14/v15：核心看板新增的客戶 → 自動加入一畝田（雙向連結）。v15：一人多單，同名的單全部連到同一位名單，不另開第二列 ----
@@ -5321,7 +5399,7 @@
         // ---- v8：開發名單聯絡紀錄 / 下次聯絡 → 週曆 ----
         // 資料全部存在「名單物件本身」：lead.contacts（選填陣列）＋ 既有的 lead.nextContactDate（＝名單庫「下次提醒日」，這裡正名為「下次聯絡日」）。
         // 雲端 payload 的頂層鍵不變；舊名單沒有 contacts 照常運作。
-        const LEAD_CT_METHODS = ['Line', '電話', '面談', '其他'];
+        const LEAD_CT_METHODS = ['Line', '電話', '面談', 'Instagram', 'Facebook', '其他'];
         function leadContacts(c) { return (c && Array.isArray(c.contacts)) ? c.contacts.filter(function (x) { return x && typeof x === 'object'; }) : []; }
         function leadCtDate(x) { const d = String((x && x.date) || '').substring(0, 10); return atParse(d) ? d : ''; }
         function leadValidDate(v) { const d = String(v || '').substring(0, 10); return atParse(d) ? d : ''; }
@@ -5653,9 +5731,12 @@
             openModal('atAddModal');
             setTimeout(function () { try { $('atAddSearch').focus(); } catch (e) {} }, 30);
         }
-        function atAddSavedEnd(start) {
-            const et = atValidTime((document.getElementById('atAddEndTime') || {}).value);
+        function atEndAfter(start, endVal) {
+            const et = atValidTime(endVal);
             return (start && et && et > start) ? et : '';
+        }
+        function atAddSavedEnd(start) {
+            return atEndAfter(start, (document.getElementById('atAddEndTime') || {}).value);
         }
         function atAddSave() {
             const $ = function (n) { return document.getElementById(n); };
@@ -6412,7 +6493,7 @@
         let atWeekStart = null; // 目前顯示週的「週一」（v16 起週一～週日），格式 YYYY-MM-DD
         const AT_DOW = ['一', '二', '三', '四', '五', '六', '日'];            // v16：欄位順序＝週一…週日
         const AT_METHODS = {
-            'Line': '#10B981', '電話': '#3B82F6', '面談': '#D4AF37', '其他': '#865E8A', '未註明': '#94A3B8'
+            'Line': '#10B981', '電話': '#3B82F6', '面談': '#D4AF37', 'Instagram': '#E1306C', 'Facebook': '#1877F2', '其他': '#865E8A', '未註明': '#94A3B8'
         };
         function atPad(n) { return (n < 10 ? '0' : '') + n; }
         function atFmt(d) { return d.getFullYear() + '-' + atPad(d.getMonth() + 1) + '-' + atPad(d.getDate()); }
@@ -6851,8 +6932,8 @@
             });
             tc.innerHTML = rows.map(function (row) {
                 const h = row.h, i = row.i, editing = !!(histEdit && histEdit.cid === cid && (histEdit.id ? String(h.id || '') === histEdit.id : histEdit.idx === i));
-                const time = atValidTime(h.time);
-                const head = '<p class="text-xs font-bold text-slate-700 min-w-0">' + esc(h.date || '') + (time ? ' ' + esc(time) : '') + (h.endDate ? ' ~ ' + esc(h.endDate) : '') +
+                const time = atValidTime(h.time), tend = atValidTime(h.endTime);
+                const head = '<p class="text-xs font-bold text-slate-700 min-w-0">' + esc(h.date || '') + (time ? ' ' + esc(time) + (tend && tend > time ? '–' + esc(tend) : '') : '') + (h.endDate ? ' ~ ' + esc(h.endDate) : '') +
                     (h.method ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-50 text-[#8a6d0a] border border-amber-200 text-[10px]">' + esc(h.method) + '</span>' : '') +
                     (h.progress ? ' <span class="ml-1 text-[#1E2E3D] font-bold">[' + histProgLabel(h.progress) + ']</span>' : '') +
                     (h.by ? ' <span class="ml-1 text-slate-400 font-normal">紀錄人 ' + esc(h.by) + '</span>' : '') + '</p>';
@@ -6914,7 +6995,8 @@
                 const mEl = document.getElementById('historyMethod'), eEl = document.getElementById('historyEndDate');
                 if (mEl && mEl.value) h.method = mEl.value;
                 if (eEl && eEl.value && h.date && eEl.value > h.date) h.endDate = eEl.value;
-                const tEl = document.getElementById('historyTime'); if (tEl && atValidTime(tEl.value)) h.time = atValidTime(tEl.value);   // v9：選填時間
+                const tEl = document.getElementById('historyTime'); if (tEl && atValidTime(tEl.value)) h.time = atValidTime(tEl.value);
+                const teEl = document.getElementById('historyEndTime'); const savedEnd = atEndAfter(h.time, teEl && teEl.value); if (savedEnd) h.endTime = savedEnd;
                 const aEl = document.getElementById('historyAct'); if (aEl && aqActOf(aEl.value)) h.act = aqActOf(aEl.value);
             }
             nxtSet(c, document.getElementById('historyNextContact').value);
