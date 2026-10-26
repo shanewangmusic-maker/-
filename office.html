@@ -50,6 +50,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .fbtn b{display:block;font-family:var(--f-num);font-size:15px;color:var(--ink)}
 .fbtn.act{background:var(--amber);color:#3a2408}
 .fbtn.act b{color:#2a1a05}
+#replayBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 78px);z-index:9100;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;width:max-content;max-width:calc(100% - 16px);
+  background:var(--paper);color:var(--ink);border-radius:16px;padding:8px;box-shadow:0 4px 0 #d9c49c,0 10px 24px rgba(0,0,0,.35)}
+#replayBar[hidden]{display:none}
+#replayWho{flex:1 1 100%;text-align:center;font-size:12px;font-weight:800;color:var(--ink2);line-height:1.4}
+#replayBar button{border:0;background:var(--paper2);color:var(--ink);border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px;font-family:inherit}
+#replayBar #replayPause{background:var(--amber);color:#2a1a05}
+@media (max-width:600px){
+  #replayBar{bottom:calc(env(safe-area-inset-bottom,0px) + 84px);width:calc(100% - 16px)}
+  #replayBar button{flex:1 1 auto;padding:8px 8px}
+}
 
 #tip{position:fixed;z-index:8;pointer-events:none;background:var(--paper);color:var(--ink);font-size:12px;font-weight:700;padding:5px 10px;border-radius:10px;
   box-shadow:0 3px 0 #d9c49c,0 6px 14px rgba(0,0,0,.3);white-space:nowrap}
@@ -242,6 +253,13 @@ pre{white-space:pre-wrap;font-family:inherit;font-size:13px;background:#fffaf0;b
   <button class="fbtn" data-f="-1" type="button"><b>全景</b>剖面</button>
 </nav>
 <div class="hint" id="hint">點家具 → Shane 走過去使用 · 點人物看卡片 · 拖曳移動、雙指縮放</div>
+<div id="replayBar" hidden>
+  <span id="replayWho"></span>
+  <button type="button" id="replayPause">暫停</button>
+  <button type="button" id="replayNext">下一句</button>
+  <button type="button" id="replayStop">停止</button>
+  <button type="button" id="replaySpeed">1×</button>
+</div>
 <div id="tip" hidden></div>
 <aside id="musicDock" hidden aria-label="音樂播放">
   <div class="mdbar"><span class="mdrec">●</span><button type="button" id="mdOpen" class="mdt"><span id="mdTitle">音樂</span></button>
@@ -991,6 +1009,8 @@ const DRAW={
         const hit=()=>{ const a=box(); return (window.SIMRECTS||[]).some(r=>a[0]<r[2]&&a[2]>r[0]&&a[1]<r[3]&&a[3]>r[1]); };
         for(let k=0;k<6&&hit();k++){ if(o.face==='up') ty+=16; else tx+=(k%2?1:-1)*Math.ceil(tw*.4); }
         (window.SIMRECTS=window.SIMRECTS||[]).push(box());
+        window.SIMHEADS=window.SIMHEADS||{}; window.SIMTAGBOX=window.SIMTAGBOX||{};
+        SIMHEADS[i]={X:hd.X,Y:headY}; SIMTAGBOX[i]=box();
         c.fillStyle='#e3a43e'; rr(tx-tw/2,ty-9,tw,th,8); c.fill();
         ell(tx-tw/2+8,ty-1,3,3,'#5f9a52'); c.fillStyle='#2a1a05'; c.textAlign='center'; c.fillText(nm,tx+4,ty+3);
       }); }
@@ -2266,6 +2286,7 @@ function sortItems(items){
 /* ---------- 繪製 ---------- */
 function drawFloor(f,t){
   setF(f);
+  if(f===0){ window.SIMHEADS={}; window.SIMTAGBOX={}; }
   drawRoom(f);
   // 掛牆物件
   for(const o of OBJ) if(o.f===f&&o.wall&&!o.hidden) drawObj(o,t);
@@ -2300,6 +2321,7 @@ function drawFloor(f,t){
   lighting(f);
   if(window.SIMTAG&&SIMTAG.length){ setF(f); window.SIMRECTS=(typeof TAGRECTS!=='undefined'?TAGRECTS.slice():[]); SIMTAG.splice(0).reverse().forEach(fn=>fn()); }
   SAYRECTS=[]; TAGRECTS=[]; for(const e of ENTS.slice().sort((a,b)=>(b.y+b.x)-(a.y+a.x))) drawOverhead(e,f);
+  if(f===0&&window.drawReplayBubble) drawReplayBubble();
 }
 function outline(o){
   setF(o.f);
@@ -2424,6 +2446,7 @@ function loop(t){
   skyT-=dt; if(skyT<=0){ skyT=1; const h=taipeiHour(); SKY=skyAt(h); if(BG.lastH===undefined||Math.abs(h-BG.lastH)>.004){ BG.lastH=h; updateBG(h); } }
   cam.z=lerp(cam.z,cam.tz,.12); cam.x=lerp(cam.x,cam.tx,.14); cam.y=lerp(cam.y,cam.ty,.14);
   director(dt); updElevator(dt); updChars(dt); updParts(dt); tickWorld(dt);
+  if(window.tickReplay) tickReplay(dt);
   // 鏡頭跟著 Shane 換樓層
   if(SHANE.mode==='idle'||SHANE.mode==='walk'){ if(SHANE.f!==VIEW.lastShaneF){ if(VIEW.follow&&VIEW.f===VIEW.lastShaneF) focusFloor(SHANE.f); VIEW.lastShaneF=SHANE.f; } }
   render(t);
@@ -3596,6 +3619,10 @@ function initUI(){
 #simDet .tw{overflow-x:auto}#simDet h4{margin:12px 0 4px}
 .disc{background:#fff;border-radius:14px;padding:10px;margin-top:12px}
 .disc select{flex:none;width:100%;margin:6px 0}
+.disc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.disc-top h4{margin:0}
+.mtg-play,.disc-play{border:0;background:var(--amber);color:#2a1a05;font-weight:800;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:13px}
+.mtg-play{margin:0 10px 8px}
 .mtg{border:1px solid #e6d4ad;border-radius:12px;margin:8px 0;background:var(--paper);overflow:hidden}
 .mtg.open{box-shadow:0 0 0 2px var(--amber)}
 .mtg-h{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
@@ -3646,7 +3673,7 @@ function initUI(){
  <tr><td>10/09 21:55</td><td>美股</td><td>AAPL</td><td>賣</td><td>2</td><td>$228.00</td><td class="dn">-$18</td><td>跌破停損</td><td>否</td></tr></table></div>
  <div class="note">合計：已實現 +$162 ＋ 未實現 +$24 ＝ 本月損益 +$186</div>
  </div>
- <div class="disc"><h4 style="margin:0">討論紀錄</h4><select id="discRole" hidden></select><select id="discSel"></select><div id="discBox"></div></div>
+ <div class="disc"><div class="disc-top"><h4>討論紀錄</h4><button type="button" class="disc-play" id="replayTop" hidden>▶ 重播會議</button></div><select id="discRole" hidden></select><select id="discSel"></select><div id="discBox"></div></div>
  </div><div class="dl2" id="simLog">
  <h4>活動紀錄</h4>
  <div class="lg">15:32 唱反調：2454 聯發科成交量偏低，建議等待</div>
@@ -3785,10 +3812,15 @@ function renderMeetings(){
     const title=(c.title||'')+(c.topic?(' · '+c.topic):'');
     const msgs=open?c.msgs.filter(m=>!role||m.role===role):[];
     const log=open?('<div class="mtg-log">'+msgs.map(m=>bub(SEAT[m.role]||m.role, m.time||'', m.text||'', (/否決/.test(m.decision||'')||/否決/.test(m.text||''))?1:0)).join('')+(c.summary?'<p class="note">'+esc(c.summary)+'</p>':'')+'</div>'):'';
-    return '<article class="mtg'+(open?' open':'')+'"><button type="button" class="mtg-h" data-mid="'+esc(c.id)+'"><b>'+esc((md(c.date)+' '+(c.time||'')).trim())+'</b><span class="mt">'+esc(title)+'</span><span class="ma">'+esc(who)+'</span>'+(c.decision?'<span class="mdc">'+esc(c.decision)+'</span>':'')+'</button>'+log+'</article>';
+    const play=c.msgs.length?'<button type="button" class="mtg-play" data-replay="'+esc(c.id)+'">▶ 重播會議</button>':'';
+    return '<article class="mtg'+(open?' open':'')+'"><button type="button" class="mtg-h" data-mid="'+esc(c.id)+'"><b>'+esc((md(c.date)+' '+(c.time||'')).trim())+'</b><span class="mt">'+esc(title)+'</span><span class="ma">'+esc(who)+'</span>'+(c.decision?'<span class="mdc">'+esc(c.decision)+'</span>':'')+'</button>'+play+log+'</article>';
   }).join('');
+  const top=document.getElementById('replayTop');
+  if(top) top.hidden=!replayTarget();
 }
 box.addEventListener('click', e=>{
+  const rp=e.target.closest('[data-replay]');
+  if(rp){ startReplay(rp.getAttribute('data-replay')); return; }
   const b=e.target.closest('[data-mid]'); if(!b||!MEETS.length) return;
   const id=b.getAttribute('data-mid'); OPEN=OPEN===id?null:id; renderMeetings();
 });
@@ -3849,9 +3881,126 @@ function applyBook(j){
   BOOK=j; draw();
   if(typeof showWar==='function'&&typeof PANEL_ON!=='undefined'&&PANEL_ON==='war') showWar();
 }
+function replayTarget(){
+  const today=tpToday();
+  return MEETS.find(c=>c.date===today&&c.title!=='當日其他討論'&&c.msgs.length)
+    ||MEETS.find(c=>c.title!=='當日其他討論'&&c.msgs.length)
+    ||MEETS.find(c=>c.msgs.length)||null;
+}
+const REPLAY={on:false,paused:false,speed:1,idx:0,lines:[],left:0,roles:[],line:null,title:'',follow:true};
+window.REPLAY=REPLAY;
+function lineHold(text){ const n=String(text||'').length; return 3+Math.min(2,n/80); }
+function replayWrap(s,maxW){
+  const out=[]; let cur='';
+  for(const ch of String(s||'')){ if(c.measureText(cur+ch).width>maxW){ out.push(cur); cur=ch; } else cur+=ch; }
+  if(cur) out.push(cur);
+  if(out.length>8){ const cut=out.slice(0,8); cut[7]=cut[7].replace(/…$/, '')+'…'; return cut; }
+  return out;
+}
+function replayUi(){
+  const bar=document.getElementById('replayBar'); if(!bar) return;
+  bar.hidden=!REPLAY.on;
+  const who=document.getElementById('replayWho');
+  const pause=document.getElementById('replayPause');
+  const speed=document.getElementById('replaySpeed');
+  if(who) who.textContent=REPLAY.on?(roleLabel(REPLAY.line&&REPLAY.line.role)+' · '+(REPLAY.idx+1)+'/'+REPLAY.lines.length+' · '+REPLAY.title):'';
+  if(pause) pause.textContent=REPLAY.paused?'繼續':'暫停';
+  if(speed) speed.textContent=(REPLAY.speed===2?'2':'1')+'×';
+}
+function showReplayLine(){
+  const line=REPLAY.lines[REPLAY.idx]||null;
+  REPLAY.line=line;
+  REPLAY.left=line?lineHold(line.text):0;
+  replayUi();
+}
+function frameReplay(){
+  if(typeof focusFloor==='function') focusFloor(0,true);
+  if(typeof setF==='function') setF(0);
+  const q=P(8.0,4.2,30);
+  const top=64, bot=128;
+  const z=clamp(VW<600?1.45:1.72,.5,2.3);
+  cam.tz=z; cam.tx=VW/2-q.X*z; cam.ty=top+(VH-top-bot)/2-q.Y*z;
+  cam.z=z; cam.x=cam.tx; cam.y=cam.ty;
+}
+function startReplay(id){
+  const card=MEETS.find(c=>c.id===id); if(!card||!card.msgs.length){ if(typeof toast==='function') toast('這場會議沒有可重播的發言'); return; }
+  REPLAY.on=true; REPLAY.paused=false; REPLAY.idx=0; REPLAY.lines=card.msgs.slice();
+  REPLAY.roles=(card.attendees&&card.attendees.length?card.attendees:[...new Set(card.msgs.map(m=>m.role))]).slice();
+  REPLAY.title=card.title||'會議';
+  if(typeof VIEW!=='undefined'){ REPLAY.follow=VIEW.follow; VIEW.follow=false; }
+  const sim=document.getElementById('sim'); if(sim) sim.hidden=true;
+  if(typeof closePanels==='function') closePanels();
+  showReplayLine();
+  seatToday(MEETS);
+  frameReplay();
+  if(typeof toast==='function') toast('開始重播：'+REPLAY.title);
+}
+function stopReplay(){
+  if(!REPLAY.on&&!document.getElementById('replayBar')) return;
+  const was=REPLAY.on;
+  REPLAY.on=false; REPLAY.paused=false; REPLAY.line=null; REPLAY.roles=[];
+  if(was&&typeof VIEW!=='undefined') VIEW.follow=REPLAY.follow;
+  replayUi();
+  seatToday(MEETS);
+}
+window.tickReplay=function(dt){
+  if(!REPLAY.on||REPLAY.paused) return;
+  REPLAY.left-=dt*(REPLAY.speed||1);
+  if(REPLAY.left>0) return;
+  if(REPLAY.idx>=REPLAY.lines.length-1){ if(typeof toast==='function') toast('會議重播結束'); stopReplay(); return; }
+  REPLAY.idx++; showReplayLine();
+};
+window.drawReplayBubble=function(){
+  if(!REPLAY.on||!REPLAY.line) return;
+  const line=REPLAY.line;
+  const map={scout:0,research:1,devil:2,risk:3,decision:4,recorder:5};
+  const i=map[line.role];
+  const head=i!=null&&window.SIMHEADS?SIMHEADS[i]:null;
+  let hx, hy;
+  if(head){ hx=head.X; hy=head.Y; }
+  else { const q=P(4.75,4.3,72); hx=q.X; hy=q.Y; }
+  const tag=i!=null&&window.SIMTAGBOX?SIMTAGBOX[i]:null;
+  let tip=hy-8;
+  if(tag&&tag[1]<hy) tip=Math.min(tip, tag[1]-8);
+  const veto=line.role==='risk'&&(/否決/.test(line.decision||'')||/否決/.test(line.text||''));
+  const maxW=Math.max(128, Math.min(220, (VW-40)/Math.max(cam.z,.55)));
+  c.font='10px system-ui'; c.textAlign='left';
+  let lines=replayWrap(line.text||'', maxW);
+  if(line.role==='gm') lines=['操盤總管'].concat(lines);
+  const w=Math.max.apply(null, lines.map((s,n)=>{ c.font=(line.role==='gm'&&n===0?'bold ':'')+'10px system-ui'; return c.measureText(s).width; }))+16;
+  const hh=lines.length*14+10;
+  let bx=clamp(hx-w/2, hx-w+28, hx-28);
+  let by=tip;
+  const rectAt=t=>[bx-2, t-hh-8, bx+w+2, t-4];
+  const blocks=[...(window.SIMRECTS||[]), ...(typeof TAGRECTS!=='undefined'?TAGRECTS:[])];
+  const hits=t=>{ const a=rectAt(t); return blocks.some(r=>a[0]<r[2]&&a[2]>r[0]&&a[1]<r[3]&&a[3]>r[1]); };
+  let tries=0; while(hits(by)&&tries<8){ by-=16; tries++; }
+  c.save();
+  if(by<tip-4){ c.strokeStyle=veto?'rgba(176,64,52,.45)':'rgba(120,90,50,.45)'; c.lineWidth=1; c.beginPath(); c.moveTo(hx,tip); c.lineTo(hx,by); c.stroke(); }
+  c.fillStyle=veto?'rgba(246,214,207,.98)':'rgba(255,250,240,.97)';
+  c.strokeStyle=veto?'rgba(176,64,52,.55)':'rgba(120,90,50,.35)';
+  c.lineWidth=1;
+  rr(bx, by-hh-6, w, hh, 8); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(hx-4, by-6); c.lineTo(hx+4, by-6); c.lineTo(hx, by); c.closePath(); c.fill();
+  c.fillStyle='#3a2a1a';
+  lines.forEach((s,n)=>{ c.font=(line.role==='gm'&&n===0?'bold ':'')+'10px system-ui'; c.fillText(s, bx+8, by-hh+8+n*14); });
+  c.restore();
+};
+document.getElementById('replayPause').onclick=()=>{ if(!REPLAY.on) return; REPLAY.paused=!REPLAY.paused; replayUi(); };
+document.getElementById('replayNext').onclick=()=>{
+  if(!REPLAY.on) return;
+  if(REPLAY.idx>=REPLAY.lines.length-1){ if(typeof toast==='function') toast('會議重播結束'); stopReplay(); return; }
+  REPLAY.idx++; showReplayLine();
+};
+document.getElementById('replayStop').onclick=()=>{ if(REPLAY.on&&typeof toast==='function') toast('已停止重播'); stopReplay(); };
+document.getElementById('replaySpeed').onclick=()=>{ REPLAY.speed=REPLAY.speed===2?1:2; replayUi(); };
+const replayTop=document.getElementById('replayTop');
+if(replayTop) replayTop.onclick=()=>{ const c=replayTarget(); if(c) startReplay(c.id); };
 function seatToday(cards, n){
+  const replay=REPLAY.on&&REPLAY.roles&&REPLAY.roles.length;
   const today=tpToday(), seen={};
-  (cards||[]).forEach(c=>{ if(!c||c.date!==today||c.title==='當日其他討論') return; (c.attendees||[]).forEach(r=>{ seen[r]=1; }); });
+  if(replay) REPLAY.roles.forEach(r=>{ seen[r]=1; });
+  else (cards||[]).forEach(c=>{ if(!c||c.date!==today||c.title==='當日其他討論') return; (c.attendees||[]).forEach(r=>{ seen[r]=1; }); });
   const order=['scout','research','devil','risk','decision','recorder'];
   const map={scout:0,research:1,devil:2,risk:3,decision:4,recorder:5};
   const idxs=order.filter(r=>seen[r]).map(r=>map[r]);
