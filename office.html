@@ -1,4 +1,4 @@
-<title>AI 虛擬辦公室</title>
+<title>AI 操盤公司（模擬）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -221,13 +221,13 @@ pre{white-space:pre-wrap;font-family:inherit;font-size:13px;background:#fffaf0;b
   <button id="menuBtn" type="button" aria-expanded="false">選單</button></div>
 </header>
 <nav id="menu" hidden>
-  <button id="mCrm" type="button">客戶名單</button>
-  <button id="mMeet" type="button">召開全員會議</button>
-  <button id="mWar" type="button">戰情面板</button>
-  <button id="mTasks" type="button">任務牆</button>
-  <button id="mInbox" type="button">交接站收件匣 <span id="mInboxN"></span></button>
-  <button id="mBrief" type="button">今日財經 · 書桌</button>
-  <button id="mProg" type="button">助理進度</button>
+  <button id="mSim" type="button" onclick="openSim()">模擬操盤部（持股・交易日誌・討論）</button>
+  <button id="mMeet" type="button">召開投資委員會</button>
+  <button id="mWar" type="button">行情與績效面板</button>
+  <button id="mTasks" type="button">交易日誌牆</button>
+  <button id="mInbox" type="button">交易單收件匣 <span id="mInboxN"></span></button>
+  <button id="mBrief" type="button">今日盤勢 · 董事長書桌</button>
+  <button id="mProg" type="button">團隊進度</button>
   <button id="mAll" type="button">三層剖面全景</button>
   <button id="mTour" type="button">操作導覽</button>
   <button id="mAssist" type="button">助理設定</button>
@@ -235,9 +235,9 @@ pre{white-space:pre-wrap;font-family:inherit;font-size:13px;background:#fffaf0;b
   <button id="mSet" type="button">設定（Grok 連線）</button>
 </nav>
 <nav id="floors" aria-label="樓層">
-  <button class="fbtn" data-f="2" type="button"><b>3F</b>私人</button>
-  <button class="fbtn" data-f="1" type="button"><b>2F</b>工作</button>
-  <button class="fbtn" data-f="0" type="button"><b>1F</b>戰情</button>
+  <button class="fbtn" data-f="2" type="button"><b>3F</b>董事長</button>
+  <button class="fbtn" data-f="1" type="button"><b>2F</b>研究</button>
+  <button class="fbtn" data-f="0" type="button"><b>1F</b>交易</button>
   <button class="fbtn" data-f="-1" type="button"><b>全景</b>剖面</button>
 </nav>
 <div class="hint" id="hint">點家具 → Shane 走過去使用 · 點人物看卡片 · 拖曳移動、雙指縮放</div>
@@ -515,7 +515,7 @@ function O(f,kind,x,y,w,d,h,opt){
 }
 let CUR_WH=WALL_H;
 const WH=f=>(typeof VIEW!=='undefined'&&VIEW.f<0&&f<2)?FLOOR_GAP-SLAB:WALL_H;   // 每層牆高：全景時接到上一層
-const FLOOR_NAMES=['1F 戰情室','2F 工作生活層','3F 私人辦公室'];
+const FLOOR_NAMES=['1F 交易大廳','2F 研究室','3F 董事長室'];
 const STAIR={x:.6,y:7,w:2.2,d:2.2,cx:1.7,cy:8.1,entry:{x:3.45,y:8.1}};
 const ELEV={x:21.6,y:.3,w:2,d:2,cx:22.6,cy:1.3,wait:{x:22.6,y:3.15}};
 /* 窗戶段落（後牆 x 範圍）與左牆窗 */
@@ -534,78 +534,87 @@ function buildWorld(){
       use:{x:(w[0]+w[1])/2,y:1.3,face:'up',pose:'stand'},tower:f===2});
   }
 
-  /* ---------------- 1F 戰情室 ---------------- */
+  /* ---------------- 1F 交易大廳 ---------------- */
   O(0,'rug',4.5,2.3,7.2,4.3,0,{solid:false,col:'#7a4f36',col2:'#8e6044'});
-  O(0,'warTV',3.7,0,6.4,.05,0,{wall:'back',solid:false,label:'戰情大螢幕',act:'war',
+  O(0,'warTV',3.7,0,6.4,.05,0,{wall:'back',solid:false,label:'行情牆 · 加權／那斯達克／費半',act:'war',
     use:{x:6.9,y:1.6,face:'up',pose:'stand'},st:{view:'week'}});
-  O(0,'whiteboard',0,1.1,.05,2.6,0,{wall:'left',solid:false,label:'白板 · 今日三件事',act:'board',
+  O(0,'whiteboard',0,1.1,.05,2.6,0,{wall:'left',solid:false,label:'交易守則白板',act:'board',
     use:{x:1.25,y:2.4,face:'left',pose:'stand'}});
-  O(0,'taskwall',0,4.1,.05,2.6,0,{wall:'left',solid:false,label:'任務牆',act:'tasks',
+  O(0,'taskwall',0,4.1,.05,2.6,0,{wall:'left',solid:false,label:'交易日誌牆',act:'tasks',
     use:{x:1.25,y:5.4,face:'left',pose:'stand'}});
-  O(0,'meetTable',5.5,3.65,5,1.3,22,{label:'會議桌 · 召開會議',act:'meeting',
+  O(0,'meetTable',5.5,3.65,5,1.3,22,{label:'投資委員會會議室 · 召開會議',act:'meeting',
     use:{x:8,y:5.58,face:'up',pose:'sitback',seatH:13}});
   for(let i=0;i<5;i++){
     O(0,'chair',4.2+i+1.5,2.75,.6,.6,13,{solid:false,face:'down',seatId:'mn'+i});
     O(0,'chair',4.2+i+1.5,5.25,.6,.6,13,{solid:false,face:'up',seatId:'ms'+i});
   }
-  O(0,'handoff',14,5.2,2.4,.8,30,{label:'交接站 · 收件匣',act:'inbox',use:{x:15.2,y:6.65,face:'up',pose:'stand'}});
+  // 模擬操盤部（模擬資料・非真實交易）：6 張交易桌 + 牆上大螢幕
+  O(0,'simTV',17.9,0,2.9,.05,0,{wall:'back',solid:false,label:'模擬操盤大螢幕 · 點我看明細',act:'sim',use:{x:19.3,y:1.3,face:'up',pose:'stand'}});
+  for(let i=0;i<6;i++){ const sx=11.9+(i%3)*1.9, sy=1.4+Math.floor(i/3)*1.9;
+    O(0,'simDesk',sx,sy,1.5,.7,22,{simI:i,label:'',act:'sim',use:{x:sx+.55,y:sy+1.1,face:'up',pose:'stand'}}); }
+  O(0,'handoff',14,5.2,2.4,.8,30,{label:'交易單收件匣',act:'inbox',use:{x:15.2,y:6.65,face:'up',pose:'stand'}});
   O(0,'plant',.35,.35,.7,.7,0,{s:1.25,label:'盆栽（澆水）',act:'water',use:{x:1.5,y:1.0,face:'left',pose:'stand'}});
   O(0,'plant',22.8,8.6,.7,.7,0,{s:1.1,label:'盆栽（澆水）',act:'water',use:{x:22.2,y:8,face:'right',pose:'stand'}});
   O(0,'plant',17.6,.35,.6,.6,0,{s:.95,label:'盆栽（澆水）',act:'water',use:{x:17.9,y:1.4,face:'up',pose:'stand'}});
   O(0,'lamp',11.6,.6,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:11.85,y:1.6,face:'up',pose:'stand'}});
-  // 1F 接待大廳：客戶來訪先在這裡等候
+  // 1F 接待大廳：標的來訪先在這裡等候
   O(0,'rug',16.4,6.3,6.6,3.5,0,{solid:false,col:'#6f5642',col2:'#7e634c'});
-  O(0,'ctable',19.0,7.0,1.6,.75,11,{label:'接待大廳 · 等候區',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
-  O(0,'sofaS',20.5,8.4,2.2,.8,0,{face:'down',col:'#7d5a40',label:'等候沙發',act:'rest',use:{x:21.6,y:8.9,face:'down',pose:'sit',seatH:13}});
+  O(0,'ctable',19.0,7.0,1.6,.75,11,{label:'休息區',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
+  O(0,'sofaS',20.5,8.4,2.2,.8,0,{face:'down',col:'#7d5a40',label:'休息沙發',act:'rest',use:{x:21.6,y:8.9,face:'down',pose:'sit',seatH:13}});
   O(0,'lamp',16.6,8.6,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:16.85,y:8.1,face:'down',pose:'stand'}});
-  O(0,'sofaS',17.8,8.4,2.4,.8,0,{face:'down',col:'#7d5a40',label:'等候沙發',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
+  O(0,'sofaS',17.8,8.4,2.4,.8,0,{face:'down',col:'#7d5a40',label:'休息沙發',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
 
-  /* ---------------- 2F 工作生活層 ---------------- */
+  /* ---------------- 2F 研究層 ---------------- */
   O(1,'rug',12.7,3.4,4.0,3.2,0,{solid:false,col:'#6e5a48',col2:'#7f6a55'});
   O(1,'rug',2.5,2.2,8.4,5.8,0,{solid:false,col:'#9a7350',col2:'#a67d58'});
   O(1,'plantWall',0,.8,.05,4.6,0,{wall:'left',solid:false,label:'植生牆（澆水）',act:'water',use:{x:1.3,y:3.1,face:'left',pose:'stand'}});
   // 1F、2F 牆上的壁掛音響：3F 黑膠唱盤放音樂時，整棟一起播
   O(0,'wallSpeaker',.9,0,.8,.05,0,{wall:'back',solid:false,label:'壁掛音響 · 播放音樂',act:'music',use:{x:1.4,y:1.3,face:'up',pose:'stand'}});
   O(1,'wallSpeaker',1.0,0,.8,.05,0,{wall:'back',solid:false,label:'壁掛音響 · 播放音樂',act:'music',use:{x:1.5,y:1.3,face:'up',pose:'stand'}});
-  O(1,'progressTV',2.2,0,5.4,.05,0,{wall:'back',solid:false,label:'助理進度牆',act:'progress',use:{x:4.9,y:1.6,face:'up',pose:'stand'}});
-  O(1,'coffeeBar',11,.15,1.5,.85,32,{label:'咖啡機 · 專注番茄鐘',act:'coffee',use:{x:11.75,y:1.75,face:'up',pose:'stand'}});
+  O(1,'progressTV',2.2,0,5.4,.05,0,{wall:'back',solid:false,label:'風控儀表板',act:'progress',use:{x:4.9,y:1.6,face:'up',pose:'stand'}});
+  O(1,'newsBoard',7.9,0,2.4,.05,0,{wall:'back',solid:false,label:'新聞牌 · 今日盤勢（模擬）',act:'sim',use:{x:9.1,y:1.3,face:'up',pose:'stand'}});
+  O(1,'coffeeBar',11,.15,1.5,.85,32,{label:'咖啡機 · 盯盤番茄鐘',act:'coffee',use:{x:11.75,y:1.75,face:'up',pose:'stand'}});
   O(1,'counter',12.5,.15,2.8,.85,32,{label:'點心吧',act:'snack',use:{x:13.9,y:1.75,face:'up',pose:'stand'}});
   const BOTS=['shepherd','dev','visit','news','stock','social','book','sales','trainer','leads'];
   for(let i=0;i<5;i++){
     const dx=3.0+i*1.6;
-    O(1,'botDesk',dx,3.45,1,.75,22,{bot:BOTS[i],label:'',act:'botDesk',use:{x:dx+.5,y:4.75,face:'up',pose:'stand'}});
-    O(1,'deskChair',dx+.2,2.65,.6,.6,12,{solid:false,face:'down',seatId:'wa'+i});
+    if(i>0) O(1,'botDesk',dx,3.45,1,.75,22,{bot:BOTS[i],label:'',act:'botDesk',use:{x:dx+.5,y:4.75,face:'up',pose:'stand'}});
+    if(i>0) O(1,'deskChair',dx+.2,2.65,.6,.6,12,{solid:false,face:'down',seatId:'wa'+i});
     O(1,'botDesk',dx,6.45,1,.75,22,{bot:BOTS[5+i],label:'',act:'botDesk',use:{x:dx+.5,y:7.75,face:'up',pose:'stand'}});
     O(1,'deskChair',dx+.2,5.65,.6,.6,12,{solid:false,face:'down',seatId:'wb'+i});
   }
-  O(1,'sofa',13.1,3.8,2.6,.85,0,{face:'down',col:'#8a5a3a',label:'沙發區 · 腦力激盪',act:'brainstorm',
+  O(1,'sofa',13.1,3.8,2.6,.85,0,{face:'down',col:'#8a5a3a',label:'研究室沙發 · 盤後討論',act:'brainstorm',
     use:{x:14.4,y:4.3,face:'down',pose:'sit',seatH:13}});
   O(1,'ctable',13.65,5.1,1.5,.75,11,{label:'',act:'brainstorm',use:{x:14.4,y:4.3,face:'down',pose:'sit',seatH:13}});
-  O(1,'arcade',19.4,3.7,.8,.65,0,{label:'遊戲機 · 財商快問快答',act:'arcade',col:'#3d5a8a',use:{x:19.8,y:4.75,face:'up',pose:'stand'}});
-  O(1,'arcade',20.65,3.7,.8,.65,0,{label:'遊戲機 · 財商快問快答',act:'arcade',col:'#8a3d4a',use:{x:21.05,y:4.75,face:'up',pose:'stand'}});
+  O(1,'arcade',19.4,3.7,.8,.65,0,{label:'遊戲機 · 投資快問快答',act:'arcade',col:'#3d5a8a',use:{x:19.8,y:4.75,face:'up',pose:'stand'}});
+  O(1,'arcade',20.65,3.7,.8,.65,0,{label:'遊戲機 · 投資快問快答',act:'arcade',col:'#8a3d4a',use:{x:21.05,y:4.75,face:'up',pose:'stand'}});
   O(1,'foosball',18.9,7.25,1.6,.8,0,{label:'手足球台',act:'foosball',use:{x:18.35,y:7.65,face:'right',pose:'stand'}});
   // 2F 小會議區：兩三人小討論
-  O(1,'smallTable',11.2,7.0,2.4,1.0,22,{label:'小會議桌 · 腦力激盪',act:'brainstorm',use:{x:10.5,y:7.5,face:'right',pose:'stand'}});
+  O(1,'smallTable',11.2,7.0,2.4,1.0,22,{label:'研究小會議桌 · 個股討論',act:'brainstorm',use:{x:10.5,y:7.5,face:'right',pose:'stand'}});
   for(const cx of [11.55,12.8]){ O(1,'chair',cx,6.2,.6,.6,13,{solid:false,face:'down'}); O(1,'chair',cx,8.15,.6,.6,13,{solid:false,face:'up'}); }
   O(1,'plant',23,8.8,.6,.6,0,{s:1.1,label:'盆栽（澆水）',act:'water',use:{x:22.4,y:8.4,face:'right',pose:'stand'}});
   O(1,'plant',10.1,9.0,.6,.6,0,{s:.9,label:'盆栽（澆水）',act:'water',use:{x:9.8,y:8.1,face:'down',pose:'stand'}});
   O(1,'lamp',16.25,5.9,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:15.9,y:6.6,face:'right',pose:'stand'}});
 
-  /* ---------------- 3F 私人辦公室 ---------------- */
+  /* ---------------- 3F 董事長室 ---------------- */
   O(2,'rug',13.3,5.1,4.2,4.4,0,{solid:false,col:'#5e4636',col2:'#6d5240'});
   O(2,'rug',18.3,3.8,3.8,4,0,{solid:false,col:'#7a3f34',col2:'#8a4a3c'});
-  O(2,'books',1.1,.05,4.6,.6,98,{label:'書櫃 · 企業家語錄',act:'books',use:{x:3.4,y:1.3,face:'up',pose:'stand'}});
-  O(2,'wine',.05,1.1,.6,2.8,92,{label:'酒櫃 · 高資產客戶',act:'wine',use:{x:3.1,y:4.35,face:'left',pose:'stand'}});
+  O(2,'holdBoard',5.9,0,2.3,.05,0,{wall:'back',solid:false,label:'持股看板 · 點我看明細',act:'sim',use:{x:7,y:1.3,face:'up',pose:'stand'}});
+  O(2,'books',1.1,.05,4.6,.6,98,{label:'書櫃 · 投資大師語錄',act:'books',use:{x:3.4,y:1.3,face:'up',pose:'stand'}});
+  O(2,'wine',.05,1.1,.6,2.8,92,{label:'酒櫃',act:'wine',use:{x:3.1,y:4.35,face:'left',pose:'stand'}});
   O(2,'bar3',1.7,1.15,.75,2.6,32,{label:'吧台 · 手沖咖啡',act:'coffee',use:{x:3.05,y:2.52,face:'left',pose:'sit',seatH:24}});
   for(let i=0;i<3;i++) O(2,'stool',2.8,1.45+i*.85,.45,.45,24,{solid:false,seatId:'st'+i});
-  O(2,'shaneDesk',12.3,2.2,2.6,1.05,24,{label:'Shane 的書桌 · 今日總覽',act:'desk',use:{x:13.6,y:1.6,face:'down',pose:'type'}});
+  // 3F 總經理桌：操盤總管坐在董事長旁邊回報
+  O(2,'botDesk',15.6,2.45,1,.75,22,{bot:'shepherd',label:'總經理桌 · 操盤總管回報',act:'botDesk',use:{x:16.1,y:3.75,face:'up',pose:'stand'}});
+  O(2,'deskChair',15.8,1.65,.6,.6,12,{solid:false,face:'down',seatId:'gm'});
+  O(2,'shaneDesk',12.3,2.2,2.6,1.05,24,{label:'董事長書桌 · 今日損益總覽',act:'desk',use:{x:13.6,y:1.6,face:'down',pose:'type'}});
   O(2,'officeChair',13.3,1.3,.6,.6,14,{solid:false});
   O(2,'piano',18.9,4.2,2.5,2.1,0,{label:'平台鋼琴（可以彈）',act:'piano',use:{x:20,y:6.95,face:'up',pose:'sitback',seatH:12}});
   O(2,'bench',19.55,6.75,.9,.4,12,{solid:false});
-  O(2,'sofa',13.9,5.5,2.8,.85,0,{face:'down',col:'#6a4430',label:'會客沙發 · 客戶面談',act:'client',
+  O(2,'sofa',13.9,5.5,2.8,.85,0,{face:'down',col:'#6a4430',label:'休息沙發 · 休息',act:'client',
     use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
   O(2,'ctable',14.45,6.95,1.7,.8,11,{label:'',act:'client',use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
-  O(2,'sofa',13.9,8.25,2.8,.85,0,{face:'up',col:'#6a4430',label:'會客沙發 · 客戶面談',act:'client',
+  O(2,'sofa',13.9,8.25,2.8,.85,0,{face:'up',col:'#6a4430',label:'休息沙發 · 休息',act:'client',
     use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
   O(2,'lamp',12.9,5.0,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:13.1,y:6,face:'up',pose:'stand'}});
   O(2,'lamp',17.4,4.2,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:17.1,y:5.2,face:'up',pose:'stand'}});
@@ -868,7 +877,7 @@ const DRAW={
     c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
     const m=STATE.metrics, month=o.st.view==='month';
     const fyc=month?m.monthFYC:m.weekFYC, tg=month?m.monthTarget:m.weekTarget, pct=clamp(fyc/tg,0,1);
-    c.fillStyle='#e8b25c'; c.font='bold 13px system-ui'; c.textAlign='left'; c.fillText('WAR ROOM · '+(month?'本月':'本週')+'戰情',10,18);
+    c.fillStyle='#e8b25c'; c.font='bold 13px system-ui'; c.textAlign='left'; c.fillText('行情牆 · 模擬資料',10,18);
     if(crmUI()){ c.fillStyle='#55606a'; c.font='9px system-ui'; c.fillText(m.src==='CRM'?'CRM'+(m.tgSrc==='CRM'?'':' · 目標示範'):'示範',W*.5,18); }
     c.fillStyle='#7f8a93'; c.font='10px system-ui'; c.textAlign='right'; c.fillText(clockStr(),W-10,18);
     // 進度條
@@ -876,7 +885,7 @@ const DRAW={
     c.fillStyle='#e8b25c'; rr(10,26,(W-70)*pct,12,6); c.fill();
     c.fillStyle='#f3cf8f'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText(Math.round(pct*100)+'%',W-52,37);
     // KPI
-    const K=[['FYC',(fyc/10000).toFixed(1)+'萬'],['成交',month?m.monthCases:m.cases],['面談',month?m.monthMeetings:m.meetings],['待跟進',m.followUp]];
+    const K=[['加權指數','23,150 ▲0.4%'],['那斯達克','18,420 ▲0.8%'],['費半','5,210 ▲1.2%'],['美元/台幣','32.0']];
     K.forEach((kv,i)=>{ const bx=10+i*((W-20)/4);
       c.fillStyle='#14202a'; rr(bx,46,(W-20)/4-6,34,5); c.fill();
       c.fillStyle='#7f8a93'; c.font='9px system-ui'; c.fillText(kv[0],bx+6,58);
@@ -886,7 +895,7 @@ const DRAW={
     bars.forEach((v,i)=>{ const bh=(H-120)*v/mx, bx=12+i*((W*.5)/bars.length);
       c.fillStyle=i===bars.length-1?'#e8b25c':'#4a6a7a'; c.fillRect(bx,H-28-bh,(W*.5)/bars.length-5,bh); });
     // 助理狀態
-    c.fillStyle='#7f8a93'; c.font='9px system-ui'; c.fillText('助理狀態',W*.56,92);
+    c.fillStyle='#7f8a93'; c.font='9px system-ui'; c.fillText('團隊狀態',W*.56,92);
     BOTS.forEach((b,i)=>{ const bx=W*.56+(i%5)*26, by=100+((i/5)|0)*20;
       c.fillStyle=b.data.color; rr(bx,by,18,13,3); c.fill();
       c.fillStyle=STC[b.data.status]; c.fillRect(bx+12,by+9,5,4);
@@ -903,9 +912,9 @@ const DRAW={
     const W=170, H=leftFace(o.y,o.y+o.d,0,24,WALL_H-12,W);
     c.fillStyle='#b9bcc0'; rr(-4,-4,W+8,H+8,3); c.fill();
     c.fillStyle='#f7f7f3'; c.fillRect(0,0,W,H);
-    c.fillStyle='#2b5aa8'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText('今日三件事',8,16);
+    c.fillStyle='#2b5aa8'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText('交易守則',8,16);
     const items=STATE.board;
-    items.slice(0,3).forEach((s,i)=>{ c.fillStyle=s.done?'#7a9a63':'#c0392b'; c.font='bold 11px system-ui'; c.fillText(s.done?'✓':(i+1)+'.',8,36+i*18);
+    items.slice(0,3).forEach((s,i)=>{ c.fillStyle=s.done?'#7a9a63':'#c0392b'; c.font='bold 13px system-ui'; c.fillText(s.done?'✓':(i+1)+'.',8,36+i*18);
       stripText([s.t],24,36+i*18,18,W-30,s.done?'#8a8f95':'#222','11px system-ui');
       if(s.done){ c.strokeStyle='#8a8f95'; c.beginPath(); c.moveTo(24,32+i*18); c.lineTo(Math.min(W-6,24+c.measureText(s.t).width),32+i*18); c.stroke(); } });
     c.fillStyle='#555'; c.fillRect(W*.55,H-4,30,4); c.fillStyle='#c0392b'; c.fillRect(W*.55+34,H-4,18,4);
@@ -916,7 +925,7 @@ const DRAW={
     c.fillStyle='#6b4a32'; rr(-4,-4,W+8,H+8,3); c.fill();
     c.fillStyle='#c79a63'; c.fillRect(0,0,W,H);
     for(let i=0;i<40;i++){ c.fillStyle='rgba(120,80,40,.2)'; c.fillRect((i*37)%W,(i*23)%H,2,2); }
-    c.fillStyle='#3a2414'; c.font='bold 11px system-ui'; c.textAlign='left'; c.fillText('任務牆',6,13);
+    c.fillStyle='#3a2414'; c.font='bold 13px system-ui'; c.textAlign='left'; c.fillText('交易日誌牆',6,13);
     const cols=[['todo','待辦'],['doing','進行中'],['done','完成']];
     cols.forEach((cl,ci)=>{ const cx=4+ci*(W/3);
       c.fillStyle='rgba(58,36,20,.7)'; c.font='8px system-ui'; c.fillText(cl[1],cx+2,24);
@@ -974,7 +983,7 @@ const DRAW={
     box(o.x+1.4,o.y+.15,.8,.55,9,30,'#d8d6d0',{top:'#ecebe6'});
     box(o.x+1.5,o.y+.2,.6,.3,1,39,'#2c2f33');
     const lp=P(o.x+o.w/2,o.y+o.d,26);
-    c.fillStyle='#f3cf8f'; c.font='bold 9px system-ui'; c.textAlign='center'; c.fillText('交接站',lp.X,lp.Y-6);
+    c.fillStyle='#f3cf8f'; c.font='bold 9px system-ui'; c.textAlign='center'; c.fillText('交易單',lp.X,lp.Y-6);
     if(n){ const bp=P(o.x+.7,o.y+.4,60); ell(bp.X,bp.Y,9,9,'#c0503a'); c.fillStyle='#fff'; c.font='bold 10px system-ui'; c.fillText(n,bp.X,bp.Y+3.5); }
   },
   plant(o){
@@ -1012,13 +1021,14 @@ const DRAW={
     const W=290, H=backFace(o.x,o.x+o.w,0,34,WALL_H-8,W);
     c.fillStyle='#16181b'; rr(-4,-4,W+8,H+8,6); c.fill();
     c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
-    c.fillStyle='#e8b25c'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText('助理進度',10,16);
-    BOTS.forEach((b,i)=>{ const col=i<5?0:1, row=i%5, bx=10+col*(W/2), by=26+row*((H-30)/5);
-      c.fillStyle=b.data.color; c.fillRect(bx,by,6,6);
-      c.fillStyle='#c9bfae'; c.font='9px system-ui'; c.fillText(b.data.short,bx+9,by+6);
-      const tk=STATE.tasks.find(t=>t.owner===b.id&&t.status!=='done'), pg=tk?tk.progress:20;
-      c.fillStyle='#1f2a33'; c.fillRect(bx+38,by,W/2-56,6);
-      c.fillStyle=STC[b.data.status]; c.fillRect(bx+38,by,(W/2-56)*pg/100,6); });
+    c.fillStyle='#e8b25c'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText('風控儀表板',10,16);
+    c.fillStyle='#e5788a'; c.font='bold 9px system-ui'; c.fillText('模擬資料',90,16);
+    const G=[['NVDA 部位',8.4,10,'%'],['2330 部位',6.5,10,'%'],['今日虧損',0.0,3,'%'],['最大回撤',1.9,10,'%'],['槓桿',0,1,'倍']];
+    G.forEach((g,i)=>{ const by=28+i*((H-34)/5);
+      c.fillStyle='#c9bfae'; c.font='10px system-ui'; c.fillText(g[0],10,by+8);
+      c.fillStyle='#1f2a33'; c.fillRect(80,by,W-150,8);
+      const r=g[1]/g[2]; c.fillStyle=r>.8?'#e5788a':r>.5?'#e8b25c':'#7ec8a0'; c.fillRect(80,by,(W-150)*Math.min(1,r),8);
+      c.fillStyle='#e9e1cf'; c.fillText(g[1]+g[3]+' / 上限 '+g[2]+g[3],W-66,by+8); });
     c.restore();
   },
   coffeeBar(o){
@@ -1037,6 +1047,56 @@ const DRAW={
     for(let i=0;i<4;i++){ const p=P(o.x+1.6+i*.28,o.y+.35,32); c.fillStyle='#f4ede0'; c.fillRect(p.X-3,p.Y-7,6,7); c.fillStyle='rgba(0,0,0,.15)'; c.fillRect(p.X+1,p.Y-7,2,7); }
     // 吊櫃
     box(o.x+.2,o.y-.1,o.w-.4,.4,18,70,'#6e4a30',{top:'#7a5236'});
+  },
+  newsBoard(o){
+    const W=150, H=backFace(o.x,o.x+o.w,0,34,WALL_H-8,W);
+    c.fillStyle='#3a2a1c'; rr(-4,-4,W+8,H+8,6); c.fill(); c.fillStyle='#f6eedd'; c.fillRect(0,0,W,H);
+    c.textAlign='left'; c.fillStyle='#8e3a30'; c.font='bold 11px system-ui'; c.fillText('新聞牌',6,14);
+    c.fillStyle='#c8584a'; c.font='bold 8px system-ui'; c.fillText('模擬資料',52,14);
+    stripText(STATE.brief.map(x=>'• '+x.replace('（模擬）','')),6,30,(H-34)/5,W-12,'#3d2c1e','9px system-ui');
+    c.restore();
+  },
+  holdBoard(o){
+    const W=150, H=backFace(o.x,o.x+o.w,0,34,WALL_H-8,W);
+    c.fillStyle='#16181b'; rr(-4,-4,W+8,H+8,6); c.fill(); c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
+    c.textAlign='left'; c.fillStyle='#e8b25c'; c.font='bold 11px system-ui'; c.fillText('持股看板',6,14);
+    c.fillStyle='#e5788a'; c.font='bold 8px system-ui'; c.fillText('模擬資料',64,14);
+    const rows=[['2330 台積電','10 股','+$12'],['NVDA','3 股','+$12'],['現金','','$4,429'],['總值','','$5,186']];
+    rows.forEach((r,i)=>{ const y=32+i*((H-36)/4); c.fillStyle='#c9bfae'; c.font='10px system-ui'; c.fillText(r[0],6,y); c.fillText(r[1],78,y);
+      c.fillStyle=r[2][0]=='+'?'#7ec8a0':'#e9e1cf'; c.textAlign='right'; c.fillText(r[2],W-6,y); c.textAlign='left'; });
+    c.restore();
+  },
+  simTV(o){
+    const D=window.SIMD; const W=170, H=backFace(o.x,o.x+o.w,0,34,WALL_H-8,W);
+    c.fillStyle='#16181b'; rr(-4,-4,W+8,H+8,6); c.fill(); c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
+    c.textAlign='left'; c.fillStyle='#e5788a'; c.font='bold 8px system-ui'; c.fillText('模擬資料・非真實交易',6,11);
+    if(D){ c.fillStyle='#c9bfae'; c.font='8px system-ui'; c.fillText('模擬操盤 · 餘額',6,24);
+      c.fillStyle='#fff'; c.font='bold 15px system-ui'; c.fillText('$'+D.bal.toLocaleString(),6,40);
+      c.fillStyle='#7ec8a0'; c.font='bold 9px system-ui'; c.fillText('+$'+D.pnl+' (+'+(D.pnl/50).toFixed(1)+'%)',80,40);
+      const E=D.eq, mn=Math.min(...E), mx=Math.max(...E), gx=6, gy=48, gw=W-12, gh=H-70;
+      c.strokeStyle='#33424f'; c.setLineDash([3,3]); c.beginPath(); const by=gy+gh-(5000-mn)/(mx-mn)*gh; c.moveTo(gx,by); c.lineTo(gx+gw,by); c.stroke(); c.setLineDash([]);
+      c.strokeStyle='#7ec8a0'; c.lineWidth=2; c.beginPath(); E.forEach((v,i)=>{ const X=gx+i*gw/(E.length-1), Y=gy+gh-(v-mn)/(mx-mn)*gh; i?c.lineTo(X,Y):c.moveTo(X,Y); }); c.stroke(); c.lineWidth=1;
+      c.fillStyle='#e8b25c'; c.font='8px system-ui'; c.fillText(D.last,6,H-6); }
+    c.restore();
+  },
+  simDesk(o){
+    const D=window.SIMD, i=o.simI, on=D&&D.cur()===i;
+    floorShadow(o.x,o.y,o.w,o.d,.15);
+    box(o.x+.05,o.y+.05,.08,o.d-.1,19,0,COL.dark); box(o.x+o.w-.13,o.y+.05,.08,o.d-.1,19,0,COL.dark);
+    box(o.x,o.y,o.w,o.d,3,19,COL.walnut,{top:'#7a5236',hl:.2});
+    
+    box(o.x+.1,o.y+o.d-.12,o.w-.2,.06,46,22,'#2b2f35');
+    const W=80, H=frontFace(o.x+.14,o.x+o.w-.14,o.y+o.d-.05,25,66,W);
+    c.fillStyle=on?'#0f2a1c':'#1b1e22'; c.fillRect(0,0,W,H);
+    c.textAlign='left'; c.font='bold 13px system-ui';
+    if(on){ c.fillStyle='#8ff0a6'; const L=D.roles[i].scr, n=1+((performance.now()/600)|0)%L.length; L.forEach((t,k)=>{ c.globalAlpha=k<n?1:.35; c.fillText(t,4,16+k*18,W-8); }); c.globalAlpha=1; }
+    else { c.fillStyle='#4a5058'; c.fillText('待機中…',4,16); }
+    c.restore();
+    if(on){ const g=P(o.x+o.w/2,o.y+o.d,46); c.save(); c.globalCompositeOperation='lighter'; const rg=c.createRadialGradient(g.X,g.Y,2,g.X,g.Y,34); rg.addColorStop(0,'rgba(143,240,166,.45)'); rg.addColorStop(1,'rgba(143,240,166,0)'); c.fillStyle=rg; c.fillRect(g.X-34,g.Y-34,68,68); c.restore(); }
+    if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=P(o.x+o.w/2,o.y+o.d+.45,0), nm=D.name(i); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
+      c.fillStyle=on?'#e3a43e':'rgba(30,22,15,.82)'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
+      ell(np.X-tw/2+8,np.Y-1,3,3,on?'#5f9a52':'#6b6b6b'); c.fillStyle=on?'#2a1a05':'#f5ead4'; c.textAlign='center'; c.fillText(nm,np.X+4,np.Y+3);
+      if(i===3){ c.fillStyle='#c8584a'; c.font='bold 7px system-ui'; c.fillText('否決權',np.X,np.Y-12); } }); }
   },
   botDesk(o){
     const b=BOTS.find(x=>x.id===o.bot);
@@ -1077,8 +1137,8 @@ const DRAW={
     // 招牌
     if(OBJ.find(q=>q.kind==='arcade'&&q.f===o.f)===o){                       // 兩台共用一塊招牌，畫在中間上方
       const sp=P(x+1.05,y+d*.3,92); c.font='bold 10px system-ui'; c.textAlign='center';
-      const tw=c.measureText('財商 Q&A').width+14; c.fillStyle='rgba(20,14,30,.85)'; rr(sp.X-tw/2,sp.Y-11,tw,16,8); c.fill();
-      c.strokeStyle='#b48ad6'; c.lineWidth=1.2; c.stroke(); c.fillStyle='#f3cf8f'; c.fillText('財商 Q&A',sp.X,sp.Y+1); }
+      const tw=c.measureText('投資 Q&A').width+14; c.fillStyle='rgba(20,14,30,.85)'; rr(sp.X-tw/2,sp.Y-11,tw,16,8); c.fill();
+      c.strokeStyle='#b48ad6'; c.lineWidth=1.2; c.stroke(); c.fillStyle='#f3cf8f'; c.fillText('投資 Q&A',sp.X,sp.Y+1); }
   },
   foosball(o){
     const x=o.x,y=o.y,w=o.w,d=o.d;
@@ -1282,93 +1342,64 @@ const CONFIG={
     monthFYC:684000, monthTarget:900000, monthCases:24, monthMeetings:41,
     trend:[18,26,22,31,28,35,22], monthTrend:[120,148,131,166,119] },
   schedule:[
-    {time:'08:30',title:'晨會 · 今日三件事',where:'1F 會議桌',ev:'meeting',topic:'晨會 · 今日三件事'},
-    {time:'10:00',title:'王小姐 · 醫療險與儲蓄規劃',where:'3F 會客沙發',ev:'consult',client:'王小姐'},
+    {time:'08:30',title:'盤前會議 · 今日觀察清單',where:'1F 投資委員會會議室',ev:'meeting',topic:'盤前會議 · 今日觀察清單'},
     {time:'12:00',title:'午休',where:'2F 點心吧、沙發',ev:'lunch'},
-    {time:'13:00',title:'午休結束',where:'回到工位',ev:'lunchEnd'},
-    {time:'14:00',title:'張總 · 家族傳承規劃',where:'3F 會客沙發',ev:'consult',client:'張總'},
-    {time:'17:30',title:'夕會 · 本日戰情回顧',where:'1F 會議桌',ev:'meeting',topic:'夕會 · 本日戰情回顧'},
-    {time:'18:30',title:'下班時間',where:'助理自由活動',ev:'offwork'},
-    {time:'19:30',title:'周董 · 小酌聊美元資產',where:'3F 吧台',ev:'drink',client:'周董'}
+    {time:'13:00',title:'午休結束',where:'回到研究座位',ev:'lunchEnd'},
+    {time:'17:30',title:'收盤檢討 · 今日交易日誌',where:'1F 投資委員會會議室',ev:'meeting',topic:'收盤檢討 · 今日交易日誌'},
+    {time:'18:30',title:'台股收工 · 等美股開盤',where:'自由活動',ev:'offwork'}
   ],
   brief:[
-    '台股量縮整理，電子權值股轉弱、金融股撐盤',
-    '美債殖利率回落，長天期債券 ETF 買盤回流',
-    '高股息 ETF 公告配息，社群討論度回到熱搜前三',
-    '新台幣走升，美元保單報酬試算需要重新校正',
-    '壽險業接軌新制，利變型商品宣告利率受關注'
+    '（模擬）加權指數 23,150 點，電子權值股轉弱、金融股撐盤',
+    '（模擬）那斯達克收高 0.8%，AI 晶片股領漲',
+    '（模擬）費半指數 5,210 點，記憶體族群量增',
+    '（模擬）美債 10 年殖利率回落至 4.1%',
+    '（模擬）新台幣 32.0，外資連 3 日買超'
   ],
-  clients:[
-    {name:'王小姐',stage:'要保書待簽回',heat:'高'},
-    {name:'張總',stage:'法人保單報價確認',heat:'高'},
-    {name:'林先生',stage:'體檢安排',heat:'中'},
-    {name:'吳老師',stage:'二次面談',heat:'中'},
-    {name:'陳太太',stage:'轉介紹名單',heat:'低'}
-  ],
-  // 經營中的客戶名單（示範資料；之後由 CRM 匯入取代）
-  stages:['名單','邀約中','初次面談','需求分析','方案說明','成交','售後經營'],
-  crm:[
-    {id:'k1',name:'張總',avatar:0,heat:'高',stage:4,need:'家族信託與保單傳承',note:'電子業二代，太太是會計師，重大決定兩人一起看。',next:'寄法人保單報價',nextDate:'10/24',onsite:true,
-      log:[{d:'10/18',t:'第二次面談，確認傳承架構方向'},{d:'10/10',t:'初次面談，太太一起出席'}]},
-    {id:'k2',name:'王小姐',avatar:1,heat:'高',stage:4,need:'醫療險缺口與儲蓄規劃',note:'外商行銷主管，工作忙，偏好 LINE 聯絡。',next:'簽回要保書',nextDate:'10/23',onsite:true,
-      log:[{d:'10/20',t:'方案說明完成，對實支實付很有感'}]},
-    {id:'k3',name:'周董',avatar:2,heat:'中',stage:3,need:'美元資產配置與匯率',note:'退休企業主，喜歡威士忌、打高爾夫。',next:'約吧台小酌聊配置',nextDate:'10/26',onsite:true,
-      log:[{d:'10/15',t:'朋友聚會認識，聊到美元保單'}]},
-    {id:'k4',name:'林先生',avatar:0,heat:'中',stage:5,need:'壽險保額補足',note:'剛升主管，小孩 3 歲。',next:'安排體檢',nextDate:'10/25',onsite:true,
-      log:[{d:'10/19',t:'成交！等體檢報告'}]},
-    {id:'k5',name:'吳老師',avatar:1,heat:'中',stage:2,need:'退休金缺口試算',note:'國中老師，對月退制度改變很擔心。',next:'二次面談帶試算表',nextDate:'10/28',onsite:true,
-      log:[{d:'10/17',t:'初次面談，聊退休規劃'}]},
-    {id:'k6',name:'李醫師',avatar:0,heat:'中',stage:1,need:'醫師退休金缺口與節稅',note:'診所開業第 8 年。',next:'確認面談時間',nextDate:'10/27',onsite:false,log:[]},
-    {id:'k7',name:'陳太太',avatar:1,heat:'低',stage:0,need:'小孩教育金',note:'王小姐轉介紹。',next:'第一次聯絡',nextDate:'',onsite:false,log:[]},
-    {id:'k8',name:'李伯伯',avatar:2,heat:'低',stage:6,need:'保單健檢與理賠協助',note:'老客戶，每年生日送卡片。',next:'年度保單健檢',nextDate:'11/05',onsite:false,log:[{d:'09/30',t:'協助完成住院理賠'}]}
-  ],
-  vip:[
-    {name:'張總',note:'電子業二代、正在規劃傳承',topic:'家族信託與保單傳承'},
-    {name:'李醫師',note:'診所開業第 8 年',topic:'醫師退休金缺口與節稅'},
-    {name:'周董',note:'喜歡威士忌、打高爾夫',topic:'美元資產配置與匯率'},
-    {name:'黃律師',note:'剛換到新的事務所',topic:'高額醫療與失能保障'}
-  ],
-  pending:['王小姐 · 要保書待簽回','林先生 · 體檢報告待補','李太太 · 受益人變更文件','張總 · 法人保單報價確認'],
+  clients:[],
+  stages:['名單'],
+  crm:[],
+  vip:[],
+  pending:['NVDA · 財報前部位檢查','2454 · 量能回升再評估','TSLA · 風控否決複核','月底 · 模擬績效月報'],
   assistants:[
-    {id:'shepherd',name:'Shepherd',short:'牧羊人',role:'總管 · 任務分派與進度追蹤',color:'#c9a050',status:'busy',
-      recent:['完成昨日交件盤點','產出本週任務優先序'],acts:['彙整今日任務分派','檢查各助理交件進度','整理 Shane 的待決清單','重排本週任務優先級']},
-    {id:'dev',name:'程式工程師',short:'工程',role:'CRM 與自動化系統開發',color:'#6f8fa6',status:'busy',
-      recent:['修好 Firebase 讀取權限','上線交接站 API v1'],acts:['重構 CRM 客戶列表','修 Firebase 權限規則','寫交接站 API','部署 Cloudflare Worker']},
-    {id:'visit',name:'行程與拜訪紀錄',short:'行程',role:'行事曆、拜訪紀錄與追蹤提醒',color:'#8fa06a',status:'idle',
-      recent:['補齊昨日 4 筆拜訪紀錄','設定 7 日後複訪提醒'],acts:['同步明天 3 場拜訪','整理昨日拜訪紀錄','建立保單複查提醒','核對行程衝突']},
-    {id:'news',name:'財經日報',short:'日報',role:'每日財經重點與談資',color:'#c08457',status:'busy',
-      recent:['產出今日 5 則談資','整理美股收盤重點'],acts:['彙整今日財經日報','抓美股收盤重點','整理 ETF 配息資訊','篩選新聞熱搜']},
-    {id:'stock',name:'個股分析師',short:'個股',role:'標的研究與觀察清單',color:'#7f9e8b',status:'idle',
-      recent:['更新觀察清單 12 檔','整理法說會重點'],acts:['分析 0050 月線結構','更新個股觀察清單','整理法說會重點','回測定期定額績效']},
-    {id:'social',name:'社群經營',short:'社群',role:'IG 與短影音內容',color:'#b98a9c',status:'busy',
-      recent:['剪完退休系列短影音','回覆私訊 12 則'],acts:['排版明天的 IG 貼文','剪一支短影音','回覆社群私訊','分析上週貼文成效']},
-    {id:'book',name:'收支記帳',short:'記帳',role:'收支、佣金與現金流報表',color:'#9c8f7a',status:'waiting',
-      recent:['完成上月對帳','產出現金流月報'],acts:['對帳本月收支','整理佣金入帳','製作現金流報表','檢查固定支出異動']},
-    {id:'sales',name:'超業',short:'超業',role:'話術演練與成交策略',color:'#c2705a',status:'idle',
-      recent:['整理 3 套拒絕處理話術','陪練 2 場模擬面談'],acts:['模擬高資產客戶對話','整理成交話術','演練拒絕處理','設計二次面談腳本']},
-    {id:'trainer',name:'CRM 教育訓練師',short:'訓練',role:'系統教學與新人上手',color:'#8a86b0',status:'busy',
-      recent:['錄好 3 支系統操作影片','完成新人上手流程'],acts:['製作 CRM 教材','安排新人上手課','錄系統操作影片','更新教學文件']},
-    {id:'leads',name:'名單開發專員',short:'名單',role:'名單蒐集、分級與邀約',color:'#6f9a93',status:'waiting',
-      recent:['整理 23 筆新名單','完成 A 級名單邀約 5 位'],acts:['整理新名單','分級本週 A/B/C 名單','安排陌開邀約','清理重複名單']}
+    {id:'shepherd',name:'操盤總管',short:'總管',role:'總經理 · 彙整決策、向董事長 Shane 回報',color:'#c9a050',status:'busy',
+      recent:['回報今日模擬損益 +$186','彙整盤前觀察清單'],acts:['彙整六位交易員意見','向 Shane 回報今日損益','檢查每日 3% 停手線','排定明日盤前會議']},
+    {id:'dev',name:'交易系統工程師',short:'系統',role:'模擬撮合、手續費與資料串接',color:'#6f8fa6',status:'busy',
+      recent:['修正手續費計算','加上 10% 部位上限檢查'],acts:['維護模擬撮合引擎','更新報價資料（模擬）','寫風控檢查程式','備份交易日誌']},
+    {id:'visit',name:'財報行事曆',short:'行事曆',role:'財報日、除息日與法說會提醒',color:'#8fa06a',status:'idle',
+      recent:['標記 NVDA 財報日','整理本週除息名單'],acts:['更新財報行事曆','提醒法說會時間','整理除息日','核對休市日']},
+    {id:'news',name:'財經日報',short:'日報',role:'研究部 · 每日盤勢與新聞牌',color:'#c08457',status:'busy',
+      recent:['產出今日 5 則盤勢重點','整理美股收盤'],acts:['彙整台股盤勢','抓美股收盤重點','更新新聞牌','篩選重大訊息']},
+    {id:'stock',name:'個股分析師',short:'個股',role:'研究部 · 標的研究與觀察清單',color:'#7f9e8b',status:'idle',
+      recent:['更新觀察清單 12 檔','整理 2330 法說重點'],acts:['分析 2330 月線結構','研究 NVDA 財報','更新觀察清單','比較同業本益比']},
+    {id:'social',name:'市場情緒觀察',short:'情緒',role:'社群熱度、恐懼貪婪指標',color:'#b98a9c',status:'busy',
+      recent:['恐懼貪婪指數 62（模擬）','整理 PTT 股板熱門'],acts:['追蹤社群熱度','更新情緒指標','整理散戶熱門股','提醒過熱標的']},
+    {id:'book',name:'績效與帳務',short:'帳務',role:'損益、手續費、最大回撤報表',color:'#9c8f7a',status:'waiting',
+      recent:['完成本月損益表','計算最大回撤 -1.9%'],acts:['核對模擬帳戶餘額','整理手續費','製作績效報表','計算勝率']},
+    {id:'sales',name:'策略回測師',short:'回測',role:'策略回測與參數檢查',color:'#c2705a',status:'idle',
+      recent:['回測量能突破策略','比較停損 -4% 與 -6%'],acts:['回測量能策略','測試停損參數','比較台美股勝率','整理回測報告']},
+    {id:'trainer',name:'投資紀律教練',short:'紀律',role:'交易規則與覆盤教學',color:'#8a86b0',status:'busy',
+      recent:['覆盤 AAPL 停損單','更新交易守則'],acts:['覆盤虧損交易','更新交易守則','提醒不開槓桿','整理錯誤清單']},
+    {id:'leads',name:'選股篩選專員',short:'篩選',role:'條件選股與量能排行',color:'#6f9a93',status:'waiting',
+      recent:['篩出量增 20 檔','排除流動性不足 8 檔'],acts:['跑條件選股','整理量能排行','排除冷門股','產出候選清單']}
   ],
   tasks:[
-    {id:'T-101',title:'本週財經日報（五篇）',owner:'news',due:'今日 18:00',progress:72,status:'doing'},
-    {id:'T-102',title:'CRM 客戶列表改版',owner:'dev',due:'10/23',progress:45,status:'doing'},
-    {id:'T-103',title:'退休系列短影音 #2',owner:'social',due:'10/22',progress:60,status:'doing'},
-    {id:'T-104',title:'A 級名單 20 位邀約',owner:'leads',due:'10/24',progress:30,status:'todo'},
-    {id:'T-105',title:'月度現金流報表',owner:'book',due:'10/31',progress:85,status:'doing'},
-    {id:'T-106',title:'新人 CRM 上手課教材',owner:'trainer',due:'10/25',progress:50,status:'todo'},
-    {id:'T-099',title:'整理 Q3 客戶轉介紹名單',owner:'leads',due:'10/18',progress:100,status:'done'},
-    {id:'T-098',title:'更新拒絕處理話術庫',owner:'sales',due:'10/17',progress:100,status:'done'}
+    {id:'T-101',title:'今日盤勢日報（模擬）',owner:'news',due:'今日 18:00',progress:72,status:'doing'},
+    {id:'T-102',title:'模擬撮合加入手續費',owner:'dev',due:'10/23',progress:45,status:'doing'},
+    {id:'T-103',title:'NVDA 財報前研究',owner:'stock',due:'10/22',progress:60,status:'doing'},
+    {id:'T-104',title:'量能突破候選 20 檔',owner:'leads',due:'10/24',progress:30,status:'todo'},
+    {id:'T-105',title:'10 月模擬績效月報',owner:'book',due:'10/31',progress:85,status:'doing'},
+    {id:'T-106',title:'停損參數回測',owner:'sales',due:'10/25',progress:50,status:'todo'},
+    {id:'T-099',title:'AAPL 停損覆盤',owner:'trainer',due:'10/18',progress:100,status:'done'},
+    {id:'T-098',title:'更新交易守則',owner:'trainer',due:'10/17',progress:100,status:'done'}
   ],
-  board:[{t:'回覆張總的法人保單報價',done:false},{t:'錄退休系列第 3 支短影音',done:false},{t:'確認 A 級名單分級標準',done:true}],
+  board:[{t:'單筆最多總資金 10%',done:false},{t:'每日虧損達 3% 停手',done:false},{t:'不開槓桿・含手續費',done:true}],
   quotes:[
     {q:'你的時間有限，不要浪費時間活在別人的生活裡。',a:'蘋果創辦人 賈伯斯',cat:'創業'},
     {q:'求知若飢，虛心若愚。',a:'蘋果創辦人 賈伯斯',cat:'創業'},
     {q:'為你的事業工作，而不是只在你的事業裡工作。',a:'《創業這條路》作者 麥克．葛伯',cat:'管理'},
     {q:'效率是把事情做對，效能是做對的事情。',a:'管理學之父 彼得．杜拉克',cat:'管理'},
     {q:'品牌，就是你不在場時，別人怎麼談論你。',a:'亞馬遜創辦人 貝佐斯',cat:'創業'},
-    {q:'客戶第一，員工第二，股東第三。',a:'阿里巴巴創辦人 馬雲',cat:'管理'},
+    {q:'先求不虧，再求獲利。',a:'阿里巴巴創辦人 馬雲',cat:'管理'},
     {q:'作為人，何謂正確？用這個標準做所有判斷。',a:'京瓷創辦人 稻盛和夫',cat:'管理'},
     {q:'顧客要的不是四分之一吋的鑽頭，而是四分之一吋的洞。',a:'哈佛商學院教授 李維特',cat:'創業'},
     {q:'規則一：永遠不要賠錢。規則二：永遠不要忘記規則一。',a:'波克夏 巴菲特',cat:'投資'},
@@ -1381,27 +1412,25 @@ const CONFIG={
   ],
   tips:[
     '72 法則：用 72 除以年報酬率，大約就是資產翻倍要的年數。',
-    '緊急預備金通常建議準備 6 個月的必要生活開銷。',
-    '保險先保「保額」再談「報酬」：先把失能、重疾、壽險缺口補起來。',
-    '定期定額的重點不是買在低點，而是長期、不中斷。',
-    '財務金三角：保障、儲蓄、投資，缺一角都會晃。',
-    '通膨 2% 時，100 萬放 20 年，購買力約剩 67 萬。'
+    '單筆部位上限 10%：一次看錯，也只傷到一小塊。',
+    '停損要在進場前就決定，不是虧了才想。',
+    '不開槓桿：先求活下來，再求賺得多。',
+    '成交量是價格的燃料：量縮反彈容易失敗。',
+    '手續費與滑價會吃掉短線獲利，回測要算進去。'
   ],
   quiz:[
     {q:'用「72 法則」估算，年報酬 6% 大約幾年資產翻倍？',o:['6 年','12 年','18 年','24 年'],a:1},
-    {q:'緊急預備金一般建議準備幾個月的必要開銷？',o:['1 個月','3 個月','6 個月','24 個月'],a:2},
-    {q:'ETF 的「內扣費用」主要包含哪一項？',o:['證交稅','經理費與保管費','券商手續費','股利所得稅'],a:1},
-    {q:'規劃保障時，通常最先要補的是？',o:['投資型保單報酬','高額失能與壽險缺口','旅平險','儲蓄險'],a:1},
+    {q:'總資金 5,000 美金、單筆上限 10%，一筆最多下多少？',o:['$50','$500','$1,000','$5,000'],a:1},
+    {q:'「最大回撤」指的是？',o:['單日最大漲幅','從高點到低點的最大跌幅','成交量最大的一天','股利最多的月份'],a:1},
+    {q:'費城半導體指數簡稱？',o:['費半','那指','道瓊','櫃買'],a:0},
     {q:'複利效果最關鍵的變數是？',o:['時間','手續費','開戶銀行','月份'],a:0},
-    {q:'通膨率 2%，20 年後 100 萬的購買力約剩多少？',o:['98 萬','80 萬','67 萬','40 萬'],a:2},
-    {q:'「股債平衡」配置最主要的目的？',o:['追求最高報酬','降低整體波動','避開所有稅','保證不虧損'],a:1},
-    {q:'壽險保額常用的估算方式之一是？',o:['月薪 × 2','年收入 × 10 倍左右','存款餘額','車子價格'],a:1},
-    {q:'美元保單需要特別留意的風險？',o:['匯率風險','颱風','股票除權','電費調漲'],a:0},
-    {q:'財務金三角指的是？',o:['股票、基金、債券','保障、儲蓄、投資','收入、支出、稅','房、車、存款'],a:1},
-    {q:'定期定額最大的好處是？',o:['保證買在最低點','平均成本、維持紀律','不用付手續費','一定賺錢'],a:1},
-    {q:'退休金缺口計算通常不會用到？',o:['預計退休年齡','每月生活費','通膨率','星座'],a:3}
+    {q:'每日虧損達 3% 停手的目的？',o:['多賺一點','避免情緒化連續虧損','少付手續費','提高槓桿'],a:1},
+    {q:'台股 2330 是哪家公司？',o:['聯發科','鴻海','台積電','大立光'],a:2},
+    {q:'流動性差的股票主要風險？',o:['買賣價差大、不易出場','股價一定漲','沒有手續費','不能停損'],a:0},
+    {q:'美股投資對台灣投資人來說要留意？',o:['匯率風險','颱風','電費調漲','星座'],a:0},
+    {q:'唱反調角色的功能是？',o:['附和決策','找出交易的反方風險','負責下單','記帳'],a:1}
   ],
-  meetTopics:['本週業績衝刺','IG 內容企劃','新人培訓計畫','高資產客戶經營'],
+  meetTopics:['今日觀察清單','NVDA 部位檢討','風控規則複核','本月模擬績效'],
   clientSteps:['破冰與近況關心','家庭與財務現況盤點','財務金三角缺口分析','方案說明與試算','成交與轉介紹邀請']
 };
 
@@ -1414,20 +1443,20 @@ const SOCIAL={
   ],
   pass:{ news:['social','今天的財經談資給你，可以做貼文'], leads:['visit','A 級名單交給你排拜訪'], dev:['trainer','新功能上線了，教材要更新'],
     book:['shepherd','本月現金流報表好了'], stock:['news','觀察清單有更新，日報可以用'], social:['sales','這週留言區有 2 位想諮詢'],
-    visit:['sales','明天 10 點有面談，資料在這'], trainer:['dev','新人回報有個按鈕找不到'], sales:['leads','轉介紹來了 2 位新朋友'] },
+    visit:['stock','NVDA 財報日在下週，提醒一下'], trainer:['dev','停損單的紀錄格式要統一'], sales:['leads','回測結果出來了，量能策略勝率 58%'] },
   passReply:['收到，謝謝！','我馬上看','太好了','了解，交給我'],
   patrolAsk:['進度如何？','今天卡在哪裡嗎？','需要幫忙嗎？','這週的重點還順利嗎？'],
   greet:{morning:['Shane 早安！','早！今天也加油','早安，咖啡在 2F'],noon:['Shane 午安','吃飯了嗎？','午安！'],night:['Shane 辛苦了','晚安～','今天也很棒']}
 };
 const STATE={};
 const store={
-  get(k,d){ try{ const v=localStorage.getItem('aio2_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
-  set(k,v){ try{ localStorage.setItem('aio2_'+k,JSON.stringify(v)); }catch(e){} }
+  get(k,d){ try{ const v=localStorage.getItem('aio10_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('aio10_'+k,JSON.stringify(v)); }catch(e){} }
 };
 const clone=o=>JSON.parse(JSON.stringify(o));
 /* ---- 資料來源設定（v2）----
    mode：'local' = 原本行為（CONFIG + localStorage），預設值
-         'firebase' = 客戶從 CRM（fish-teem / global_state/{teamId}）唯讀載入；辦公室自己的資料另存 office_state/{teamId}
+         'firebase' = 標的從 CRM（fish-teem / global_state/{teamId}）唯讀載入；辦公室自己的資料另存 office_state/{teamId}
    切換方式：localStorage 設 aio2_src = "firebase"（新增 key，不影響舊資料） */
 /* ---- 團隊代碼（v4）：CRM 登入時存的 crm_team_id（同網域）→ 辦公室設定頁的 aio2_team → 'FISHTEAM' ---- */
 function dsTeamId(){
@@ -1436,19 +1465,16 @@ function dsTeamId(){
   return t||'FISHTEAM';
 }
 const DS_CFG={
-  mode:store.get('src','local'),
-  firebase:{               // ↓ 由 Shane 填入 fish-teem 的 Web 設定（apiKey 是公開識別碼，不是密鑰）
-    apiKey:'AIzaSyBBvyKFhQOcgndQclbpnPv1npF2wpxudfU', authDomain:'fish-teem.firebaseapp.com', projectId:'fish-teem',
-    storageBucket:'fish-teem.firebasestorage.app', messagingSenderId:'318120498514', appId:'1:318120498514:web:b0766e54e4749f4dea968b'
-  },
-  sdk:'https://www.gstatic.com/firebasejs/10.12.2/',   // Firebase 模組版 CDN
-  agentName:'王盛嶢',                                   // 只載入業務員是 Shane 的客戶（空白 = 小魚，排除）
+  mode:'local',   // v10：強制本機模式
+  firebase:{},   // v10：已斷開 Firebase（AI 操盤公司模擬版只用 localStorage）
+  sdk:'',   // Firebase 模組版 CDN
+  agentName:'王盛嶢',                                   // 只載入業務員是 Shane 的標的（空白 = 小魚，排除）
   crmDoc:()=>['artifacts','youtrend-crm','public','data','global_state',dsTeamId()],    // CRM 文件：唯讀
   officeDoc:()=>['artifacts','youtrend-crm','public','data','office_state',dsTeamId()]  // 辦公室文件：只寫這份（6 段 = 文件路徑）
 };
-/* CRM global_state → 辦公室客戶卡（v4 正式對應）
+/* CRM global_state → 辦公室標的卡（v4 正式對應）
    - 只收 agentName === '王盛嶢'；略過 category RECRUIT、progress R_*／LOST／HOLD
-   - stage：LEAD→0 名單；CONTACT/NURTURE→1 邀約中；FIRST_VISIT→2 初次面談；KEY_VISIT→3 需求分析（有 planned* 值→4 方案說明）；
+   - stage：LEAD→0 名單；CONTACT/NURTURE→1 邀約中；FIRST_VISIT→2 初次說明；KEY_VISIT→3 需求分析（有 planned* 值→4 方案說明）；
             WON（或 category WON、或 progress 空白且有 dealDate）→5 成交，dealDate 超過 30 天→6 售後經營；其他→0
    - heat：leadCls 有 A/B→高、C/D→中、其他（E、F、F1–F5）→低；leadCls 空白時看 acreStage：FRUIT→高、GROW→中、其他→低
    - avatar：生日推算 ≥60 歲→2（長輩），否則 id 雜湊 %2（0/1）
@@ -1463,7 +1489,7 @@ function mapCrmDoc(doc,opt){
   const list=(doc&&doc.cust)||[]; const arr=Array.isArray(list)?list:Object.values(list);
   const md=s=>{ const m=/^\d{4}-(\d{2})-(\d{2})/.exec(String(s||'')); return m?m[1]+'/'+m[2]:''; };
   const hash=s=>{ let h=0; s=String(s); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); };
-  const planned=c=>Object.keys(c).filter(k=>/^planned/.test(k)&&c[k]!==''&&c[k]!=null&&c[k]!==0&&!(Array.isArray(c[k])&&!c[k].length)&&!/^\s*[\d.,]+\s*$/.test(String(c[k])))   // 金額類（plannedFyc 等）在客戶卡另外顯示，不當成需求
+  const planned=c=>Object.keys(c).filter(k=>/^planned/.test(k)&&c[k]!==''&&c[k]!=null&&c[k]!==0&&!(Array.isArray(c[k])&&!c[k].length)&&!/^\s*[\d.,]+\s*$/.test(String(c[k])))   // 金額類（plannedFyc 等）在標的卡另外顯示，不當成需求
     .map(k=>Array.isArray(c[k])?c[k].join('、'):String(c[k]));
   const tdef=Array.isArray(doc&&doc.tags)?doc.tags:CRM_DEFAULT_TAGS, tName=id=>{ const t=tdef.find(x=>x&&x.id===id); return t?String(t.name||''):''; };
   const byId={}; arr.forEach(c=>{ if(c&&c.id) byId[c.id]=c; });
@@ -1499,7 +1525,7 @@ function mapCrmDoc(doc,opt){
   return out;
 }
 /* ---- v6：CRM 唯讀互通小工具（只在 firebase 模式用到；全部只讀 global_state 的資料）---- */
-const CRM_DEFAULT_TAGS=[{id:'tag-1',name:'VIP客戶'},{id:'tag-2',name:'家庭件'},{id:'tag-3',name:'轉介紹'},{id:'tag-4',name:'電子業'},{id:'tag-5',name:'高資產配置'}]; // = CRM defaultTags
+const CRM_DEFAULT_TAGS=[{id:'tag-1',name:'重點標的'},{id:'tag-2',name:'家庭件'},{id:'tag-3',name:'轉介紹'},{id:'tag-4',name:'電子業'},{id:'tag-5',name:'高資產配置'}]; // = CRM defaultTags
 const CRM_SITE='https://shanewangmusic-maker.github.io/-/';
 const CRM_ACRE={FRUIT:'已結果的樹',GROW:'茁長的樹',SAPLING:'樹苗',SEED:'樹種'};
 const CRM_CLS={A:'A 可持續開拓',B:'B 高淨值',C:'C 一般',D:'D 需移除',E:'E 轉介紹中心',F:'F 可招募'};
@@ -1560,7 +1586,7 @@ function schedHTML(){
   }
   return STATE.schedule.map(s=>'<div class="row"><span class="tm">'+s.time+'</span><b>'+esc(s.title)+'</b><em>'+esc(s.where)+'</em></div>').join('');
 }
-/* 辦公室覆蓋層（v4）：CRM 唯讀，辦公室對 CRM 客戶的修改只存在 office_state 的 crmOv[crmId] */
+/* 辦公室覆蓋層（v4）：CRM 唯讀，辦公室對 CRM 標的的修改只存在 office_state 的 crmOv[crmId] */
 const CRM_OV_KEYS=['name','need','note','next','nextDate','heat','stage','avatar'];
 function applyCrmOverlay(list,ov,now){
   ov=ov||{}; const hasOn=Object.keys(ov).some(k=>ov[k]&&ov[k].onsite!=null);
@@ -1586,7 +1612,7 @@ function buildCrmOverlay(list,prev){
 const DataSource={
   mode:DS_CFG.mode==='firebase'?'firebase':'local',
   fb:null,        // {db,auth,user,fs} 只在 DataSource 內部使用
-  crmOv:{},       // 辦公室對 CRM 客戶的覆蓋層（只在 firebase 模式使用）
+  crmOv:{},       // 辦公室對 CRM 標的的覆蓋層（只在 firebase 模式使用）
   async load(){
     this.loadLocal();
     if(this.mode==='firebase'){
@@ -1604,51 +1630,19 @@ const DataSource={
     STATE.board=store.get('board',clone(CONFIG.board));
     STATE.inbox=store.get('inbox',null)||[
       {id:'D-1',from:'news',title:'今日財經談資 5 則',body:CONFIG.brief.map((s,i)=>(i+1)+'. '+s).join('\n'),state:'new',time:'08:12'},
-      {id:'D-2',from:'social',title:'IG 貼文草稿：早 10 年退休的 3 個習慣',body:'封面：「早 10 年退休，差在這 3 件事」\n1. 先付錢給自己\n2. 保障先到位，再談報酬\n3. 讓錢自動長大\n結尾 CTA：留言「退休」拿試算表',state:'new',time:'09:40'},
-      {id:'D-3',from:'leads',title:'本週 A 級名單 6 位',body:'王小姐、吳老師、周董、黃律師、陳太太、林先生\n分級依據：近 30 日互動、家庭階段、轉介紹來源',state:'new',time:'10:05'}
+      {id:'D-2',from:'social',title:'市場情緒：恐懼貪婪 62（模擬）',body:'社群熱度前三：NVDA、2330、TSLA\nTSLA 過熱，提醒唱反調複核\n（模擬資料・非真實交易）',state:'new',time:'08:40'},
+      {id:'D-3',from:'leads',title:'量能突破候選 6 檔（模擬）',body:'NVDA、TSLA、2454、2317、AMD、META\n排除日均量不足的 8 檔\n（模擬資料・非真實交易）',state:'new',time:'09:05'}
     ];
     STATE.water=store.get('water',0);
     STATE.crm=store.get('crm',null)||clone(CONFIG.crm);
     if(this.mode==='firebase') this.crmOv=store.get('crmov',{});   // 新 key，本機模式不讀
   },
-  /* ---- firebase 模式（唯讀 CRM + 辦公室文件）---- */
-  async fbInit(){
-    const c=DS_CFG.firebase; if(!c.apiKey) throw new Error('尚未填 Firebase 設定');
-    const [app,auth,fs]=await Promise.all(['firebase-app','firebase-auth','firebase-firestore'].map(n=>import(DS_CFG.sdk+n+'.js')));
-    const fa=app.initializeApp(c), au=auth.getAuth(fa), db=fs.getFirestore(fa);
-    // 沿用 CRM 的登入方式：email／密碼白名單。開頁時只檢查是否已登入，不自動跳登入視窗
-    const user=au.currentUser||await new Promise(r=>{ const off=auth.onAuthStateChanged(au,u=>{ off(); r(u); }); });
-    this.fb={db,auth:au,user,fs,authMod:auth};
-    if(!user) throw new Error('尚未登入雲端（選單 → 雲端登入）');
-  },
-  async signIn(email,pw){                 // 由「雲端登入」面板的按鈕呼叫
-    if(!this.fb) await this.fbInit().catch(()=>{});
-    if(!this.fb) throw new Error('尚未填 Firebase 設定');
-    const a=this.fb.authMod; this.fb.user=(await a.signInWithEmailAndPassword(this.fb.auth,email,pw)).user;
-    await this.fbLoad(); },
-  async fbLoad(){
-    const {db,fs}=this.fb;
-    const off=await fs.getDoc(fs.doc(db,...DS_CFG.officeDoc()));          // 先讀辦公室文件（含覆蓋層）
-    if(off.exists()){ const d=off.data();
-      if(d.tasks) STATE.tasks=d.tasks; if(d.board) STATE.board=d.board; if(d.inbox) STATE.inbox=d.inbox;
-      if(d.crmOv) this.crmOv=d.crmOv;
-      if(d.assist){ store.set('assist',d.assist); STATE.assistants.forEach(a=>{ if(d.assist[a.id]) Object.assign(a,d.assist[a.id]); }); }
-      if(d.links){ const ai=store.get('ai',{mode:'demo',url:'',model:'',links:{}}); ai.links=Object.assign({},d.links,ai.links); store.set('ai',ai); if(typeof AI!=='undefined') AI.cfg.links=ai.links; }
-    }
-    const crm=await fs.getDoc(fs.doc(db,...DS_CFG.crmDoc()));             // 只讀 CRM，這裡沒有任何寫入
-    if(crm.exists()){ const cd=crm.data(); STATE.crm=applyCrmOverlay(mapCrmDoc(cd),this.crmOv); store.set('crm',STATE.crm);
-      const cm=crmMetrics(cd); if(cm) STATE.metrics=cm;            // v6：大螢幕用 CRM 數字（只在記憶體，不寫回）
-      STATE.crmRem=crmReminders(STATE.crm); }
-    else this._warn='找不到團隊 '+dsTeamId()+' 的 CRM 資料，先用本機資料';
-  },
+  /* ---- v10 AI 操盤公司模擬版：Firebase / CRM 連結已斷開（原始程式保留在 v8/v9 與 repo，這份不連線）---- */
+  async fbInit(){ throw new Error('v10 已停用 Firebase'); },
+  async signIn(){ throw new Error('v10 已停用雲端登入'); },
+  async fbLoad(){},
   _t:0,
-  syncOffice(){                       // 防抖寫入辦公室文件（只有 firebase 模式；只寫 office_state）
-    if(this.mode!=='firebase'||!this.fb||!this.fb.user) return;
-    clearTimeout(this._t); this._t=setTimeout(()=>{ const {db,fs}=this.fb;
-      fs.setDoc(fs.doc(db,...DS_CFG.officeDoc()),{tasks:STATE.tasks,board:STATE.board,inbox:STATE.inbox.slice(0,30),crmOv:this.crmOv,
-        assist:store.get('assist',{}),links:(store.get('ai',{}).links||{}),updatedAt:Date.now(),by:this.fb.user.email||''},{merge:true})
-        .catch(e=>console.warn('[DataSource] 辦公室文件寫入失敗',e)); },1500);
-  },
+  syncOffice(){},
   saveTasks(){ store.set('tasks',STATE.tasks); this.syncOffice(); },
   saveBoard(){ store.set('board',STATE.board); this.syncOffice(); },
   saveCrm(){ store.set('crm',STATE.crm);       // 本機模式：與 v3 相同
@@ -1711,8 +1705,8 @@ function initChars(){
   ENTS.push(mkEnt({id:'pet',isPet:true,name:'柴柴',short:'柴柴',f:1,zf:1,x:11.2,y:5.3,spd:2.2,pose:'stand',face:'down',timer:4,dirX:1}));
   syncClients();
   STATE.assistants.forEach((a,i)=>{
-    const seat=SPOTS.desk[i];
-    const b=mkEnt({id:a.id,data:a,name:a.name,short:a.short,img:'bot_'+a.id,f:1,zf:1,x:seat.x,y:seat.y,spd:rnd(1.9,2.4),
+    const seat=i===0?{f:2,x:16.1,y:1.98,face:'down',pose:'sit',seatH:12,desk:true}:SPOTS.desk[i];
+    const b=mkEnt({id:a.id,data:a,name:a.name,short:a.short,img:'bot_'+a.id,f:seat.f,zf:seat.f,x:seat.x,y:seat.y,spd:rnd(1.9,2.4),
       pose:'sit',seatH:seat.seatH,face:'down',timer:rnd(4,26),home:seat,atDesk:true,act:'work'});
     seat.by=b.id; b.spot=seat;
     BOTS.push(b); ENTS.push(b);
@@ -1738,11 +1732,13 @@ SPOTS.meet.push({f:0,x:7,y:2.05,face:'down',pose:'stand'});
 for(let i=0;i<5;i++){ SPOTS.meet.push({f:0,x:6+i,y:3.08,face:'down',pose:'sit',seatH:13}); }
 // 南側 4 張椅子：背對鏡頭坐（中間那張留給 Shane）
 for(const x of [6,7,9,10]) SPOTS.meet.push({f:0,x,y:5.58,face:'up',pose:'sitback',seatH:13});
-/* 來訪客戶：名單裡勾「在辦公室」的人（最多 5 位）會出現在辦公室 */
+/* 來訪標的：名單裡勾「在辦公室」的人（最多 5 位）會出現在辦公室 */
 const CLIENT_MAX=5;
 const AVATAR_NAMES=['中年男士','年輕女士','長輩'];
 function clientSpots(){ return [SPOTS.wait[0],SPOTS.wait[1],SPOTS.bar3[0],SPOTS.lobby[0],SPOTS.lobby[1]]; }
-function syncClients(){
+function syncClients(){ // v10：已移除所有來訪投資人
+  for(let i=ENTS.length-1;i>=0;i--){ const e=ENTS[i]; if(e.isClient){ if(e.spot&&e.spot.by===e.id) e.spot.by=null; ENTS.splice(i,1); } }
+  return;
   const want=STATE.crm.filter(r=>r.onsite).slice(0,CLIENT_MAX);
   for(let i=ENTS.length-1;i>=0;i--){ const e=ENTS[i]; if(!e.isClient) continue;
     if(!want.includes(e.client)){ if(e.spot&&e.spot.by===e.id) e.spot.by=null; ENTS.splice(i,1); } }
@@ -1766,7 +1762,7 @@ const ACTS={
   sofa:   {w:8,  spots:'sofa',   dur:[14,26], emo:'💬', st:'idle', label:'在 2F 沙發聊天'},
   arcade: {w:6,  spots:'arcade', dur:[12,22], emo:'🎮', st:'idle', label:'在 2F 打遊戲機'},
   foos:   {w:5,  spots:'foos',   dur:[12,20], emo:'⚽', st:'idle', label:'在 2F 手足球台'},
-  deliver:{w:10, spots:'deliver',dur:[4,6],   emo:'📄', st:'busy', label:'到 1F 交接站交件'},
+  deliver:{w:10, spots:'deliver',dur:[4,6],   emo:'📄', st:'busy', label:'到 1F 交送交易單'},
   bar3:   {w:3,  spots:'bar3',   dur:[12,20], emo:'☕', st:'idle', label:'在 3F 吧台喝咖啡'},
   window: {w:3,  spots:'window', dur:[8,14],  emo:'🌇', st:'idle', label:'在窗邊看風景'}
 };
@@ -1917,8 +1913,8 @@ const DAYBANDS=[
 function dayBand(){ return DAYBANDS[1]; }   // 不綁時間：助理隨機安排自己的事
 function chooseAct(b){
   const band=dayBand(), W=band.w;
-  if(!W){ if(b.id==='shepherd'&&Math.random()<.4&&startPatrol(b)) return null;
-          if(Math.random()<.12&&startPass(b)) return null; }
+  if(b.id==='shepherd') return 'work';
+  if(!W){ if(Math.random()<.12&&startPass(b)) return null; }
   const wt=k=>W?(W[k]||0):ACTS[k].w;
   let tot=0; for(const k in ACTS) tot+=wt(k);
   let r=Math.random()*tot;
@@ -1926,6 +1922,7 @@ function chooseAct(b){
   return 'work';
 }
 function assignAct(b,k){
+  if(b.id==='shepherd') k='work';
   const A=ACTS[k];
   let spot=null;
   if(k==='work') spot=b.home;
@@ -1962,7 +1959,7 @@ function director(dt){
     const k=b.act!=='work'?'work':chooseAct(b); if(k) assignAct(b,k);
   }
   socialTick(dt);
-  // 客戶等待時偶爾做點小動作
+  // 標的等待時偶爾做點小動作
   for(const e of ENTS) if(e.isClient&&e.mode==='idle'&&!e.emote&&Math.random()<dt*.05) emote(e,pick(['📱','☕','🤔','📝','😊']));
   // 手足球：兩個人都到位才開打
   const fb=OBJ.find(o=>o.kind==='foosball'); const n=SPOTS.foos.filter(s=>{ const e=BOTS.find(b=>b.id===s.by)||(s.by==='shane'?SHANE:null); return e&&e.mode==='idle'&&Math.hypot(e.x-s.x,e.y-s.y)<.1; }).length;
@@ -2204,7 +2201,9 @@ function focusFloor(f,instant){
     const w=SPANX+30, h=SPANY+WALL_H+30;
     const z=clamp(Math.min(VW*(VW<600?1.8:1)/w,(VH-top-bot)/h),.42,2.2);
     cam.tz=z; cam.tx=VW/2-SCX*z;
-    cam.ty=top+(VH-top-bot)/2-((SPANY-WALL_H)/2-f*FLOOR_GAP)*z;
+    cam.ty=top+(VH-top-bot)/2-((SPANY-WALL_H)/2-f*FLOOR_GAP)*z;    if(f===0){ // v10：1F 交易大廳預設放大到交易桌，讓螢幕文字看得清楚
+      const z2=clamp(z*(VW<600?1.5:2.0),.42,3); setF(0); const q=P(16,2.6,40);
+      cam.tz=z2; cam.tx=VW/2-q.X*z2; cam.ty=top+(VH-top-bot)/2-q.Y*z2; }
   }
   if(instant){ cam.z=cam.tz; cam.x=cam.tx; cam.y=cam.ty; }
 }
@@ -2273,6 +2272,7 @@ function drawFloor(f,t){
   for(const o of OBJ) if(o.f===f&&o.wall&&((HOVER&&HOVER.obj===o)||(SEL&&SEL.obj===o))) outline(o);
   setF(f); drawParts(f);
   lighting(f);
+  if(window.SIMTAG&&SIMTAG.length){ setF(f); SIMTAG.splice(0).forEach(fn=>fn()); }
   SAYRECTS=[]; for(const e of ENTS.slice().sort((a,b)=>(b.y+b.x)-(a.y+a.x))) drawOverhead(e,f);
 }
 function outline(o){
@@ -2446,7 +2446,7 @@ const phase=h=>h<5?'深夜':h<7?'清晨':h<11?'上午':h<13?'中午':h<17?'下�
 const AI={
   cfg:store.get('ai',{mode:'demo',url:'',model:'',links:{}}),
   save(){ store.set('ai',this.cfg); },
-  prompt(b){ if(b.data.prompt&&b.data.prompt.trim()) return b.data.prompt.trim(); return '你是「'+b.data.name+'」，是 Shane（御謙VIP菁英會的保險顧問與理財規劃師）的 AI 助理，負責：'+b.data.role+'。請用繁體中文（台灣）回答，口吻專業友善，盡量精簡條列，最後給一個下一步建議。'; },
+  prompt(b){ if(b.data.prompt&&b.data.prompt.trim()) return b.data.prompt.trim(); return '你是「'+b.data.name+'」，是 Shane 的「AI 操盤公司」（模擬操盤、非真實交易）的 AI 成員，負責：'+b.data.role+'。請用繁體中文（台灣）回答，口吻專業友善，盡量精簡條列，最後給一個下一步建議。不要給真實投資建議。'; },
   async ask(b,text,kind,topic){
     if(this.cfg.mode==='api'&&this.cfg.url){
       try{
@@ -2477,28 +2477,28 @@ const MEET={
 function demo(b,text,kind){
   const t=(text||'').replace(/[「」]/g,'').slice(0,16);
   const L={
-    shepherd:['收到。我先把「'+t+'」拆成三步：盤點現況、分派負責人、設定交件時間。','今天優先處理會影響成交的事，其他排到明天。','我會在 17:30 夕會前回報進度。'],
-    dev:['技術上可行。「'+t+'」我會先做最小版本，放在測試環境給你看。','資料讀取已經包成獨立函式，之後接 Firebase 只要換一個地方。','預估 2 天，第一天先做畫面。'],
-    visit:['我查了行事曆，「'+t+'」可以排在週四下午。','已經幫你設定 3 天前提醒。','拜訪後我會在 24 小時內補好紀錄。'],
-    news:['今天跟「'+t+'」最相關的是利率與匯率。','美債殖利率回落，長天期債券 ETF 有買盤。','新台幣走升，美元保單試算要記得更新。'],
+    shepherd:['收到。我先把「'+t+'」拆成三步：盤點現況、分派負責人、設定交件時間。','今天優先處理會影響部位的事，其他排到明天。','我會在 17:30 收盤檢討前回報模擬損益。'],
+    dev:['技術上可行。「'+t+'」我會先做最小版本，放在測試環境給你看。','模擬撮合已經算進手續費。','預估 2 天，第一天先做畫面。'],
+    visit:['我查了行事曆，「'+t+'」可以排在週四下午。','已經幫你設定財報 3 天前提醒。','除息日我也標好了。'],
+    news:['今天跟「'+t+'」最相關的是費半與匯率。','（模擬）那斯達克收高 0.8%，AI 晶片股領漲。','新台幣 32.0，美股部位換算要更新。'],
     stock:['「'+t+'」我會從基本面、籌碼、技術面三個角度看。','目前觀察清單 12 檔，2 檔接近月線支撐。','提醒：這是研究筆記，不是投資建議。'],
-    social:['「'+t+'」很適合做成 3 張輪播圖。','開頭用一個問題抓住注意力，結尾給一個留言關鍵字。','我先寫 2 個標題版本給你挑。'],
-    book:['本月固定支出持平，行銷費用比上月多 12%。','佣金入帳我已經對完，差額 0 元。','「'+t+'」我會放進現金流月報裡。'],
-    sales:['客戶說「再考慮」時，先問：「你最擔心的是哪一點？」','高資產客戶重視的是傳承與控制權，先談這個。','「'+t+'」我可以陪你演練一次。'],
-    trainer:['「'+t+'」我會做成 5 分鐘的教學影片。','新人第一週先學 3 件事：建客戶、記拜訪、看提醒。','教材做好後先給你審。'],
-    leads:['「'+t+'」我先從轉介紹名單找起，品質最好。','本週新增 23 筆，A 級 6 位。','建議這週先約 A 級，邀約話術我已經準備好。']
+    social:['「'+t+'」目前社群熱度中等。','恐懼貪婪指數 62（模擬），偏樂觀。','TSLA 討論度過熱，建議唱反調複核。'],
+    book:['本月模擬損益 +$186，最大回撤 -1.9%。','手續費已全部對完，差額 0 元。','「'+t+'」我會放進模擬績效月報。'],
+    sales:['量能突破策略回測勝率 58%（模擬）。','停損 -4% 比 -6% 的最大回撤小。','「'+t+'」我可以再回測一次。'],
+    trainer:['「'+t+'」先對照交易守則。','三條鐵律：單筆 10%、每日 3% 停手、不開槓桿。','覆盤重點是決策過程，不是結果。'],
+    leads:['「'+t+'」我先從量能排行找起。','今天量增前 20 檔，排除冷門股 8 檔。','候選清單已交給找標的。']
   }[b.id]||['收到：'+t];
-  if(kind==='brief') return CONFIG.brief.concat(['外送平台漲價，訂閱制生活費悄悄變高','00 開頭新 ETF 募集，留意內扣費用','年底報稅季前，扶養與保險扣除額先整理','金價維持高檔，實體金飾換現金詢問度上升','房貸利率微調，寬限期到期族要提早規劃']).sort(()=>Math.random()-.5).slice(0,5).join('\n');
-  if(kind==='client') return '跟'+t+'面談前的 3 個重點：\n1. 先問近況與家庭變化，再談保單\n2. 用財務金三角圖讓他自己看見缺口\n3. 結尾約好下次見面時間，並請他想一位可以一起聽的家人';
+  if(kind==='brief') return CONFIG.brief.concat(['（模擬）外資連 3 日買超台股','（模擬）記憶體報價回升','（模擬）美元指數走弱','（模擬）台股成交量 4,200 億','（模擬）道瓊小漲 0.3%']).sort(()=>Math.random()-.5).slice(0,5).join('\n');
+  if(kind==='client') return '「'+t+'」研究重點：\n1. 量能與流動性\n2. 部位不超過 10%\n3. 先想好停損';
   if(kind==='meeting') return pick(MEET[b.id]||L).replace('{t}',t);
   if(kind==='idea') return pick(IDEAS[b.id]||L).replace('{t}',t);
   return L.join('\n');
 }
 const IDEAS={
-  social:['把「{t}」做成 15 秒短影音：問題、反轉、行動。','開一個 IG 限動投票：「你覺得{t}最難的是？」','找一位客戶故事（匿名）當案例貼文。'],
-  sales:['用「{t}」當二次面談的開場，比直接談商品更好。','做一張一頁式試算，讓客戶自己看出缺口。','先送價值、再談方案：免費的家庭保單健檢。'],
-  leads:['從現有客戶的家人名單延伸「{t}」主題的講座。','跟在地店家合辦小型理財沙龍，收集名單。','把舊名單按「{t}」需求重新分級一次。'],
-  shepherd:['把今天的點子排成三週計畫，每週一個主題。'],news:['結合本週財經熱搜，讓「{t}」更有話題性。']
+  social:['追蹤「{t}」的社群熱度變化。','把「{t}」放進情緒觀察清單。'],
+  sales:['用「{t}」做一次 3 年回測。','比較「{t}」在台股與美股的勝率。'],
+  leads:['用「{t}」當條件跑一次選股。','把冷門股從「{t}」候選中排除。'],
+  shepherd:['把今天的點子排成三週研究計畫。'],news:['結合本週盤勢，讓「{t}」更有依據。']
 };
 
 /* =====================================================================
@@ -2515,10 +2515,11 @@ const ACTIONS={
     o.st.water=true; burst('drop',o.f,o.x+o.w/2,o.y+o.d/2,40,14); burst('leaf',o.f,o.x+o.w/2,o.y+o.d/2,40,4); SFX.water();
     STATE.water++; store.set('water',STATE.water); if(SHANE.f===o.f) emote(SHANE,'💧'); toast('澆水完成 · 綠意值 '+STATE.water); }},
   rest:{fx:o=>{ emote(SHANE,'😌'); const q=pick(CONFIG.quotes); toast('「'+q.q+'」— '+q.a); }},
-  snack:{fx:o=>{ emote(SHANE,'🍎'); burst('heart',o.f,SHANE.x,SHANE.y,60,2); toast('財商小知識：'+pick(CONFIG.tips)); }},
+  snack:{fx:o=>{ emote(SHANE,'🍎'); burst('heart',o.f,SHANE.x,SHANE.y,60,2); toast('交易紀律：'+pick(CONFIG.tips)); }},
   coffee:{fx:o=>{ o.st.brew=4; SFX.brew(); setTimeout(()=>{ emote(SHANE,'☕'); SHANE.cup=150; SHANE.useT=0; },2200); }, panel:showCoffee},
   war:{fx:o=>setTimeout(()=>react(SHANE,'think',4),1200),panel:showWar},
   board:{fx:o=>doAct(SHANE,'write',4),panel:showBoard},
+  sim:{quick:true,fx:o=>{ if(window.openSim) openSim(); }},
   tasks:{fx:o=>doAct(SHANE,'write',3),panel:showTasks},
   meeting:{panel:showMeeting},
   inbox:{fx:o=>{ burst('paper',o.f,o.x+.7,o.y+.4,40,3); },panel:showInbox},
@@ -2539,7 +2540,7 @@ function useObject(o){
   const A=ACTIONS[o.act]; if(!A) return;
   const shaneBusy=SHANE.mode==='stair'||SHANE.mode==='elevRide'||SHANE.mode==='elevWait';
   const same=SHANE.f===o.f&&!shaneBusy;
-  if(A.quick&&(!same||o.act==='stair'||o.act==='elev'||o.act==='window'||o.act==='switch')){ A.fx(o); return; }
+  if(A.quick&&(!same||o.act==='stair'||o.act==='elev'||o.act==='window'||o.act==='switch'||o.act==='sim')){ A.fx(o); return; }
   if(o.label) toast('Shane 前往：'+o.label);
   SHANE.manual=180; if(o.act!=='arcade') stopAuto();
   const u=o.use;
@@ -2569,20 +2570,20 @@ function showWar(o){
   const m=STATE.metrics, month=o.st.view==='month';
   const fyc=month?m.monthFYC:m.weekFYC, tg=month?m.monthTarget:m.weekTarget, pct=Math.round(fyc/tg*100);
   const trend=month?m.monthTrend:m.trend, mx=Math.max(1,Math.max.apply(null,trend));
-  openPanel('war','戰情大螢幕','1F 戰情室 · 大螢幕會跟著你切換的區間變化'+(crmUI()?(m.src==='CRM'?' · 資料：CRM'+(m.tgSrc==='CRM'?'':'（目標為示範）'):' · 資料：示範'):''),
+  openPanel('war','行情牆 · 加權／那斯達克／費半','1F 交易大廳 · 大螢幕會跟著你切換的區間變化'+(crmUI()?(m.src==='CRM'?' · 資料：CRM'+(m.tgSrc==='CRM'?'':'（目標為示範）'):' · 資料：示範'):''),
     '<div class="seg" id="segV"><button data-v="week" class="'+(month?'':'on')+'">本週</button><button data-v="month" class="'+(month?'on':'')+'">本月</button></div>'+
-    '<div class="kpis"><div><span>FYC</span><b>'+fyc.toLocaleString()+'</b></div><div><span>目標達成</span><b>'+pct+'%</b></div><div><span>成交</span><b>'+(month?m.monthCases:m.cases)+' 件</b></div><div><span>面談</span><b>'+(month?m.monthMeetings:m.meetings)+' 場</b></div></div>'+
+    '<p class="note" style="color:var(--berry);font-weight:700">模擬資料・非真實交易</p><div class="kpis"><div><span>加權指數</span><b>23,150</b></div><div><span>那斯達克</span><b>18,420</b></div><div><span>費半</span><b>5,210</b></div><div><span>模擬帳戶</span><b>$5,186</b></div></div><div class="actions"><button class="btn ghost" type="button" onclick="openSim()">看持股・交易日誌・討論紀錄</button></div>'+
     '<div class="meter"><i style="width:'+Math.min(100,pct)+'%"></i></div>'+
     '<div class="spark">'+trend.map((v,i)=>'<i style="height:'+(v/mx*100)+'%" class="'+(i===trend.length-1?'now':'')+'"></i>').join('')+'</div>'+
-    '<h4>待跟進客戶</h4>'+followList().filter(r=>r.stage<5&&r._cat!=='WON').slice(0,6).map(x=>'<button class="prow" data-k="'+x.id+'"><span class="heat h'+(x.heat==='高'?3:x.heat==='中'?2:1)+'">'+x.heat+'</span><b>'+esc(x.name)+'</b><span class="pd">'+esc(x.next||'')+(x.nextDate?' · '+esc(x.nextDate):'')+'</span>'+stPill(x.stage)+'</button>').join('')+
+    ''+
     '<h4>今日行程</h4>'+schedHTML()+
-    '<div class="actions"><button class="btn" id="goMeet">召開戰情會議</button></div>',
+    '<div class="actions"><button class="btn" id="goMeet">召開投資委員會</button></div>',
     p=>{ p.querySelectorAll('#segV button').forEach(b=>b.onclick=()=>{ o.st.view=b.dataset.v; o.bounce=1; SFX.click(); showWar(o); });
-         $('#goMeet').onclick=()=>{ startMeeting('本週業績衝刺'); };
+         $('#goMeet').onclick=()=>{ startMeeting('今日觀察清單'); };
          p.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{ SFX.click(); openCrm(STATE.crm.find(r=>r.id===x.dataset.k)); }); });
 }
 function showBoard(){
-  openPanel('board','白板 · 今日三件事','寫下今天最重要的三件事，白板上會即時出現',
+  openPanel('board','交易守則白板','寫下今天最重要的三件事，白板上會即時出現',
     STATE.board.map((s,i)=>'<label class="todo"><input type="checkbox" id="bd'+i+'" '+(s.done?'checked':'')+'><input type="text" id="bt'+i+'" value="'+esc(s.t)+'" maxlength="30"></label>').join('')+
     '<div class="quote">「效率是把事情做對，效能是做對的事情。」<span>— 管理學之父 彼得．杜拉克</span></div>',
     p=>{ STATE.board.forEach((s,i)=>{ const cb=$('#bd'+i), tx=$('#bt'+i);
@@ -2595,7 +2596,7 @@ function showTasks(){
     return '<div class="tcard"><div class="tt">'+esc(t.title)+'</div><div class="tm2">'+(b?chip(b):'')+'<span>'+t.id+' · '+esc(t.due)+'</span></div>'+
       (t.status!=='done'?'<div class="meter sm"><i style="width:'+t.progress+'%"></i></div>':'')+
       '<div class="tbtn">'+(t.status!=='todo'?'<button data-mv="'+t.id+'" data-d="-1">←</button>':'')+(t.status!=='done'?'<button data-mv="'+t.id+'" data-d="1">'+(t.status==='todo'?'開始 →':'完成 ✓')+'</button>':'')+'<button data-gq="'+t.id+'" title="問 Grok">問 Grok</button><button data-gp="'+t.id+'">貼回</button></div></div>'; };
-  openPanel('tasks','任務牆','移動卡片，牆上的便利貼會一起變',
+  openPanel('tasks','交易日誌牆','移動卡片，牆上的便利貼會一起變',
     '<div class="kanban">'+cols.map(cl=>'<section><h4>'+cl[1]+' <small>'+STATE.tasks.filter(t=>t.status===cl[0]).length+'</small></h4>'+STATE.tasks.filter(t=>t.status===cl[0]).map(card).join('')+'</section>').join('')+'</div>'+
     '<h4>新增任務</h4><div class="ask"><input id="ntT" placeholder="任務內容，例如：整理 11 月講座名單" maxlength="40"><select id="ntO">'+BOTS.map(b=>'<option value="'+b.id+'">'+esc(b.data.short)+'</option>').join('')+'</select><button class="btn" id="ntB">新增</button></div>',
     p=>{ p.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const t=STATE.tasks.find(x=>x.id===b.dataset.mv), order=['todo','doing','done'];
@@ -2616,7 +2617,7 @@ function addTask(title,owner){
 }
 function showInbox(){
   const items=STATE.inbox;
-  openPanel('inbox','交接站 · 收件匣','助理做完的東西會送到這裡，核可或退回',
+  openPanel('inbox','交易單收件匣','助理做完的東西會送到這裡，核可或退回',
     (items.length?items.map(d=>{ const b=botById(d.from);
       return '<details class="dl '+d.state+'" '+(d.state==='new'?'open':'')+'><summary>'+(b?chip(b):'')+'<b>'+esc(d.title)+'</b><span class="st">'+(d.state==='new'?'待審':d.state==='ok'?'已核可':'已退回')+'</span></summary>'+
         '<pre>'+esc(d.body)+'</pre>'+(d.state==='new'?'<div class="actions"><button class="btn" data-ok="'+d.id+'">核可</button><button class="btn ghost" data-back="'+d.id+'">退回重做</button></div>':'')+
@@ -2631,7 +2632,7 @@ function showInbox(){
 const DELIV={
   shepherd:['本週任務優先序','各助理交件進度表'],dev:['CRM 列表改版測試連結','Worker API 部署紀錄'],visit:['明日拜訪行程與提醒','昨日拜訪紀錄 4 筆'],
   news:['今日財經談資 5 則','美股收盤重點'],stock:['觀察清單更新','法說會重點整理'],social:['IG 貼文草稿','短影音腳本'],
-  book:['本月現金流月報','佣金對帳結果'],sales:['拒絕處理話術 3 套','二次面談腳本'],trainer:['CRM 新人教材第 2 章','系統操作影片'],leads:['新名單分級表','本週邀約清單']
+  book:['本月模擬損益表','手續費對帳'],sales:['量能策略回測報告','停損參數比較'],trainer:['交易守則 v2','AAPL 停損覆盤'],leads:['量能突破候選清單','排除冷門股清單']
 };
 function deliverWork(b){
   const now=new Date(); const tm=clockStr();
@@ -2642,7 +2643,7 @@ function deliverWork(b){
   if(PANEL_ON==='inbox') showInbox();
 }
 function showProgress(){
-  openPanel('progress','助理進度牆','點一位助理看他的工作細節',
+  openPanel('progress','風控儀表板','點一位助理看他的工作細節',
     BOTS.map(b=>{ const t=STATE.tasks.find(x=>x.owner===b.id&&x.status!=='done');
       return '<button class="prow" data-b="'+b.id+'">'+chip(b)+'<span class="pd">'+esc(b.data.doing||'—')+'</span><span class="stdot" style="--c:'+STC[b.data.status]+'">'+STT[b.data.status]+'</span><div class="meter sm"><i style="width:'+(t?t.progress:15)+'%"></i></div></button>'; }).join(''),
     p=>p.querySelectorAll('[data-b]').forEach(x=>x.onclick=()=>openBotCard(botById(x.dataset.b))));
@@ -2650,7 +2651,7 @@ function showProgress(){
 /* ---------- 咖啡機 + 番茄鐘 ---------- */
 const POMO={end:0,total:0};
 function showCoffee(){
-  openPanel('coffee','咖啡機 · 專注番茄鐘','咖啡沖好了。要不要順便開一段專注時間？',
+  openPanel('coffee','咖啡機 · 盯盤番茄鐘','咖啡沖好了。要不要順便開一段專注時間？',
     '<div class="grid3"><button class="big" data-m="25"><b>25</b><span>分鐘專注</span></button><button class="big" data-m="50"><b>50</b><span>分鐘深度工作</span></button><button class="big" data-m="0"><b>☕</b><span>只喝咖啡</span></button></div>'+
     (POMO.end?'<div class="actions"><button class="btn ghost" id="pStop">停止目前的番茄鐘</button></div>':'')+
     '<div class="quote">「你能做的最好投資，就是投資你自己。」<span>— 波克夏 巴菲特</span></div>',
@@ -2661,7 +2662,7 @@ function showCoffee(){
 function pomodoroTick(){ if(POMO.end&&Date.now()>=POMO.end){ POMO.end=0; SFX.ok(); emote(SHANE,'🎉'); react(SHANE,'stretch',3); toast('專注時間結束，起來走走吧！'); updateHUD(); } }
 /* ---------- 腦力激盪 ---------- */
 function showBrainstorm(){
-  openPanel('brainstorm','沙發區 · 腦力激盪','丟一個題目，社群、超業、名單三位助理會過來給點子',
+  openPanel('brainstorm','研究室沙發 · 盤後討論','丟一個題目，社群、超業、名單三位助理會過來給點子',
     '<div class="ask"><input id="bsT" placeholder="例如：11 月退休規劃講座怎麼招生" maxlength="40"><button class="btn" id="bsB">開始</button></div><div id="bsOut"></div>',
     p=>{ $('#bsB').onclick=async()=>{ const topic=$('#bsT').value.trim()||'11 月退休規劃講座'; SFX.ok();
       const out=$('#bsOut'); out.innerHTML='';
@@ -2674,17 +2675,17 @@ function showBrainstorm(){
       const add=document.createElement('div'); add.className='actions'; add.innerHTML='<button class="btn" id="bsAdd">把點子交給 Shepherd 排進任務牆</button>'; out.appendChild(add);
       $('#bsAdd').onclick=()=>{ addTask('執行點子：'+topic,'shepherd'); toast('已加入任務牆'); add.remove(); }; }; });
 }
-/* ---------- 財商快問快答 ---------- */
+/* ---------- 投資快問快答 ---------- */
 function showQuiz(o){
   const qs=CONFIG.quiz.slice().sort(()=>Math.random()-.5).slice(0,5); let i=0, score=0;
   const best=store.get('best',0);
   const render=()=>{
     if(i>=qs.length){ const nb=Math.max(best,score); store.set('best',nb);
-      openPanel('arcade','財商快問快答','GAME OVER','<div class="score"><b>'+score+' / '+qs.length+'</b><span>最高紀錄 '+nb+'</span></div><div class="actions"><button class="btn" id="qAgain">再玩一次</button></div>',
+      openPanel('arcade','投資快問快答','GAME OVER','<div class="score"><b>'+score+' / '+qs.length+'</b><span>最高紀錄 '+nb+'</span></div><div class="actions"><button class="btn" id="qAgain">再玩一次</button></div>',
         ()=>{ $('#qAgain').onclick=()=>showQuiz(o); });
       emote(SHANE,score>=4?'🏆':'💪'); react(SHANE,score>=4?'happy':'think',3); if(score>=4) burst('spark',1,SHANE.x,SHANE.y,60,16); return; }
     const q=qs[i];
-    openPanel('arcade','財商快問快答','第 '+(i+1)+' / '+qs.length+' 題 · 得分 '+score,
+    openPanel('arcade','投資快問快答','第 '+(i+1)+' / '+qs.length+' 題 · 得分 '+score,
       '<p class="qq">'+esc(q.q)+'</p><div class="opts">'+q.o.map((s,k)=>'<button data-k="'+k+'">'+esc(s)+'</button>').join('')+'</div>',
       p=>p.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k;
         p.querySelectorAll('[data-k]').forEach(x=>{ x.disabled=true; if(+x.dataset.k===q.a) x.classList.add('right'); });
@@ -2708,7 +2709,7 @@ function playFoos(o){
 function showBooks(){
   let cat='全部', idx=(Math.random()*CONFIG.quotes.length)|0;
   const draw=()=>{ const list=CONFIG.quotes.filter(q=>cat==='全部'||q.cat===cat); const q=list[idx%list.length];
-    openPanel('books','書櫃 · 企業家語錄','每次抽一句，給自己一個提醒',
+    openPanel('books','書櫃 · 投資大師語錄','每次抽一句，給自己一個提醒',
       '<div class="seg" id="qCat">'+['全部','創業','管理','投資'].map(x=>'<button class="'+(x===cat?'on':'')+'">'+x+'</button>').join('')+'</div>'+
       '<blockquote class="bigq">「'+esc(q.q)+'」<cite>— '+esc(q.a)+'</cite></blockquote>'+
       '<div class="tip"><b>財商小知識</b>'+esc(pick(CONFIG.tips))+'</div>'+
@@ -2717,9 +2718,9 @@ function showBooks(){
         p.querySelectorAll('#qCat button').forEach(b=>b.onclick=()=>{ cat=b.textContent; idx=0; SFX.click(); draw(); }); }); };
   draw();
 }
-/* ---------- 酒櫃：高資產客戶 ---------- */
+/* ---------- 酒櫃：高資產標的 ---------- */
 function showWine(){
-  openPanel('wine','酒櫃 · 高資產客戶','小酌是建立信任的場合，先準備話題，再談規劃',
+  openPanel('wine','酒櫃','小酌是建立信任的場合，先準備話題，再談規劃',
     STATE.vip.map((v,i)=>'<div class="vip"><div><b>'+esc(v.name)+'</b><em>'+esc(v.note)+'</em><p>可以聊：'+esc(v.topic)+'</p></div><button class="btn sm" data-v="'+i+'">邀約小酌</button></div>').join('')+
     '<div class="quote">「品牌，就是你不在場時，別人怎麼談論你。」<span>— 亞馬遜創辦人 貝佐斯</span></div>',
     p=>p.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ const v=STATE.vip[+b.dataset.v]; SFX.ok();
@@ -2926,7 +2927,7 @@ function showMusic(){
         L.push({kind:'yt',t:$('#mName').value.trim()||'YouTube 音樂 '+(L.length+1),url:y.watch}); musicSave(); SFX.ok(); showMusic(); };
     });
 }
-/* ---------- 客戶面談 ---------- */
+/* ---------- 標的討論 ---------- */
 
 /* ===== 問 Grok 橋接（v2）：整理提問 → 複製 → 打開助理的 Grok 連結 ===== */
 async function grokCopy(t){
@@ -2958,7 +2959,7 @@ function showGrokOpen(nm,link,text,copied){
 }
 function grokClientPrompt(r){
   const S=CONFIG.stages, logs=(r.log||[]).slice(0,5).map(l=>'・'+l.d+' '+l.t).join('\n')||'・（還沒有紀錄）';
-  return '我是 Shane，保險顧問與理財規劃師。幫我看一位客戶，給我下一步建議。\n\n【客戶資料】\n'+
+  return '我是 Shane，模擬操盤公司董事長。幫我看一檔模擬標的，給我下一步建議。\n\n【標的資料】\n'+
     '・姓名：'+r.name+'\n・階段：'+S[r.stage]+'（'+(r.stage+1)+'/'+S.length+'）\n・熱度：'+r.heat+'\n・需求：'+(r.need||'未填')+'\n・備註：'+(r.note||'無')+
     '\n・目前下一步：'+(r.next||'未定')+(r.nextDate?'（'+r.nextDate+'）':'')+'\n\n【最近互動】\n'+logs+
     '\n\n【請給我】\n1. 判斷他現在卡在哪裡\n2. 下一步具體行動（含時間點）\n3. 3 句可以直接講的話術\n4. 要避開的地雷\n請用繁體中文（台灣）條列，精簡。';
@@ -2980,15 +2981,15 @@ function showGrokPaste(from,title,back){
 function showClient(o,pre){
   const st=store.get('steps',{});
   const here=ENTS.filter(e=>e.isClient&&!(e.spot&&SPOTS.guest.includes(e.spot)));
-  openPanel('client','會客沙發 · 客戶面談','選一位客戶，照流程走一次',
-    (here.length?'<h4>來訪中的客戶</h4><div class="chips">'+here.map(e=>'<button class="chipb" data-g="'+e.id+'">請 '+esc(e.name)+' 上樓</button>').join('')+'</div><h4>面談對象</h4>':'')+
+  openPanel('client','休息沙發','選一位標的，照流程走一次',
+    (here.length?'<h4>來訪中的標的</h4><div class="chips">'+here.map(e=>'<button class="chipb" data-g="'+e.id+'">請 '+esc(e.name)+' 上樓</button>').join('')+'</div><h4>討論對象</h4>':'')+
     '<select id="cSel">'+STATE.crm.map(x=>'<option'+(x.name===pre?' selected':'')+'>'+esc(x.name)+'（'+stName(x.stage)+'）</option>').join('')+'</select>'+
     '<div class="steps">'+CONFIG.clientSteps.map((s,i)=>'<label class="todo"><input type="checkbox" id="cs'+i+'" '+(st[i]?'checked':'')+'><span>'+(i+1)+'. '+esc(s)+'</span></label>').join('')+'</div>'+
     '<div class="actions"><button class="btn" id="cAsk">請超業給建議</button></div><div id="cOut"></div>',
     p=>{ p.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>startConsult(ENTS.find(e=>e.id===b.dataset.g)));
       CONFIG.clientSteps.forEach((s,i)=>{ $('#cs'+i).onchange=e=>{ st[i]=e.target.checked; store.set('steps',st); if(e.target.checked){ SFX.ok(); emote(SHANE,'👍'); } }; });
       $('#cAsk').onclick=async()=>{ const b=botById('sales'), name=$('#cSel').value; $('#cOut').innerHTML='<div class="idea">'+chip(b)+'<p class="muted">思考中…</p></div>';
-        const t=await AI.ask(b,'我等一下要跟 '+name+' 面談，請給我 3 個重點建議。','client',name);
+        const t=await AI.ask(b,'我等一下要跟 '+name+' 討論，請給我 3 個重點建議。','client',name);
         $('#cOut').innerHTML='<div class="idea">'+chip(b)+'<p>'+esc(t).replace(/\n/g,'<br>')+'</p></div>'; emote(b,'💡'); SFX.pop(); }; });
 }
 
@@ -2998,13 +2999,13 @@ function showClient(o,pre){
 const MEETING={on:false,phase:'',topic:'',t:0,idx:0,order:[],lines:[],busy:false};
 function showMeeting(){
   if(MEETING.on){ renderMeeting(); return; }
-  openPanel('meeting','會議桌 · 召開會議','選議題後，10 位助理會到 1F 就座，輪流發言，最後由 Shepherd 整理行動項目',
+  openPanel('meeting','投資委員會會議室 · 召開會議','選議題後，10 位助理會到 1F 就座，輪流發言，最後由 Shepherd 整理行動項目',
     '<div class="chips">'+CONFIG.meetTopics.map(t=>'<button class="chipb" data-t="'+esc(t)+'">'+esc(t)+'</button>').join('')+'</div>'+
     '<div class="ask"><input id="mT" placeholder="或自己輸入議題" maxlength="30"><button class="btn" id="mGo">開會</button></div>',
     p=>{ p.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.t));
       $('#mGo').onclick=()=>startMeeting($('#mT').value.trim()||CONFIG.meetTopics[0]); });
 }
-const TOPIC_BOTS={ '本週業績衝刺':['sales','leads','visit','news'], 'IG 內容企劃':['social','news','sales','trainer'], '新人培訓計畫':['trainer','dev','sales','visit'], '高資產客戶經營':['sales','stock','book','leads'] };
+const TOPIC_BOTS={ '今日觀察清單':['leads','stock','news','social'], 'NVDA 部位檢討':['stock','book','sales','shepherd'], '風控規則複核':['trainer','book','dev','shepherd'], '本月模擬績效':['book','sales','shepherd','news'] };
 function startMeeting(topic,auto){
   SFX.ok(); Object.assign(MEETING,{on:true,phase:'gather',topic,t:0,idx:0,lines:[],busy:false,auto:!!auto});
   MEETING.order=['shepherd'].concat(TOPIC_BOTS[topic]||['news','sales','social','leads']).concat(['shepherd']);
@@ -3057,12 +3058,12 @@ function finishMeeting(){
    ===================================================================== */
 const CHATS={};
 function openCharCard(e){ if(e.isPet){ petTap(e); return; } if(e.isShane) openShaneCard(); else if(e.isClient) openClientCard(e); else openBotCard(e); }
-/* ---------- 來訪客戶 ---------- */
+/* ---------- 來訪標的 ---------- */
 const clientEnt=name=>ENTS.find(e=>e.isClient&&e.name===name);
-function whereIs(e){ return e.spot&&e.spot.f===2&&SPOTS.guest.includes(e.spot)?'在 3F 會客沙發':e.spot===SPOTS.bar3[0]?'在 3F 吧台':e.f===0?'在 1F 等候區':'在 '+(e.f+1)+'F'; }
+function whereIs(e){ return e.spot&&e.spot.f===2&&SPOTS.guest.includes(e.spot)?'在 3F 休息沙發':e.spot===SPOTS.bar3[0]?'在 3F 吧台':e.f===0?'在 1F 等候區':'在 '+(e.f+1)+'F'; }
 function openClientCard(e){ emote(e,'😊'); openCrm(e.client); }
 /* =====================================================================
-   客戶名單（經營中）與客戶卡片
+   投資人名單（模擬）（經營中）與標的卡片
    ===================================================================== */
 const HEAT_N={'高':3,'中':2,'低':1};
 const followList=()=>STATE.crm.filter(r=>r.stage<6).sort((a,b)=>(HEAT_N[b.heat]-HEAT_N[a.heat])||(b.stage-a.stage));
@@ -3073,15 +3074,15 @@ function showCrm(filter){
   const S=CONFIG.stages.map((_,i)=>stName(i)), cnt=S.map((_,i)=>STATE.crm.filter(r=>r.stage===i).length);
   const list=STATE.crm.filter(r=>filter<0||r.stage===filter).sort((a,b)=>(HEAT_N[b.heat]-HEAT_N[a.heat])||(b.stage-a.stage));
   const onsiteN=STATE.crm.filter(r=>r.onsite).length;
-  openPanel('crm','客戶名單','經營中 '+STATE.crm.filter(r=>r.stage<6).length+' 位 · 在辦公室 '+Math.min(onsiteN,CLIENT_MAX)+' 位（最多 '+CLIENT_MAX+' 位）',
+  openPanel('crm','投資人名單（模擬）','經營中 '+STATE.crm.filter(r=>r.stage<6).length+' 位 · 在辦公室 '+Math.min(onsiteN,CLIENT_MAX)+' 位（最多 '+CLIENT_MAX+' 位）',
     '<div class="funnel">'+S.map((s,i)=>'<button class="'+(filter===i?'on':'')+'" data-st="'+i+'"><b>'+cnt[i]+'</b><span>'+s+'</span></button>').join('')+'</div>'+
     (filter>=0?'<div class="actions" style="margin:0 0 6px"><button class="btn ghost sm" data-st="-1">顯示全部</button></div>':'')+
     list.map(r=>'<button class="prow crow" data-k="'+r.id+'"><img class="av" src="'+window.SPR['client_'+r.avatar]+'" alt=""><span class="cn"><b>'+esc(r.name)+(r.onsite?' <small title="在辦公室">🏢</small>':'')+'</b><small>'+esc(r.next||r.need||'')+(r.nextDate?' · '+esc(r.nextDate):'')+'</small></span>'+stPill(r.stage)+'<span class="heat h'+HEAT_N[r.heat]+'">'+r.heat+'</span></button>').join('')+
-    (list.length?'':'<p class="muted">這個階段目前沒有客戶。</p>')+
-    '<div class="actions"><button class="btn" id="crmAdd">新增客戶</button><button class="btn ghost" id="crmImp">從 CRM 匯入</button></div>',
+    (list.length?'':'<p class="muted">這個階段目前沒有標的。</p>')+
+    '<div class="actions"><button class="btn" id="crmAdd">新增標的</button><button class="btn ghost" id="crmImp">從 CRM 匯入</button></div>',
     p=>{ p.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ SFX.click(); const v=+b.dataset.st; showCrm(v===filter?-1:v); });
       p.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ SFX.click(); openCrm(STATE.crm.find(r=>r.id===b.dataset.k)); });
-      $('#crmAdd').onclick=()=>{ const r={id:'k'+Date.now(),name:'新客戶',avatar:0,heat:'中',stage:0,need:'',note:'',next:'',nextDate:'',onsite:false,log:[]};
+      $('#crmAdd').onclick=()=>{ const r={id:'k'+Date.now(),name:'新標的',avatar:0,heat:'中',stage:0,need:'',note:'',next:'',nextDate:'',onsite:false,log:[]};
         STATE.crm.unshift(r); crmChanged(r,'加入名單'); openCrm(r,true); };
       $('#crmImp').onclick=()=>showCrmImport(); });
 }
@@ -3100,20 +3101,20 @@ function openCrm(r,edit){
     (r.crmId?'<p class="note">來自 CRM（唯讀）：在這裡的修改與紀錄只存在辦公室，不會改到 CRM。</p>':'')+crmInfo+
     '<h4>進度</h4><div class="pipe">'+S.map((s,i)=>'<button class="'+(i<r.stage?'done':i===r.stage?'on':'')+'" data-s="'+i+'"><i></i><span>'+SD[i]+'</span></button>').join('')+'</div>'+
     '<div class="seg" id="heatSeg" style="margin-top:10px">'+['高','中','低'].map(h=>'<button class="'+(r.heat===h?'on':'')+'" data-h="'+h+'">熱度 '+h+'</button>').join('')+'</div>'+
-    '<h4>下一步</h4><div class="ask"><input id="cNext" maxlength="30" placeholder="例如：寄報價、約二次面談" value="'+esc(r.next||'')+'"><input id="cNextD" maxlength="10" placeholder="日期" style="flex:0 0 76px" value="'+esc(r.nextDate||'')+'"></div>'+
+    '<h4>下一步</h4><div class="ask"><input id="cNext" maxlength="30" placeholder="例如：寄報價、約二次討論" value="'+esc(r.next||'')+'"><input id="cNextD" maxlength="10" placeholder="日期" style="flex:0 0 76px" value="'+esc(r.nextDate||'')+'"></div>'+
     '<h4>備註</h4><textarea id="cNote" rows="3" class="ta" placeholder="家庭、工作、喜好、注意事項…">'+esc(r.note||'')+'</textarea>'+
     '<h4>問 Grok</h4><div class="actions" style="margin:0 0 6px"><button class="btn" id="cGrok">問 Grok（超業）</button></div>'+
     '<textarea id="cGrokR" rows="3" class="ta" placeholder="把 Grok 的回答貼在這裡"></textarea><div class="actions" style="margin:4px 0 8px"><button class="btn ghost sm" id="cGrokS">貼回存進互動紀錄</button></div>'+
     '<h4>互動紀錄</h4><div class="ask"><input id="cLog" maxlength="60" placeholder="記一筆：今天聊了什麼"><button class="btn" id="cLogAdd">記錄</button></div>'+
     '<div class="logs">'+(r.log.length?r.log.slice(0,8).map(l=>'<div class="row"><span class="tm">'+esc(l.d)+'</span><b>'+esc(l.t)+'</b></div>').join(''):'<p class="muted">還沒有紀錄。</p>')+'</div>'+
-    (e?'<div class="actions"><button class="btn" id="gUp">請上 3F 面談</button><button class="btn ghost" id="gBar">吧台小酌</button><button class="btn ghost" id="gBack">請回等候區</button></div>':'')+
+    (e?'<div class="actions"><button class="btn" id="gUp">請上 3F 討論</button><button class="btn ghost" id="gBar">吧台小酌</button><button class="btn ghost" id="gBack">請回等候區</button></div>':'')+
     '<details class="dl" '+(edit?'open':'')+' style="margin-top:12px"><summary><b>基本資料</b></summary>'+
       '<div class="field"><label for="cName">名字</label><input id="cName" maxlength="12" value="'+esc(r.name)+'"></div>'+
       '<div class="field"><label for="cNeed">需求</label><input id="cNeed" maxlength="30" value="'+esc(r.need||'')+'"></div>'+
       '<div class="field"><label>人物外型</label><div class="seg" id="avSeg">'+AVATAR_NAMES.map((n,i)=>'<button class="'+(r.avatar===i?'on':'')+'" data-a="'+i+'">'+n+'</button>').join('')+'</div></div>'+
       '<label class="todo"><input type="checkbox" id="cOn" '+(r.onsite?'checked':'')+'><span>讓他出現在辦公室</span></label>'+
-      '<div class="actions"><button class="btn sm" id="cSave">儲存基本資料</button><button class="btn ghost sm" id="cDel">刪除客戶</button></div></details>'+
-    '<div class="actions"><button class="btn ghost" id="cList">← 客戶名單</button></div>',
+      '<div class="actions"><button class="btn sm" id="cSave">儲存基本資料</button><button class="btn ghost sm" id="cDel">刪除標的</button></div></details>'+
+    '<div class="actions"><button class="btn ghost" id="cList">← 投資人名單（模擬）</button></div>',
     p=>{
       p.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ const v=+b.dataset.s; if(v===r.stage) return; const from=S[r.stage]; r.stage=v;
         crmChanged(r,'進度：'+from+' → '+S[v]);
@@ -3130,7 +3131,7 @@ function openCrm(r,edit){
       let av=r.avatar; p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ av=+b.dataset.a; p.querySelectorAll('[data-a]').forEach(x=>x.classList.toggle('on',x===b)); });
       $('#cSave').onclick=()=>{ r.name=$('#cName').value.trim()||r.name; r.need=$('#cNeed').value.trim(); r.avatar=av;
         const on=$('#cOn').checked;
-        if(on&&!r.onsite&&STATE.crm.filter(x=>x.onsite).length>=CLIENT_MAX){ toast('辦公室最多 '+CLIENT_MAX+' 位客戶，請先讓其他人離開'); $('#cOn').checked=false; }
+        if(on&&!r.onsite&&STATE.crm.filter(x=>x.onsite).length>=CLIENT_MAX){ toast('辦公室最多 '+CLIENT_MAX+' 位標的，請先讓其他人離開'); $('#cOn').checked=false; }
         else r.onsite=on;
         crmChanged(r); SFX.ok(); toast('已儲存'); openCrm(r); };
       $('#cDel').onclick=ev=>{ const b=ev.currentTarget; if(b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='再按一次確認刪除'; return; }
@@ -3140,7 +3141,7 @@ function openCrm(r,edit){
     });
 }
 /* 從 CRM 匯入：貼上或上傳 CSV，依標題自動對應欄位 */
-const CSV_MAP={name:['姓名','名字','客戶','客戶名稱','name'],stage:['階段','進度','狀態','stage','status'],heat:['熱度','溫度','等級','優先','heat'],
+const CSV_MAP={name:['姓名','名字','標的','標的名稱','name'],stage:['階段','進度','狀態','stage','status'],heat:['熱度','溫度','等級','優先','heat'],
   need:['需求','商品','規劃','需求內容','need'],note:['備註','備忘','說明','note','notes'],next:['下一步','待辦','下次行動','next'],nextDate:['下次聯絡','預約日期','下次日期','日期','date']};
 function parseCSV(t){ const rows=[]; let row=[],cur='',q=false;
   for(let i=0;i<t.length;i++){ const ch=t[i];
@@ -3149,7 +3150,7 @@ function parseCSV(t){ const rows=[]; let row=[],cur='',q=false;
   if(cur||row.length){ row.push(cur); rows.push(row); } return rows.filter(r=>r.some(x=>x.trim())); }
 function guessStage(v){ v=String(v||''); const S=CONFIG.stages; const i=S.findIndex(s=>v.includes(s)); if(i>=0) return i;
   if(/成交|簽|已購|保單生效/.test(v)) return 5; if(/方案|報價|建議書/.test(v)) return 4; if(/需求|分析|試算/.test(v)) return 3;
-  if(/面談|拜訪|見面/.test(v)) return 2; if(/邀約|約訪|聯絡/.test(v)) return 1; if(/售後|理賠|續期|服務/.test(v)) return 6; return 0; }
+  if(/討論|拜訪|見面/.test(v)) return 2; if(/邀約|約訪|聯絡/.test(v)) return 1; if(/售後|理賠|續期|服務/.test(v)) return 6; return 0; }
 function guessHeat(v){ v=String(v||''); return /高|A|熱|急/.test(v)?'高':/低|C|冷/.test(v)?'低':'中'; }
 function showCrmImport(){
   openPanel('crmImp','從 CRM 匯入','在你的 CRM 按「CSV 匯出」，把內容貼進來或選擇檔案',
@@ -3167,27 +3168,27 @@ function showCrmImport(){
         const recs=rows.slice(1).map((c2,i)=>({id:'k'+Date.now()+'_'+i,name:(c2[col.name]||'').trim(),avatar:i%3,heat:guessHeat(c2[col.heat]),stage:guessStage(c2[col.stage]),
           need:(c2[col.need]||'').trim(),note:(c2[col.note]||'').trim(),next:(c2[col.next]||'').trim(),nextDate:(c2[col.nextDate]||'').trim(),onsite:false,log:[{d:todayMD(),t:'從 CRM 匯入'}]})).filter(r=>r.name);
         const used=Object.keys(col).map(k=>({name:'姓名',stage:'階段',heat:'熱度',need:'需求',note:'備註',next:'下一步',nextDate:'下次聯絡'})[k]+'←'+head[col[k]]);
-        $('#csvOut').innerHTML='<p class="note">讀到 '+recs.length+' 位客戶。欄位對應：'+esc(used.join('、'))+'</p>'+
+        $('#csvOut').innerHTML='<p class="note">讀到 '+recs.length+' 位標的。欄位對應：'+esc(used.join('、'))+'</p>'+
           recs.slice(0,5).map(r=>'<div class="row"><b>'+esc(r.name)+'</b><em>'+stName(r.stage)+' · '+r.heat+'</em></div>').join('')+
           '<div class="actions"><button class="btn" id="csvOk">確定匯入</button></div>';
         $('#csvOk').onclick=()=>{ const rep=$('#csvRep').checked;
           if(rep) STATE.crm=recs; else STATE.crm=recs.concat(STATE.crm);
           followList().slice(0,CLIENT_MAX).forEach(r=>{ if(recs.includes(r)) r.onsite=true; });
           if(rep) STATE.crm.forEach((r,i)=>{ r.onsite=followList().slice(0,CLIENT_MAX).includes(r); });
-          DataSource.saveCrm(); syncClients(); SFX.ok(); toast('已匯入 '+recs.length+' 位客戶'); showCrm(); };
+          DataSource.saveCrm(); syncClients(); SFX.ok(); toast('已匯入 '+recs.length+' 位標的'); showCrm(); };
       };
     });
 }
 function freeSeat(list,e){ return list.find(s=>!s.by||s.by===e.id); }
 function startConsult(e,auto){
-  const s=freeSeat(SPOTS.guest,e); if(!s){ toast('會客沙發坐滿了'); return; }
+  const s=freeSeat(SPOTS.guest,e); if(!s){ toast('休息沙發坐滿了'); return; }
   SFX.ok(); closePanels(); emote(e,'👋');
   goTo(e,{f:2,x:s.x,y:s.y,face:s.face,pose:s.pose,seatH:s.seatH,spot:s,cb:()=>{ emote(e,'💬'); say(e,'我最近在想「'+e.client.need+'」…',5); }});
   const h=SPOTS.host; SHANE.manual=300;
   goTo(SHANE,{f:2,x:h.x,y:h.y,face:h.face,pose:h.pose,seatH:h.seatH,cb:()=>{ SHANE.atObj=true; emote(SHANE,'💡'); if(!auto) showClient(null,e.name); }});
-  if(auto){ toast(clockStr()+' '+e.name+' 來訪，Shane 到 3F 會客沙發面談'); setTimeout(()=>{ if(SPOTS.guest.includes(e.spot)) sendBack(e); },150000); return; }
+  if(auto){ toast(clockStr()+' '+e.name+' 來訪，Shane 到 3F 休息沙發討論'); setTimeout(()=>{ if(SPOTS.guest.includes(e.spot)) sendBack(e); },150000); return; }
   VIEW.follow=true; if(VIEW.f!==2) focusFloor(2);
-  toast(e.name+' 上樓到 3F 會客沙發，Shane 去接待');
+  toast(e.name+' 上樓到 3F 休息沙發，Shane 去接待');
 }
 function startDrink(e,auto){
   const B=SPOTS.bar3, isGuest=q=>{ const o=ENTS.find(x=>x.id===q.by); return o&&o.isClient&&o!==e; };
@@ -3251,10 +3252,10 @@ function copyText(t,el){
   const fb=()=>{ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('已選取，請按複製'); };
   try{ navigator.clipboard.writeText(t).then(()=>{ toast('已複製'); SFX.ok(); },fb); }catch(e){ fb(); }
 }
-const AUTO={on:store.get('auto',true),t:0};
+const AUTO={on:store.get('auto',true),t:120};
 function openShaneCard(){
   emote(SHANE,'👋'); if(SHANE.mode==='idle'&&SHANE.pose==='stand') doAct(SHANE,'wave',2);
-  const go=[['shaneDesk','3F 書桌'],['piano','3F 鋼琴'],['bar3','3F 吧台'],['sofa','3F 會客沙發',2],['coffeeBar','2F 咖啡機'],['arcade','2F 遊戲機'],['foosball','2F 手足球'],['warTV','1F 戰情螢幕'],['meetTable','1F 會議桌'],['handoff','1F 交接站']];
+  const go=[['shaneDesk','3F 書桌'],['piano','3F 鋼琴'],['bar3','3F 吧台'],['sofa','3F 休息沙發',2],['coffeeBar','2F 咖啡機'],['arcade','2F 遊戲機'],['foosball','2F 手足球'],['warTV','1F 交易大廳螢幕'],['meetTable','1F 投資委員會會議室'],['handoff','1F 交接站']];
   openPanel('shane','Shane','人生理想規劃家 · 御謙VIP菁英會',
     '<div class="prof"><div><span class="stdot" style="--c:#e8b25c">'+esc(shaneDoing())+'</span></div></div>'+
     '<h4>帶 Shane 去</h4><div class="chips">'+go.map(g=>'<button class="chipb" data-o="'+g[0]+'" data-f="'+(g[2]===undefined?'':g[2])+'">'+g[1]+'</button>').join('')+'</div>'+
@@ -3349,7 +3350,7 @@ function editAssist(b){
    ===================================================================== */
 function collectBackup(){
   const out={app:'ai-virtual-office',ver:2,at:new Date().toISOString(),data:{}};
-  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith('aio2_')) out.data[k]=localStorage.getItem(k); } }catch(e){}
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith('aio10_')) out.data[k]=localStorage.getItem(k); } }catch(e){}
   return JSON.stringify(out);
 }
 function showBackup(){
@@ -3370,7 +3371,7 @@ function showBackup(){
         try{ obj=JSON.parse($('#bkIn').value.trim()); }catch(err){ $('#bkMsg').textContent='這段文字不是正確的備份格式，請重新複製完整的備份。'; SFX.no(); return; }
         if(!obj||obj.app!=='ai-virtual-office'||!obj.data){ $('#bkMsg').textContent='這不是 AI 虛擬辦公室的備份。'; SFX.no(); return; }
         if(btn.dataset.sure!=='1'){ btn.dataset.sure='1'; btn.textContent='確定覆蓋？再按一次'; $('#bkMsg').textContent='備份時間：'+(obj.at||'').slice(0,16).replace('T',' ')+'，共 '+Object.keys(obj.data).length+' 項。'; return; }
-        try{ for(const k in obj.data) if(k.startsWith('aio2_')) localStorage.setItem(k,obj.data[k]); }
+        try{ for(const k in obj.data) if(k.startsWith('aio10_')) localStorage.setItem(k,obj.data[k]); }
         catch(err){ $('#bkMsg').textContent='這個瀏覽器不允許存資料（可能是無痕模式），無法匯入。'; return; }
         $('#bkMsg').textContent='匯入完成，重新載入中…'; SFX.ok(); setTimeout(()=>location.reload(),700); };
     });
@@ -3386,14 +3387,7 @@ function showSettings(){
     '<div class="actions"><button class="btn" id="sSave">儲存</button><button class="btn ghost" id="sTest">測試連線</button></div>'+
     '<p class="note">在 Claude 的分享網址上，瀏覽器安全規則會擋掉對外連線，所以 Grok API 要把這個網頁放到你自己的網站（例如 Cloudflare Pages）才會通。只想先用 App 裡建好的 Grok 助理，可以在每位助理卡片的「Grok」分頁貼連結。</p>'+
     '<details class="dl"><summary><b>Cloudflare Worker 範例程式</b></summary><pre id="wc">'+esc(WORKER_CODE)+'</pre><div class="actions"><button class="btn ghost" id="wcC">複製</button></div></details>'+
-    '<h4>資料來源（CRM）</h4>'+
-    '<label class="todo"><input type="radio" name="dsm" value="local" '+(DataSource.mode!=='firebase'?'checked':'')+'><span><b>本機</b>　資料存在這台瀏覽器（目前預設）</span></label>'+
-    '<label class="todo"><input type="radio" name="dsm" value="firebase" '+(DataSource.mode==='firebase'?'checked':'')+'><span><b>雲端 CRM</b>　客戶唯讀自 fish-teem；需部署在你的 GitHub Pages</span></label>'+
-    (DataSource.mode==='firebase'?'<div class="field"><label for="fbT">團隊代碼</label><input id="fbT" maxlength="20" placeholder="FISHTEAM" value="'+esc(dsTeamId())+'"></div><div class="actions"><button class="btn ghost sm" id="fbTS">儲存團隊代碼</button></div>':'')+
-    (DataSource.mode==='firebase'?(DataSource.fb&&DataSource.fb.user?'<p class="note">已登入：'+esc(DataSource.fb.user.email||'')+'</p>':
-      '<div class="field"><label for="fbE">CRM 帳號 email</label><input id="fbE" type="email" autocomplete="username"></div>'+
-      '<div class="field"><label for="fbP">密碼</label><input id="fbP" type="password" autocomplete="current-password"></div>'+
-      '<div class="actions"><button class="btn" id="fbIn">登入雲端</button></div>'+(DataSource._warn?'<p class="note">'+esc(DataSource._warn)+'</p>':'')):'')+
+    '<h4>資料來源</h4><p class="note">v10 AI 操盤公司為模擬版：已斷開 Firebase／CRM，所有資料只存在這台瀏覽器（模擬資料）。</p>'+
     '<h4>其他</h4>'+
     '<label class="todo"><input type="checkbox" id="sSnd" '+(SFX.on?'checked':'')+'><span>音效</span></label>'+
     '<label class="todo"><input type="checkbox" id="sFast" '+(FAST?'checked':'')+'><span>時間快轉（看日夜變化）</span></label>',
@@ -3403,11 +3397,11 @@ function showSettings(){
         $('#sTest').textContent='測試中…'; const r=await AI.ask(botById('shepherd'),'請回覆「連線成功」四個字','chat');
         $('#sTest').textContent='測試連線'; toast(r.startsWith('（連不上')?'連線失敗：請檢查網址，或改放到自己的網站':'連線成功'); };
       $('#wcC').onclick=()=>copyText(WORKER_CODE,$('#wc'));
-      p.querySelectorAll('[name=dsm]').forEach(r=>r.onchange=()=>{ store.set('src',r.value); toast('切換資料來源，重新載入中…'); setTimeout(()=>location.reload(),600); });
+      ([]).forEach(r=>r.onchange=()=>{ store.set('src',r.value); toast('切換資料來源，重新載入中…'); setTimeout(()=>location.reload(),600); });
       const ft=$('#fbTS'); if(ft) ft.onclick=()=>{ const v=$('#fbT').value.trim().toUpperCase(); store.set('team',v);
         try{ if(localStorage.getItem('crm_team_id')) toast('CRM 登入的團隊代碼優先：'+dsTeamId()); else { toast('團隊代碼已儲存，重新載入中…'); setTimeout(()=>location.reload(),600); } }catch(e){} };
       const fi=$('#fbIn'); if(fi) fi.onclick=async()=>{ fi.disabled=true; fi.textContent='登入中…';
-        try{ await DataSource.signIn($('#fbE').value.trim(),$('#fbP').value); syncClients(); SFX.ok(); toast('已登入，CRM 客戶已載入'); showSettings(); }
+        try{ await DataSource.signIn($('#fbE').value.trim(),$('#fbP').value); syncClients(); SFX.ok(); toast('已登入，CRM 標的已載入'); showSettings(); }
         catch(e){ fi.disabled=false; fi.textContent='登入雲端'; toast('登入失敗：'+(e&&e.code==='auth/invalid-credential'?'帳號或密碼錯誤':(e&&e.message)||'請檢查設定')); } };
       $('#sSnd').onchange=e=>{ SFX.on=e.target.checked; store.set('snd',SFX.on); $('#hSnd').textContent=SFX.on?'🔊':'🔇'; };
       $('#sFast').onchange=e=>{ FAST=e.target.checked; }; });
@@ -3454,11 +3448,11 @@ function showToday(){
    第一次打開的導覽
    ===================================================================== */
 const TOUR=[
-  {t:'歡迎來到你的 AI 公司',b:'這是一棟三層樓的辦公室：1F 戰情室、2F 工作生活層、3F 你的私人辦公室。10 位 AI 助理、來訪客戶和柴柴都在這裡。',f:-1},
-  {t:'點家具，Shane 會走過去用',b:'咖啡機、鋼琴、白板、任務牆、遊戲機、書櫃……幾乎每件設備都能點。Shane 會走過去操作，再打開對應的功能。',f:1},
-  {t:'點人物，看他在做什麼',b:'點助理可以對話、交辦任務、看產出；點客戶可以請他上 3F 面談或到吧台小酌；點柴柴牠會汪汪叫。',f:1},
+  {t:'歡迎來到你的 AI 操盤公司',b:'這是一棟三層樓的辦公室：1F 交易大廳（6 位交易員、行情牆、投資委員會會議室）、2F 研究室（10 位 AI 分析師）、3F 你的董事長室。全部是模擬資料・非真實交易，不連券商、不連 Firebase。',f:-1},
+  {t:'點家具，Shane 會走過去用',b:'行情牆、交易桌、交易守則白板、交易日誌牆、風控儀表板、書櫃……幾乎每件設備都能點。Shane 會走過去操作，再打開對應的功能。',f:1},
+  {t:'點人物，看他在做什麼',b:'點分析師可以對話、交辦研究；點交易桌或行情牆看持股、交易日誌與討論紀錄；點投資人可以請他上 3F 說明；點柴柴牠會汪汪叫。',f:1},
   {t:'切換樓層、移動畫面',b:'下方按鈕切換 1F、2F、3F 和全景。拖曳可以移動畫面，雙指或滾輪縮放。點任何一扇窗戶，可以預覽清晨、白天、黃昏、夜晚。',f:2},
-  {t:'更多功能在「選單」',b:'召開全員會議、任務牆、交接站收件匣、助理設定（改名字、貼 Grok 連結）、備份與匯入，都在右上角的選單裡。',f:0}
+  {t:'更多功能在「選單」',b:'模擬操盤部、召開投資委員會、交易日誌牆、交易單收件匣、助理設定（改名字、貼 Grok 連結）、備份與匯入，都在右上角的選單裡。',f:0}
 ];
 let tourI=0;
 function startTour(){ tourI=0; closePanels(); $('#tour').hidden=false; renderTour(); }
@@ -3486,7 +3480,7 @@ function initUI(){
   const menu=$('#menu');
   $('#menuBtn').onclick=()=>{ SFX.init(); menu.hidden=!menu.hidden; $('#menuBtn').setAttribute('aria-expanded',String(!menu.hidden)); };
   const M={mMeet:()=>{ const o=OBJ.find(x=>x.kind==='meetTable'); if(VIEW.f!==0) focusFloor(0); useObject(o); },
-    mCrm:()=>showCrm(), mTour:()=>startTour(), mAssist:()=>showAssist(), mBackup:()=>showBackup(), mWar:()=>showWar(), mTasks:()=>showTasks(), mInbox:()=>showInbox(), mBrief:()=>showDesk(), mProg:()=>showProgress(), mSet:()=>showSettings(),
+    mTour:()=>startTour(), mAssist:()=>showAssist(), mBackup:()=>showBackup(), mWar:()=>showWar(), mTasks:()=>showTasks(), mInbox:()=>showInbox(), mBrief:()=>showDesk(), mProg:()=>showProgress(), mSet:()=>showSettings(),
     mAll:()=>focusFloor(-1)};
   for(const k in M) $('#'+k).onclick=()=>{ menu.hidden=true; SFX.click(); M[k](); };
   $('#hShane').onclick=()=>{ SFX.click(); if(VIEW.f!==SHANE.f) focusFloor(SHANE.f); SEL={ent:SHANE}; openShaneCard(); };
@@ -3514,5 +3508,134 @@ function initUI(){
     requestAnimationFrame(loop);
     setTimeout(()=>{ const h=document.getElementById('hint'); if(h) h.style.opacity=0; },10000);
   });
+})();
+</script>
+<style>
+#sim{position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 0,#3a2d20,#12100d 75%);overflow:auto;color:var(--ink);font-family:var(--f-body);padding:56px 14px 30px;box-sizing:border-box}
+#sim[hidden]{display:none}
+#sim .tag{position:sticky;top:-44px;z-index:3;margin:0 auto 10px;width:max-content;background:var(--berry);color:#fff;font-weight:800;padding:6px 16px;border-radius:999px;box-shadow:0 3px 0 #8e3a30}
+#sim .close{position:fixed;top:12px;right:12px;z-index:9001}
+#sim h2{color:var(--paper);text-align:center;margin:4px 0 2px;font-size:20px}
+#sim .rules{color:var(--amber2);text-align:center;font-size:12px;margin-bottom:14px}
+.wall{max-width:900px;margin:0 auto 18px;background:#1b2230;border:10px solid #5a4330;border-radius:16px;box-shadow:0 8px 0 #3b2b1e,0 0 40px rgba(93,143,196,.35);color:#dfe9f5;padding:12px 14px;cursor:pointer}
+.wall .k{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.wall .k div{background:#26314a;border-radius:10px;padding:6px 8px}.wall .k span{font-size:11px;color:#9fb3cf;display:block}
+.wall .k b{font-family:var(--f-num);font-size:18px}
+.up{color:#7fd08a}.dn{color:#ff8a7a}
+.wall svg{width:100%;height:110px;display:block;margin:8px 0}
+.wall .lt{font-size:12px;color:#b9c8dc}.wall .whint{font-size:11px;color:var(--amber2);text-align:right}
+.floor{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 14px;background:repeating-linear-gradient(90deg,#6b4e34 0 60px,#634830 60px 120px);padding:18px;border-radius:16px}
+.desk{background:#8a6544;border-radius:10px;padding:10px 10px 8px;box-shadow:0 6px 0 #5c412b;position:relative}
+.mon{background:#222;border:5px solid #3a3a3a;border-radius:8px;height:92px;padding:6px;font:11px/1.45 ui-monospace,monospace;color:#555;overflow:hidden;cursor:pointer}
+.desk.on .mon{background:#0f2a1c;color:#8ff0a6;box-shadow:0 0 18px rgba(143,240,166,.55)}
+.desk.veto .mon{border-color:#7a2a22}
+.stand{width:22px;height:8px;background:#3a3a3a;margin:0 auto}
+.nm{display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--paper);font-weight:700;font-size:13px}
+.nm i{width:10px;height:10px;border-radius:50%;background:#555;flex:0 0 auto}.desk.on .nm i{background:#7fe08f;box-shadow:0 0 8px #7fe08f}
+.nm span{cursor:text;border-bottom:1px dashed var(--amber2)}
+.nm input{width:100%;font:inherit;border-radius:6px;border:2px solid var(--amber);padding:2px 5px}
+.desk small{display:block;color:#f1dfc0;font-size:11px}
+.vb{position:absolute;top:6px;right:8px;background:var(--berry);color:#fff;font-size:10px;padding:1px 6px;border-radius:999px}
+#simDet{max-width:900px;margin:18px auto 0;background:var(--paper);border-radius:16px;padding:12px 14px}
+#simDet[hidden]{display:none}
+#simDet table{width:100%;border-collapse:collapse;font-size:12px}#simDet th,#simDet td{border-bottom:1px dashed #e0cda6;padding:4px;text-align:left}
+#simDet .tw{overflow-x:auto}#simDet h4{margin:12px 0 4px}
+.disc{background:#fff;border-radius:14px;padding:10px;margin-top:12px}
+.disc select{flex:none;width:100%;margin:6px 0}
+.bb{display:flex;gap:8px;margin:7px 0;align-items:flex-start}.bb .av{flex:0 0 auto;font-size:11px;font-weight:800;background:var(--paper2);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.bb .ms{background:var(--paper2);border-radius:4px 14px 14px 14px;padding:6px 10px;font-size:13px;line-height:1.5}.bb .ms small{display:block;color:var(--ink2);font-size:10px}
+.bb.v .ms{background:#f6d6cf}.bb.me{flex-direction:row-reverse}.bb.me .ms{background:var(--amber2);border-radius:14px 4px 14px 14px}
+.askb{margin-top:6px;border:0;background:var(--amber);color:#2a1a05;font-weight:700;font-size:11px;border-radius:999px;padding:3px 10px;cursor:pointer}
+#simAsk{position:fixed;z-index:9002;right:16px;bottom:16px;width:min(380px,calc(100% - 32px));max-height:80vh;display:flex;flex-direction:column;background:var(--paper);border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#simAsk[hidden]{display:none}#simAsk .hd{padding:12px 14px;border-bottom:2px dashed #e6d4ad;display:flex;justify-content:space-between;align-items:center}
+#simAsk .demo{background:var(--berry);color:#fff;font-size:11px;border-radius:999px;padding:2px 8px}
+#askLog{overflow:auto;padding:8px 12px;flex:1}#simAsk form{display:flex;gap:6px;padding:10px 12px}#simAsk input{flex:1;border:2px solid #e6d4ad;border-radius:12px;padding:8px;font:inherit}
+.lg{font-size:12px;margin:3px 0;padding:4px 6px;background:var(--paper2);border-radius:8px}
+.dg{display:grid;gap:14px}@media (min-width:900px){.dg{grid-template-columns:1fr 260px}#simDet{max-width:1180px}}
+@media (max-width:600px){.floor{grid-template-columns:repeat(2,1fr)}.wall .k{grid-template-columns:repeat(3,1fr)}.wall .k b{font-size:15px}}
+</style>
+<div id="sim" hidden>
+<button class="btn ghost close" id="simX">關閉</button>
+<div class="tag">模擬資料・非真實交易</div>
+<h2>模擬操盤部・交易樓層</h2>
+<div class="rules">虛擬資金每月 5,000 美金｜單筆最多總資金 10%｜每日虧損達 3% 停手｜不開槓桿｜含手續費｜台股・美股</div>
+<div class="wall" id="simWall">
+ <div class="k"><div><span>起始資金</span><b>$5,000</b></div><div><span>目前餘額（含持股市值）</span><b>$5,186</b></div><div><span>本月損益</span><b class="up">+$186 (+3.7%)</b></div><div><span>勝率（已平倉）</span><b>3/4 · 75%</b></div><div><span>最大回撤</span><b class="dn">-1.9%</b></div></div>
+ <svg viewBox="0 0 600 110" preserveAspectRatio="none"><line x1="0" y1="70" x2="600" y2="70" stroke="#4a5a78" stroke-dasharray="4 4"/><polyline fill="none" stroke="#7fd08a" stroke-width="3" points="0,70 60,66 120,58 180,64 240,72 300,61 360,52 420,48 480,44 540,40 600,36"/><text x="4" y="66" fill="#9fb3cf" font-size="10">5,000</text><text x="560" y="30" fill="#7fd08a" font-size="10">5,186</text></svg>
+ <div class="lt">最新成交：10/26 15:20 美股 NVDA 買 3 股 @ $140.00｜10/26 10:05 台股 2330 賣 15 股 @ NT$1,070</div>
+ <div class="whint">點大螢幕看持股・成交紀錄・活動紀錄 ▸</div>
+</div>
+<div class="floor" id="simFloor"></div>
+<div id="simAsk" hidden><div class="hd"><b id="askT">問角色</b><span class="demo">示範回覆，尚未接上 AI</span><button class="x" id="askX" type="button">×</button></div>
+<div id="askLog"></div><form id="askF"><input id="askI" placeholder="例如：你為什麼這樣決定？"><button class="btn" type="submit">送出</button></form></div>
+<div id="simDet" hidden>
+ <b>詳細資料（範例數字・損益已含手續費・匯率以 1 美金 = 32 台幣計）</b>
+ <div class="dg"><div class="dm">
+ <h4>持股（未實現 +$24）</h4><div class="tw"><table><tr><th>市場</th><th>代號</th><th>名稱</th><th>股數</th><th>成本</th><th>現價</th><th>未實現損益</th></tr>
+ <tr><td>台股</td><td>2330</td><td>台積電（範例價）</td><td>10</td><td>NT$1,000</td><td>NT$1,040</td><td class="up">+$12</td></tr>
+ <tr><td>美股</td><td>NVDA</td><td>輝達（範例價）</td><td>3</td><td>$140.00</td><td>$144.00</td><td class="up">+$12</td></tr></table></div>
+ <h4>成交紀錄（已實現 +$162）</h4><div class="tw"><table><tr><th>時間</th><th>市場</th><th>代號</th><th>買/賣</th><th>股數</th><th>價格</th><th>損益</th><th>決策理由</th><th>風控否決</th></tr>
+ <tr><td>10/26 15:20</td><td>美股</td><td>NVDA</td><td>買</td><td>3</td><td>$140.00</td><td>—</td><td>量能放大、部位 8%</td><td>否</td></tr>
+ <tr><td>10/26 14:50</td><td>美股</td><td>TSLA</td><td>買</td><td>—</td><td>—</td><td>—</td><td>單筆 12% 超過上限</td><td class="dn">是（否決）</td></tr>
+ <tr><td>10/26 10:05</td><td>台股</td><td>2330</td><td>賣</td><td>15</td><td>NT$1,070</td><td class="up">+$32</td><td>達目標價分批出</td><td>否</td></tr>
+ <tr><td>10/22 21:40</td><td>美股</td><td>META</td><td>賣</td><td>1</td><td>$548.00</td><td class="up">+$66</td><td>突破後獲利了結</td><td>否</td></tr>
+ <tr><td>10/16 22:05</td><td>美股</td><td>AMD</td><td>賣</td><td>3</td><td>$175.00</td><td class="up">+$82</td><td>財報後達標</td><td>否</td></tr>
+ <tr><td>10/09 21:55</td><td>美股</td><td>AAPL</td><td>賣</td><td>2</td><td>$228.00</td><td class="dn">-$18</td><td>跌破停損</td><td>否</td></tr></table></div>
+ <div class="note">合計：已實現 +$162 ＋ 未實現 +$24 ＝ 本月損益 +$186</div>
+ <div class="disc"><h4 style="margin:0">討論紀錄</h4><select id="discSel"></select><div id="discBox"></div></div>
+ </div><div class="dl2">
+ <h4>活動紀錄</h4>
+ <div class="lg">15:32 唱反調：2454 聯發科成交量偏低，建議等待</div>
+ <div class="lg">15:30 風控：NVDA 部位 8.4%，未超過 10% 上限，通過</div>
+ <div class="lg">15:20 整合決策：NVDA 買進 3 股</div>
+ <div class="lg">15:18 查資料：NVDA 日均量充足，價差 0.01</div>
+ <div class="lg">14:50 風控：TSLA 單筆 12%，否決</div>
+ <div class="lg">14:40 找標的：掃描美股量能前 20 名，挑出 NVDA、TSLA</div>
+ <div class="lg">10:06 記錄：2330 賣出 15 股，已實現 +$32</div>
+ </div></div>
+</div>
+</div>
+<script>
+(function(){
+const R=[['scan','找標的','市場掃描','> 掃描 台股/美股<br>2454 量 -32%<br>NVDA 量 +41% ★<br>TSLA 量 +18%',0,['掃描 台股/美股','2454 量 -32%','NVDA 量+41% ★']],
+['data','查資料','資料與流動性','> NVDA 日均量 2.1億<br>價差 0.01<br>流動性：良好',0,['NVDA 日均量 2.1億','價差 0.01','流動性 良好']],
+['bear','唱反調','反方審查','> 2454 聯發科<br>成交量偏低<br>建議：等待',0,['2454 聯發科','量偏低','建議：等待']],
+['risk','風控','部位與停損','> 部位試算<br>3 × $140 = $420<br>占比 8.4% ≤ 10% ✓<br>停損 $133',1,['3×$140=$420','占比 8.4%≤10% ✓','停損 $133']],
+['dec','整合決策','買 / 等 / 不買','> 交易單<br>NVDA 買 3 股<br>限價 $140.00',0,['交易單','NVDA 買 3 股','限價 $140.00']],
+['log','記錄','寫活動紀錄','> 15:32 寫入紀錄…',0,['15:32 寫入紀錄','2454 等待','已同步']]];
+const K='simRoleNames',nm=JSON.parse(localStorage.getItem(K)||'{}'),F=document.getElementById('simFloor'),D=document.getElementById('simDet');
+const draw=()=>{ if(F.querySelector('input')) return; const ON=window.SIMD?R[SIMD.cur()][0]:'risk';
+F.innerHTML=R.map(r=>`<div class="desk ${r[0]==ON?'on':''} ${r[4]?'veto':''}">${r[4]?'<span class="vb">否決權</span>':''}<div class="mon">${r[0]==ON?r[3]:'待機中…'}</div><div class="stand"></div><div class="nm"><i></i><span data-k="${r[0]}" title="點一下改名">${nm[r[0]]||r[1]}</span></div><small>${r[2]}${r[0]==ON?'・工作中':''}</small><button class="askb" type="button" data-k="${r[0]}">💬 問他</button></div>`).join(''); };
+setTimeout(()=>{draw(); setInterval(draw,1000);},0);
+F.addEventListener('click',e=>{const a=e.target.closest('.askb');if(a){e.stopPropagation();simAskOpen(a.dataset.k);}},true);
+
+const TH=[
+ {t:'10/26 15:32 · 2454 聯發科 → 等待',m:[['scan','15:28','2454 聯發科近期跌深，列入觀察名單'],['data','15:29','今日成交量比 20 日均量少 32%，流動性偏弱'],['bear','15:30','量縮反彈容易失敗，現在進場風險大，建議等待'],['risk','15:31','若進場，部位 9.5%、停損 -4%，可接受但不急'],['dec','15:32','決議：等待，量能回到均量以上再評估',0],['log','15:32','已記錄：2454 等待，下次 10/27 開盤複查']]},
+ {t:'10/26 14:50 · TSLA → 風控否決',m:[['scan','14:40','TSLA 量能 +18%，排進候選'],['data','14:44','價差正常，但波動率偏高'],['bear','14:46','財報前跳空風險大'],['dec','14:48','提案：買 4 股 @ $150（$600）'],['risk','14:50','否決：單筆 $600 占總資金 12%，超過 10% 上限',1],['log','14:50','已記錄：TSLA 遭風控否決，未下單']]},
+ {t:'10/26 15:20 · NVDA → 買進 3 股',m:[['scan','15:10','NVDA 量能 +41%，排名第一'],['data','15:18','日均量 2.1 億股，價差 0.01，流動性良好'],['bear','15:19','追高風險存在，建議小部位'],['risk','15:20','3 股 × $140 = $420，占 8.4%，停損 $133，通過'],['dec','15:20','決議：買進 3 股，限價 $140'],['log','15:20','已記錄：NVDA 買 3 股 @ $140']]}];
+const WHY={scan:'我每天掃描台股與美股量能前 20 名，NVDA 量能 +41% 排第一，所以先提出來；2454 只是跌深，我放進觀察名單。',
+ data:'我負責看流動性：NVDA 日均量 2.1 億股、價差 0.01，進出容易；2454 今天量比均量少 32%，我標成偏弱。',
+ bear:'我的工作就是挑毛病。2454 量縮反彈容易失敗，TSLA 財報前跳空風險大，所以兩筆我都建議等待。',
+ risk:'規則是單筆最多總資金 10%、每日虧損 3% 停手。TSLA 提案 $600 占 12%，超過上限，所以我否決；NVDA $420 占 8.4%，通過。',
+ dec:'我綜合大家意見：NVDA 量能與流動性都好、風控通過，就買 3 股；2454 量不夠，選擇等待。',
+ log:'我把每次討論與成交寫進活動紀錄，例如 15:32 2454 等待、14:50 TSLA 遭否決。'};
+const RN=k=>nm[k]||R.find(r=>r[0]==k)[1];
+const bub=(k,t,m,v,me)=>`<div class="bb${v?' v':''}${me?' me':''}"><span class="av">${me?'你':RN(k)}</span><div class="ms"><small>${t}</small>${m}</div></div>`;
+const sel=document.getElementById('discSel'),box=document.getElementById('discBox');
+sel.innerHTML=TH.map((x,i)=>`<option value="${i}">${x.t}</option>`).join('');
+const showT=()=>{box.innerHTML=TH[sel.value].m.map(x=>bub(x[0],x[1],x[2],x[3])).join('');};sel.onchange=showT;showT();
+const AS=document.getElementById('simAsk'),AL=document.getElementById('askLog');let AK='risk';
+window.simAskOpen=k=>{AK=k;AS.hidden=false;document.getElementById('askT').textContent='問「'+RN(k)+'」';AL.innerHTML=bub(k,'現在','嗨，我是'+RN(k)+'，想問我哪個決定？');};
+document.getElementById('askX').onclick=()=>AS.hidden=true;
+document.getElementById('askF').onsubmit=e=>{e.preventDefault();const q=document.getElementById('askI').value.trim()||'你為什麼這樣決定？';
+ AL.innerHTML+=bub(AK,'現在',q,0,1)+bub(AK,'現在','（示範回覆）'+WHY[AK]);document.getElementById('askI').value='';AL.scrollTop=1e5;};
+F.onclick=e=>{const s=e.target.closest('.nm span');if(s){const i=document.createElement('input');i.value=s.textContent;s.replaceWith(i);i.focus();i.select();const done=()=>{const v=i.value.trim()||R.find(r=>r[0]==s.dataset.k)[1];nm[s.dataset.k]=v;localStorage.setItem(K,JSON.stringify(nm));i.remove();draw();};i.onblur=done;i.onkeydown=k=>{if(k.key=='Enter')i.blur()};return;}
+if(e.target.closest('.mon')){D.hidden=false;D.scrollIntoView({behavior:'smooth'});}};
+document.getElementById('simWall').onclick=()=>{D.hidden=!D.hidden;if(!D.hidden)D.scrollIntoView({behavior:'smooth'})};
+document.getElementById('simX').onclick=()=>document.getElementById('sim').hidden=true;
+window.SIMD={bal:5186,pnl:186,eq:[5000,5012,5040,5025,4990,5058,5092,5110,5140,5162,5186],last:'最新：NVDA 買 3 股 @ $140',
+ roles:R.map(r=>({k:r[0],scr:r[5]})),name:i=>nm[R[i][0]]||R[i][1],cur:()=>((performance.now()/5000)|0)%6};
+window.openSim=()=>{document.getElementById('sim').hidden=false;D.hidden=false;const t=document.getElementById('tour');if(t)t.style.display='none';};
+if(/[?&]sim=1/.test(location.search))openSim();
 })();
 </script>
