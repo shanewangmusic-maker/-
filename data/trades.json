@@ -1,0 +1,202 @@
+{
+  "sample": true,
+  "updatedAt": "2026-10-26T18:05:00+08:00",
+  "month": "2026-10",
+  "budgetUSD": 5000,
+  "cashUSD": 4120.5,
+  "equityUSD": 5274.8,
+  "rules": {
+    "maxPositionPct": 10,
+    "dailyStopLossPct": 3,
+    "leverage": false
+  },
+  "positions": [
+    {
+      "market": "TW",
+      "symbol": "2330",
+      "name": "台積電（範例）",
+      "shares": 10,
+      "avgCost": 1000,
+      "currency": "TWD",
+      "lastPrice": 1085,
+      "pnlPct": 8.5
+    },
+    {
+      "market": "US",
+      "symbol": "NVDA",
+      "name": "輝達（範例）",
+      "shares": 3,
+      "avgCost": 140,
+      "currency": "USD",
+      "lastPrice": 148.2,
+      "pnlPct": 5.9
+    }
+  ],
+  "trades": [
+    {
+      "date": "2026-10-26",
+      "time": "15:20",
+      "market": "US",
+      "symbol": "NVDA",
+      "name": "輝達（範例）",
+      "side": "BUY",
+      "shares": 3,
+      "price": 140,
+      "feeUSD": 1.25,
+      "reason": "檔案理由：量能放大，3 股約 420 美元，約占預算 8%，未超過單筆 10%。",
+      "decidedBy": "decision"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "10:05",
+      "market": "TW",
+      "symbol": "2330",
+      "name": "台積電（範例）",
+      "side": "SELL",
+      "shares": 15,
+      "price": 1070,
+      "feeUSD": 2.1,
+      "reason": "檔案理由：達到預設目標價，分批賣出 15 股。",
+      "decidedBy": "decision"
+    },
+    {
+      "date": "2026-10-22",
+      "time": "21:40",
+      "market": "US",
+      "symbol": "META",
+      "name": "Meta（範例）",
+      "side": "SELL",
+      "shares": 1,
+      "price": 548,
+      "feeUSD": 1,
+      "reason": "檔案理由：突破後獲利了結，這筆是較早的示範單。",
+      "decidedBy": "decision"
+    }
+  ],
+  "watchlist": [
+    {
+      "market": "TW",
+      "symbol": "TAIEX",
+      "name": "加權指數",
+      "lastPrice": 23480,
+      "changePct": 0.62
+    },
+    {
+      "market": "US",
+      "symbol": "IXIC",
+      "name": "那斯達克",
+      "lastPrice": 19105,
+      "changePct": 1.12
+    },
+    {
+      "market": "US",
+      "symbol": "SOX",
+      "name": "費城半導體",
+      "lastPrice": 5488,
+      "changePct": 0.94
+    },
+    {
+      "market": "US",
+      "symbol": "NVDA",
+      "name": "輝達",
+      "lastPrice": 148.2,
+      "changePct": 2.35
+    },
+    {
+      "market": "TW",
+      "symbol": "2330",
+      "name": "台積電",
+      "lastPrice": 1085,
+      "changePct": 1.4
+    }
+  ],
+  "discussions": [
+    {
+      "date": "2026-10-26",
+      "time": "15:10",
+      "role": "scout",
+      "text": "檔案紀錄：我掃過美股量能，NVDA 排在前面，所以先拿出來討論。",
+      "relatedSymbol": "NVDA"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:18",
+      "role": "research",
+      "text": "檔案紀錄：NVDA 價差很小、成交熱絡，我認為流動性夠進出。",
+      "relatedSymbol": "NVDA"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:19",
+      "role": "devil",
+      "text": "檔案紀錄：NVDA 現價已經偏高，我只同意小部位，不贊成追大。",
+      "relatedSymbol": "NVDA"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:20",
+      "role": "risk",
+      "text": "檔案紀錄：NVDA 3 股約 420 美元，約占 5,000 預算的 8%，沒有超過 10%，這筆我通過。",
+      "relatedSymbol": "NVDA",
+      "decision": "通過"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:20",
+      "role": "decision",
+      "text": "檔案紀錄：我決定買進 NVDA 3 股，限價 140，因為風控說部位還在一成以內。",
+      "relatedSymbol": "NVDA",
+      "decision": "買進"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:21",
+      "role": "recorder",
+      "text": "檔案紀錄：已寫下 NVDA 買進 3 股，理由是部位未超過上限。",
+      "relatedSymbol": "NVDA",
+      "decision": "買進"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:22",
+      "role": "gm",
+      "text": "檔案紀錄：向董事長報告，今天的示範單是 NVDA 小部位買進。",
+      "relatedSymbol": "NVDA",
+      "decision": "買進"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:28",
+      "role": "scout",
+      "text": "檔案紀錄：2454 聯發科今天量能偏弱，我先放進觀察，不提案買進。",
+      "relatedSymbol": "2454"
+    },
+    {
+      "date": "2026-10-26",
+      "time": "15:32",
+      "role": "decision",
+      "text": "檔案紀錄：2454 今天不動作，等量能回到均量再看。",
+      "relatedSymbol": "2454",
+      "decision": "等待"
+    },
+    {
+      "date": "2026-10-22",
+      "time": "21:30",
+      "role": "research",
+      "text": "檔案紀錄：這是較早一天的示範。META 當時流動性正常。",
+      "relatedSymbol": "META"
+    },
+    {
+      "date": "2026-10-22",
+      "time": "21:40",
+      "role": "decision",
+      "text": "檔案紀錄：10/22 那筆是賣出 META 1 股，與今天的 NVDA 無關。",
+      "relatedSymbol": "META",
+      "decision": "賣出"
+    }
+  ],
+  "dailyReport": {
+    "date": "2026-10-26",
+    "summary": "示範日報：買進 NVDA 3 股、賣出 2330 15 股，2454 繼續等待。損益用權益減掉預算 5,000 美元。"
+  }
+}

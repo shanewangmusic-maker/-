@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <title>AI 操盤公司（模擬）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -877,9 +878,11 @@ const DRAW={
     c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
     c.fillStyle='#e8b25c'; c.font='bold 14px system-ui'; c.textAlign='left'; c.fillText('行情牆',12,20);
     c.fillStyle='#c8584a'; c.font='bold 10px system-ui'; c.fillText('模擬資料・非真實交易',70,20);
+    if(window.SIMD&&SIMD.sample){ const bx=70+c.measureText('模擬資料・非真實交易').width+10; c.fillStyle='#f3cf8f'; c.fillText('示範資料',bx,20); }
     c.fillStyle='#7f8a93'; c.textAlign='right'; c.fillText(clockStr(),W-12,20); c.textAlign='left';
-    const K=[['加權指數','23,150','▲ 0.4%',1],['那斯達克','18,420','▲ 0.8%',1],['費城半導體','5,210','▲ 1.2%',1],['美元/台幣','32.00','▼ 0.1%',0]];
-    const gx=12, gy=30, gw=(W-24-30)/4, gh=H-30-32;
+    const live=window.SIMD&&Array.isArray(SIMD.tiles)&&SIMD.tiles.length;
+    const K=live?SIMD.tiles.slice(0,4):[['加權指數','23,150','▲ 0.4%',1],['那斯達克','18,420','▲ 0.8%',1],['費城半導體','5,210','▲ 1.2%',1],['美元/台幣','32.00','▼ 0.1%',0]];
+    const gx=12, gy=30, gw=(W-24-(K.length-1)*10)/K.length, gh=H-30-32;
     K.forEach((k,i)=>{ const x=gx+i*(gw+10), y=gy;
       c.fillStyle='#14202a'; rr(x,y,gw,gh,6); c.fill();
       c.fillStyle='#8a96a0'; c.font='11px system-ui'; c.fillText(k[0],x+10,y+16);
@@ -887,7 +890,7 @@ const DRAW={
       c.fillStyle=k[3]?'#e8605a':'#5fbf7a'; c.font='bold 12px system-ui'; c.fillText(k[2],x+10,y+gh-10); });
     c.font='10px system-ui';
     // 跑馬燈
-    const tick=STATE.brief.join('　｜　'), tw=c.measureText(tick).width+W;
+    const tick=(window.SIMD&&SIMD.tick)||STATE.brief.join('　｜　'), tw=c.measureText(tick).width+W;
     c.save(); c.beginPath(); c.rect(0,H-20,W,20); c.clip();
     c.fillStyle='#1a1408'; c.fillRect(0,H-20,W,20);
     c.fillStyle='#f3cf8f'; c.font='10px system-ui';
@@ -1058,15 +1061,16 @@ const DRAW={
     c.textAlign='left'; c.fillStyle='#e5788a'; c.font='bold 8px system-ui'; c.fillText('模擬資料・非真實交易',6,11);
     if(D){ c.fillStyle='#c9bfae'; c.font='8px system-ui'; c.fillText('模擬操盤 · 餘額',6,24);
       c.fillStyle='#fff'; c.font='bold 15px system-ui'; c.fillText('$'+D.bal.toLocaleString(),6,40);
-      c.fillStyle='#7ec8a0'; c.font='bold 9px system-ui'; c.fillText('+$'+D.pnl+' (+'+(D.pnl/50).toFixed(1)+'%)',80,40);
-      const E=D.eq, mn=Math.min(...E), mx=Math.max(...E), gx=6, gy=48, gw=W-12, gh=H-70;
-      c.strokeStyle='#33424f'; c.setLineDash([3,3]); c.beginPath(); const by=gy+gh-(5000-mn)/(mx-mn)*gh; c.moveTo(gx,by); c.lineTo(gx+gw,by); c.stroke(); c.setLineDash([]);
-      c.strokeStyle='#7ec8a0'; c.lineWidth=2; c.beginPath(); E.forEach((v,i)=>{ const X=gx+i*gw/(E.length-1), Y=gy+gh-(v-mn)/(mx-mn)*gh; i?c.lineTo(X,Y):c.moveTo(X,Y); }); c.stroke(); c.lineWidth=1;
+      const bud=D.budget||5000, pnl=+D.pnl||0, spanB=bud||1;
+      c.fillStyle=pnl>=0?'#7ec8a0':'#e5788a'; c.font='bold 9px system-ui'; c.fillText((pnl>=0?'+':'')+'$'+pnl+' ('+(pnl>=0?'+':'')+(pnl/spanB*100).toFixed(1)+'%)',80,40);
+      const E=D.eq&&D.eq.length?D.eq:[bud], mn=Math.min(...E), mx=Math.max(...E), span=(mx-mn)||1, gx=6, gy=48, gw=W-12, gh=H-70;
+      c.strokeStyle='#33424f'; c.setLineDash([3,3]); c.beginPath(); const by=gy+gh-(bud-mn)/span*gh; c.moveTo(gx,by); c.lineTo(gx+gw,by); c.stroke(); c.setLineDash([]);
+      c.strokeStyle=pnl>=0?'#7ec8a0':'#e5788a'; c.lineWidth=2; c.beginPath(); E.forEach((v,i)=>{ const X=E.length<2?gx+gw:gx+i*gw/(E.length-1), Y=gy+gh-(v-mn)/span*gh; i?c.lineTo(X,Y):c.moveTo(X,Y); }); c.stroke(); c.lineWidth=1;
       c.fillStyle='#e8b25c'; c.font='8px system-ui'; c.fillText(D.last,6,H-6); }
     c.restore();
   },
   simDesk(o){
-    const D=window.SIMD, i=o.simI, on=D&&D.cur()===i;
+    const D=window.SIMD, i=o.simI, on=D&&(D.glow?D.glow(i):D.cur()===i);
     floorShadow(o.x,o.y,o.w,o.d,.15);
     // 交易員：沿用辦公室助理同一套角色圖，只換服裝色調
     { const BID=['stock','news','sales','trainer','book','leads'][i], HUE=[200,140,-40,90,250,40][i];
@@ -2560,6 +2564,18 @@ function floorChooser(o,via){
 }
 
 /* ---------------- 面板們 ---------------- */
+function warKpiHTML(){
+  const D=window.SIMD;
+  const money=n=>'$'+(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(!D||!Array.isArray(D.tiles)||!D.tiles.length) return '<div class="kpis"><div><span>加權指數</span><b>23,150</b></div><div><span>那斯達克</span><b>18,420</b></div><div><span>費半</span><b>5,210</b></div><div><span>模擬帳戶</span><b>$5,186</b></div></div>';
+  const cells=D.tiles.map(k=>'<div><span>'+esc(k[0])+' '+esc(k[2])+'</span><b>'+esc(k[1])+'</b></div>').join('');
+  const bud=D.budget||5000, pnl=+D.pnl||0, eq=+D.bal||0, cash=+D.cash||0;
+  const ps=(pnl>0?'+':'')+(pnl<0?'-':'')+'$'+Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return '<div class="kpis">'+cells+
+    '<div><span>現金</span><b>'+money(cash)+'</b></div>'+
+    '<div><span>權益 / 預算 '+bud.toLocaleString('en-US')+'</span><b>'+money(eq)+'</b></div>'+
+    '<div><span>損益 vs '+bud.toLocaleString('en-US')+'</span><b style="color:'+(pnl>=0?'#1f7a3a':'#a33b32')+'">'+ps+'</b></div></div>';
+}
 function showWar(o){
   o=o||OBJ.find(x=>x.kind==='warTV');
   const m=STATE.metrics, month=o.st.view==='month';
@@ -2567,7 +2583,7 @@ function showWar(o){
   const trend=month?m.monthTrend:m.trend, mx=Math.max(1,Math.max.apply(null,trend));
   openPanel('war','行情牆 · 加權／那斯達克／費半','1F 交易大廳 · 大螢幕會跟著你切換的區間變化'+(crmUI()?(m.src==='CRM'?' · 資料：CRM'+(m.tgSrc==='CRM'?'':'（目標為示範）'):' · 資料：示範'):''),
     '<div class="seg" id="segV"><button data-v="week" class="'+(month?'':'on')+'">本週</button><button data-v="month" class="'+(month?'on':'')+'">本月</button></div>'+
-    '<p class="note" style="color:var(--berry);font-weight:700">模擬資料・非真實交易</p><div class="kpis"><div><span>加權指數</span><b>23,150</b></div><div><span>那斯達克</span><b>18,420</b></div><div><span>費半</span><b>5,210</b></div><div><span>模擬帳戶</span><b>$5,186</b></div></div><div class="actions"><button class="btn ghost" type="button" onclick="openSim()">看持股・交易日誌・討論紀錄</button></div>'+
+    '<p class="note" style="color:var(--berry);font-weight:700">模擬資料・非真實交易'+((window.SIMD&&SIMD.sample)?' · 示範資料':'')+'</p>'+warKpiHTML()+'<div class="actions"><button class="btn ghost" type="button" onclick="openSim()">看持股・交易日誌・討論紀錄</button></div>'+
     '<div class="meter"><i style="width:'+Math.min(100,pct)+'%"></i></div>'+
     '<div class="spark">'+trend.map((v,i)=>'<i style="height:'+(v/mx*100)+'%" class="'+(i===trend.length-1?'now':'')+'"></i>').join('')+'</div>'+
     ''+
@@ -3509,6 +3525,8 @@ function initUI(){
 #sim{position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 0,#3a2d20,#12100d 75%);overflow:auto;color:var(--ink);font-family:var(--f-body);padding:56px 14px 30px;box-sizing:border-box}
 #sim[hidden]{display:none}
 #sim .tag{position:sticky;top:-44px;z-index:3;margin:0 auto 10px;width:max-content;background:var(--berry);color:#fff;font-weight:800;padding:6px 16px;border-radius:999px;box-shadow:0 3px 0 #8e3a30}
+#sim .tag #simSample{display:inline-block;margin-left:8px;background:#5c3d12;color:#fff;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;vertical-align:1px}
+#sim .tag #simSample[hidden]{display:none}
 #sim .close{position:fixed;top:12px;right:12px;z-index:9001}
 #sim h2{color:var(--paper);text-align:center;margin:4px 0 2px;font-size:20px}
 #sim .rules{color:var(--amber2);text-align:center;font-size:12px;margin-bottom:14px}
@@ -3551,13 +3569,13 @@ function initUI(){
 </style>
 <div id="sim" hidden>
 <button class="btn ghost close" id="simX">關閉</button>
-<div class="tag">模擬資料・非真實交易</div>
+<div class="tag">模擬資料・非真實交易<span id="simSample" hidden>示範資料</span></div>
 <h2>模擬操盤部・交易樓層</h2>
-<div class="rules">虛擬資金每月 5,000 美金｜單筆最多總資金 10%｜每日虧損達 3% 停手｜不開槓桿｜含手續費｜台股・美股</div>
+<div class="rules" id="simRules">虛擬資金每月 5,000 美金｜單筆最多總資金 10%｜每日虧損達 3% 停手｜不開槓桿｜含手續費｜台股・美股</div>
 <div class="wall" id="simWall">
- <div class="k"><div><span>起始資金</span><b>$5,000</b></div><div><span>目前餘額（含持股市值）</span><b>$5,186</b></div><div><span>本月損益</span><b class="up">+$186 (+3.7%)</b></div><div><span>勝率（已平倉）</span><b>3/4 · 75%</b></div><div><span>最大回撤</span><b class="dn">-1.9%</b></div></div>
- <svg viewBox="0 0 600 110" preserveAspectRatio="none"><line x1="0" y1="70" x2="600" y2="70" stroke="#4a5a78" stroke-dasharray="4 4"/><polyline fill="none" stroke="#7fd08a" stroke-width="3" points="0,70 60,66 120,58 180,64 240,72 300,61 360,52 420,48 480,44 540,40 600,36"/><text x="4" y="66" fill="#9fb3cf" font-size="10">5,000</text><text x="560" y="30" fill="#7fd08a" font-size="10">5,186</text></svg>
- <div class="lt">最新成交：10/26 15:20 美股 NVDA 買 3 股 @ $140.00｜10/26 10:05 台股 2330 賣 15 股 @ NT$1,070</div>
+ <div class="k" id="simK"><div><span>起始資金</span><b>$5,000</b></div><div><span>目前餘額（含持股市值）</span><b>$5,186</b></div><div><span>本月損益</span><b class="up">+$186 (+3.7%)</b></div><div><span>勝率（已平倉）</span><b>3/4 · 75%</b></div><div><span>最大回撤</span><b class="dn">-1.9%</b></div></div>
+ <svg id="simSvg" viewBox="0 0 600 110" preserveAspectRatio="none"><line x1="0" y1="70" x2="600" y2="70" stroke="#4a5a78" stroke-dasharray="4 4"/><polyline fill="none" stroke="#7fd08a" stroke-width="3" points="0,70 60,66 120,58 180,64 240,72 300,61 360,52 420,48 480,44 540,40 600,36"/><text x="4" y="66" fill="#9fb3cf" font-size="10">5,000</text><text x="560" y="30" fill="#7fd08a" font-size="10">5,186</text></svg>
+ <div class="lt" id="simLast">最新成交：10/26 15:20 美股 NVDA 買 3 股 @ $140.00｜10/26 10:05 台股 2330 賣 15 股 @ NT$1,070</div>
  <div class="whint">點大螢幕看持股・成交紀錄・活動紀錄 ▸</div>
 </div>
 <div class="floor" id="simFloor"></div>
@@ -3566,6 +3584,7 @@ function initUI(){
 <div id="simDet" hidden>
  <b>詳細資料（範例數字・損益已含手續費・匯率以 1 美金 = 32 台幣計）</b>
  <div class="dg"><div class="dm">
+ <div id="simBooks">
  <h4>持股（未實現 +$24）</h4><div class="tw"><table><tr><th>市場</th><th>代號</th><th>名稱</th><th>股數</th><th>成本</th><th>現價</th><th>未實現損益</th></tr>
  <tr><td>台股</td><td>2330</td><td>台積電（範例價）</td><td>10</td><td>NT$1,000</td><td>NT$1,040</td><td class="up">+$12</td></tr>
  <tr><td>美股</td><td>NVDA</td><td>輝達（範例價）</td><td>3</td><td>$140.00</td><td>$144.00</td><td class="up">+$12</td></tr></table></div>
@@ -3577,8 +3596,9 @@ function initUI(){
  <tr><td>10/16 22:05</td><td>美股</td><td>AMD</td><td>賣</td><td>3</td><td>$175.00</td><td class="up">+$82</td><td>財報後達標</td><td>否</td></tr>
  <tr><td>10/09 21:55</td><td>美股</td><td>AAPL</td><td>賣</td><td>2</td><td>$228.00</td><td class="dn">-$18</td><td>跌破停損</td><td>否</td></tr></table></div>
  <div class="note">合計：已實現 +$162 ＋ 未實現 +$24 ＝ 本月損益 +$186</div>
+ </div>
  <div class="disc"><h4 style="margin:0">討論紀錄</h4><select id="discSel"></select><div id="discBox"></div></div>
- </div><div class="dl2">
+ </div><div class="dl2" id="simLog">
  <h4>活動紀錄</h4>
  <div class="lg">15:32 唱反調：2454 聯發科成交量偏低，建議等待</div>
  <div class="lg">15:30 風控：NVDA 部位 8.4%，未超過 10% 上限，通過</div>
@@ -3599,12 +3619,15 @@ const R=[['scan','找標的','市場掃描','> 掃描 台股/美股<br>2454 量 
 ['dec','整合決策','買 / 等 / 不買','> 交易單<br>NVDA 買 3 股<br>限價 $140.00',0,['交易單','NVDA 買 3 股','限價 $140.00']],
 ['log','記錄','寫活動紀錄','> 15:32 寫入紀錄…',0,['15:32 寫入紀錄','2454 等待','已同步']]];
 const K='simRoleNames',nm=JSON.parse(localStorage.getItem(K)||'{}'),F=document.getElementById('simFloor'),D=document.getElementById('simDet');
-const draw=()=>{ if(F.querySelector('input')) return; const ON=window.SIMD?R[SIMD.cur()][0]:'risk';
-F.innerHTML=R.map(r=>`<div class="desk ${r[0]==ON?'on':''} ${r[4]?'veto':''}">${r[4]?'<span class="vb">否決權</span>':''}<div class="mon">${r[0]==ON?r[3]:'待機中…'}</div><div class="stand"></div><div class="nm"><i></i><span data-k="${r[0]}" title="點一下改名">${nm[r[0]]||r[1]}</span></div><small>${r[2]}${r[0]==ON?'・工作中':''}</small><button class="askb" type="button" data-k="${r[0]}">💬 問他</button></div>`).join(''); };
+const draw=()=>{ if(F.querySelector('input')) return;
+  const cur=window.SIMD?R[SIMD.cur()][0]:'risk';
+  const onOf=r=>window.SIMD&&SIMD.glow?!!SIMD.glow(R.indexOf(r)):r[0]===cur;
+  F.innerHTML=R.map(r=>{ const on=onOf(r); const mon=on&&window.SIMD&&SIMD.mon&&SIMD.mon[r[0]]?SIMD.mon[r[0]]:(on?r[3]:'待機中…');
+    return `<div class="desk ${on?'on':''} ${r[4]?'veto':''}">${r[4]?'<span class="vb">否決權</span>':''}<div class="mon">${mon}</div><div class="stand"></div><div class="nm"><i></i><span data-k="${r[0]}" title="點一下改名">${nm[r[0]]||r[1]}</span></div><small>${r[2]}${on?'・工作中':''}</small><button class="askb" type="button" data-k="${r[0]}">💬 問他</button></div>`; }).join(''); };
 setTimeout(()=>{draw(); setInterval(draw,1000);},0);
 F.addEventListener('click',e=>{const a=e.target.closest('.askb');if(a){e.stopPropagation();simAskOpen(a.dataset.k);}},true);
 
-const TH=[
+let TH=[
  {t:'10/26 15:32 · 2454 聯發科 → 等待',m:[['scan','15:28','2454 聯發科近期跌深，列入觀察名單'],['data','15:29','今日成交量比 20 日均量少 32%，流動性偏弱'],['bear','15:30','量縮反彈容易失敗，現在進場風險大，建議等待'],['risk','15:31','若進場，部位 9.5%、停損 -4%，可接受但不急'],['dec','15:32','決議：等待，量能回到均量以上再評估',0],['log','15:32','已記錄：2454 等待，下次 10/27 開盤複查']]},
  {t:'10/26 14:50 · TSLA → 風控否決',m:[['scan','14:40','TSLA 量能 +18%，排進候選'],['data','14:44','價差正常，但波動率偏高'],['bear','14:46','財報前跳空風險大'],['dec','14:48','提案：買 4 股 @ $150（$600）'],['risk','14:50','否決：單筆 $600 占總資金 12%，超過 10% 上限',1],['log','14:50','已記錄：TSLA 遭風控否決，未下單']]},
  {t:'10/26 15:20 · NVDA → 買進 3 股',m:[['scan','15:10','NVDA 量能 +41%，排名第一'],['data','15:18','日均量 2.1 億股，價差 0.01，流動性良好'],['bear','15:19','追高風險存在，建議小部位'],['risk','15:20','3 股 × $140 = $420，占 8.4%，停損 $133，通過'],['dec','15:20','決議：買進 3 股，限價 $140'],['log','15:20','已記錄：NVDA 買 3 股 @ $140']]}];
@@ -3614,16 +3637,45 @@ const WHY={scan:'我每天掃描台股與美股量能前 20 名，NVDA 量能 +4
  risk:'規則是單筆最多總資金 10%、每日虧損 3% 停手。TSLA 提案 $600 占 12%，超過上限，所以我否決；NVDA $420 占 8.4%，通過。',
  dec:'我綜合大家意見：NVDA 量能與流動性都好、風控通過，就買 3 股；2454 量不夠，選擇等待。',
  log:'我把每次討論與成交寫進活動紀錄，例如 15:32 2454 等待、14:50 TSLA 遭否決。'};
-const RN=k=>nm[k]||R.find(r=>r[0]==k)[1];
-const bub=(k,t,m,v,me)=>`<div class="bb${v?' v':''}${me?' me':''}"><span class="av">${me?'你':RN(k)}</span><div class="ms"><small>${t}</small>${m}</div></div>`;
+const RN=k=>nm[k]||((R.find(r=>r[0]===k)||[])[1])||({gm:'操盤總管'}[k])||k;
+const bub=(k,t,m,v,me)=>`<div class="bb${v?' v':''}${me?' me':''}"><span class="av">${esc(me?'你':RN(k))}</span><div class="ms"><small>${esc(t)}</small>${esc(m)}</div></div>`;
 const sel=document.getElementById('discSel'),box=document.getElementById('discBox');
 sel.innerHTML=TH.map((x,i)=>`<option value="${i}">${x.t}</option>`).join('');
 const showT=()=>{box.innerHTML=TH[sel.value].m.map(x=>bub(x[0],x[1],x[2],x[3])).join('');};sel.onchange=showT;showT();
 const AS=document.getElementById('simAsk'),AL=document.getElementById('askLog');let AK='risk';
 window.simAskOpen=k=>{AK=k;AS.hidden=false;document.getElementById('askT').textContent='問「'+RN(k)+'」';AL.innerHTML=bub(k,'現在','嗨，我是'+RN(k)+'，想問我哪個決定？');};
 document.getElementById('askX').onclick=()=>AS.hidden=true;
+const SEAT={scout:'scan',research:'data',devil:'bear',risk:'risk',decision:'dec',recorder:'log'};
+const ROLEOF={scan:'scout',data:'research',bear:'devil',risk:'risk',dec:'decision',log:'recorder'};
+const ROLEZH={scout:'找標的',research:'查資料',devil:'唱反調',risk:'風控',decision:'整合決策',recorder:'記錄',gm:'操盤總管'};
+const SCR0=R.map(r=>r[5].slice());
+const tpToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const md=iso=>{ const p=String(iso||'').split('-'); return p.length===3?(+p[1])+'/'+(+p[2]):String(iso||''); };
+const usd=n=>{ const v=+n||0; return (v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+const pxOf=(n,cur)=>{ const v=+n||0; const s=v.toLocaleString('en-US',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:v%1?2:0}); return cur==='TWD'?'NT$'+s:'$'+s; };
+const chgTxt=p=>{ const v=+p||0; return [(v>=0?'▲ ':'▼ ')+Math.abs(v).toFixed(1)+'%', v>=0?1:0]; };
+const quotePx=w=>{ const v=+w.lastPrice||0; const s=v.toLocaleString('en-US',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:v%1?2:0}); if(/^\d+$/.test(String(w.symbol||''))) return 'NT$'+s; if(w.market==='US'&&v<1000) return '$'+s; return s; };
+let BOOK=null;
+function quoteRole(seat,q){
+  const role=ROLEOF[seat], today=tpToday();
+  let rows=(BOOK.discussions||[]).filter(d=>d.role===role&&d.date===today);
+  const symbols=[]; (BOOK.watchlist||[]).concat(BOOK.positions||[],BOOK.trades||[]).forEach(x=>{ if(x&&x.symbol&&symbols.indexOf(x.symbol)<0) symbols.push(x.symbol); });
+  const hit=symbols.find(s=>q.indexOf(s)>=0);
+  if(hit){ const m=rows.filter(d=>d.relatedSymbol===hit); if(m.length) rows=m; }
+  if(!rows.length) return '當天沒有這位的紀錄';
+  const text=rows.map(d=>'「'+d.text+'」').join('');
+  const syms={}; rows.forEach(d=>{ if(d.relatedSymbol) syms[d.relatedSymbol]=1; });
+  let trades=(BOOK.trades||[]).filter(t=>t.date===today&&t.decidedBy===role);
+  if(!trades.length) trades=(BOOK.trades||[]).filter(t=>t.date===today&&syms[t.symbol]);
+  const reason=trades.length?(' 成交理由：'+trades.map(t=>(t.symbol?t.symbol+' ':'')+(t.reason||'')).join('；')):'';
+  return text+reason;
+}
 document.getElementById('askF').onsubmit=e=>{e.preventDefault();const q=document.getElementById('askI').value.trim()||'你為什麼這樣決定？';
- AL.innerHTML+=bub(AK,'現在',q,0,1)+bub(AK,'現在','（示範回覆）'+WHY[AK]);document.getElementById('askI').value='';AL.scrollTop=1e5;};
+ let ans;
+ if(!BOOK) ans='（示範回覆）'+WHY[AK];
+ else if(q.indexOf('為什麼')>=0) ans=quoteRole(AK,q);
+ else { const rows=(BOOK.discussions||[]).filter(d=>d.role===ROLEOF[AK]&&d.date===tpToday()); ans=rows.length?rows.map(d=>d.text).join(' '):'當天沒有這位的紀錄'; }
+ AL.innerHTML+=bub(AK,'現在',q,0,1)+bub(AK,'現在',ans);document.getElementById('askI').value='';AL.scrollTop=1e5;};
 F.onclick=e=>{const s=e.target.closest('.nm span');if(s){const i=document.createElement('input');i.value=s.textContent;s.replaceWith(i);i.focus();i.select();const done=()=>{const v=i.value.trim()||R.find(r=>r[0]==s.dataset.k)[1];nm[s.dataset.k]=v;localStorage.setItem(K,JSON.stringify(nm));i.remove();draw();};i.onblur=done;i.onkeydown=k=>{if(k.key=='Enter')i.blur()};return;}
 if(e.target.closest('.mon')){D.hidden=false;D.scrollIntoView({behavior:'smooth'});}};
 document.getElementById('simWall').onclick=()=>{D.hidden=!D.hidden;if(!D.hidden)D.scrollIntoView({behavior:'smooth'})};
@@ -3632,5 +3684,83 @@ window.SIMD={bal:5186,pnl:186,eq:[5000,5012,5040,5025,4990,5058,5092,5110,5140,5
  roles:R.map(r=>({k:r[0],scr:r[5]})),name:i=>nm[R[i][0]]||R[i][1],cur:()=>((performance.now()/5000)|0)%6};
 window.openSim=()=>{document.getElementById('sim').hidden=false;D.hidden=false;const t=document.getElementById('tour');if(t)t.style.display='none';};
 if(/[?&]sim=1/.test(location.search))openSim();
+function threadsOf(list){
+  const map=new Map();
+  (list||[]).forEach(d=>{
+    const key=(d.date||'')+'|'+(d.relatedSymbol||d.decision||'綜合');
+    if(!map.has(key)) map.set(key,{date:d.date,symbol:d.relatedSymbol||'',decision:d.decision||'',m:[]});
+    const g=map.get(key);
+    if(d.decision) g.decision=d.decision;
+    if(d.relatedSymbol) g.symbol=d.relatedSymbol;
+    g.m.push(d);
+  });
+  return [...map.values()].map(g=>{
+    g.m.sort((a,b)=>String(a.time).localeCompare(String(b.time)));
+    const last=g.m[g.m.length-1]||{};
+    return {sort:(g.date||'')+(last.time||''), t:md(g.date)+' '+(last.time||'')+' · '+(g.symbol||'綜合')+' → '+(g.decision||'討論'),
+      m:g.m.map(d=>[SEAT[d.role]||d.role, d.time||'', d.text||'', (/否決/.test(d.decision||'')||/否決/.test(d.text||''))?1:0])};
+  }).sort((a,b)=>b.sort.localeCompare(a.sort));
+}
+function applyBook(j){
+  if(!j||typeof j!=='object') return;
+  const bud=+j.budgetUSD||5000, eq=+j.equityUSD||0, cash=+j.cashUSD||0, pnl=eq-bud;
+  const tiles=(j.watchlist||[]).map(w=>{ const c=chgTxt(w.changePct); return [w.name||w.symbol, quotePx(w), c[0], c[1]]; });
+  const D=window.SIMD;
+  D.budget=bud; D.cash=cash; D.bal=eq; D.pnl=pnl; D.sample=j.sample===true; D.tiles=tiles;
+  D.tick=(j.watchlist||[]).map(w=>[w.symbol,w.name,quotePx(w),chgTxt(w.changePct)[0]].filter(Boolean).join(' ')).join('　｜　');
+  const last=(j.trades||[])[0];
+  D.last=last?('最新：'+last.symbol+' '+(last.side==='BUY'?'買':'賣')+' '+last.shares+' 股'):D.last;
+  D.eq=[bud, eq];
+  const today=tpToday(), glow=new Set(), mon={};
+  R.forEach((r,i)=>{ D.roles[i].scr=SCR0[i].slice(); });
+  (j.discussions||[]).forEach(d=>{
+    const seat=SEAT[d.role]; if(!seat||d.date!==today) return;
+    glow.add(seat);
+    mon[seat]=mon[seat]?mon[seat]+'<br>'+esc(d.text):esc(d.text);
+  });
+  R.forEach((r,i)=>{
+    const lines=(j.discussions||[]).filter(d=>d.date===today&&SEAT[d.role]===r[0]).map(d=>d.text).slice(0,3);
+    if(lines.length) D.roles[i].scr=lines;
+  });
+  D.glow=i=>glow.has(R[i][0]); D.mon=mon;
+  const badge=document.getElementById('simSample'); if(badge) badge.hidden=!D.sample;
+  const rules=j.rules||{}, ruleEl=document.getElementById('simRules');
+  if(ruleEl) ruleEl.textContent='虛擬資金每月 '+bud.toLocaleString('en-US')+' 美金｜單筆最多總資金 '+(rules.maxPositionPct!=null?rules.maxPositionPct:10)+'%｜每日虧損達 '+(rules.dailyStopLossPct!=null?rules.dailyStopLossPct:3)+'% 停手｜'+(rules.leverage?'可開槓桿':'不開槓桿')+'｜含手續費｜台股・美股';
+  const k=document.getElementById('simK');
+  if(k){ const pct=bud?(pnl/bud*100):0; const cls=pnl>=0?'up':'dn';
+    k.innerHTML='<div><span>起始資金</span><b>'+usd(bud)+'</b></div><div><span>現金</span><b>'+usd(cash)+'</b></div><div><span>目前餘額（含持股市值）</span><b>'+usd(eq)+'</b></div><div><span>本月損益 vs '+bud.toLocaleString('en-US')+'</span><b class="'+cls+'">'+(pnl>0?'+':'')+usd(pnl)+' ('+(pct>0?'+':'')+pct.toFixed(1)+'%)</b></div><div><span>更新</span><b style="font-size:13px">'+esc(String(j.updatedAt||'').replace('T',' ').slice(0,16))+'</b></div>'; }
+  const svg=document.getElementById('simSvg');
+  if(svg){ const series=[bud,eq], mn=Math.min(bud,eq), mx=Math.max(bud,eq), span=(mx-mn)||1;
+    const pts=series.map((v,i)=>{ const x=i*(600/(series.length-1)); const y=100-((v-mn)/span)*78; return x+','+y.toFixed(1); }).join(' ');
+    const y0=(100-((bud-mn)/span)*78).toFixed(1);
+    svg.innerHTML='<line x1="0" y1="'+y0+'" x2="600" y2="'+y0+'" stroke="#4a5a78" stroke-dasharray="4 4"/><polyline fill="none" stroke="'+(pnl>=0?'#7fd08a':'#ff8a7a')+'" stroke-width="3" points="'+pts+'"/><text x="4" y="'+Math.max(12,Math.min(100,+y0-4)).toFixed(0)+'" fill="#9fb3cf" font-size="10">'+bud.toLocaleString('en-US')+'</text><text x="470" y="18" fill="'+(pnl>=0?'#7fd08a':'#ff8a7a')+'" font-size="10">'+eq.toLocaleString('en-US')+'</text>'; }
+  const lt=document.getElementById('simLast');
+  if(lt){ const bits=(j.trades||[]).slice(0,2).map(t=>md(t.date)+' '+t.time+' '+(t.market==='TW'?'台股':'美股')+' '+t.symbol+' '+(t.side==='BUY'?'買':'賣')+' '+t.shares+' 股 @ '+(t.market==='TW'?'NT$':'$')+Number(t.price).toLocaleString('en-US'));
+    lt.textContent=bits.length?('最新成交：'+bits.join('｜')):'尚無成交'; }
+  const books=document.getElementById('simBooks');
+  if(books){ const mkt=s=>s==='TW'?'台股':s==='US'?'美股':(s||'');
+    const pos=(j.positions||[]).map(p=>{ const up=(+p.pnlPct||0)>=0; return '<tr><td>'+mkt(p.market)+'</td><td>'+esc(p.symbol)+'</td><td>'+esc(p.name)+'</td><td>'+esc(p.shares)+'</td><td>'+pxOf(p.avgCost,p.currency)+'</td><td>'+pxOf(p.lastPrice,p.currency)+'</td><td class="'+(up?'up':'dn')+'">'+(up?'+':'')+Number(p.pnlPct||0).toFixed(1)+'%</td></tr>'; }).join('');
+    const tr=(j.trades||[]).map(t=>'<tr><td>'+esc(md(t.date)+' '+t.time)+'</td><td>'+mkt(t.market)+'</td><td>'+esc(t.symbol)+'</td><td>'+(t.side==='BUY'?'買':'賣')+'</td><td>'+esc(t.shares)+'</td><td>'+(t.market==='TW'?'NT$':'$')+Number(t.price).toLocaleString('en-US')+'</td><td>—</td><td>'+esc(t.reason||'')+'</td><td>'+esc(ROLEZH[t.decidedBy]||t.decidedBy||'')+'</td></tr>').join('');
+    books.innerHTML='<h4>持股</h4><div class="tw"><table><tr><th>市場</th><th>代號</th><th>名稱</th><th>股數</th><th>成本</th><th>現價</th><th>未實現損益</th></tr>'+pos+'</table></div><h4>成交紀錄</h4><div class="tw"><table><tr><th>時間</th><th>市場</th><th>代號</th><th>買/賣</th><th>股數</th><th>價格</th><th>損益</th><th>決策理由</th><th>決策人</th></tr>'+tr+'</table></div><div class="note">現金 '+usd(cash)+' · 權益 '+usd(eq)+' · 預算 '+usd(bud)+' · 損益 '+(pnl>0?'+':'')+usd(pnl)+'</div>'; }
+  const lg=document.getElementById('simLog');
+  if(lg){ const rows=[...(j.discussions||[])].sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''))).slice(0,12);
+    const head=j.dailyReport&&j.dailyReport.summary?'<div class="lg">'+esc(md(j.dailyReport.date))+' 日報：'+esc(j.dailyReport.summary)+'</div>':'';
+    lg.innerHTML='<h4>活動紀錄</h4>'+head+rows.map(d=>'<div class="lg">'+esc(d.time||'')+' '+esc(ROLEZH[d.role]||d.role||'')+'：'+esc(d.text||'')+'</div>').join(''); }
+  const grouped=threadsOf(j.discussions);
+  if(grouped.length){ TH=grouped; sel.innerHTML=TH.map((x,i)=>'<option value="'+i+'">'+esc(x.t)+'</option>').join(''); showT(); }
+  BOOK=j; draw();
+  if(typeof showWar==='function'&&typeof PANEL_ON!=='undefined'&&PANEL_ON==='war') showWar();
+}
+async function loadTrades(){
+  try{
+    const r=await fetch('data/trades.json?nc='+Date.now());
+    if(!r.ok) return;
+    const j=await r.json();
+    if(!j||typeof j!=='object'||Array.isArray(j)) return;
+    applyBook(j);
+  }catch(e){}
+}
+loadTrades();
+setInterval(loadTrades,300000);
 })();
 </script>
