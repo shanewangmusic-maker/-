@@ -521,6 +521,7 @@ const ELEV={x:21.6,y:.3,w:2,d:2,cx:22.6,cy:1.3,wait:{x:22.6,y:3.15}};
 /* 窗戶段落（後牆 x 範圍）與左牆窗 */
 const WINDOWS=[ [[10.5,17.5]], [[10.5,18]], [[8.4,18]] ];
 
+const DESK_IDS=['shepherd','dev','visit','social','stock','leads','book','sales','trainer','news'];
 function buildWorld(){
   OBJ.length=0;
   for(let f=0;f<3;f++){
@@ -536,7 +537,7 @@ function buildWorld(){
 
   /* ---------------- 1F 交易大廳 ---------------- */
   O(0,'rug',4.5,2.3,7.2,4.3,0,{solid:false,col:'#7a4f36',col2:'#8e6044'});
-  O(0,'warTV',3.7,0,6.4,.05,0,{wall:'back',solid:false,label:'行情牆 · 加權／那斯達克／費半',act:'war',
+  O(0,'warTV',2.6,0,8.2,.05,0,{wall:'back',solid:false,label:'行情牆 · 加權／那斯達克／費半',act:'war',
     use:{x:6.9,y:1.6,face:'up',pose:'stand'},st:{view:'week'}});
   O(0,'whiteboard',0,1.1,.05,2.6,0,{wall:'left',solid:false,label:'交易守則白板',act:'board',
     use:{x:1.25,y:2.4,face:'left',pose:'stand'}});
@@ -550,23 +551,22 @@ function buildWorld(){
   }
   // 模擬操盤部（模擬資料・非真實交易）：6 張交易桌 + 牆上大螢幕
   O(0,'simTV',17.9,0,2.9,.05,0,{wall:'back',solid:false,label:'模擬操盤大螢幕 · 點我看明細',act:'sim',use:{x:19.3,y:1.3,face:'up',pose:'stand'}});
-  for(let i=0;i<6;i++){ const sx=11.9+(i%3)*1.9, sy=1.4+Math.floor(i/3)*1.9;
-    O(0,'simDesk',sx,sy,1.5,.7,22,{simI:i,label:'',act:'sim',use:{x:sx+.55,y:sy+1.1,face:'up',pose:'stand'}}); }
-  O(0,'handoff',14,5.2,2.4,.8,30,{label:'交易單收件匣',act:'inbox',use:{x:15.2,y:6.65,face:'up',pose:'stand'}});
+
+  O(0,'handoff',20.4,5.4,2.4,.8,30,{label:'交易單收件匣',act:'inbox',use:{x:21.6,y:6.85,face:'up',pose:'stand'}});
   O(0,'plant',.35,.35,.7,.7,0,{s:1.25,label:'盆栽（澆水）',act:'water',use:{x:1.5,y:1.0,face:'left',pose:'stand'}});
   O(0,'plant',22.8,8.6,.7,.7,0,{s:1.1,label:'盆栽（澆水）',act:'water',use:{x:22.2,y:8,face:'right',pose:'stand'}});
   O(0,'plant',17.6,.35,.6,.6,0,{s:.95,label:'盆栽（澆水）',act:'water',use:{x:17.9,y:1.4,face:'up',pose:'stand'}});
-  O(0,'lamp',11.6,.6,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:11.85,y:1.6,face:'up',pose:'stand'}});
+  O(0,'lamp',10.6,6.9,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:10.85,y:7.9,face:'up',pose:'stand'}});
   // 1F 接待大廳：標的來訪先在這裡等候
   O(0,'rug',16.4,6.3,6.6,3.5,0,{solid:false,col:'#6f5642',col2:'#7e634c'});
   O(0,'ctable',19.0,7.0,1.6,.75,11,{label:'休息區',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
-  O(0,'sofaS',20.5,8.4,2.2,.8,0,{face:'down',col:'#7d5a40',label:'休息沙發',act:'rest',use:{x:21.6,y:8.9,face:'down',pose:'sit',seatH:13}});
-  O(0,'lamp',16.6,8.6,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:16.85,y:8.1,face:'down',pose:'stand'}});
-  O(0,'sofaS',17.8,8.4,2.4,.8,0,{face:'down',col:'#7d5a40',label:'休息沙發',act:'rest',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
+  O(0,'sofaS',20.5,8.4,2.2,.8,0,{face:'down',col:'#7d5a40',label:'交易檢討角',act:'client',use:{x:21.6,y:8.9,face:'down',pose:'sit',seatH:13}});
+  O(0,'lamp',23.2,8.4,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:23.0,y:7.9,face:'down',pose:'stand'}});
+  O(0,'sofaS',17.8,8.4,2.4,.8,0,{face:'down',col:'#7d5a40',label:'交易檢討角',act:'client',use:{x:19.75,y:8.9,face:'down',pose:'sit',seatH:13}});
 
   /* ---------------- 2F 研究層 ---------------- */
   O(1,'rug',12.7,3.4,4.0,3.2,0,{solid:false,col:'#6e5a48',col2:'#7f6a55'});
-  O(1,'rug',2.5,2.2,8.4,5.8,0,{solid:false,col:'#9a7350',col2:'#a67d58'});
+  O(1,'rug',2.2,2.2,9.4,5.8,0,{solid:false,col:'#9a7350',col2:'#a67d58'});
   O(1,'plantWall',0,.8,.05,4.6,0,{wall:'left',solid:false,label:'植生牆（澆水）',act:'water',use:{x:1.3,y:3.1,face:'left',pose:'stand'}});
   // 1F、2F 牆上的壁掛音響：3F 黑膠唱盤放音樂時，整棟一起播
   O(0,'wallSpeaker',.9,0,.8,.05,0,{wall:'back',solid:false,label:'壁掛音響 · 播放音樂',act:'music',use:{x:1.4,y:1.3,face:'up',pose:'stand'}});
@@ -575,13 +575,15 @@ function buildWorld(){
   O(1,'newsBoard',7.9,0,2.4,.05,0,{wall:'back',solid:false,label:'新聞牌 · 今日盤勢（模擬）',act:'sim',use:{x:9.1,y:1.3,face:'up',pose:'stand'}});
   O(1,'coffeeBar',11,.15,1.5,.85,32,{label:'咖啡機 · 盯盤番茄鐘',act:'coffee',use:{x:11.75,y:1.75,face:'up',pose:'stand'}});
   O(1,'counter',12.5,.15,2.8,.85,32,{label:'點心吧',act:'snack',use:{x:13.9,y:1.75,face:'up',pose:'stand'}});
-  const BOTS=['shepherd','dev','visit','news','stock','social','book','sales','trainer','leads'];
+  const BOTS=DESK_IDS; let si=0;
   for(let i=0;i<5;i++){
-    const dx=3.0+i*1.6;
-    if(i>0) O(1,'botDesk',dx,3.45,1,.75,22,{bot:BOTS[i],label:'',act:'botDesk',use:{x:dx+.5,y:4.75,face:'up',pose:'stand'}});
-    if(i>0) O(1,'deskChair',dx+.2,2.65,.6,.6,12,{solid:false,face:'down',seatId:'wa'+i});
-    O(1,'botDesk',dx,6.45,1,.75,22,{bot:BOTS[5+i],label:'',act:'botDesk',use:{x:dx+.5,y:7.75,face:'up',pose:'stand'}});
-    O(1,'deskChair',dx+.2,5.65,.6,.6,12,{solid:false,face:'down',seatId:'wb'+i});
+    const dx=2.7+i*1.85;
+    [[BOTS[i],3.45,2.65,'wa'],[BOTS[5+i],6.45,5.65,'wb']].forEach(([id,dy,cy,sk])=>{
+      if(id==='shepherd'||id==='leads') return;
+      if(id==='news'||id==='stock') O(1,'botDesk',dx,dy,1,.75,22,{bot:id,label:'',act:'botDesk',use:{x:dx+.5,y:dy+1.3,face:'up',pose:'stand'}});
+      else if(si<6){ si++; O(1,'simDesk',dx-.1,dy,1.2,.75,22,{simI:{social:0,dev:1,book:2,visit:3,sales:4,trainer:5}[id],label:'',act:'sim',use:{x:dx+.5,y:dy+1.3,face:'up',pose:'stand'}}); }
+      O(1,'deskChair',dx+.2,cy,.6,.6,12,{solid:false,face:'down',seatId:sk+i});
+    });
   }
   O(1,'sofa',13.1,3.8,2.6,.85,0,{face:'down',col:'#8a5a3a',label:'研究室沙發 · 盤後討論',act:'brainstorm',
     use:{x:14.4,y:4.3,face:'down',pose:'sit',seatH:13}});
@@ -590,8 +592,6 @@ function buildWorld(){
   O(1,'arcade',20.65,3.7,.8,.65,0,{label:'遊戲機 · 投資快問快答',act:'arcade',col:'#8a3d4a',use:{x:21.05,y:4.75,face:'up',pose:'stand'}});
   O(1,'foosball',18.9,7.25,1.6,.8,0,{label:'手足球台',act:'foosball',use:{x:18.35,y:7.65,face:'right',pose:'stand'}});
   // 2F 小會議區：兩三人小討論
-  O(1,'smallTable',11.2,7.0,2.4,1.0,22,{label:'研究小會議桌 · 個股討論',act:'brainstorm',use:{x:10.5,y:7.5,face:'right',pose:'stand'}});
-  for(const cx of [11.55,12.8]){ O(1,'chair',cx,6.2,.6,.6,13,{solid:false,face:'down'}); O(1,'chair',cx,8.15,.6,.6,13,{solid:false,face:'up'}); }
   O(1,'plant',23,8.8,.6,.6,0,{s:1.1,label:'盆栽（澆水）',act:'water',use:{x:22.4,y:8.4,face:'right',pose:'stand'}});
   O(1,'plant',10.1,9.0,.6,.6,0,{s:.9,label:'盆栽（澆水）',act:'water',use:{x:9.8,y:8.1,face:'down',pose:'stand'}});
   O(1,'lamp',16.25,5.9,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:15.9,y:6.6,face:'right',pose:'stand'}});
@@ -611,10 +611,10 @@ function buildWorld(){
   O(2,'officeChair',13.3,1.3,.6,.6,14,{solid:false});
   O(2,'piano',18.9,4.2,2.5,2.1,0,{label:'平台鋼琴（可以彈）',act:'piano',use:{x:20,y:6.95,face:'up',pose:'sitback',seatH:12}});
   O(2,'bench',19.55,6.75,.9,.4,12,{solid:false});
-  O(2,'sofa',13.9,5.5,2.8,.85,0,{face:'down',col:'#6a4430',label:'休息沙發 · 休息',act:'client',
+  O(2,'sofa',13.9,5.5,2.8,.85,0,{face:'down',col:'#6a4430',label:'交易檢討角',act:'client',
     use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
   O(2,'ctable',14.45,6.95,1.7,.8,11,{label:'',act:'client',use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
-  O(2,'sofa',13.9,8.25,2.8,.85,0,{face:'up',col:'#6a4430',label:'休息沙發 · 休息',act:'client',
+  O(2,'sofa',13.9,8.25,2.8,.85,0,{face:'up',col:'#6a4430',label:'交易檢討角',act:'client',
     use:{x:15.3,y:6.0,face:'down',pose:'sit',seatH:13}});
   O(2,'lamp',12.9,5.0,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:13.1,y:6,face:'up',pose:'stand'}});
   O(2,'lamp',17.4,4.2,.5,.5,0,{label:'立燈',act:'lamp',st:{on:true},use:{x:17.1,y:5.2,face:'up',pose:'stand'}});
@@ -872,34 +872,20 @@ const DRAW={
   },
   window(o){ drawWindow(o); },
   warTV(o){
-    const W=320, H=backFace(o.x,o.x+o.w,0,30,WALL_H-8,W);
+    const W=Math.round(130*o.w*LX/(WALL_H-38)), H=backFace(o.x,o.x+o.w,0,30,WALL_H-8,W);
     c.fillStyle='#16181b'; rr(-4,-4,W+8,H+8,6); c.fill();
     c.fillStyle='#0d151d'; c.fillRect(0,0,W,H);
-    const m=STATE.metrics, month=o.st.view==='month';
-    const fyc=month?m.monthFYC:m.weekFYC, tg=month?m.monthTarget:m.weekTarget, pct=clamp(fyc/tg,0,1);
-    c.fillStyle='#e8b25c'; c.font='bold 13px system-ui'; c.textAlign='left'; c.fillText('行情牆 · 模擬資料',10,18);
-    if(crmUI()){ c.fillStyle='#55606a'; c.font='9px system-ui'; c.fillText(m.src==='CRM'?'CRM'+(m.tgSrc==='CRM'?'':' · 目標示範'):'示範',W*.5,18); }
-    c.fillStyle='#7f8a93'; c.font='10px system-ui'; c.textAlign='right'; c.fillText(clockStr(),W-10,18);
-    // 進度條
-    c.fillStyle='#1f2a33'; rr(10,26,W-70,12,6); c.fill();
-    c.fillStyle='#e8b25c'; rr(10,26,(W-70)*pct,12,6); c.fill();
-    c.fillStyle='#f3cf8f'; c.font='bold 12px system-ui'; c.textAlign='left'; c.fillText(Math.round(pct*100)+'%',W-52,37);
-    // KPI
-    const K=[['加權指數','23,150 ▲0.4%'],['那斯達克','18,420 ▲0.8%'],['費半','5,210 ▲1.2%'],['美元/台幣','32.0']];
-    K.forEach((kv,i)=>{ const bx=10+i*((W-20)/4);
-      c.fillStyle='#14202a'; rr(bx,46,(W-20)/4-6,34,5); c.fill();
-      c.fillStyle='#7f8a93'; c.font='9px system-ui'; c.fillText(kv[0],bx+6,58);
-      c.fillStyle='#e9e1cf'; c.font='bold 14px system-ui'; c.fillText(kv[1],bx+6,75); });
-    // 7 日長條
-    const bars=month?m.monthTrend:m.trend, mx=Math.max(1,Math.max.apply(null,bars));
-    bars.forEach((v,i)=>{ const bh=(H-120)*v/mx, bx=12+i*((W*.5)/bars.length);
-      c.fillStyle=i===bars.length-1?'#e8b25c':'#4a6a7a'; c.fillRect(bx,H-28-bh,(W*.5)/bars.length-5,bh); });
-    // 助理狀態
-    c.fillStyle='#7f8a93'; c.font='9px system-ui'; c.fillText('團隊狀態',W*.56,92);
-    BOTS.forEach((b,i)=>{ const bx=W*.56+(i%5)*26, by=100+((i/5)|0)*20;
-      c.fillStyle=b.data.color; rr(bx,by,18,13,3); c.fill();
-      c.fillStyle=STC[b.data.status]; c.fillRect(bx+12,by+9,5,4);
-      c.fillStyle='#10161c'; c.font='bold 7px system-ui'; c.fillText(b.data.short.slice(0,2),bx+2,by+10); });
+    c.fillStyle='#e8b25c'; c.font='bold 14px system-ui'; c.textAlign='left'; c.fillText('行情牆',12,20);
+    c.fillStyle='#c8584a'; c.font='bold 10px system-ui'; c.fillText('模擬資料・非真實交易',70,20);
+    c.fillStyle='#7f8a93'; c.textAlign='right'; c.fillText(clockStr(),W-12,20); c.textAlign='left';
+    const K=[['加權指數','23,150','▲ 0.4%',1],['那斯達克','18,420','▲ 0.8%',1],['費城半導體','5,210','▲ 1.2%',1],['美元/台幣','32.00','▼ 0.1%',0]];
+    const gx=12, gy=30, gw=(W-24-30)/4, gh=H-30-32;
+    K.forEach((k,i)=>{ const x=gx+i*(gw+10), y=gy;
+      c.fillStyle='#14202a'; rr(x,y,gw,gh,6); c.fill();
+      c.fillStyle='#8a96a0'; c.font='11px system-ui'; c.fillText(k[0],x+10,y+16);
+      c.fillStyle='#f1ead8'; c.font='bold 22px system-ui'; c.fillText(k[1],x+10,y+gh/2+12);
+      c.fillStyle=k[3]?'#e8605a':'#5fbf7a'; c.font='bold 12px system-ui'; c.fillText(k[2],x+10,y+gh-10); });
+    c.font='10px system-ui';
     // 跑馬燈
     const tick=STATE.brief.join('　｜　'), tw=c.measureText(tick).width+W;
     c.save(); c.beginPath(); c.rect(0,H-20,W,20); c.clip();
@@ -1082,21 +1068,27 @@ const DRAW={
   simDesk(o){
     const D=window.SIMD, i=o.simI, on=D&&D.cur()===i;
     floorShadow(o.x,o.y,o.w,o.d,.15);
+    // 交易員：沿用辦公室助理同一套角色圖，只換服裝色調
+    { const BID=['stock','news','sales','trainer','book','leads'][i], HUE=[200,140,-40,90,250,40][i];
+      const im=IMG['botsit_'+BID]||IMG['bot_'+BID];
+      if(imgOK(im)){ const q=P(o.x+o.w/2,o.y+.15,3); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC);
+        c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+BOT_FH*.6,BOT_FW,BOT_FH); c.clip(); c.filter='hue-rotate('+HUE+'deg) saturate(1.2)'; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH*.2); c.clip(); c.filter=['sepia(1) saturate(2.2) brightness(1.15)','brightness(.55)','sepia(1) hue-rotate(-30deg) saturate(3) brightness(.9)','grayscale(1) brightness(1.6)','sepia(.8) saturate(1.5) brightness(1.4)','sepia(1) hue-rotate(200deg) saturate(2) brightness(.8)'][i]; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); } }
     box(o.x+.05,o.y+.05,.08,o.d-.1,19,0,COL.dark); box(o.x+o.w-.13,o.y+.05,.08,o.d-.1,19,0,COL.dark);
     box(o.x,o.y,o.w,o.d,3,19,COL.walnut,{top:'#7a5236',hl:.2});
-    
-    box(o.x+.1,o.y+o.d-.12,o.w-.2,.06,46,22,'#2b2f35');
-    const W=80, H=frontFace(o.x+.14,o.x+o.w-.14,o.y+o.d-.05,25,66,W);
+    box(o.x+.1,o.y+o.d-.12,o.w-.2,.06,24,20,'#2b2f35');
+    const W=80, H=frontFace(o.x+.14,o.x+o.w-.14,o.y+o.d-.05,22,44,W);
     c.fillStyle=on?'#0f2a1c':'#1b1e22'; c.fillRect(0,0,W,H);
-    c.textAlign='left'; c.font='bold 13px system-ui';
-    if(on){ c.fillStyle='#8ff0a6'; const L=D.roles[i].scr, n=1+((performance.now()/600)|0)%L.length; L.forEach((t,k)=>{ c.globalAlpha=k<n?1:.35; c.fillText(t,4,16+k*18,W-8); }); c.globalAlpha=1; }
-    else { c.fillStyle='#4a5058'; c.fillText('待機中…',4,16); }
+    c.textAlign='left'; c.font='bold 12px system-ui';
+    if(on){ c.fillStyle='#8ff0a6'; const L=D.roles[i].scr, n=1+((performance.now()/600)|0)%L.length; L.forEach((t,k)=>{ c.globalAlpha=k<n?1:.35; c.fillText(t,4,13+k*13,W-8); }); c.globalAlpha=1; }
+    else { c.fillStyle='#4a5058'; c.fillText('待機中…',4,15); }
     c.restore();
-    if(on){ const g=P(o.x+o.w/2,o.y+o.d,46); c.save(); c.globalCompositeOperation='lighter'; const rg=c.createRadialGradient(g.X,g.Y,2,g.X,g.Y,34); rg.addColorStop(0,'rgba(143,240,166,.45)'); rg.addColorStop(1,'rgba(143,240,166,0)'); c.fillStyle=rg; c.fillRect(g.X-34,g.Y-34,68,68); c.restore(); }
-    if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=P(o.x+o.w/2,o.y+o.d+.45,0), nm=D.name(i); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
-      c.fillStyle=on?'#e3a43e':'rgba(30,22,15,.82)'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
+    if(on){ const g=P(o.x+o.w/2,o.y+o.d,40); c.save(); c.globalCompositeOperation='lighter'; const rg=c.createRadialGradient(g.X,g.Y,2,g.X,g.Y,30); rg.addColorStop(0,'rgba(143,240,166,.35)'); rg.addColorStop(1,'rgba(143,240,166,0)'); c.fillStyle=rg; c.fillRect(g.X-30,g.Y-30,60,60); c.restore(); }
+    if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=o.y>5?P(o.x+o.w/2,o.y+o.d+.4,0):P(o.x+o.w/2,o.y+.15,88), nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
+      for(let k=0;k<5&&(window.SIMRECTS||[]).some(r=>np.X-tw/2<r[2]&&np.X+tw/2>r[0]&&np.Y-9<r[3]&&np.Y+7>r[1]);k++) np.Y-=17;
+      (window.SIMRECTS=window.SIMRECTS||[]).push([np.X-tw/2-2,np.Y-10,np.X+tw/2+2,np.Y+8]);
+      c.fillStyle=on?'#e3a43e':'rgba(30,22,15,.85)'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
       ell(np.X-tw/2+8,np.Y-1,3,3,on?'#5f9a52':'#6b6b6b'); c.fillStyle=on?'#2a1a05':'#f5ead4'; c.textAlign='center'; c.fillText(nm,np.X+4,np.Y+3);
-      if(i===3){ c.fillStyle='#c8584a'; c.font='bold 7px system-ui'; c.fillText('否決權',np.X,np.Y-12); } }); }
+      }); }
   },
   botDesk(o){
     const b=BOTS.find(x=>x.id===o.bot);
@@ -1363,34 +1355,20 @@ const CONFIG={
   assistants:[
     {id:'shepherd',name:'操盤總管',short:'總管',role:'總經理 · 彙整決策、向董事長 Shane 回報',color:'#c9a050',status:'busy',
       recent:['回報今日模擬損益 +$186','彙整盤前觀察清單'],acts:['彙整六位交易員意見','向 Shane 回報今日損益','檢查每日 3% 停手線','排定明日盤前會議']},
-    {id:'dev',name:'交易系統工程師',short:'系統',role:'模擬撮合、手續費與資料串接',color:'#6f8fa6',status:'busy',
-      recent:['修正手續費計算','加上 10% 部位上限檢查'],acts:['維護模擬撮合引擎','更新報價資料（模擬）','寫風控檢查程式','備份交易日誌']},
-    {id:'visit',name:'財報行事曆',short:'行事曆',role:'財報日、除息日與法說會提醒',color:'#8fa06a',status:'idle',
-      recent:['標記 NVDA 財報日','整理本週除息名單'],acts:['更新財報行事曆','提醒法說會時間','整理除息日','核對休市日']},
     {id:'news',name:'財經日報',short:'日報',role:'研究部 · 每日盤勢與新聞牌',color:'#c08457',status:'busy',
       recent:['產出今日 5 則盤勢重點','整理美股收盤'],acts:['彙整台股盤勢','抓美股收盤重點','更新新聞牌','篩選重大訊息']},
     {id:'stock',name:'個股分析師',short:'個股',role:'研究部 · 標的研究與觀察清單',color:'#7f9e8b',status:'idle',
       recent:['更新觀察清單 12 檔','整理 2330 法說重點'],acts:['分析 2330 月線結構','研究 NVDA 財報','更新觀察清單','比較同業本益比']},
-    {id:'social',name:'市場情緒觀察',short:'情緒',role:'社群熱度、恐懼貪婪指標',color:'#b98a9c',status:'busy',
-      recent:['恐懼貪婪指數 62（模擬）','整理 PTT 股板熱門'],acts:['追蹤社群熱度','更新情緒指標','整理散戶熱門股','提醒過熱標的']},
-    {id:'book',name:'績效與帳務',short:'帳務',role:'損益、手續費、最大回撤報表',color:'#9c8f7a',status:'waiting',
-      recent:['完成本月損益表','計算最大回撤 -1.9%'],acts:['核對模擬帳戶餘額','整理手續費','製作績效報表','計算勝率']},
-    {id:'sales',name:'策略回測師',short:'回測',role:'策略回測與參數檢查',color:'#c2705a',status:'idle',
-      recent:['回測量能突破策略','比較停損 -4% 與 -6%'],acts:['回測量能策略','測試停損參數','比較台美股勝率','整理回測報告']},
-    {id:'trainer',name:'投資紀律教練',short:'紀律',role:'交易規則與覆盤教學',color:'#8a86b0',status:'busy',
-      recent:['覆盤 AAPL 停損單','更新交易守則'],acts:['覆盤虧損交易','更新交易守則','提醒不開槓桿','整理錯誤清單']},
-    {id:'leads',name:'選股篩選專員',short:'篩選',role:'條件選股與量能排行',color:'#6f9a93',status:'waiting',
-      recent:['篩出量增 20 檔','排除流動性不足 8 檔'],acts:['跑條件選股','整理量能排行','排除冷門股','產出候選清單']}
   ],
   tasks:[
     {id:'T-101',title:'今日盤勢日報（模擬）',owner:'news',due:'今日 18:00',progress:72,status:'doing'},
-    {id:'T-102',title:'模擬撮合加入手續費',owner:'dev',due:'10/23',progress:45,status:'doing'},
+    {id:'T-102',title:'模擬撮合加入手續費',owner:'shepherd',due:'10/23',progress:45,status:'doing'},
     {id:'T-103',title:'NVDA 財報前研究',owner:'stock',due:'10/22',progress:60,status:'doing'},
-    {id:'T-104',title:'量能突破候選 20 檔',owner:'leads',due:'10/24',progress:30,status:'todo'},
-    {id:'T-105',title:'10 月模擬績效月報',owner:'book',due:'10/31',progress:85,status:'doing'},
-    {id:'T-106',title:'停損參數回測',owner:'sales',due:'10/25',progress:50,status:'todo'},
-    {id:'T-099',title:'AAPL 停損覆盤',owner:'trainer',due:'10/18',progress:100,status:'done'},
-    {id:'T-098',title:'更新交易守則',owner:'trainer',due:'10/17',progress:100,status:'done'}
+    {id:'T-104',title:'量能突破候選 20 檔',owner:'stock',due:'10/24',progress:30,status:'todo'},
+    {id:'T-105',title:'10 月模擬績效月報',owner:'shepherd',due:'10/31',progress:85,status:'doing'},
+    {id:'T-106',title:'停損參數回測',owner:'stock',due:'10/25',progress:50,status:'todo'},
+    {id:'T-099',title:'AAPL 停損覆盤',owner:'shepherd',due:'10/18',progress:100,status:'done'},
+    {id:'T-098',title:'更新交易守則',owner:'shepherd',due:'10/17',progress:100,status:'done'}
   ],
   board:[{t:'單筆最多總資金 10%',done:false},{t:'每日虧損達 3% 停手',done:false},{t:'不開槓桿・含手續費',done:true}],
   quotes:[
@@ -1439,7 +1417,7 @@ const SOCIAL={
   chat:[
     ['今天咖啡好香','對啊，Shane 選的豆子'],['昨天那支短影音觀看破千了','真的嗎？太好了！'],['你那份報表做完了嗎','快了，下午交'],
     ['最近美債殖利率在降','那債券 ETF 又有話題了'],['新人教材我想加一段影片','我可以幫你剪'],['今天名單有 3 位 A 級','讚，要排拜訪嗎？'],
-    ['午餐吃什麼？','巷口那家便當吧'],['你覺得這個標題好嗎？','可以再短一點'],['系統今天好順','我昨晚修了一個 bug'],['週五要不要一起打手足球？','好啊，輸的請咖啡']
+    ['午餐吃什麼？','巷口那家便當吧'],['你覺得這個標題好嗎？','可以再短一點'],['今天盤面好順','我昨晚整理了觀察清單'],['週五要不要一起打手足球？','好啊，輸的請咖啡']
   ],
   pass:{ news:['social','今天的財經談資給你，可以做貼文'], leads:['visit','A 級名單交給你排拜訪'], dev:['trainer','新功能上線了，教材要更新'],
     book:['shepherd','本月現金流報表好了'], stock:['news','觀察清單有更新，日報可以用'], social:['sales','這週留言區有 2 位想諮詢'],
@@ -1630,8 +1608,8 @@ const DataSource={
     STATE.board=store.get('board',clone(CONFIG.board));
     STATE.inbox=store.get('inbox',null)||[
       {id:'D-1',from:'news',title:'今日財經談資 5 則',body:CONFIG.brief.map((s,i)=>(i+1)+'. '+s).join('\n'),state:'new',time:'08:12'},
-      {id:'D-2',from:'social',title:'市場情緒：恐懼貪婪 62（模擬）',body:'社群熱度前三：NVDA、2330、TSLA\nTSLA 過熱，提醒唱反調複核\n（模擬資料・非真實交易）',state:'new',time:'08:40'},
-      {id:'D-3',from:'leads',title:'量能突破候選 6 檔（模擬）',body:'NVDA、TSLA、2454、2317、AMD、META\n排除日均量不足的 8 檔\n（模擬資料・非真實交易）',state:'new',time:'09:05'}
+      {id:'D-2',from:'news',title:'市場情緒：恐懼貪婪 62（模擬）',body:'社群熱度前三：NVDA、2330、TSLA\nTSLA 過熱，提醒唱反調複核\n（模擬資料・非真實交易）',state:'new',time:'08:40'},
+      {id:'D-3',from:'stock',title:'量能突破候選 6 檔（模擬）',body:'NVDA、TSLA、2454、2317、AMD、META\n排除日均量不足的 8 檔\n（模擬資料・非真實交易）',state:'new',time:'09:05'}
     ];
     STATE.water=store.get('water',0);
     STATE.crm=store.get('crm',null)||clone(CONFIG.crm);
@@ -1705,7 +1683,7 @@ function initChars(){
   ENTS.push(mkEnt({id:'pet',isPet:true,name:'柴柴',short:'柴柴',f:1,zf:1,x:11.2,y:5.3,spd:2.2,pose:'stand',face:'down',timer:4,dirX:1}));
   syncClients();
   STATE.assistants.forEach((a,i)=>{
-    const seat=i===0?{f:2,x:16.1,y:1.98,face:'down',pose:'sit',seatH:12,desk:true}:SPOTS.desk[i];
+    const seat=a.id==='shepherd'?{f:2,x:16.1,y:1.98,face:'down',pose:'sit',seatH:12,desk:true}:SPOTS.desk[DESK_IDS.indexOf(a.id)];
     const b=mkEnt({id:a.id,data:a,name:a.name,short:a.short,img:'bot_'+a.id,f:seat.f,zf:seat.f,x:seat.x,y:seat.y,spd:rnd(1.9,2.4),
       pose:'sit',seatH:seat.seatH,face:'down',timer:rnd(4,26),home:seat,atDesk:true,act:'work'});
     seat.by=b.id; b.spot=seat;
@@ -1725,8 +1703,8 @@ const SPOTS={
   bar3:[{f:2,x:3.05,y:1.67,face:'left',pose:'sit',seatH:24},{f:2,x:3.05,y:2.52,face:'left',pose:'sit',seatH:24},{f:2,x:3.05,y:3.37,face:'left',pose:'sit',seatH:24}],
   window:[{f:1,x:14.6,y:1.2,face:'up',pose:'stand'},{f:0,x:13.2,y:1.2,face:'up',pose:'stand'}]
 };
-for(let i=0;i<5;i++){ SPOTS.desk.push({f:1,x:3.5+i*1.6,y:2.98,face:'down',pose:'sit',seatH:12,desk:true}); }
-for(let i=0;i<5;i++){ SPOTS.desk.push({f:1,x:3.5+i*1.6,y:5.98,face:'down',pose:'sit',seatH:12,desk:true}); }
+for(let i=0;i<5;i++){ SPOTS.desk.push({f:1,x:3.2+i*1.85,y:2.98,face:'down',pose:'sit',seatH:12,desk:true}); }
+for(let i=0;i<5;i++){ SPOTS.desk.push({f:1,x:3.2+i*1.85,y:5.98,face:'down',pose:'sit',seatH:12,desk:true}); }
 // 會議：Shepherd 站在戰情螢幕前主持；5 位坐北側面向鏡頭；4 位與 Shane 坐南側背對鏡頭
 SPOTS.meet.push({f:0,x:7,y:2.05,face:'down',pose:'stand'});
 for(let i=0;i<5;i++){ SPOTS.meet.push({f:0,x:6+i,y:3.08,face:'down',pose:'sit',seatH:13}); }
@@ -2116,7 +2094,7 @@ function drawChar(e){
   if(e.carry){ c.fillStyle='#f6efe0'; c.fillRect(p.X+9,p.Y-30,10,8); c.fillStyle='#c9a46e'; c.fillRect(p.X+9,p.Y-30,10,2); }
   FY=sv;
 }
-let SAYRECTS=[];
+let SAYRECTS=[], TAGRECTS=[];
 function drawOverhead(e,f){
   if(!e.hit||e.hit.f!==f) return;
   const hd=e.hit.head; let y=hd.Y-4;
@@ -2127,6 +2105,8 @@ function drawOverhead(e,f){
     const nm=e.isShane?'Shane':e.short;
     c.font='bold 9px system-ui'; c.textAlign='center';
     const tw=c.measureText(nm).width+(e.isShane?10:16);
+    for(let k=0;k<4&&TAGRECTS.some(r=>hd.X-tw/2<r[2]&&hd.X+tw/2>r[0]&&y-12<r[3]&&y+1>r[1]);k++) y-=14;
+    TAGRECTS.push([hd.X-tw/2-1,y-13,hd.X+tw/2+1,y+2]);
     c.fillStyle=sel||hov?'rgba(232,178,92,.95)':'rgba(24,20,16,.78)'; rr(hd.X-tw/2,y-12,tw,13,6.5); c.fill();
     if(!e.isShane){ ell(hd.X-tw/2+7,y-5.5,3,3,e.isClient?({'高':'#c8584a','中':'#e3a43e','低':'#5f9a52'}[e.client.heat]||'#b48ad6'):e.isPet?'#e8a54a':STC[e.data.status]); }
     c.fillStyle=sel||hov?'#20170a':(e.isShane?'#f3cf8f':'#efe6d6'); c.fillText(nm,hd.X+(e.isShane?0:4),y-2.5);
@@ -2202,8 +2182,9 @@ function focusFloor(f,instant){
     const z=clamp(Math.min(VW*(VW<600?1.8:1)/w,(VH-top-bot)/h),.42,2.2);
     cam.tz=z; cam.tx=VW/2-SCX*z;
     cam.ty=top+(VH-top-bot)/2-((SPANY-WALL_H)/2-f*FLOOR_GAP)*z;    if(f===0){ // v10：1F 交易大廳預設放大到交易桌，讓螢幕文字看得清楚
-      const z2=clamp(z*(VW<600?1.5:2.0),.42,3); setF(0); const q=P(16,2.6,40);
+      const z2=clamp(z*(VW<600?1.25:1.22),.42,3); setF(0); const q=P(11.5,2.4,58);
       cam.tz=z2; cam.tx=VW/2-q.X*z2; cam.ty=top+(VH-top-bot)/2-q.Y*z2; }
+    else if(f===1&&VW<600){ setF(1); const q=P(8.5,4.2,40); cam.tx=VW/2-q.X*z; cam.ty=top+(VH-top-bot)/2-q.Y*z; }
   }
   if(instant){ cam.z=cam.tz; cam.x=cam.tx; cam.y=cam.ty; }
 }
@@ -2272,8 +2253,8 @@ function drawFloor(f,t){
   for(const o of OBJ) if(o.f===f&&o.wall&&((HOVER&&HOVER.obj===o)||(SEL&&SEL.obj===o))) outline(o);
   setF(f); drawParts(f);
   lighting(f);
-  if(window.SIMTAG&&SIMTAG.length){ setF(f); SIMTAG.splice(0).forEach(fn=>fn()); }
-  SAYRECTS=[]; for(const e of ENTS.slice().sort((a,b)=>(b.y+b.x)-(a.y+a.x))) drawOverhead(e,f);
+  if(window.SIMTAG&&SIMTAG.length){ setF(f); window.SIMRECTS=(typeof TAGRECTS!=='undefined'?TAGRECTS.slice():[]); SIMTAG.splice(0).reverse().forEach(fn=>fn()); }
+  SAYRECTS=[]; TAGRECTS=[]; for(const e of ENTS.slice().sort((a,b)=>(b.y+b.x)-(a.y+a.x))) drawOverhead(e,f);
 }
 function outline(o){
   setF(o.f);
@@ -2428,6 +2409,20 @@ function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('on'
 function closePanels(){ panel.hidden=true; panel.innerHTML=''; SEL=null; PANEL_ON=null;
   OBJ.forEach(o=>{ if(o.kind==='arcade'&&o.st.byShane){ o.st.playing=false; o.st.byShane=false; } }); }
 let PANEL_ON=null;
+
+function showReview(){
+  const ok=(t,p,n)=>'<div class="row"><b>'+(p?'✅':'❌')+' '+t+'</b><em>'+n+'</em></div>';
+  openPanel('client','交易檢討角 · 操盤總管','模擬資料・非真實交易',
+    '<h4>今日規則檢查</h4>'+
+    ok('沒有追高',true,'NVDA 於回檔 $140 買進，未追漲停')+
+    ok('單筆未超過總資金 10%',true,'最大一筆 AMD $480（9.6%）')+
+    ok('每筆都有停損',false,'META 未設停損單，靠手動出場')+
+    ok('每日虧損未達 3%',true,'今日最大回落 −0.7%')+
+    '<h4>本週最佳一筆</h4><div class="row"><b>AMD</b><em style="color:#c8584a">+$82（已實現）</em></div>'+
+    '<h4>本週最差一筆</h4><div class="row"><b>AAPL</b><em style="color:#3c8a55">−$18（停損出場）</em></div>'+
+    '<h4>總管提醒</h4><p class="note">🧭 賺錢的單也要先設停損：下一筆進場前，先寫好出場價再按買進。</p>'+
+    '<p class="muted">模擬資料・非真實交易，不構成投資建議。</p>');
+}
 function openPanel(key,title,sub,html,mount){
   PANEL_ON=key;
   panel.innerHTML='<header class="ph"><div><h2>'+title+'</h2>'+(sub?'<p>'+sub+'</p>':'')+'</div><button class="x" id="pClose" aria-label="關閉">×</button></header><div class="pb">'+html+'</div>';
@@ -2533,7 +2528,7 @@ const ACTIONS={
   desk:{panel:showDesk},
   piano:{fx:o=>{ emote(SHANE,'🎹'); },panel:showPiano},
   music:{fx:o=>{ emote(SHANE,'🎵'); },panel:showMusic},
-  client:{panel:showClient}
+  client:{panel:showReview}
 };
 function useObject(o){
   SFX.tap(); o.bounce=1; SEL={obj:o};
@@ -2974,14 +2969,14 @@ function showGrokPaste(from,title,back){
     '<p class="note">把 Grok 的回答貼在下面，按「存進收件匣」就會變成一筆交件。</p><textarea id="gpT" rows="8" class="ta" placeholder="貼上 Grok 的回覆…"></textarea>'+
     '<div class="actions"><button class="btn" id="gpS">存進收件匣</button><button class="btn ghost" id="gpB">← 返回</button></div>',
     p=>{ $('#gpS').onclick=()=>{ const v=$('#gpT').value.trim(); if(!v){ toast('還沒貼上內容'); return; }
-        STATE.inbox.unshift({id:'D-'+Date.now(),from:b?b.id:'sales',title:'Grok 回覆：'+title,body:v,state:'new',time:clockStr()});
+        STATE.inbox.unshift({id:'D-'+Date.now(),from:b?b.id:'shepherd',title:'Grok 回覆：'+title,body:v,state:'new',time:clockStr()});
         if(STATE.inbox.length>30) STATE.inbox.length=30; DataSource.saveInbox(); SFX.ok(); toast('已存進收件匣'); back(); };
       $('#gpB').onclick=()=>back(); });
 }
 function showClient(o,pre){
   const st=store.get('steps',{});
   const here=ENTS.filter(e=>e.isClient&&!(e.spot&&SPOTS.guest.includes(e.spot)));
-  openPanel('client','休息沙發','選一位標的，照流程走一次',
+  openPanel('client','交易檢討角','選一位標的，照流程走一次',
     (here.length?'<h4>來訪中的標的</h4><div class="chips">'+here.map(e=>'<button class="chipb" data-g="'+e.id+'">請 '+esc(e.name)+' 上樓</button>').join('')+'</div><h4>討論對象</h4>':'')+
     '<select id="cSel">'+STATE.crm.map(x=>'<option'+(x.name===pre?' selected':'')+'>'+esc(x.name)+'（'+stName(x.stage)+'）</option>').join('')+'</select>'+
     '<div class="steps">'+CONFIG.clientSteps.map((s,i)=>'<label class="todo"><input type="checkbox" id="cs'+i+'" '+(st[i]?'checked':'')+'><span>'+(i+1)+'. '+esc(s)+'</span></label>').join('')+'</div>'+
@@ -2999,16 +2994,16 @@ function showClient(o,pre){
 const MEETING={on:false,phase:'',topic:'',t:0,idx:0,order:[],lines:[],busy:false};
 function showMeeting(){
   if(MEETING.on){ renderMeeting(); return; }
-  openPanel('meeting','投資委員會會議室 · 召開會議','選議題後，10 位助理會到 1F 就座，輪流發言，最後由 Shepherd 整理行動項目',
+  openPanel('meeting','投資委員會會議室 · 召開會議','選議題後，總管、個股、日報會到 1F 就座，輪流發言，最後由 Shepherd 整理行動項目',
     '<div class="chips">'+CONFIG.meetTopics.map(t=>'<button class="chipb" data-t="'+esc(t)+'">'+esc(t)+'</button>').join('')+'</div>'+
     '<div class="ask"><input id="mT" placeholder="或自己輸入議題" maxlength="30"><button class="btn" id="mGo">開會</button></div>',
     p=>{ p.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>startMeeting(b.dataset.t));
       $('#mGo').onclick=()=>startMeeting($('#mT').value.trim()||CONFIG.meetTopics[0]); });
 }
-const TOPIC_BOTS={ '今日觀察清單':['leads','stock','news','social'], 'NVDA 部位檢討':['stock','book','sales','shepherd'], '風控規則複核':['trainer','book','dev','shepherd'], '本月模擬績效':['book','sales','shepherd','news'] };
+const TOPIC_BOTS={ '今日觀察清單':['stock','news'], 'NVDA 部位檢討':['stock','news'], '風控規則複核':['stock','news'], '本月模擬績效':['news','stock'] };
 function startMeeting(topic,auto){
   SFX.ok(); Object.assign(MEETING,{on:true,phase:'gather',topic,t:0,idx:0,lines:[],busy:false,auto:!!auto});
-  MEETING.order=['shepherd'].concat(TOPIC_BOTS[topic]||['news','sales','social','leads']).concat(['shepherd']);
+  MEETING.order=['shepherd'].concat(TOPIC_BOTS[topic]||['news','stock']).concat(['shepherd']);
   BOTS.forEach((b,i)=>{ b.hold=0; const s=SPOTS.meet[i]; goTo(b,{f:0,x:s.x,y:s.y,face:s.face,pose:s.pose,seatH:s.seatH,cb:()=>{ b.data.doing='開會：'+topic; }}); b.data.status='busy'; b.data.doing='前往 1F 開會…'; });
   const mt=OBJ.find(o=>o.kind==='meetTable'); const u=mt.use;
   SHANE.manual=300; goTo(SHANE,{f:0,x:u.x,y:u.y,face:u.face,pose:u.pose,seatH:u.seatH});
@@ -3060,7 +3055,7 @@ const CHATS={};
 function openCharCard(e){ if(e.isPet){ petTap(e); return; } if(e.isShane) openShaneCard(); else if(e.isClient) openClientCard(e); else openBotCard(e); }
 /* ---------- 來訪標的 ---------- */
 const clientEnt=name=>ENTS.find(e=>e.isClient&&e.name===name);
-function whereIs(e){ return e.spot&&e.spot.f===2&&SPOTS.guest.includes(e.spot)?'在 3F 休息沙發':e.spot===SPOTS.bar3[0]?'在 3F 吧台':e.f===0?'在 1F 等候區':'在 '+(e.f+1)+'F'; }
+function whereIs(e){ return e.spot&&e.spot.f===2&&SPOTS.guest.includes(e.spot)?'在 3F 交易檢討角':e.spot===SPOTS.bar3[0]?'在 3F 吧台':e.f===0?'在 1F 等候區':'在 '+(e.f+1)+'F'; }
 function openClientCard(e){ emote(e,'😊'); openCrm(e.client); }
 /* =====================================================================
    投資人名單（模擬）（經營中）與標的卡片
@@ -3181,14 +3176,14 @@ function showCrmImport(){
 }
 function freeSeat(list,e){ return list.find(s=>!s.by||s.by===e.id); }
 function startConsult(e,auto){
-  const s=freeSeat(SPOTS.guest,e); if(!s){ toast('休息沙發坐滿了'); return; }
+  const s=freeSeat(SPOTS.guest,e); if(!s){ toast('交易檢討角坐滿了'); return; }
   SFX.ok(); closePanels(); emote(e,'👋');
   goTo(e,{f:2,x:s.x,y:s.y,face:s.face,pose:s.pose,seatH:s.seatH,spot:s,cb:()=>{ emote(e,'💬'); say(e,'我最近在想「'+e.client.need+'」…',5); }});
   const h=SPOTS.host; SHANE.manual=300;
   goTo(SHANE,{f:2,x:h.x,y:h.y,face:h.face,pose:h.pose,seatH:h.seatH,cb:()=>{ SHANE.atObj=true; emote(SHANE,'💡'); if(!auto) showClient(null,e.name); }});
-  if(auto){ toast(clockStr()+' '+e.name+' 來訪，Shane 到 3F 休息沙發討論'); setTimeout(()=>{ if(SPOTS.guest.includes(e.spot)) sendBack(e); },150000); return; }
+  if(auto){ toast(clockStr()+' '+e.name+' 來訪，Shane 到 3F 交易檢討角討論'); setTimeout(()=>{ if(SPOTS.guest.includes(e.spot)) sendBack(e); },150000); return; }
   VIEW.follow=true; if(VIEW.f!==2) focusFloor(2);
-  toast(e.name+' 上樓到 3F 休息沙發，Shane 去接待');
+  toast(e.name+' 上樓到 3F 交易檢討角，Shane 去接待');
 }
 function startDrink(e,auto){
   const B=SPOTS.bar3, isGuest=q=>{ const o=ENTS.find(x=>x.id===q.by); return o&&o.isClient&&o!==e; };
@@ -3255,7 +3250,7 @@ function copyText(t,el){
 const AUTO={on:store.get('auto',true),t:120};
 function openShaneCard(){
   emote(SHANE,'👋'); if(SHANE.mode==='idle'&&SHANE.pose==='stand') doAct(SHANE,'wave',2);
-  const go=[['shaneDesk','3F 書桌'],['piano','3F 鋼琴'],['bar3','3F 吧台'],['sofa','3F 休息沙發',2],['coffeeBar','2F 咖啡機'],['arcade','2F 遊戲機'],['foosball','2F 手足球'],['warTV','1F 交易大廳螢幕'],['meetTable','1F 投資委員會會議室'],['handoff','1F 交接站']];
+  const go=[['shaneDesk','3F 書桌'],['piano','3F 鋼琴'],['bar3','3F 吧台'],['sofa','3F 交易檢討角',2],['coffeeBar','2F 咖啡機'],['arcade','2F 遊戲機'],['foosball','2F 手足球'],['warTV','1F 交易大廳螢幕'],['meetTable','1F 投資委員會會議室'],['handoff','1F 交接站']];
   openPanel('shane','Shane','人生理想規劃家 · 御謙VIP菁英會',
     '<div class="prof"><div><span class="stdot" style="--c:#e8b25c">'+esc(shaneDoing())+'</span></div></div>'+
     '<h4>帶 Shane 去</h4><div class="chips">'+go.map(g=>'<button class="chipb" data-o="'+g[0]+'" data-f="'+(g[2]===undefined?'':g[2])+'">'+g[1]+'</button>').join('')+'</div>'+
@@ -3448,7 +3443,7 @@ function showToday(){
    第一次打開的導覽
    ===================================================================== */
 const TOUR=[
-  {t:'歡迎來到你的 AI 操盤公司',b:'這是一棟三層樓的辦公室：1F 交易大廳（6 位交易員、行情牆、投資委員會會議室）、2F 研究室（10 位 AI 分析師）、3F 你的董事長室。全部是模擬資料・非真實交易，不連券商、不連 Firebase。',f:-1},
+  {t:'歡迎來到你的 AI 操盤公司',b:'這是一棟三層樓的辦公室：1F 交易大廳（行情牆、投資委員會會議室）、2F 研究室（個股分析師、財經日報與六位模擬操盤員）、3F 你的董事長室。全部是模擬資料・非真實交易，不連券商、不連 Firebase。',f:-1},
   {t:'點家具，Shane 會走過去用',b:'行情牆、交易桌、交易守則白板、交易日誌牆、風控儀表板、書櫃……幾乎每件設備都能點。Shane 會走過去操作，再打開對應的功能。',f:1},
   {t:'點人物，看他在做什麼',b:'點分析師可以對話、交辦研究；點交易桌或行情牆看持股、交易日誌與討論紀錄；點投資人可以請他上 3F 說明；點柴柴牠會汪汪叫。',f:1},
   {t:'切換樓層、移動畫面',b:'下方按鈕切換 1F、2F、3F 和全景。拖曳可以移動畫面，雙指或滾輪縮放。點任何一扇窗戶，可以預覽清晨、白天、黃昏、夜晚。',f:2},
