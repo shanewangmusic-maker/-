@@ -3555,6 +3555,14 @@ function initUI(){
 #simDet .tw{overflow-x:auto}#simDet h4{margin:12px 0 4px}
 .disc{background:#fff;border-radius:14px;padding:10px;margin-top:12px}
 .disc select{flex:none;width:100%;margin:6px 0}
+.mtg{border:1px solid #e6d4ad;border-radius:12px;margin:8px 0;background:var(--paper);overflow:hidden}
+.mtg.open{box-shadow:0 0 0 2px var(--amber)}
+.mtg-h{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
+.mtg-h b{display:block;font-size:12px;color:var(--ink2);font-weight:700}
+.mtg-h .mt{display:block;font-weight:800;font-size:14px;margin-top:2px}
+.mtg-h .ma,.mtg-h .mdc{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
+.mtg-h .mdc{color:var(--ink);font-size:13px}
+.mtg-log{padding:0 8px 8px}
 .bb{display:flex;gap:8px;margin:7px 0;align-items:flex-start}.bb .av{flex:0 0 auto;font-size:11px;font-weight:800;background:var(--paper2);border-radius:999px;padding:3px 8px;white-space:nowrap}
 .bb .ms{background:var(--paper2);border-radius:4px 14px 14px 14px;padding:6px 10px;font-size:13px;line-height:1.5}.bb .ms small{display:block;color:var(--ink2);font-size:10px}
 .bb.v .ms{background:#f6d6cf}.bb.me{flex-direction:row-reverse}.bb.me .ms{background:var(--amber2);border-radius:14px 4px 14px 14px}
@@ -3597,7 +3605,7 @@ function initUI(){
  <tr><td>10/09 21:55</td><td>美股</td><td>AAPL</td><td>賣</td><td>2</td><td>$228.00</td><td class="dn">-$18</td><td>跌破停損</td><td>否</td></tr></table></div>
  <div class="note">合計：已實現 +$162 ＋ 未實現 +$24 ＝ 本月損益 +$186</div>
  </div>
- <div class="disc"><h4 style="margin:0">討論紀錄</h4><select id="discSel"></select><div id="discBox"></div></div>
+ <div class="disc"><h4 style="margin:0">討論紀錄</h4><select id="discRole" hidden></select><select id="discSel"></select><div id="discBox"></div></div>
  </div><div class="dl2" id="simLog">
  <h4>活動紀錄</h4>
  <div class="lg">15:32 唱反調：2454 聯發科成交量偏低，建議等待</div>
@@ -3676,7 +3684,7 @@ document.getElementById('askF').onsubmit=e=>{e.preventDefault();const q=document
  else if(q.indexOf('為什麼')>=0) ans=quoteRole(AK,q);
  else { const rows=(BOOK.discussions||[]).filter(d=>d.role===ROLEOF[AK]&&d.date===tpToday()); ans=rows.length?rows.map(d=>d.text).join(' '):'當天沒有這位的紀錄'; }
  AL.innerHTML+=bub(AK,'現在',q,0,1)+bub(AK,'現在',ans);document.getElementById('askI').value='';AL.scrollTop=1e5;};
-F.onclick=e=>{const s=e.target.closest('.nm span');if(s){const i=document.createElement('input');i.value=s.textContent;s.replaceWith(i);i.focus();i.select();const done=()=>{const v=i.value.trim()||R.find(r=>r[0]==s.dataset.k)[1];nm[s.dataset.k]=v;localStorage.setItem(K,JSON.stringify(nm));i.remove();draw();};i.onblur=done;i.onkeydown=k=>{if(k.key=='Enter')i.blur()};return;}
+F.onclick=e=>{const s=e.target.closest('.nm span');if(s){const i=document.createElement('input');i.value=s.textContent;s.replaceWith(i);i.focus();i.select();const done=()=>{const v=i.value.trim()||R.find(r=>r[0]==s.dataset.k)[1];nm[s.dataset.k]=v;localStorage.setItem(K,JSON.stringify(nm));i.remove();draw(); if(MEETS.length){ refreshRoleFilter(); renderMeetings(); }};i.onblur=done;i.onkeydown=k=>{if(k.key=='Enter')i.blur()};return;}
 if(e.target.closest('.mon')){D.hidden=false;D.scrollIntoView({behavior:'smooth'});}};
 document.getElementById('simWall').onclick=()=>{D.hidden=!D.hidden;if(!D.hidden)D.scrollIntoView({behavior:'smooth'})};
 document.getElementById('simX').onclick=()=>document.getElementById('sim').hidden=true;
@@ -3684,23 +3692,66 @@ window.SIMD={bal:5186,pnl:186,eq:[5000,5012,5040,5025,4990,5058,5092,5110,5140,5
  roles:R.map(r=>({k:r[0],scr:r[5]})),name:i=>nm[R[i][0]]||R[i][1],cur:()=>((performance.now()/5000)|0)%6};
 window.openSim=()=>{document.getElementById('sim').hidden=false;D.hidden=false;const t=document.getElementById('tour');if(t)t.style.display='none';};
 if(/[?&]sim=1/.test(location.search))openSim();
-function threadsOf(list){
-  const map=new Map();
-  (list||[]).forEach(d=>{
-    const key=(d.date||'')+'|'+(d.relatedSymbol||d.decision||'綜合');
-    if(!map.has(key)) map.set(key,{date:d.date,symbol:d.relatedSymbol||'',decision:d.decision||'',m:[]});
-    const g=map.get(key);
-    if(d.decision) g.decision=d.decision;
-    if(d.relatedSymbol) g.symbol=d.relatedSymbol;
-    g.m.push(d);
+let MEETS=[], ROLEF='', OPEN=null;
+const roleLabel=role=>RN(SEAT[role]||role);
+function meetingsOf(j){
+  const declared=Array.isArray(j.meetings)?j.meetings.filter(m=>m&&m.id):[];
+  const byId=new Map(declared.map(m=>[String(m.id), m]));
+  const bag=new Map(), loose=new Map();
+  (j.discussions||[]).forEach(d=>{
+    const id=d.meetingId?String(d.meetingId):'';
+    if(id){ if(!bag.has(id)) bag.set(id, []); bag.get(id).push(d); }
+    else { const day=d.date||''; if(!loose.has(day)) loose.set(day, []); loose.get(day).push(d); }
   });
-  return [...map.values()].map(g=>{
-    g.m.sort((a,b)=>String(a.time).localeCompare(String(b.time)));
-    const last=g.m[g.m.length-1]||{};
-    return {sort:(g.date||'')+(last.time||''), t:md(g.date)+' '+(last.time||'')+' · '+(g.symbol||'綜合')+' → '+(g.decision||'討論'),
-      m:g.m.map(d=>[SEAT[d.role]||d.role, d.time||'', d.text||'', (/否決/.test(d.decision||'')||/否決/.test(d.text||''))?1:0])};
-  }).sort((a,b)=>b.sort.localeCompare(a.sort));
+  const sortMsg=(a,b)=>String(a.time||'').localeCompare(String(b.time||''));
+  const cards=[];
+  declared.forEach(m=>{
+    const id=String(m.id), msgs=(bag.get(id)||[]).slice().sort(sortMsg); bag.delete(id);
+    cards.push({id, date:m.date||'', time:m.time||'', title:m.title||id, topic:m.topic||'', attendees:Array.isArray(m.attendees)?m.attendees:[], summary:m.summary||'', decision:m.decision||'', msgs});
+  });
+  bag.forEach((msgs,id)=>{
+    msgs=msgs.slice().sort(sortMsg);
+    const first=msgs[0]||{};
+    const who=[...new Set(msgs.map(d=>d.role).filter(Boolean))];
+    const dec=[...msgs].reverse().map(d=>d.decision).find(Boolean)||'';
+    cards.push({id, date:first.date||'', time:first.time||'', title:id, topic:'', attendees:who, summary:'', decision:dec, msgs});
+  });
+  loose.forEach((msgs,day)=>{
+    msgs=msgs.slice().sort(sortMsg);
+    const first=msgs[0]||{};
+    const who=[...new Set(msgs.map(d=>d.role).filter(Boolean))];
+    const dec=[...msgs].reverse().map(d=>d.decision).find(Boolean)||'';
+    cards.push({id:'loose:'+day, date:day, time:first.time||'', title:'當日其他討論', topic:'', attendees:who, summary:'', decision:dec, msgs});
+  });
+  return cards.sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||'')));
 }
+function refreshRoleFilter(){
+  const roleSel=document.getElementById('discRole'); if(!roleSel) return;
+  const cur=ROLEF;
+  const opts=[['','全部角色'],['scout'],['research'],['devil'],['risk'],['decision'],['recorder'],['gm']];
+  roleSel.innerHTML=opts.map(o=>'<option value="'+o[0]+'">'+esc(o[0]?roleLabel(o[0]):o[1])+'</option>').join('');
+  roleSel.value=cur; if(roleSel.value!==cur) ROLEF='';
+}
+function renderMeetings(){
+  if(!box) return;
+  const role=ROLEF;
+  const cards=MEETS.filter(c=>!role||(c.attendees||[]).indexOf(role)>=0||c.msgs.some(m=>m.role===role));
+  if(!cards.length){ box.innerHTML='<div class="note">沒有這位的討論</div>'; return; }
+  box.innerHTML=cards.map(c=>{
+    const open=OPEN===c.id;
+    const who=(c.attendees&&c.attendees.length?c.attendees:[...new Set(c.msgs.map(m=>m.role))]).map(roleLabel).join('、');
+    const title=(c.title||'')+(c.topic?(' · '+c.topic):'');
+    const msgs=open?c.msgs.filter(m=>!role||m.role===role):[];
+    const log=open?('<div class="mtg-log">'+msgs.map(m=>bub(SEAT[m.role]||m.role, m.time||'', m.text||'', (/否決/.test(m.decision||'')||/否決/.test(m.text||''))?1:0)).join('')+(c.summary?'<p class="note">'+esc(c.summary)+'</p>':'')+'</div>'):'';
+    return '<article class="mtg'+(open?' open':'')+'"><button type="button" class="mtg-h" data-mid="'+esc(c.id)+'"><b>'+esc((md(c.date)+' '+(c.time||'')).trim())+'</b><span class="mt">'+esc(title)+'</span><span class="ma">'+esc(who)+'</span>'+(c.decision?'<span class="mdc">'+esc(c.decision)+'</span>':'')+'</button>'+log+'</article>';
+  }).join('');
+}
+box.addEventListener('click', e=>{
+  const b=e.target.closest('[data-mid]'); if(!b||!MEETS.length) return;
+  const id=b.getAttribute('data-mid'); OPEN=OPEN===id?null:id; renderMeetings();
+});
+const roleSel0=document.getElementById('discRole');
+if(roleSel0) roleSel0.onchange=()=>{ ROLEF=roleSel0.value; renderMeetings(); };
 function applyBook(j){
   if(!j||typeof j!=='object') return;
   const bud=+j.budgetUSD||5000, eq=+j.equityUSD||0, cash=+j.cashUSD||0, pnl=eq-bud;
@@ -3746,8 +3797,12 @@ function applyBook(j){
   if(lg){ const rows=[...(j.discussions||[])].sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''))).slice(0,12);
     const head=j.dailyReport&&j.dailyReport.summary?'<div class="lg">'+esc(md(j.dailyReport.date))+' 日報：'+esc(j.dailyReport.summary)+'</div>':'';
     lg.innerHTML='<h4>活動紀錄</h4>'+head+rows.map(d=>'<div class="lg">'+esc(d.time||'')+' '+esc(ROLEZH[d.role]||d.role||'')+'：'+esc(d.text||'')+'</div>').join(''); }
-  const grouped=threadsOf(j.discussions);
-  if(grouped.length){ TH=grouped; sel.innerHTML=TH.map((x,i)=>'<option value="'+i+'">'+esc(x.t)+'</option>').join(''); showT(); }
+  MEETS=meetingsOf(j);
+  const roleSel=document.getElementById('discRole');
+  if(roleSel){ roleSel.hidden=false; refreshRoleFilter(); }
+  if(sel) sel.hidden=true;
+  if(OPEN&&!MEETS.some(c=>c.id===OPEN)) OPEN=null;
+  renderMeetings();
   BOOK=j; draw();
   if(typeof showWar==='function'&&typeof PANEL_ON!=='undefined'&&PANEL_ON==='war') showWar();
 }
