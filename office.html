@@ -544,7 +544,7 @@ function buildWorld(){
     use:{x:1.25,y:2.4,face:'left',pose:'stand'}});
   O(0,'taskwall',0,4.1,.05,2.6,0,{wall:'left',solid:false,label:'交易日誌牆',act:'tasks',
     use:{x:1.25,y:5.4,face:'left',pose:'stand'}});
-  O(0,'meetTable',5.5,3.65,5,1.3,22,{label:'投資委員會會議室 · 召開會議',act:'meeting',
+  O(0,'meetTable',5.5,3.65,5,1.3,22,{label:'投資委員會會議室 · 討論紀錄',act:'meeting',
     use:{x:8,y:5.58,face:'up',pose:'sitback',seatH:13}});
   for(let i=0;i<5;i++){
     O(0,'chair',4.2+i+1.5,2.75,.6,.6,13,{solid:false,face:'down',seatId:'mn'+i});
@@ -792,6 +792,13 @@ function stripText(lines,x,y,lh,maxW,color,font){
   c.fillStyle=color; c.font=font; c.textAlign='left';
   lines.forEach((s,i)=>{ let tx=s; while(c.measureText(tx).width>maxW&&tx.length>1) tx=tx.slice(0,-1); c.fillText(tx===s?s:tx+'…',x,y+i*lh); });
 }
+function drawSimBody(i,x,y){
+  const BID=['stock','news','sales','trainer','book','leads'][i], HUE=[200,140,-40,90,250,40][i];
+  const im=IMG['botsit_'+BID]||IMG['bot_'+BID];
+  if(!imgOK(im)) return;
+  const q=P(x,y,3); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC);
+  c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+BOT_FH*.6,BOT_FW,BOT_FH); c.clip(); c.filter='hue-rotate('+HUE+'deg) saturate(1.2)'; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH*.2); c.clip(); c.filter=['sepia(1) saturate(2.2) brightness(1.15)','brightness(.55)','sepia(1) hue-rotate(-30deg) saturate(3) brightness(.9)','grayscale(1) brightness(1.6)','sepia(.8) saturate(1.5) brightness(1.4)','sepia(1) hue-rotate(200deg) saturate(2) brightness(.8)'][i]; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore();
+}
 const DRAW={
   stair(o){
     const f=o.f, R=.95, cx=STAIR.cx, cy=STAIR.cy;
@@ -952,6 +959,17 @@ const DRAW={
     if(o.face==='down') box(x,y,w,.12,16,13,'#3e3530');
     else if(o.face==='up') box(x,y+d-.12,w,.12,16,13,'#3e3530');
     else if(o.face==='right') box(x,y,.12,d,16,13,'#3e3530');
+    if(o.st&&o.st.simI!=null){
+      const i=o.st.simI, py=o.face==='down'?y+d*.9:y+.05;
+      drawSimBody(i,x+w/2,py);
+      const D=window.SIMD;
+      if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=o.face==='down'?P(x+w/2,y+d+.5,0):P(x+w/2,y-.1,78), nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
+        for(let k=0;k<5&&(window.SIMRECTS||[]).some(r=>np.X-tw/2<r[2]&&np.X+tw/2>r[0]&&np.Y-9<r[3]&&np.Y+7>r[1]);k++) np.Y-=17;
+        (window.SIMRECTS=window.SIMRECTS||[]).push([np.X-tw/2-2,np.Y-10,np.X+tw/2+2,np.Y+8]);
+        c.fillStyle='#e3a43e'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
+        ell(np.X-tw/2+8,np.Y-1,3,3,'#5f9a52'); c.fillStyle='#2a1a05'; c.textAlign='center'; c.fillText(nm,np.X+4,np.Y+3);
+      }); }
+    }
   },
   deskChair(o){ DRAW.chair(Object.assign({},o,{face:'down'})); },
   officeChair(o){
@@ -1071,23 +1089,21 @@ const DRAW={
   },
   simDesk(o){
     const D=window.SIMD, i=o.simI, on=D&&(D.glow?D.glow(i):D.cur()===i);
+    const away=D&&D.atTable&&D.atTable(i);
     floorShadow(o.x,o.y,o.w,o.d,.15);
-    // 交易員：沿用辦公室助理同一套角色圖，只換服裝色調
-    { const BID=['stock','news','sales','trainer','book','leads'][i], HUE=[200,140,-40,90,250,40][i];
-      const im=IMG['botsit_'+BID]||IMG['bot_'+BID];
-      if(imgOK(im)){ const q=P(o.x+o.w/2,o.y+.15,3); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC);
-        c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+BOT_FH*.6,BOT_FW,BOT_FH); c.clip(); c.filter='hue-rotate('+HUE+'deg) saturate(1.2)'; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH*.2); c.clip(); c.filter=['sepia(1) saturate(2.2) brightness(1.15)','brightness(.55)','sepia(1) hue-rotate(-30deg) saturate(3) brightness(.9)','grayscale(1) brightness(1.6)','sepia(.8) saturate(1.5) brightness(1.4)','sepia(1) hue-rotate(200deg) saturate(2) brightness(.8)'][i]; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); } }
+    if(!away) drawSimBody(i,o.x+o.w/2,o.y+.15);
     box(o.x+.05,o.y+.05,.08,o.d-.1,19,0,COL.dark); box(o.x+o.w-.13,o.y+.05,.08,o.d-.1,19,0,COL.dark);
     box(o.x,o.y,o.w,o.d,3,19,COL.walnut,{top:'#7a5236',hl:.2});
     box(o.x+.1,o.y+o.d-.12,o.w-.2,.06,24,20,'#2b2f35');
     const W=80, H=frontFace(o.x+.14,o.x+o.w-.14,o.y+o.d-.05,22,44,W);
     c.fillStyle=on?'#0f2a1c':'#1b1e22'; c.fillRect(0,0,W,H);
     c.textAlign='left'; c.font='bold 12px system-ui';
-    if(on){ c.fillStyle='#8ff0a6'; const L=D.roles[i].scr, n=1+((performance.now()/600)|0)%L.length; L.forEach((t,k)=>{ c.globalAlpha=k<n?1:.35; c.fillText(t,4,13+k*13,W-8); }); c.globalAlpha=1; }
+    if(away){ c.fillStyle='#e8b25c'; c.fillText('會議中',4,15); }
+    else if(on){ c.fillStyle='#8ff0a6'; const L=D.roles[i].scr, n=1+((performance.now()/600)|0)%L.length; L.forEach((t,k)=>{ c.globalAlpha=k<n?1:.35; c.fillText(t,4,13+k*13,W-8); }); c.globalAlpha=1; }
     else { c.fillStyle='#4a5058'; c.fillText('待機中…',4,15); }
     c.restore();
-    if(on){ const g=P(o.x+o.w/2,o.y+o.d,40); c.save(); c.globalCompositeOperation='lighter'; const rg=c.createRadialGradient(g.X,g.Y,2,g.X,g.Y,30); rg.addColorStop(0,'rgba(143,240,166,.35)'); rg.addColorStop(1,'rgba(143,240,166,0)'); c.fillStyle=rg; c.fillRect(g.X-30,g.Y-30,60,60); c.restore(); }
-    if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=o.y>5?P(o.x+o.w/2,o.y+o.d+.4,0):P(o.x+o.w/2,o.y+.15,88), nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
+    if(on&&!away){ const g=P(o.x+o.w/2,o.y+o.d,40); c.save(); c.globalCompositeOperation='lighter'; const rg=c.createRadialGradient(g.X,g.Y,2,g.X,g.Y,30); rg.addColorStop(0,'rgba(143,240,166,.35)'); rg.addColorStop(1,'rgba(143,240,166,0)'); c.fillStyle=rg; c.fillRect(g.X-30,g.Y-30,60,60); c.restore(); }
+    if(D&&!away){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=o.y>5?P(o.x+o.w/2,o.y+o.d+.4,0):P(o.x+o.w/2,o.y+.15,88), nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
       for(let k=0;k<5&&(window.SIMRECTS||[]).some(r=>np.X-tw/2<r[2]&&np.X+tw/2>r[0]&&np.Y-9<r[3]&&np.Y+7>r[1]);k++) np.Y-=17;
       (window.SIMRECTS=window.SIMRECTS||[]).push([np.X-tw/2-2,np.Y-10,np.X+tw/2+2,np.Y+8]);
       c.fillStyle=on?'#e3a43e':'rgba(30,22,15,.85)'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
@@ -2520,7 +2536,7 @@ const ACTIONS={
   board:{fx:o=>doAct(SHANE,'write',4),panel:showBoard},
   sim:{quick:true,fx:o=>{ if(window.openSim) openSim(); }},
   tasks:{fx:o=>doAct(SHANE,'write',3),panel:showTasks},
-  meeting:{panel:showMeeting},
+  meeting:{quick:true,fx:()=>{ if(window.openMeetCards) openMeetCards(); }},
   inbox:{fx:o=>{ burst('paper',o.f,o.x+.7,o.y+.4,40,3); },panel:showInbox},
   progress:{fx:o=>setTimeout(()=>react(SHANE,'think',4),1200),panel:showProgress},
   botDesk:{panel:o=>openBotCard(botById(o.bot),'work')},
@@ -2539,7 +2555,7 @@ function useObject(o){
   const A=ACTIONS[o.act]; if(!A) return;
   const shaneBusy=SHANE.mode==='stair'||SHANE.mode==='elevRide'||SHANE.mode==='elevWait';
   const same=SHANE.f===o.f&&!shaneBusy;
-  if(A.quick&&(!same||o.act==='stair'||o.act==='elev'||o.act==='window'||o.act==='switch'||o.act==='sim')){ A.fx(o); return; }
+  if(A.quick&&(!same||o.act==='stair'||o.act==='elev'||o.act==='window'||o.act==='switch'||o.act==='sim'||o.act==='meeting')){ A.fx(o); return; }
   if(o.label) toast('Shane 前往：'+o.label);
   SHANE.manual=180; if(o.act!=='arcade') stopAuto();
   const u=o.use;
@@ -3691,6 +3707,7 @@ document.getElementById('simX').onclick=()=>document.getElementById('sim').hidde
 window.SIMD={bal:5186,pnl:186,eq:[5000,5012,5040,5025,4990,5058,5092,5110,5140,5162,5186],last:'最新：NVDA 買 3 股 @ $140',
  roles:R.map(r=>({k:r[0],scr:r[5]})),name:i=>nm[R[i][0]]||R[i][1],cur:()=>((performance.now()/5000)|0)%6};
 window.openSim=()=>{document.getElementById('sim').hidden=false;D.hidden=false;const t=document.getElementById('tour');if(t)t.style.display='none';};
+window.openMeetCards=()=>{ openSim(); const sim=document.getElementById('sim'), disc=document.querySelector('#sim .disc'); if(!sim||!disc) return; sim.scrollTop+=disc.getBoundingClientRect().top-sim.getBoundingClientRect().top-8; };
 if(/[?&]sim=1/.test(location.search))openSim();
 let MEETS=[], ROLEF='', OPEN=null;
 const roleLabel=role=>RN(SEAT[role]||role);
@@ -3803,17 +3820,56 @@ function applyBook(j){
   if(sel) sel.hidden=true;
   if(OPEN&&!MEETS.some(c=>c.id===OPEN)) OPEN=null;
   renderMeetings();
+  seatToday(MEETS);
   BOOK=j; draw();
   if(typeof showWar==='function'&&typeof PANEL_ON!=='undefined'&&PANEL_ON==='war') showWar();
+}
+function seatToday(cards, n){
+  const today=tpToday(), seen={};
+  (cards||[]).forEach(c=>{ if(!c||c.date!==today||c.title==='當日其他討論') return; (c.attendees||[]).forEach(r=>{ seen[r]=1; }); });
+  const order=['scout','research','devil','risk','decision','recorder'];
+  const map={scout:0,research:1,devil:2,risk:3,decision:4,recorder:5};
+  const idxs=order.filter(r=>seen[r]).map(r=>map[r]);
+  if(window.SIMD) SIMD.atTable=i=>idxs.indexOf(i)>=0;
+  if(typeof OBJ==='undefined'||!OBJ.some(o=>o.kind==='meetTable')){ if((n||0)<40) setTimeout(()=>seatToday(cards,(n||0)+1),150); return; }
+  const chairs=OBJ.filter(o=>o.f===0&&o.kind==='chair'&&/^m[ns]/.test(String(o.seatId||'')));
+  chairs.forEach(c=>{ if(c.st) delete c.st.simI; });
+  const north=chairs.filter(c=>String(c.seatId).charAt(1)==='n').sort((a,b)=>a.x-b.x);
+  const south=chairs.filter(c=>String(c.seatId).charAt(1)==='s').sort((a,b)=>a.x-b.x);
+  const spots=[]; for(let n=0;n<5;n++){ if(north[n]) spots.push(north[n]); if(south[n]) spots.push(south[n]); }
+  idxs.forEach((simI,k)=>{ if(spots[k]&&spots[k].st) spots[k].st.simI=simI; });
+}
+const DEMO={meetings:[
+  {id:'m-nvda-1026',date:'2026-10-26',time:'15:10',title:'盤中會議',topic:'NVDA 小部位',attendees:['scout','research','devil','risk','decision','recorder'],summary:'示範會議：量能夠、部位約 8%，決定只買 3 股。',decision:'買進 NVDA 3 股'},
+  {id:'m-meta-1022',date:'2026-10-22',time:'21:30',title:'盤後會議',topic:'META 了結',attendees:['research','decision'],summary:'示範會議：這是較早一天的紀錄。',decision:'賣出 META 1 股'}
+],discussions:[
+  {date:'2026-10-26',time:'15:10',role:'scout',text:'示範：NVDA 量能排前面，先拿出來討論。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026'},
+  {date:'2026-10-26',time:'15:18',role:'research',text:'示範：NVDA 價差小、成交熱絡。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026'},
+  {date:'2026-10-26',time:'15:19',role:'devil',text:'示範：現價偏高，只同意小部位。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026'},
+  {date:'2026-10-26',time:'15:20',role:'risk',text:'示範：3 股約占預算 8%，未過 10%，通過。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026',decision:'通過'},
+  {date:'2026-10-26',time:'15:20',role:'decision',text:'示範：決定買進 NVDA 3 股，限價 140。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026',decision:'買進'},
+  {date:'2026-10-26',time:'15:21',role:'recorder',text:'示範：已寫下 NVDA 買進 3 股。',relatedSymbol:'NVDA',meetingId:'m-nvda-1026',decision:'買進'},
+  {date:'2026-10-26',time:'15:28',role:'scout',text:'示範：2454 今天量能偏弱，先觀察。',relatedSymbol:'2454'},
+  {date:'2026-10-26',time:'15:32',role:'decision',text:'示範：2454 今天不動作。',relatedSymbol:'2454',decision:'等待'},
+  {date:'2026-10-22',time:'21:30',role:'research',text:'示範：META 當時流動性正常。',relatedSymbol:'META',meetingId:'m-meta-1022'},
+  {date:'2026-10-22',time:'21:40',role:'decision',text:'示範：賣出 META 1 股。',relatedSymbol:'META',meetingId:'m-meta-1022',decision:'賣出'}
+]};
+function showDemoMeetings(){
+  MEETS=meetingsOf(DEMO);
+  const roleSel=document.getElementById('discRole');
+  if(roleSel){ roleSel.hidden=false; refreshRoleFilter(); }
+  if(sel) sel.hidden=true;
+  renderMeetings();
+  seatToday(MEETS);
 }
 async function loadTrades(){
   try{
     const r=await fetch('data/trades.json?nc='+Date.now());
-    if(!r.ok) return;
+    if(!r.ok){ if(!BOOK) showDemoMeetings(); return; }
     const j=await r.json();
-    if(!j||typeof j!=='object'||Array.isArray(j)) return;
+    if(!j||typeof j!=='object'||Array.isArray(j)){ if(!BOOK) showDemoMeetings(); return; }
     applyBook(j);
-  }catch(e){}
+  }catch(e){ if(!BOOK) showDemoMeetings(); }
 }
 loadTrades();
 setInterval(loadTrades,300000);
