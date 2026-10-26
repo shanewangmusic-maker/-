@@ -792,12 +792,29 @@ function stripText(lines,x,y,lh,maxW,color,font){
   c.fillStyle=color; c.font=font; c.textAlign='left';
   lines.forEach((s,i)=>{ let tx=s; while(c.measureText(tx).width>maxW&&tx.length>1) tx=tx.slice(0,-1); c.fillText(tx===s?s:tx+'…',x,y+i*lh); });
 }
-function drawSimBody(i,x,y){
+function drawSimBody(i,x,y,opt){
   const BID=['stock','news','sales','trainer','book','leads'][i], HUE=[200,140,-40,90,250,40][i];
-  const im=IMG['botsit_'+BID]||IMG['bot_'+BID];
+  const back=opt&&opt.back;
+  const im=IMG[(back?'botsitback_':'botsit_')+BID]||IMG['botsit_'+BID]||IMG['bot_'+BID];
   if(!imgOK(im)) return;
-  const q=P(x,y,3); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC);
-  c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+BOT_FH*.6,BOT_FW,BOT_FH); c.clip(); c.filter='hue-rotate('+HUE+'deg) saturate(1.2)'; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore(); c.save(); c.translate(q.X,q.Y-14); c.scale(SC*(i%2?-1:1),SC); c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH*.2); c.clip(); c.filter=['sepia(1) saturate(2.2) brightness(1.15)','brightness(.55)','sepia(1) hue-rotate(-30deg) saturate(3) brightness(.9)','grayscale(1) brightness(1.6)','sepia(.8) saturate(1.5) brightness(1.4)','sepia(1) hue-rotate(200deg) saturate(2) brightness(.8)'][i]; c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore();
+  const lift=opt&&opt.lift!=null?opt.lift:14, hz=opt&&opt.h!=null?opt.h:3, top=opt&&opt.top;
+  const flip=opt&&opt.noFlip?1:(i%2?-1:1);
+  const q=P(x,y,hz);
+  const paint=mode=>{
+    c.save(); c.translate(q.X,q.Y-lift); c.scale(SC*flip,SC);
+    if(top){ c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT,BOT_FW,top); c.clip(); }
+    if(mode==='body'){ c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+BOT_FH*.6,BOT_FW,BOT_FH); c.clip(); c.filter='hue-rotate('+HUE+'deg) saturate(1.2)'; }
+    else if(mode==='hair'){ c.beginPath(); c.rect(-BOT_FW/2,-BOT_FOOT+(back?34:0),BOT_FW,back?26:BOT_FH*.2); c.clip(); c.filter=['sepia(1) saturate(2.2) brightness(1.15)','brightness(.55)','sepia(1) hue-rotate(-30deg) saturate(3) brightness(.9)','grayscale(1) brightness(1.6)','sepia(.8) saturate(1.5) brightness(1.4)','sepia(1) hue-rotate(200deg) saturate(2) brightness(.8)'][i]; }
+    c.drawImage(im,0,0,BOT_FW,BOT_FH,-BOT_FW/2,-BOT_FOOT,BOT_FW,BOT_FH); c.restore();
+  };
+  paint(null); paint('body'); paint('hair');
+}
+/* 會議桌入座：和交易桌同一套坐姿圖。大腿以下不畫，讓桌面把腿藏起來。 */
+function simSeatPose(o){
+  const x=o.x+o.w/2;
+  // 北側面向鏡頭，腰際對齊桌緣；南側背對鏡頭，坐進椅面。大腿以下裁掉。
+  if(o.face==='up') return {x,y:o.y+.34,h:4,lift:-6,top:98,back:true,headRow:40};
+  return {x,y:o.y+o.d-.02,h:0,lift:0,top:84,back:false,headRow:22};
 }
 const DRAW={
   stair(o){
@@ -960,14 +977,22 @@ const DRAW={
     else if(o.face==='up') box(x,y+d-.12,w,.12,16,13,'#3e3530');
     else if(o.face==='right') box(x,y,.12,d,16,13,'#3e3530');
     if(o.st&&o.st.simI!=null){
-      const i=o.st.simI, py=o.face==='down'?y+d*.9:y+.05;
-      drawSimBody(i,x+w/2,py);
+      const i=o.st.simI, pose=simSeatPose(o);
+      drawSimBody(i,pose.x,pose.y,{back:pose.back,noFlip:true,h:pose.h,lift:pose.lift,top:pose.top});
       const D=window.SIMD;
-      if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{ const np=o.face==='down'?P(x+w/2,y+d+.5,0):P(x+w/2,y-.1,78), nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18;
-        for(let k=0;k<5&&(window.SIMRECTS||[]).some(r=>np.X-tw/2<r[2]&&np.X+tw/2>r[0]&&np.Y-9<r[3]&&np.Y+7>r[1]);k++) np.Y-=17;
-        (window.SIMRECTS=window.SIMRECTS||[]).push([np.X-tw/2-2,np.Y-10,np.X+tw/2+2,np.Y+8]);
-        c.fillStyle='#e3a43e'; rr(np.X-tw/2,np.Y-9,tw,16,8); c.fill();
-        ell(np.X-tw/2+8,np.Y-1,3,3,'#5f9a52'); c.fillStyle='#2a1a05'; c.textAlign='center'; c.fillText(nm,np.X+4,np.Y+3);
+      if(D){ (window.SIMTAG=window.SIMTAG||[]).push(()=>{
+        const hd=P(pose.x,pose.y,pose.h), headY=hd.Y-pose.lift+(-BOT_FOOT+pose.headRow)*SC;
+        const nm=D.name(i)+(i===3?' · 否決權':''); c.font='bold 10px system-ui'; const tw=c.measureText(nm).width+18, th=16;
+        const alt=o.st.tagAlt?1:0;
+        let tx=hd.X, ty;
+        if(o.face==='up'){ const foot=P(o.x+o.w/2,o.y+o.d+.22,0); tx=foot.X; ty=foot.Y+6+alt*20; }
+        else { tx=hd.X; ty=headY-13; }
+        const box=()=>[tx-tw/2-3,ty-9,tx+tw/2+3,ty-9+th];
+        const hit=()=>{ const a=box(); return (window.SIMRECTS||[]).some(r=>a[0]<r[2]&&a[2]>r[0]&&a[1]<r[3]&&a[3]>r[1]); };
+        for(let k=0;k<6&&hit();k++){ if(o.face==='up') ty+=16; else tx+=(k%2?1:-1)*Math.ceil(tw*.4); }
+        (window.SIMRECTS=window.SIMRECTS||[]).push(box());
+        c.fillStyle='#e3a43e'; rr(tx-tw/2,ty-9,tw,th,8); c.fill();
+        ell(tx-tw/2+8,ty-1,3,3,'#5f9a52'); c.fillStyle='#2a1a05'; c.textAlign='center'; c.fillText(nm,tx+4,ty+3);
       }); }
     }
   },
@@ -3833,11 +3858,28 @@ function seatToday(cards, n){
   if(window.SIMD) SIMD.atTable=i=>idxs.indexOf(i)>=0;
   if(typeof OBJ==='undefined'||!OBJ.some(o=>o.kind==='meetTable')){ if((n||0)<40) setTimeout(()=>seatToday(cards,(n||0)+1),150); return; }
   const chairs=OBJ.filter(o=>o.f===0&&o.kind==='chair'&&/^m[ns]/.test(String(o.seatId||'')));
-  chairs.forEach(c=>{ if(c.st) delete c.st.simI; });
-  const north=chairs.filter(c=>String(c.seatId).charAt(1)==='n').sort((a,b)=>a.x-b.x);
-  const south=chairs.filter(c=>String(c.seatId).charAt(1)==='s').sort((a,b)=>a.x-b.x);
-  const spots=[]; for(let n=0;n<5;n++){ if(north[n]) spots.push(north[n]); if(south[n]) spots.push(south[n]); }
-  idxs.forEach((simI,k)=>{ if(spots[k]&&spots[k].st) spots[k].st.simI=simI; });
+  const fy0=FY;
+  chairs.forEach(c=>{
+    if(c._hx==null){ c._hx=c.x; c._hy=c.y; c._hf=c.face; }
+    c.x=c._hx; c.y=c._hy; c.face=c._hf; c.hidden=false;
+    if(c.st){ delete c.st.simI; delete c.st.tagAlt; }
+    c.hull=objHull(c);
+  });
+  FY=fy0;
+  if(!idxs.length) return;
+  const north=chairs.filter(c=>String(c.seatId).charAt(1)==='n').sort((a,b)=>a._hx-b._hx);
+  const south=chairs.filter(c=>String(c.seatId).charAt(1)==='s').sort((a,b)=>a._hx-b._hx);
+  const xs=[5.55,7.70,9.85];
+  const nN=Math.ceil(idxs.length/2), nS=idxs.length-nN;
+  const slots=(count,len)=>{ if(count<=0) return []; if(count>=len) return [...Array(len).keys()]; if(count===1) return [(len/2)|0]; const out=[]; for(let i=0;i<count;i++) out.push(Math.round(i*(len-1)/(count-1))); return out; };
+  chairs.forEach(c=>{ c.hidden=true; });
+  const put=(list,picked,y,face,from)=>{
+    picked.forEach((slot,k)=>{ const c=list[slot]; if(!c||!c.st) return;
+      c.hidden=false; c.x=xs[slot]; c.y=y; c.face=face; c.st.simI=idxs[from+k]; c.st.tagAlt=k%2;
+      const s2=FY; c.hull=objHull(c); FY=s2; });
+  };
+  put(north,slots(nN,xs.length),3.01,'down',0);
+  put(south,slots(nS,xs.length),4.97,'up',nN);
 }
 const DEMO={meetings:[
   {id:'m-nvda-1026',date:'2026-10-26',time:'15:10',title:'盤中會議',topic:'NVDA 小部位',attendees:['scout','research','devil','risk','decision','recorder'],summary:'示範會議：量能夠、部位約 8%，決定只買 3 股。',decision:'買進 NVDA 3 股'},
