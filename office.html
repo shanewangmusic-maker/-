@@ -3876,9 +3876,12 @@ function costPlanRows(j){
   if(opTwd!=null) parts.push({type:'營運成本',twd:opTwd,note:''});
   const twdSum=parts.reduce((s,p)=>s+(p.twd||0),0);
   const daily=(j.incomeStatement&&Array.isArray(j.incomeStatement.daily))?j.incomeStatement.daily.filter(d=>d&&typeof d==='object'):[];
+  const latestByDate=new Map();
+  daily.forEach(d=>{ const key=String(d.date||''); const prev=latestByDate.get(key); if(!prev||String(d.time||'')>=String(prev.time||'')) latestByDate.set(key,d); });
+  const snaps=[...latestByDate.values()];
   const rows=[];
-  if(daily.length&&(parts.length||daily.some(d=>finite(d.cost_accrued_today_usd)!=null||finite(d.cost_accrued_today_twd)!=null))){
-    daily.forEach(d=>{
+  if(snaps.length&&(parts.length||snaps.some(d=>finite(d.cost_accrued_today_usd)!=null||finite(d.cost_accrued_today_twd)!=null))){
+    snaps.forEach(d=>{
       const usd=finite(d.cost_accrued_today_usd), twd=finite(d.cost_accrued_today_twd);
       if(parts.length&&twdSum){
         parts.forEach(p=>{
@@ -3922,7 +3925,7 @@ function latestStatement(j){
     if(!Array.isArray(arr)) return null;
     const rows=arr.filter(x=>x&&typeof x==='object');
     if(!rows.length) return null;
-    return rows.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
+    return rows.slice().sort((a,b)=>((b.date||'')+' '+(b.time||'')).localeCompare((a.date||'')+' '+(a.time||'')))[0];
   };
   return pick(inc.daily)||pick(inc.monthly)||((inc.realized_pnl_usd!=null||inc.unrealized_pnl_usd!=null||inc.net_after_cost_usd!=null||inc.net_after_cost_cum_usd!=null)?inc:null);
 }
