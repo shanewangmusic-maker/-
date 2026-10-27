@@ -13,9 +13,9 @@
 | `sample` | 否 | `true` 代表整份都是假的示範資料。頁面會多一個小標「示範資料」。正式的紙上交易請設為 `false`，或不要寫這個欄位。 |
 | `updatedAt` | 是 | 這份資料的更新時間。ISO 8601，必須帶台北時區 `+08:00`。例：`2026-10-26T18:05:00+08:00`。 |
 | `month` | 是 | 帳務月份，`YYYY-MM`。 |
-| `budgetUSD` | 是 | 本月虛擬預算，美元。此頁以 `5000` 為損益基準。 |
+| `budgetUSD` | 是 | 本月虛擬預算，美元。損益基準先用這個數字。若 `capitalEvents` 的入金合計比它大，代表預算還是入金前的本金，基準改為預算加上那些入金。沒有這個欄位時，基準改為入金合計。兩個都沒有時，不假設 5000，損益那一格留空。 |
 | `cashUSD` | 是 | 現金餘額，美元。 |
-| `equityUSD` | 是 | 權益（現金加上持股市值），美元。畫面上的損益＝`equityUSD - budgetUSD`。 |
+| `equityUSD` | 是 | 權益（現金加上持股市值），美元。畫面上的損益＝`equityUSD` 減去上面的損益基準。 |
 | `positions` | 是 | 目前持股。沒有持股時給空陣列 `[]`。 |
 | `trades` | 是 | 成交。較新的放前面。沒有成交時給 `[]`。 |
 | `watchlist` | 是 | 行情牆的磚與底部跑馬燈。 |
@@ -63,7 +63,7 @@
 | `lastPrice` | 現價或指數點位。 |
 | `changePct` | 漲跌百分比。正數上漲、負數下跌。 |
 
-畫面上：純數字代號（台股）價格前加 `NT$`；美股代號且價格小於 1000 時加 `$`；指數點位只顯示數字。跑馬燈會把整份觀察清單接在一起滾動。牆上的四格磚顯示清單的前四筆，點開行情牆面板時會列出全部，並附上現金、權益、以及相對預算 5000 美元的損益。
+畫面上：純數字代號（台股）價格前加 `NT$`；美股代號且價格小於 1000 時加 `$`；指數點位只顯示數字。跑馬燈會把整份觀察清單接在一起滾動。牆上的四格磚顯示清單的前四筆，點開行情牆面板時會列出全部，並附上現金、權益、以及相對損益基準的損益。基準見 `budgetUSD`。
 
 ## `discussions[]` 討論
 
@@ -119,8 +119,66 @@
 | `dailyStopLossPct` | 當日虧損達到這個百分比就停手。預設是 3。 |
 | `leverage` | `false` 表示不開槓桿。`true` 表示允許槓桿。 |
 
+## `capitalEvents[]` 入金（選填）
+
+沒寫、不是陣列、或沒有任何列得出日期與金額的項目時，不顯示「入金與成本紀錄」。多出來的欄位會略過，不會讓畫面壞掉。
+
+| 欄位 | 說明 |
+| --- | --- |
+| `date` | 台北日期，`YYYY-MM-DD`。 |
+| `time` | 選填。`HH:MM`。 |
+| `type` | `DEPOSIT` 顯示「入金」，`WITHDRAWAL` 顯示「出金」，`COMPANY_COST` 顯示「成本扣除」。其他文字照原樣。 |
+| `amountUSD` | 金額，美元。出金與成本在畫面上是負數。沒有這個欄位時，改看 `amount`。 |
+| `note` | 選填。備註。 |
+
+清單較新的放前面。入金會加進損益基準的判斷，見 `budgetUSD`。
+
+## `companyCosts` 公司成本（選填）
+
+可以是陣列，每一筆用跟 `capitalEvents` 一樣的 `date`、`time`、`type`、`amountUSD`、`note`。
+也可以是一個物件，用來描述每月成本。物件時，畫面依 `incomeStatement.daily` 的當日攤提，按薪資與營運的比例拆成兩列；沒有每日攤提時，改列每月金額。沒有可列的內容時，這個區塊不出現。`capitalEvents` 裡已經有成本列時，不再用這個物件重列一次。
+
+物件常用欄位：
+
+| 欄位 | 說明 |
+| --- | --- |
+| `breakdown_twd.salaries` | 選填。`headcount` 人數、`per_person` 每人月薪、`total` 薪資合計，單位新台幣。 |
+| `breakdown_twd.operations` | 選填。每月營運成本，新台幣。 |
+| `fx_usd_twd` | 選填。美金兌台幣匯率，用來把台幣成本換成美元。 |
+| `monthly_twd` / `monthly_usd` | 選填。每月成本合計。 |
+| `settlement_day` | 選填。結算日。有寫就顯示「每月 N 號結算」。沒寫時畫面寫「每月 10 號結算」。 |
+| `breakeven_monthly_return_pct` | 選填。打平所需的月報酬百分比。有寫就顯示「打平門檻 N%」。沒寫時畫面寫「打平門檻 56.58%」。 |
+| `cycle` | 選填。結算週期的一句說明，放在紀錄下面。 |
+| `accrual`、`first_period_estimate` | 選填。攤提與第一期的說明。畫面只在沒有每日攤提時，用 `first_period_estimate.period` 的起日當日期。 |
+
+其他欄位略過。
+
+## `incomeStatement` 收支表（選填）
+
+沒寫、或 `daily`、`monthly` 裡都沒有損益數字時，不顯示「收支表」。多出來的欄位略過。
+
+| 欄位 | 說明 |
+| --- | --- |
+| `daily[]` | 選填。以 `date` 最新的一筆當作本期。 |
+| `monthly[]` | 選填。沒有 `daily` 時改用這裡最新的一筆。 |
+| `format` | 選填。給人看的欄位說明，畫面不依賴它。 |
+
+每一筆裡會用到的數字：
+
+| 欄位 | 畫面上的列 |
+| --- | --- |
+| `realized_pnl_usd` | 已實現損益。 |
+| `unrealized_pnl_usd` | 未實現損益。 |
+| `fees_usd` | 手續費。正數會畫成支出（負數、紅色）。 |
+| `salaries_usd` 或 `salaries_cum_twd` | 薪資。只有台幣時，用同一筆的 `fx`，沒有再改用 `companyCosts.fx_usd_twd` 換算。 |
+| `operations_usd` 或 `operations_cum_twd` | 營運成本。換算方式與薪資相同。 |
+| `net_after_cost_usd` | 扣完成本後淨收支。沒有這個欄位時，用 `trading_net_usd` 減去 `cost_accrued_today_usd`。 |
+| `net_after_cost_cum_usd` 或 `cumulative` | 本期累計。`cumulative` 可以是數字，或帶 `net_after_cost_usd` 的物件。 |
+
+某一列沒有數字就整列不顯示。正數綠色、負數紅色。`period` 有寫時，放在標題下面。
+
 ## 附帶的顯示規則
 
 - `sample` 為 `true` 時，模擬操盤畫面的紅標旁會出現「示範資料」。行情牆畫面也會標同一句。
-- 餘額畫面的三個數字是：現金 `cashUSD`、權益 `equityUSD`、損益 `equityUSD - budgetUSD`（預算以檔案裡的 `budgetUSD` 為準，範例是 5000）。
+- 餘額畫面的數字是：現金 `cashUSD`、權益 `equityUSD`、損益（權益減去損益基準）。基準見 `budgetUSD`，不再寫死 5000。詳細資料裡另有「收支表」與「入金與成本紀錄」；對應欄位沒寫時，那一塊不出現。「每月 10 號結算」與「打平門檻 56.58%」在檔案沒給數字時仍會顯示這兩句。
 - 座位名稱、樓層配置，以及 `localStorage` 裡 `aio10_` 開頭的鍵，都不因這個檔案而改名或清除。角色顯示名稱仍沿用原本的 `simRoleNames`。

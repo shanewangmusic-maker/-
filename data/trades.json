@@ -1,563 +1,1536 @@
 {
-  "sample": false,
-  "updatedAt": "2026-10-26T22:41:00+08:00",
-  "month": "2026-10",
-  "budgetUSD": 5000,
-  "cashUSD": 4500.02,
-  "equityUSD": 5000.75,
-  "positions": [
-    {
-      "market": "US",
-      "symbol": "SPY",
-      "shares": 0.3277,
-      "avgCost": 762.79,
-      "costUSD": 249.97,
-      "lastPrice": 764.91,
-      "marketValueUSD": 250.66,
-      "name": "SPDR S&P 500 ETF",
-      "currency": "USD",
-      "pnlPct": 0.28
-    },
-    {
-      "market": "US",
-      "symbol": "NVDA",
-      "shares": 1.1635,
-      "avgCost": 214.875,
-      "costUSD": 250.01,
-      "lastPrice": 214.925,
-      "marketValueUSD": 250.07,
-      "stopLoss": 207,
-      "takeProfit": 225,
-      "note": "週三微軟/Google財報前檢討",
-      "name": "NVIDIA",
-      "currency": "USD",
-      "pnlPct": 0.02
-    }
-  ],
-  "trades": [
-    {
-      "date": "2026-10-26",
-      "time": "21:40",
-      "market": "US",
-      "symbol": "SPY",
-      "side": "BUY",
-      "shares": 0.3277,
-      "price": 762.79,
-      "amountUSD": 249.97,
-      "feeUSD": 0,
-      "priceSource": "Yahoo Finance即時報價",
-      "quoteTime": "2026-10-26 21:40 台北（09:40 紐約）",
-      "decidedBy": "decision",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "reason": "條件單成立：開盤30分鐘內S&P 500 +0.36%（未跌超過1%），分散型ETF小量布局；可碎股模擬",
-      "name": "SPDR S&P 500 ETF",
-      "currency": "USD",
-      "pnlPct": 0.28
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:43",
-      "market": "US",
-      "symbol": "NVDA",
-      "side": "BUY",
-      "shares": 1.1635,
-      "price": 214.875,
-      "amountUSD": 250.01,
-      "feeUSD": 0,
-      "priceSource": "Yahoo Finance即時報價",
-      "quoteTime": "2026-10-26 21:40 台北（09:40 紐約）",
-      "decidedBy": "decision",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "reason": "上週AI族群殺盤非公司利空，開盤+1.86%有買盤；短線反彈單，限5%部位",
-      "stopLoss": 207,
-      "takeProfit": 225,
-      "name": "NVIDIA",
-      "currency": "USD",
-      "pnlPct": 0.02
-    }
-  ],
-  "watchlist": [
-    {
-      "market": "TW",
-      "symbol": "TAIEX",
-      "name": "加權指數",
-      "lastPrice": 46041.43,
-      "changePct": -1.81
-    },
-    {
-      "market": "US",
-      "symbol": "SPX",
-      "name": "S&P 500",
-      "lastPrice": 7674.49,
-      "changePct": 0.67
-    },
-    {
-      "market": "US",
-      "symbol": "IXIC",
-      "name": "那斯達克",
-      "lastPrice": 25955.34,
-      "changePct": -0.21
-    },
-    {
-      "market": "US",
-      "symbol": "DJI",
-      "name": "道瓊",
-      "lastPrice": 52215.16,
-      "changePct": -1.23
-    },
-    {
-      "market": "TW",
-      "symbol": "2330",
-      "name": "台積電",
-      "lastPrice": 2385,
-      "changePct": -1.45
-    },
-    {
-      "market": "US",
-      "symbol": "SPY",
-      "name": "SPDR S&P 500 ETF",
-      "lastPrice": 764.91,
-      "changePct": 0.65
-    },
-    {
-      "market": "US",
-      "symbol": "NVDA",
-      "name": "NVIDIA",
-      "lastPrice": 214.925,
-      "changePct": 1.88
-    }
-  ],
-  "discussions": [
-    {
-      "date": "2026-10-26",
-      "time": "19:00",
-      "role": "gm",
-      "text": "第一次策略會議開始。注意：今天10/26台股光復節補假休市，上一交易日是10/22；10/23颱風也休市。美股今晚21:30開盤。本週有Fed/歐央/日銀會議與微軟、Google、亞馬遜財報。",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:02",
-      "role": "research",
-      "text": "數據：加權10/22收46,041.43，週跌2.27%，外資一週賣超約2,356億，跌破季線。台積電10/22收2,385元。美股10/23：道瓊52,215.16(-1.23%)、S&P 7,623.68(-0.52%)、那指25,955.34(-0.21%)；10年債約4.999%；布蘭特116.72、WTI 103.27；USD/TWD 10/22收32.508。來源：證交所/中央社(台股10/22收46,041.43、10/26光復節補假休市)；Reuters/CNBC(10/23美股收盤、10年債4.999%、布蘭特116.72)；央行(10/22 USD/TWD 32.508)；財經日報10/26 12:23快訊(布蘭特約115.48)",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:05",
-      "role": "scout",
-      "text": "提案一：台積電Q3 EPS 29.43創高、股價被錯殺，用10/22收盤2,385元買進。提案二：今晚NVDA逢低買$500，AI殺盤後有反彈空間。",
-      "relatedSymbol": "2330",
-      "decision": "買進",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:07",
-      "role": "devil",
-      "text": "反對兩案。2330：今天休市，用4天前的收盤價成交是自欺欺人；而且1股2,385元≈73美元，外資還在賣。NVDA：本週科技巨頭財報+Fed，AI資本支出疑慮才剛爆，今晚追進等於賭事件。",
-      "relatedSymbol": "NVDA",
-      "decision": "否決",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:09",
-      "role": "risk",
-      "text": "否決2330以10/22價成交：今日無真實成交價，違反價格來源規則，明天10/27有實際收盤再議。否決今晚NVDA $500：事件密集週單一高波動個股滿額10%，與每日3%停損空間衝突，降為最多5%。",
-      "relatedSymbol": "2330",
-      "decision": "否決",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:11",
-      "role": "scout",
-      "text": "那退而求其次：今晚S&P 500 ETF(SPY)小量，分散不賭單一財報。",
-      "relatedSymbol": "SPY",
-      "decision": "買進",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:12",
-      "role": "devil",
-      "text": "油價破百、10年債貼近5%，大盤也不便宜。要買就分批，第一筆別超過$250，而且要等開盤後確認不是跳空大跌。",
-      "relatedSymbol": "SPY",
-      "decision": "等待",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:14",
-      "role": "risk",
-      "text": "可以接受：SPY 單筆上限$250(5%)，條件單：開盤後若S&P跌幅未超過1%才成交；未成交不記帳。現金保留≥90%。",
-      "relatedSymbol": "SPY",
-      "decision": "通過",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:16",
-      "role": "decision",
-      "text": "本週策略：偏守，現金比例≥90%。今天不進場台股。今晚美股觀察/掛單計畫：SPY ≤$250，開盤後30分鐘看盤，S&P跌幅<1%才模擬成交，以實際成交價記帳(美股假設0手續費)。2330列明天10/27觀察，以實際收盤價再議，NT$換匯以當日央行收盤匯率。",
-      "relatedSymbol": "SPY",
-      "decision": "等待",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:18",
-      "role": "recorder",
-      "text": "紀錄：成交0筆；否決2筆(2330用過期價、NVDA $500)；計畫1筆(SPY)。現金5,000 USD、總資產5,000 USD。",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "19:19",
-      "role": "gm",
-      "text": "散會。今晚開盤後由decision依條件執行並回填帳本；明天台股收盤後檢討2330。",
-      "decision": "等待",
-      "meetingId": "2026-10-26-strategy-1"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "gm",
-      "text": "開會，議題：SPY條件單、新標的"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "research",
-      "text": "SPY週五收759.97跌1.7%；ES 7682.75 +0.3%、NQ 29286.25 +0.58%"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "scout",
-      "text": "提NVDA，週五收210.96跌5%，可能反彈最強"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "devil",
-      "text": "跌5%不是便宜理由，原因未明是接刀"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "risk",
-      "text": "否決NVDA；SPY條件單250美金在上限內維持"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "decision",
-      "text": "SPY條件單照跑；NVDA下次再議"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "20:56",
-      "meetingId": "2026-10-26-premarket-2",
-      "role": "recorder",
-      "text": "寫入帳本"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:40",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "gm",
-      "text": "美股盤中第一場（開盤10分鐘）開會：檢查SPY條件單、NVDA要不要進場。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:40",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "research",
-      "text": "即時報價（Yahoo 21:40台北）：S&P 500 7,650.81，+0.36%；SPY 762.79，+0.37%；NVDA 214.875，+1.86%；QQQ 707.19，+0.40%。新聞：期貨開盤前普漲，布蘭特跌破110；本週Fed（預期鷹派按兵不動）、週三微軟/Google財報；上週NVDA下跌主因是週中AI資本支出疑慮殺盤。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:41",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "scout",
-      "text": "SPY條件成立（S&P沒跌反漲0.36%），照單成交$250。另外NVDA下跌原因已查清，是整個AI族群殺盤不是公司利空，開盤有買盤，提案短線買$250。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:41",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "devil",
-      "text": "SPY沒意見。NVDA我還是擔心：週三微軟/Google財報講資本支出，萬一保守，NVDA會再被砍；而且週五低點210.18附近才是支撐，開盤追高不划算。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:42",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "risk",
-      "text": "SPY $250通過（5%）。NVDA可以，但條件：只能$250（5%，不能滿額10%）、硬停損$207（跌破上週低點210.18再留空間，約-3.7%，最多虧約$9）、停利$225（約+4.7%），週三財報前重新評估是否續抱。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:42",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "devil",
-      "text": "停損有設、金額小，我收回反對，但記下我的疑慮：財報前若沒漲到停利，建議先跑。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:43",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "decision",
-      "text": "決定：一、SPY條件單以762.79成交$250；二、NVDA以214.875買$250，停損207、停利225，週三財報前檢討；現金4,500，現金比例90%，仍守本週≥90%。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:43",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "recorder",
-      "text": "已寫入帳本：成交2筆、否決0筆、條件單SPY已清除，持股SPY與NVDA的停損停利已登錄。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "21:44",
-      "meetingId": "2026-10-26-us-intraday-0940",
-      "role": "gm",
-      "text": "散會。下一場10:00紐約時間（22:00台北）檢查NVDA停損停利與大盤。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:07",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "gm",
-      "text": "美股盤中第二場（紐約10:00）開會：檢查SPY、NVDA停損停利，看要不要加碼。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:08",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "research",
-      "text": "即時報價（Yahoo 22:07台北）：S&P 500 7,654.69 +0.41%；SPY 763.05 +0.41%；NVDA 214.10 +1.49%（日高215.98、日低212.61）；QQQ 706.22 +0.26%；MU 884.04 +0.74%。新聞：Anthropic 遞件IPO帶動半導體，油價回落，Fed週三預期按兵不動（市場約九成機率）；Neocloud族群仍弱。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:08",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "research",
-      "text": "持股：SPY +0.03%、NVDA -0.36%，都沒碰到±5%；總資產4,999.17，當日-0.02%，離2%警戒很遠。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:09",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "scout",
-      "text": "AI題材有回溫，我想加一筆MU $150，記憶體跟著Anthropic IPO題材漲。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:09",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "devil",
-      "text": "MU開盤後漲幅已經從2%縮到0.7%，追進去像在接尾巴；而且週三財報加Fed，現在加碼不划算。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:10",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "risk",
-      "text": "否決MU：本週策略是現金≥90%，現在剛好90.0%，再買就破線。NVDA停損207、停利225照舊，沒觸發。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:10",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "decision",
-      "text": "決定：不交易，SPY、NVDA續抱；MU列觀察，等週三財報與Fed後再議。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:11",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "recorder",
-      "text": "已寫入帳本：成交0筆、否決1筆（MU）、條件單無。現金4,500.02、總資產4,999.17。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:11",
-      "meetingId": "2026-10-26-us-intraday-1000",
-      "role": "gm",
-      "text": "散會。下一場紐約10:30（22:30台北）。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:37",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "gm",
-      "text": "美股盤中第三場（紐約10:30）開會：檢查SPY、NVDA停損停利跟大盤，看要不要動作。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:38",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "research",
-      "text": "即時報價（Yahoo 22:37台北）：S&P 500 7,674.49 +0.67%；SPY 764.91 +0.65%；NVDA 214.93 +1.88%；QQQ 709.80 +0.77%；MU 888.87 +1.29%（日高908.50）。新聞：Anthropic遞S-1帶動晶片股，油價回落，Fed週三預期按兵不動但可能偏鷹。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:38",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "research",
-      "text": "持股：SPY +0.28%、NVDA +0.02%，都沒碰到±5%；總資產5,000.75，當日+0.02%，沒有2%警戒。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:39",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "scout",
-      "text": "大盤從+0.4%拉到+0.67%，買盤有延續，MU我還是想進，不然SPY再加一點也行。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:39",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "devil",
-      "text": "MU日高908.5已經回落到888，追高風險還在；週三微軟、Google財報加Fed，現在加碼等於提前賭事件。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:40",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "risk",
-      "text": "現金比例剛好90.0%，本週≥90%的線不能破，任何加碼都不行。NVDA停損207、停利225都沒觸發。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:40",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "decision",
-      "text": "決定：不交易，SPY、NVDA續抱；MU、加碼SPY都等週三財報與Fed後再議。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:41",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "recorder",
-      "text": "已寫入帳本：成交0筆、否決0筆、條件單無。現金4,500.02、總資產5,000.75。"
-    },
-    {
-      "date": "2026-10-26",
-      "time": "22:41",
-      "meetingId": "2026-10-26-us-intraday-1030",
-      "role": "gm",
-      "text": "散會。下一場紐約11:00（23:00台北）。"
-    }
-  ],
-  "meetings": [
-    {
-      "id": "2026-10-26-strategy-1",
-      "date": "2026-10-26",
-      "time": "19:00",
-      "title": "第一次策略會議",
-      "topic": "本週偏攻或偏守、現金比例、今晚美股計畫",
-      "attendees": [
-        "gm",
-        "research",
-        "scout",
-        "devil",
-        "risk",
-        "decision",
-        "recorder"
-      ],
-      "summary": "台股10/26補假休市不進場。本週策略偏守，現金比例≥90%。否決2330以10/22過期價2,385元成交（10/27以實際收盤再議）；否決今晚NVDA $500（事件週單一高波動個股風險過高）。通過SPY條件單：最多$250，21:30開盤後30分鐘內S&P跌幅<1%才模擬成交，未成交不記帳。",
-      "decision": "本週偏守、現金≥90%；否決2330與NVDA；SPY ≤$250條件單"
-    },
-    {
-      "id": "2026-10-26-premarket-2",
-      "date": "2026-10-26",
-      "time": "20:56",
-      "title": "美股盤前策略會",
-      "topic": "SPY條件單是否維持、NVDA是否進場",
-      "attendees": [
-        "gm",
-        "scout",
-        "research",
-        "devil",
-        "risk",
-        "decision",
-        "recorder"
-      ],
-      "summary": "SPY週五收759.97(-1.7%)，期貨ES +0.3%、NQ +0.58%；NVDA週五跌5%至210.96",
-      "decision": "SPY條件單維持；NVDA被風控否決，待查下跌原因"
-    },
-    {
-      "id": "2026-10-26-us-intraday-0940",
-      "date": "2026-10-26",
-      "time": "21:40",
-      "title": "美股盤中操盤會（開盤後）",
-      "topic": "SPY條件單執行、NVDA是否短線進場",
-      "attendees": [
-        "gm",
-        "research",
-        "scout",
-        "devil",
-        "risk",
-        "decision",
-        "recorder"
-      ],
-      "summary": "S&P 500開盤+0.36%，SPY條件單成立以762.79成交$250；NVDA下跌原因查清為AI族群殺盤，開盤+1.86%，風控有條件通過$250（停損207、停利225）。",
-      "decision": "買SPY $250、NVDA $250；現金4,500（90%）"
-    },
-    {
-      "id": "2026-10-26-us-intraday-1000",
-      "date": "2026-10-26",
-      "time": "22:07",
-      "title": "美股盤中操盤會（第二場）",
-      "topic": "持股停損停利檢查、是否加碼",
-      "attendees": [
-        "gm",
-        "research",
-        "scout",
-        "devil",
-        "risk",
-        "decision",
-        "recorder"
-      ],
-      "summary": "S&P +0.41%，SPY 763.05、NVDA 214.10，持股都在±5%內；scout提MU $150被風控以本週現金≥90%否決。",
-      "decision": "不交易，SPY、NVDA續抱；MU觀察"
-    },
-    {
-      "id": "2026-10-26-us-intraday-1030",
-      "date": "2026-10-26",
-      "time": "22:37",
-      "title": "美股盤中操盤會（第三場）",
-      "topic": "持股停損停利檢查、是否加碼",
-      "attendees": [
-        "gm",
-        "research",
-        "scout",
-        "devil",
-        "risk",
-        "decision",
-        "recorder"
-      ],
-      "summary": "S&P +0.67%，SPY 764.91、NVDA 214.93，持股都在±5%內；scout想加碼MU或SPY，風控以本週現金≥90%擋下（未正式提案）。",
-      "decision": "不交易，SPY、NVDA續抱"
-    }
-  ],
-  "dailyReport": {
-    "date": "2026-10-26",
-    "summary": "美股開盤後SPY條件單成立買$250；NVDA短線買$250（停損207/停利225）。現金4,500、總資產5,000。 22:07第二場：不交易續抱，MU加碼被風控否決；總資產4,999.17（-0.02%）。 22:37第三場：不交易續抱，總資產5,000.75（+0.02%）。"
+ "sample": false,
+ "updatedAt": "2026-10-28T00:08:00+08:00",
+ "month": "2026-10",
+ "budgetUSD": 30000,
+ "cashUSD": 26752.54,
+ "equityUSD": 30007.31,
+ "positions": [
+  {
+   "market": "US",
+   "symbol": "SPY",
+   "shares": 3.8928,
+   "avgCost": 769.998,
+   "costUSD": 2997.45,
+   "lastPrice": 770.66,
+   "marketValueUSD": 3000.03,
+   "stopLoss": 732,
+   "takeProfit": 817,
+   "note": "核心波段，持有2–4週；停損732（約-5%）、停利/檢討817（約+6%）",
+   "role": "core_etf_swing",
+   "name": "SPDR S&P 500 ETF",
+   "currency": "USD",
+   "pnlPct": 0.09
   },
-  "rules": {
-    "maxPositionPct": 10,
-    "dailyStopLossPct": 3,
-    "leverage": false
+  {
+   "market": "US",
+   "symbol": "NVDA",
+   "shares": 1.1635,
+   "avgCost": 214.875,
+   "costUSD": 250.01,
+   "lastPrice": 218.942,
+   "marketValueUSD": 254.74,
+   "stopLoss": 207,
+   "takeProfit": 225,
+   "note": "抱過MSFT/GOOGL財報（10/29凌晨台北），財報前不加碼；10/29看反應再議",
+   "role": "stock_swing",
+   "name": "NVIDIA",
+   "currency": "USD",
+   "pnlPct": 1.89
   }
+ ],
+ "trades": [
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "market": "US",
+   "symbol": "SPY",
+   "name": "SPDR S&P 500 ETF",
+   "currency": "USD",
+   "side": "BUY",
+   "shares": 3.5651,
+   "price": 770.66,
+   "amountUSD": 2747.48,
+   "feeUSD": 0,
+   "priceSource": "Yahoo Finance chart API 770.66；交叉驗證 Nasdaq.com 成交770.65／賣價770.66",
+   "quoteTime": "2026-10-28 00:04:59 台北（10/27 12:04:59 紐約）；Nasdaq 10/27 12:05 PM ET",
+   "decidedBy": "decision",
+   "meetingId": "2026-10-28-strategy-reset",
+   "reason": "新策略核心波段第一塊：SPY從約253美金補到10%上限約3,000；FOMC與MSFT/GOOGL財報前只放分散型指數ETF、不押單一財報",
+   "stopLoss": 732,
+   "takeProfit": 817,
+   "holdDays": "2–4週（波段）",
+   "pnlPct": 0.0
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:43",
+   "market": "US",
+   "symbol": "NVDA",
+   "side": "BUY",
+   "shares": 1.1635,
+   "price": 214.875,
+   "amountUSD": 250.01,
+   "feeUSD": 0,
+   "priceSource": "Yahoo Finance即時報價",
+   "quoteTime": "2026-10-26 21:40 台北（09:40 紐約）",
+   "decidedBy": "decision",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "reason": "上週AI族群殺盤非公司利空，開盤+1.86%有買盤；短線反彈單，限5%部位",
+   "stopLoss": 207,
+   "takeProfit": 225,
+   "name": "NVIDIA",
+   "currency": "USD",
+   "pnlPct": 1.89
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:40",
+   "market": "US",
+   "symbol": "SPY",
+   "side": "BUY",
+   "shares": 0.3277,
+   "price": 762.79,
+   "amountUSD": 249.97,
+   "feeUSD": 0,
+   "priceSource": "Yahoo Finance即時報價",
+   "quoteTime": "2026-10-26 21:40 台北（09:40 紐約）",
+   "decidedBy": "decision",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "reason": "條件單成立：開盤30分鐘內S&P 500 +0.36%（未跌超過1%），分散型ETF小量布局；可碎股模擬",
+   "name": "SPDR S&P 500 ETF",
+   "currency": "USD",
+   "pnlPct": 1.03
+  }
+ ],
+ "watchlist": [
+  {
+   "market": "TW",
+   "symbol": "TAIEX",
+   "name": "加權指數",
+   "lastPrice": 46096.23,
+   "changePct": -0.42
+  },
+  {
+   "market": "US",
+   "symbol": "SPX",
+   "name": "S&P 500",
+   "lastPrice": 7731.92,
+   "changePct": 0.72
+  },
+  {
+   "market": "US",
+   "symbol": "IXIC",
+   "name": "那斯達克",
+   "lastPrice": 26507.93,
+   "changePct": 1.29
+  },
+  {
+   "market": "US",
+   "symbol": "DJI",
+   "name": "道瓊",
+   "lastPrice": 52440.66,
+   "changePct": 0.15
+  },
+  {
+   "market": "TW",
+   "symbol": "2330",
+   "name": "台積電",
+   "lastPrice": 2400,
+   "changePct": -0.21
+  },
+  {
+   "market": "US",
+   "symbol": "SPY",
+   "name": "SPDR S&P 500 ETF",
+   "lastPrice": 770.66,
+   "changePct": 0.69
+  },
+  {
+   "market": "US",
+   "symbol": "NVDA",
+   "name": "NVIDIA",
+   "lastPrice": 218.942,
+   "changePct": 1.36
+  },
+  {
+   "market": "US",
+   "symbol": "QQQ",
+   "name": "Invesco QQQ",
+   "lastPrice": 722.24,
+   "changePct": 1.41
+  }
+ ],
+ "discussions": [
+  {
+   "date": "2026-10-26",
+   "time": "19:00",
+   "role": "gm",
+   "text": "第一次策略會議開始。注意：今天10/26台股光復節補假休市，上一交易日是10/22；10/23颱風也休市。美股今晚21:30開盤。本週有Fed/歐央/日銀會議與微軟、Google、亞馬遜財報。",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:02",
+   "role": "research",
+   "text": "數據：加權10/22收46,041.43，週跌2.27%，外資一週賣超約2,356億，跌破季線。台積電10/22收2,385元。美股10/23：道瓊52,215.16(-1.23%)、S&P 7,623.68(-0.52%)、那指25,955.34(-0.21%)；10年債約4.999%；布蘭特116.72、WTI 103.27；USD/TWD 10/22收32.508。來源：證交所/中央社(台股10/22收46,041.43、10/26光復節補假休市)；Reuters/CNBC(10/23美股收盤、10年債4.999%、布蘭特116.72)；央行(10/22 USD/TWD 32.508)；財經日報10/26 12:23快訊(布蘭特約115.48)",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:05",
+   "role": "scout",
+   "text": "提案一：台積電Q3 EPS 29.43創高、股價被錯殺，用10/22收盤2,385元買進。提案二：今晚NVDA逢低買$500，AI殺盤後有反彈空間。",
+   "relatedSymbol": "2330",
+   "decision": "買進",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:07",
+   "role": "devil",
+   "text": "反對兩案。2330：今天休市，用4天前的收盤價成交是自欺欺人；而且1股2,385元≈73美元，外資還在賣。NVDA：本週科技巨頭財報+Fed，AI資本支出疑慮才剛爆，今晚追進等於賭事件。",
+   "relatedSymbol": "NVDA",
+   "decision": "否決",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:09",
+   "role": "risk",
+   "text": "否決2330以10/22價成交：今日無真實成交價，違反價格來源規則，明天10/27有實際收盤再議。否決今晚NVDA $500：事件密集週單一高波動個股滿額10%，與每日3%停損空間衝突，降為最多5%。",
+   "relatedSymbol": "2330",
+   "decision": "否決",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:11",
+   "role": "scout",
+   "text": "那退而求其次：今晚S&P 500 ETF(SPY)小量，分散不賭單一財報。",
+   "relatedSymbol": "SPY",
+   "decision": "買進",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:12",
+   "role": "devil",
+   "text": "油價破百、10年債貼近5%，大盤也不便宜。要買就分批，第一筆別超過$250，而且要等開盤後確認不是跳空大跌。",
+   "relatedSymbol": "SPY",
+   "decision": "等待",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:14",
+   "role": "risk",
+   "text": "可以接受：SPY 單筆上限$250(5%)，條件單：開盤後若S&P跌幅未超過1%才成交；未成交不記帳。現金保留≥90%。",
+   "relatedSymbol": "SPY",
+   "decision": "通過",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:16",
+   "role": "decision",
+   "text": "本週策略：偏守，現金比例≥90%。今天不進場台股。今晚美股觀察/掛單計畫：SPY ≤$250，開盤後30分鐘看盤，S&P跌幅<1%才模擬成交，以實際成交價記帳(美股假設0手續費)。2330列明天10/27觀察，以實際收盤價再議，NT$換匯以當日央行收盤匯率。",
+   "relatedSymbol": "SPY",
+   "decision": "等待",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:18",
+   "role": "recorder",
+   "text": "紀錄：成交0筆；否決2筆(2330用過期價、NVDA $500)；計畫1筆(SPY)。現金5,000 USD、總資產5,000 USD。",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "19:19",
+   "role": "gm",
+   "text": "散會。今晚開盤後由decision依條件執行並回填帳本；明天台股收盤後檢討2330。",
+   "decision": "等待",
+   "meetingId": "2026-10-26-strategy-1"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "gm",
+   "text": "開會，議題：SPY條件單、新標的"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "research",
+   "text": "SPY週五收759.97跌1.7%；ES 7682.75 +0.3%、NQ 29286.25 +0.58%"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "scout",
+   "text": "提NVDA，週五收210.96跌5%，可能反彈最強"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "devil",
+   "text": "跌5%不是便宜理由，原因未明是接刀"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "risk",
+   "text": "否決NVDA；SPY條件單250美金在上限內維持"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "decision",
+   "text": "SPY條件單照跑；NVDA下次再議"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "20:56",
+   "meetingId": "2026-10-26-premarket-2",
+   "role": "recorder",
+   "text": "寫入帳本"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:40",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "gm",
+   "text": "美股盤中第一場（開盤10分鐘）開會：檢查SPY條件單、NVDA要不要進場。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:40",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "research",
+   "text": "即時報價（Yahoo 21:40台北）：S&P 500 7,650.81，+0.36%；SPY 762.79，+0.37%；NVDA 214.875，+1.86%；QQQ 707.19，+0.40%。新聞：期貨開盤前普漲，布蘭特跌破110；本週Fed（預期鷹派按兵不動）、週三微軟/Google財報；上週NVDA下跌主因是週中AI資本支出疑慮殺盤。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:41",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "scout",
+   "text": "SPY條件成立（S&P沒跌反漲0.36%），照單成交$250。另外NVDA下跌原因已查清，是整個AI族群殺盤不是公司利空，開盤有買盤，提案短線買$250。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:41",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "devil",
+   "text": "SPY沒意見。NVDA我還是擔心：週三微軟/Google財報講資本支出，萬一保守，NVDA會再被砍；而且週五低點210.18附近才是支撐，開盤追高不划算。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:42",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "risk",
+   "text": "SPY $250通過（5%）。NVDA可以，但條件：只能$250（5%，不能滿額10%）、硬停損$207（跌破上週低點210.18再留空間，約-3.7%，最多虧約$9）、停利$225（約+4.7%），週三財報前重新評估是否續抱。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:42",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "devil",
+   "text": "停損有設、金額小，我收回反對，但記下我的疑慮：財報前若沒漲到停利，建議先跑。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:43",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "decision",
+   "text": "決定：一、SPY條件單以762.79成交$250；二、NVDA以214.875買$250，停損207、停利225，週三財報前檢討；現金4,500，現金比例90%，仍守本週≥90%。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:43",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "recorder",
+   "text": "已寫入帳本：成交2筆、否決0筆、條件單SPY已清除，持股SPY與NVDA的停損停利已登錄。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "21:44",
+   "meetingId": "2026-10-26-us-intraday-0940",
+   "role": "gm",
+   "text": "散會。下一場10:00紐約時間（22:00台北）檢查NVDA停損停利與大盤。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:07",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "gm",
+   "text": "美股盤中第二場（紐約10:00）開會：檢查SPY、NVDA停損停利，看要不要加碼。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:08",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "research",
+   "text": "即時報價（Yahoo 22:07台北）：S&P 500 7,654.69 +0.41%；SPY 763.05 +0.41%；NVDA 214.10 +1.49%（日高215.98、日低212.61）；QQQ 706.22 +0.26%；MU 884.04 +0.74%。新聞：Anthropic 遞件IPO帶動半導體，油價回落，Fed週三預期按兵不動（市場約九成機率）；Neocloud族群仍弱。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:08",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "research",
+   "text": "持股：SPY +0.03%、NVDA -0.36%，都沒碰到±5%；總資產4,999.17，當日-0.02%，離2%警戒很遠。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:09",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "scout",
+   "text": "AI題材有回溫，我想加一筆MU $150，記憶體跟著Anthropic IPO題材漲。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:09",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "devil",
+   "text": "MU開盤後漲幅已經從2%縮到0.7%，追進去像在接尾巴；而且週三財報加Fed，現在加碼不划算。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:10",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "risk",
+   "text": "否決MU：本週策略是現金≥90%，現在剛好90.0%，再買就破線。NVDA停損207、停利225照舊，沒觸發。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:10",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "decision",
+   "text": "決定：不交易，SPY、NVDA續抱；MU列觀察，等週三財報與Fed後再議。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:11",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "recorder",
+   "text": "已寫入帳本：成交0筆、否決1筆（MU）、條件單無。現金4,500.02、總資產4,999.17。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:11",
+   "meetingId": "2026-10-26-us-intraday-1000",
+   "role": "gm",
+   "text": "散會。下一場紐約10:30（22:30台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:37",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "gm",
+   "text": "美股盤中第三場（紐約10:30）開會：檢查SPY、NVDA停損停利跟大盤，看要不要動作。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:38",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "research",
+   "text": "即時報價（Yahoo 22:37台北）：S&P 500 7,674.49 +0.67%；SPY 764.91 +0.65%；NVDA 214.93 +1.88%；QQQ 709.80 +0.77%；MU 888.87 +1.29%（日高908.50）。新聞：Anthropic遞S-1帶動晶片股，油價回落，Fed週三預期按兵不動但可能偏鷹。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:38",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "research",
+   "text": "持股：SPY +0.28%、NVDA +0.02%，都沒碰到±5%；總資產5,000.75，當日+0.02%，沒有2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:39",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "scout",
+   "text": "大盤從+0.4%拉到+0.67%，買盤有延續，MU我還是想進，不然SPY再加一點也行。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:39",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "devil",
+   "text": "MU日高908.5已經回落到888，追高風險還在；週三微軟、Google財報加Fed，現在加碼等於提前賭事件。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:40",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "risk",
+   "text": "現金比例剛好90.0%，本週≥90%的線不能破，任何加碼都不行。NVDA停損207、停利225都沒觸發。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:40",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "decision",
+   "text": "決定：不交易，SPY、NVDA續抱；MU、加碼SPY都等週三財報與Fed後再議。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:41",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "recorder",
+   "text": "已寫入帳本：成交0筆、否決0筆、條件單無。現金4,500.02、總資產5,000.75。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "22:41",
+   "meetingId": "2026-10-26-us-intraday-1030",
+   "role": "gm",
+   "text": "散會。下一場紐約11:00（23:00台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "23:45",
+   "meetingId": "2026-10-26-us-intraday-1130",
+   "role": "gm",
+   "text": "美股盤中巡邏（紐約11:30場，排程延遲約15分）：只派查資料＋風控，先跑掃描器。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "23:46",
+   "meetingId": "2026-10-26-us-intraday-1130",
+   "role": "research",
+   "text": "Yahoo Finance即時報價（23:45台北／11:45紐約）：S&P 500 7,693.22 +0.91%；SPY 766.69 +0.88%；NVDA 216.137 +2.45%（日高217.75）；QQQ 714.53 +1.44%；MU 910.83 +3.79%。掃描器（Yahoo日線）美股0個超賣反彈/突破訊號，只有台股2412突破（台股訊號不採用）。新聞：Anthropic遞S-1帶動晶片股、布蘭特回落至約110（AP 11:00 ET、CNBC 11:24 ET）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "23:46",
+   "meetingId": "2026-10-26-us-intraday-1130",
+   "role": "research",
+   "text": "持股：SPY +0.51%、NVDA +0.59%，都沒碰到±5%；總資產5002.74，當日+0.05%，無2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "23:47",
+   "meetingId": "2026-10-26-us-intraday-1130",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒觸發；現金比例約90%，本週≥90%不加碼；沒有美股進場訊號，不開進場提案。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "23:47",
+   "meetingId": "2026-10-26-us-intraday-1130",
+   "role": "gm",
+   "text": "結論：不交易，SPY、NVDA續抱。下一場紐約12:30（00:30台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "00:48(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1230",
+   "role": "gm",
+   "text": "美股盤中巡邏（紐約12:30場，排程延遲約15分）：只派查資料＋風控，先跑掃描器。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "00:48(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1230",
+   "role": "research",
+   "text": "Yahoo Finance即時報價（00:47台北／12:47紐約）：S&P 500 7,669.20 +0.60%；SPY 764.41 +0.58%；NVDA 215.02 +1.92%；QQQ 711.30 +0.98%。漲幅比11:45收斂。掃描器（Yahoo日線，00:47）美股0個超賣反彈/突破訊號，只有台股2412突破（不採用）。新聞：Anthropic遞S-1帶動晶片股、油價回落；週三Fed決議、微軟/Google財報（Yahoo Finance 12:35 ET、CNBC 12:30 ET）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "00:48(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1230",
+   "role": "research",
+   "text": "持股：SPY +0.21%、NVDA +0.07%（對成本），都沒碰到±5%；總資產5000.7，當日+0.01%，無2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "00:48(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1230",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒觸發；現金比例約90%，本週≥90%不加碼；沒有美股進場訊號，不開進場提案。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "00:48(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1230",
+   "role": "gm",
+   "text": "結論：不交易，SPY、NVDA續抱。下一場紐約13:30（01:30台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1330",
+   "role": "gm",
+   "text": "美股盤中巡邏（紐約13:30場，排程延遲約20分）：只派查資料＋風控，先跑掃描器。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1330",
+   "role": "research",
+   "text": "Yahoo Finance即時報價（01:51台北／13:51紐約）：S&P 500 7,674.76 +0.67%；SPY 764.94 +0.65%；NVDA 215.935 +2.36%；QQQ 712.605 +1.16%。掃描器（Yahoo日線，01:51）美股0個超賣反彈/突破訊號，只有台股2412突破（不採用）。新聞：AP 13:15 ET S&P +0.8%、NVDA +2.5%領漲；Benzinga 13:09 ET VIX 18.31(-5.9%)、巴西ETF EWZ -21.7%；Brent約$112高檔；週三Fed、微軟/Google財報。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1330",
+   "role": "research",
+   "text": "持股：SPY +0.28%、NVDA +0.49%（對成本），都沒碰到±5%；總資產5001.93，當日+0.04%，無2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1330",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒觸發；現金約90%，本週≥90%不加碼；沒有美股進場訊號，不開進場提案。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1330",
+   "role": "gm",
+   "text": "結論：不交易，SPY、NVDA續抱，總資產5001.93。下一場紐約14:30（02:30台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "02:42(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1430",
+   "role": "research",
+   "text": "Yahoo Finance即時報價（02:42台北／14:42紐約）：S&P 500 7,679.23 +0.73%；SPY 765.42 +0.72%；NVDA 216.06 +2.42%；QQQ 713.59 +1.30%。掃描器（Yahoo日線，02:42）美股0個超賣反彈/突破訊號，只有台股2412突破（不採用）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "02:42(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1430",
+   "role": "research",
+   "text": "持股：SPY +0.34%、NVDA +0.55%（對成本），都沒碰到±5%；總資產5002.24，當日+0.04%，無2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "02:42(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1430",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒觸發；現金約90%，本週≥90%不加碼；沒有美股進場訊號，不開進場提案。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "02:42(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1430",
+   "role": "gm",
+   "text": "結論：不交易，SPY、NVDA續抱，總資產5002.24。下一場紐約15:30（03:30台北）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "03:45(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1530",
+   "role": "research",
+   "text": "Yahoo Finance即時報價（03:45台北／15:45紐約）：S&P 500 7,681.26 +0.76%；SPY 765.57 +0.74%；NVDA 216.46 +2.61%；QQQ 713.50 +1.29%。掃描器（Yahoo日線，03:45）美股0個超賣反彈/突破訊號，只有台股2412突破（不採用）。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "03:45(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1530",
+   "role": "research",
+   "text": "持股：SPY +0.36%、NVDA +0.74%（對成本），都沒碰到±5%；總資產5002.75，當日+0.06%，無2%警戒。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "03:45(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1530",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒觸發；現金約90%，本週≥90%不加碼；沒有美股進場訊號，不開進場提案；pending_orders無條件單。"
+  },
+  {
+   "date": "2026-10-26",
+   "time": "03:45(10/27台北)",
+   "meetingId": "2026-10-26-us-intraday-1530",
+   "role": "gm",
+   "text": "結論：不交易，SPY、NVDA續抱過夜，總資產5002.75。今天美股盤中會到此結束，收盤短報06:00台北。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "gm",
+   "text": "收盤檢討會開始：檢討10/26美股損益、條件單處理、決定10/27操作策略。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "research",
+   "text": "Yahoo Finance 10/26收盤（06:10台北查）：S&P 500 7,676.77 +0.70%、Nasdaq 26,169.38 +0.83%；SPY 765.37、NVDA 216.00 +2.39%。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "research",
+   "text": "新聞（Reuters/Investopedia 10/26）：Anthropic遞件IPO帶動AI晶片股，費半+2.8%；週三Fed利率決議（CME FedWatch升息機率約9–13%），週三盤後微軟、Google財報，週四Amazon。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "recorder",
+   "text": "持股收盤市值：SPY $250.81（成本249.97，+0.34%）、NVDA $251.32（成本250.01，+0.52%）；現金4,500.02；總資產5002.15，比起始5,000 +2.15（+0.04%），手續費0。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "risk",
+   "text": "NVDA停損207、停利225都沒碰到；當日沒虧損，離3%停手線很遠；pending_orders是空的，沒有未成交條件單要處理。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "scout",
+   "text": "MU收903.70 +2.98%，還在觀察名單；掃描器（06:09跑）美股0個超賣反彈／突破訊號，沒有可用的進場依據。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "devil",
+   "text": "週三Fed加微軟、Google財報是雙重事件，NVDA小漲就抱過事件有跳空風險，別因為昨天漲就追。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "risk",
+   "text": "同意：本週現金≥90%不變，新進場只認掃描器美股訊號；NVDA在週三紐約15:30那場決定要不要抱過財報。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "decision",
+   "text": "拍板：10/27不掛新條件單，SPY、NVDA續抱，停損停利不變；MU只在出現突破訊號且風控同意時才提案；週三盤中最後一場檢討NVDA是否在財報前出場。"
+  },
+  {
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "meetingId": "2026-10-27-us-close-review",
+   "role": "gm",
+   "text": "結論：昨晚無交易、無否決，總資產5002.15（+0.04%）。模擬交易、非投資建議。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-0900",
+   "date": "2026-10-27",
+   "time": "09:02",
+   "role": "research",
+   "text": "加權指數09:02報46,484.30，漲0.96%；台積電開2,380、中華電開159.5（證交所MIS即時，09:02台北）。掃描器的台股資料Yahoo還停在10/22，今天的還沒更新。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-0900",
+   "date": "2026-10-27",
+   "time": "09:02",
+   "role": "risk",
+   "text": "台股沒持股也沒條件單，不用檢查停損停利；中華電突破訊號屬台股訊號，回測虧損不當進場依據，且資料過期，不進場。現金4,500.02（90%）。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1000",
+   "date": "2026-10-27",
+   "time": "09:51",
+   "role": "research",
+   "text": "加權指數09:51報46,259.91，漲0.47%，比開盤時的+0.96%收斂（證交所MIS即時，09:51台北）；掃描器唯一訊號仍是中華電突破，Yahoo資料停在10/22。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1000",
+   "date": "2026-10-27",
+   "time": "09:51",
+   "role": "risk",
+   "text": "台股無持股、無條件單，不用檢查停損停利；台股突破訊號回測虧損且資料過期，不進場。美股休市，SPY、NVDA續抱，現金4,500.02（90%）。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1100",
+   "date": "2026-10-27",
+   "time": "10:54",
+   "role": "research",
+   "text": "加權指數10:54報45,768.04，跌0.59%，盤中從46,585高點翻黑（證交所MIS即時，10:54台北）；新聞指權值股台達電、聯發科轉弱，Fed會議與科技財報前觀望氣氛濃。掃描器唯一訊號仍是中華電突破，資料停在10/22。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1100",
+   "date": "2026-10-27",
+   "time": "10:54",
+   "role": "risk",
+   "text": "台股無持股、無條件單，不用檢查停損停利；台股突破訊號回測虧損且資料過期，不進場。美股休市，SPY、NVDA續抱，現金4,500.02（90%），總資產未觸發±5%或-2%門檻。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1200",
+   "date": "2026-10-27",
+   "time": "11:52",
+   "role": "research",
+   "text": "加權指數11:52報45,973.36，跌0.15%，從低點45,676.67拉回；台積電2,390，漲0.21%（證交所MIS即時，11:52台北）。掃描器唯一訊號仍是中華電突破，資料停在10/22。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1200",
+   "date": "2026-10-27",
+   "time": "11:52",
+   "role": "risk",
+   "text": "台股無持股、無條件單；台股突破訊號回測虧損且資料過期，不進場。美股休市，SPY、NVDA續抱，現金4,500.02（90%），未觸發±5%或-2%門檻。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1300",
+   "date": "2026-10-27",
+   "time": "12:48",
+   "role": "research",
+   "text": "加權指數12:48報45,931.51，跌0.24%（證交所MIS即時，12:48台北）；台積電暫無最新成交欄位，盤中2,380–2,405。掃描器唯一訊號仍是中華電突破，資料停在10/22。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-intraday-1300",
+   "date": "2026-10-27",
+   "time": "12:48",
+   "role": "risk",
+   "text": "台股無持股、無條件單；台股突破訊號回測虧損且資料過期，不進場。美股休市，SPY、NVDA續抱，現金4,500.02（90%），未觸發±5%或-2%門檻。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "gm",
+   "text": "今天台股收盤檢討會開始：檢討今日損益、用今天收盤價處理台積電，並定明天策略。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "research",
+   "text": "加權指數今天收46,096.23，漲54.8點（+0.12%），盤中高46,585.45、低45,676.67，開高走低再拉回平盤上（證交所MIS，13:33資料，14:04查詢）。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "research",
+   "text": "台積電收2,400元，漲15元（+0.63%），成交33,726張；聯發科收3,960跌1.25%、台達電收1,510跌3.21%、0050收106.60跌0.28%（證交所MIS，13:30收盤）。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "research",
+   "text": "經濟日報13:41報導：市場觀望本週FOMC、美國科技巨頭財報與美國期中選舉，加上中東情勢升溫油價走高，盤勢波動大。今天三大法人買賣超證交所還沒公布，查不到。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "research",
+   "text": "掃描器14:04重跑：台股出現永豐金、元大金、和泰車、聯詠4檔突破訊號，美股無新訊號（美股持股資料停在10/26收盤）。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "scout",
+   "text": "台積電今天收在接近盤中高點2,405，比昨收強；但大盤還在季線下震盪，我不建議今天追，列明天觀察名單。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "scout",
+   "text": "4檔台股突破訊號依規定不能當進場依據（台股突破回測是虧的），我不提案。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "risk",
+   "text": "今日沒有任何成交、沒有否決提案、沒有碰到停損停利；現金4,500.02美元占總資產90.0%，正好守住本週現金≥90%的事件週策略。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "risk",
+   "text": "台積電若要買，就會讓現金跌破90%，FOMC和大型財報結果出來前我不放行；NVDA停損207、停利225照舊，SPY續抱。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "decision",
+   "text": "拍板：今天不交易。台積電不進場、留在觀察名單，等美國科技巨頭財報和FOMC結果出來後的第一場台股盤中會再重新評估，屆時用當下即時價。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "decision",
+   "text": "明天（10/28）台股維持空手、只巡邏；今晚美股盤中照常盯SPY和NVDA，碰到停損停利由風控直接執行。"
+  },
+  {
+   "meetingId": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "role": "recorder",
+   "text": "已記錄：今日0筆成交、0筆否決、0張條件單；總資產5,002.15美元，相對月初5,000美元+2.15（+0.04%），美股持股以10/26美股收盤估值。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-0930",
+   "date": "2026-10-27",
+   "time": "21:49",
+   "role": "research",
+   "text": "SPY 767.255（昨收765.37，+0.25%）、NVDA 216.87（昨收216.00，+0.40%），Yahoo Finance chart API即時報價（09:49:01紐約／21:49台北）；Reuters/Yahoo：S&P開盤+0.30%、Nasdaq+0.45%，油價回落，週三Fed利率決議、本週科技巨頭財報。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-0930",
+   "date": "2026-10-27",
+   "time": "21:49",
+   "role": "research",
+   "text": "掃描器21:48重跑（Yahoo）：美股無超賣反彈或突破訊號；只有4檔台股突破訊號，依規不採用。無條件單。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-0930",
+   "date": "2026-10-27",
+   "time": "21:49",
+   "role": "risk",
+   "text": "SPY成本762.79→+0.59%、NVDA成本214.875→+0.93%，都在±5%內，NVDA沒碰到停損207和停利225；總資產5003.78，比昨天收盤5,002.15多，現金90%，沒有要處理的。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1030",
+   "date": "2026-10-27",
+   "time": "22:46",
+   "role": "research",
+   "text": "SPY 767.81（昨收765.37，+0.32%）、NVDA 217.00（昨收216.00，+0.46%），S&P 500 7,702.97（+0.34%）、Nasdaq 26,359.19（+0.73%），Yahoo Finance chart API即時報價（10:46:20紐約／22:46台北）；新聞（Yahoo Finance 10:29 ET、AP 9:58 ET、Reuters 9:37 ET）：AI晶片股受Anthropic上市題材與Broadcom融資消息帶動，油價回落，Fed今明兩天開會（CME估升息機率約10%），週三微軟、Google財報。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1030",
+   "date": "2026-10-27",
+   "time": "22:46",
+   "role": "research",
+   "text": "掃描器22:46重跑（Yahoo）：美股無超賣反彈或突破訊號；4檔台股突破訊號（2892、5880、2207、3034）依規不採用。無條件單。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1030",
+   "date": "2026-10-27",
+   "time": "22:46",
+   "role": "risk",
+   "text": "SPY成本762.79→+0.66%、NVDA成本214.875→+0.99%，都在±5%內，NVDA沒碰到停損207和停利225；總資產5004.11，比昨天收盤5,002.15多，現金約90%，沒有要處理的。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1130",
+   "date": "2026-10-27",
+   "time": "23:48",
+   "role": "research",
+   "text": "SPY 770.13（昨收765.37，+0.62%）、NVDA 218.54（昨收216.00，+1.18%），S&P 500 7,726.81（+0.65%）、Nasdaq 26,480.48（+1.19%），Yahoo Finance chart API即時報價（11:48:38紐約／23:48台北）；新聞（Yahoo Finance 11:15 ET、WSJ 11:18 ET、AP 11:00 ET）：Anthropic上市題材延續，晶片與AI基建股領漲，Brent約109美元仍高，Fed今明開會（CME估升息機率約10%），週三微軟、Google財報。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1130",
+   "date": "2026-10-27",
+   "time": "23:48",
+   "role": "research",
+   "text": "掃描器23:48重跑（Yahoo）：美股無超賣反彈或突破訊號；4檔台股突破訊號（2892、5880、2207、3034）依規不採用。無條件單。"
+  },
+  {
+   "meetingId": "2026-10-27-us-intraday-1130",
+   "date": "2026-10-27",
+   "time": "23:48",
+   "role": "risk",
+   "text": "SPY成本762.79→+0.96%、NVDA成本214.875→+1.71%，都在±5%內，NVDA沒碰到停損207和停利225；總資產5006.66，比昨天收盤5,002.15多，現金約90%，沒有要處理的。"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:00",
+   "role": "gm",
+   "text": "全員策略會開始。Shane 00:00下了營運指令：今天入金25,000虛擬美金、每月公司成本55萬台幣、策略重定，目標賺錢、可以承擔風險、接受短線。另外追加：要有收支表、每月10號結算、續發30,000要他同意、所有數字兩個來源驗證、會後可以照新策略直接操作。核心規則不變。今天四個議題：成本門檻、資金配置、NVDA、掃描器。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:01",
+   "role": "research",
+   "text": "匯率：Yahoo chart API TWD=X 32.397（00:02:50台北）；Google Finance 32.4097（10/27 15:58 UTC＝23:58台北），差0.04%，交叉驗證通過。參考鉅亨網台北外匯收盤32.452（10/27 16:00台北，台灣在岸）。成本換算用Yahoo 32.397。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:01",
+   "role": "research",
+   "text": "報價（Yahoo chart API 00:04:59–00:05:02台北／Nasdaq.com 10/27 12:05 PM ET）：SPY 770.66／770.65、NVDA 218.942／218.90、QQQ 722.24／722.19、MSFT 534.463／534.30、GOOGL 320.985／321.345，兩邊差都在0.12%以內。S&P 500 7,731.92（+0.72%，Yahoo 00:05:02）；VIX 17.56（Yahoo，23:47台北，延遲報價、只有單一來源，僅參考）。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:02",
+   "role": "research",
+   "text": "事件：FOMC決議10/28 2:00 PM ET＝10/29 02:00台北，Warsh記者會02:30台北（Fed官網行事曆；NewsCubby整理）；CME估本週升息機率約9%、12月約80%（NewsCubby引Investopedia/CME、Reuters）。微軟、Google 10/28盤後公布＝10/29 04:00台北後（微軟官網10/7公告、Alphabet IR）；Amazon 10/29盤後；10/29 8:30 ET有PCE和GDP。NVDA自家財報預估約11/18、還沒確認（CME Elite財報行事曆10/27版）。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:02",
+   "role": "research",
+   "text": "掃描器00:02重跑（Yahoo，日線完成到紐約10/26）：美股沒有超賣反彈或突破訊號；台股4檔突破（2892、5880、2207、3034）依規不用。GOOGL RSI 29.5接近超賣但量比不夠，而且有財報。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:02",
+   "role": "recorder",
+   "text": "帳面：入金前總資產5,007.39（現金4,500.02＋SPY 0.3277×770.80＝252.59＋NVDA 1.1635×218.975＝254.78，Yahoo 00:02:50）；入金後30,007.39。單筆上限10%＝3,000.74，當日停手3%＝900.22。另一支程式用Decimal重算，結果一樣。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:03",
+   "role": "risk",
+   "text": "成本門檻：550,000÷32.397＝16,976.88美金／月（用Google 32.4097算是16,970.23，只差6.65美金）。打平要16,976.88÷30,007.39＝56.58%／月，換算每個交易日要賺約2.16%（21天複利），一年要翻200多倍。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:03",
+   "role": "devil",
+   "text": "講白了，這個目標不合理。S&P長期一年大概10%，掃描器兩年回測最好的美股超賣反彈，用10%部位兩年總報酬才12.88%，平均一個月約0.5%。要每月56%，等於整個帳戶每天賺2%，可是規則是單筆10%、不開槓桿、每天虧3%就停手。硬追只會逼團隊亂賭。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:04",
+   "role": "gm",
+   "text": "議題一結論：成本照記、照扣，月結列扣成本後的淨損益，但團隊不拿「打平成本」當交易目標，免得為了追成本破壞風控。內部目標改成月報酬2–4%（約600–1,200美金）並打敗SPY，大概只能補成本的4–7%，這點要坦白跟Shane講。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:04",
+   "role": "scout",
+   "text": "議題二配置提案（事件過後的目標）：現金20–25%；ETF核心波段35%（美股SPY 10%＋QQQ 10%、台股0050 10%、預留5%）；個股波段2–4週20%（台積電、美股大型AI／雲端股）；短線1–5天20–25%，只用美股掃描器訊號，同時最多3–4筆、每筆≤3,000。美股和台股大約75:25，持股6–10檔。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:05",
+   "role": "devil",
+   "text": "台股掃描器回測是虧的（突破10%部位−11.53%、超賣只有+0.08%），台股只該做0050和台積電這種基本面波段，不要追訊號。還有QQQ前幾大就是微軟、Google、NVDA，財報前就放滿10%，等於押財報。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:05",
+   "role": "risk",
+   "text": "本週時間點：FOMC和微軟、Google財報都落在台北10/29凌晨。10/29美股開盤（21:30台北）前，現金≥85%，只放指數ETF、不新增個股、不碰QQQ。事件過後如果VIX<20、S&P單日沒跌超過1.5%，10/29–10/30分批把投入拉到約50%，下週再到75–80%。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:05",
+   "role": "scout",
+   "text": "現在美股盤中，提案先做一筆：SPY從約253美金補到10%上限約3,000，當核心波段第一塊，分散、不押單一財報。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "SPY",
+   "decision": "買進"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:06",
+   "role": "devil",
+   "text": "SPY補滿也是在FOMC前曝險，Warsh如果講得鷹，指數一晚掉1–2%就是30–60美金。可以接受，但今晚不要再加別的。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "SPY"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:06",
+   "role": "risk",
+   "text": "同意SPY買3.5651股@770.66＝2,747.48（Yahoo 770.66、Nasdaq成交770.65／賣價770.66，雙來源一致）。合計3.8928股、市值約3,000.03，≤上限3,000.74。停損732（約−5%），停利／檢討817（約+6%），持有2–4週。跌2%約虧60美金，離900停手線很遠；不開槓桿；美股模擬手續費0。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "SPY",
+   "decision": "通過"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:06",
+   "role": "research",
+   "text": "議題三：NVDA本週不公布財報，真正的問題是要不要抱過微軟、Google財報，因為兩家的AI資本支出指引會直接影響晶片股。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "NVDA"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:06",
+   "role": "scout",
+   "text": "NVDA持有1.1635股，成本214.875，現價218.942（Yahoo）／218.90（Nasdaq），+1.89%；部位254.74美金，只占0.85%。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "NVDA"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:06",
+   "role": "devil",
+   "text": "資本支出要是下修，NVDA隔天可能跳空跌破207，停損擋不住跳空。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "NVDA"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "risk",
+   "text": "最壞情況試算：跳空−8%約虧20美金，占總資金0.07%，可以抱；但財報前不准加碼。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "NVDA",
+   "decision": "通過"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "scout",
+   "text": "議題四掃描器：照用，但改用法：一、美股超賣反彈和突破才當短線個股進場依據，台股訊號不用；二、加財報黑名單，2個交易日內要公布財報的不開新短線單；三、FOMC、CPI這類事件前一晚不開新短線單；四、出場照回測：−4%停損、+6%停利、第10個交易日到期出場；五、ETF核心和個股波段不需要掃描器訊號，但要有研究理由和停損停利。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "devil",
+   "text": "回測有倖存者偏差，也沒模擬同時持倉，別當成保證。建議之後在程式加財報日過濾和同時持倉的回測，今天先不改程式。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "decision",
+   "text": "拍板：一、成本照記、照扣，打平要每月56.58%，不合理，不當交易目標；內部目標月報酬2–4%、打敗SPY。二、配置照找標的提案，現金20–25%、ETF核心35%、個股波段20%、短線20–25%，美台75:25，6–10檔；本週事件前現金≥85%。三、現在執行SPY買3.5651股@770.66。四、NVDA抱過微軟、Google財報，停損207、停利225不變，不加碼，10/29看反應再議；自家財報（約11/18）前另開會，原則上部位不超過5%。五、掃描器照找標的的五點改用法。",
+   "meetingId": "2026-10-28-strategy-reset",
+   "relatedSymbol": "SPY",
+   "decision": "買進"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "recorder",
+   "text": "已寫入ledger：入金事件、公司成本、收支表欄位、新策略、本場對話和成交；PROCEDURE加上月結、收支表、每月10號結算、續發要Shane同意、雙來源驗證；trades.json同步更新。",
+   "meetingId": "2026-10-28-strategy-reset"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "00:07",
+   "role": "gm",
+   "text": "散會。下一場照盤中巡邏（約01:00台北）；10/29 21:00台北開事件後盤前會，看FOMC和微軟、Google財報反應再加碼。",
+   "meetingId": "2026-10-28-strategy-reset"
+  }
+ ],
+ "meetings": [
+  {
+   "id": "2026-10-26-strategy-1",
+   "date": "2026-10-26",
+   "time": "19:00",
+   "title": "第一次策略會議",
+   "topic": "本週偏攻或偏守、現金比例、今晚美股計畫",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "台股10/26補假休市不進場。本週策略偏守，現金比例≥90%。否決2330以10/22過期價2,385元成交（10/27以實際收盤再議）；否決今晚NVDA $500（事件週單一高波動個股風險過高）。通過SPY條件單：最多$250，21:30開盤後30分鐘內S&P跌幅<1%才模擬成交，未成交不記帳。",
+   "decision": "本週偏守、現金≥90%；否決2330與NVDA；SPY ≤$250條件單"
+  },
+  {
+   "id": "2026-10-26-premarket-2",
+   "date": "2026-10-26",
+   "time": "20:56",
+   "title": "美股盤前策略會",
+   "topic": "SPY條件單是否維持、NVDA是否進場",
+   "attendees": [
+    "gm",
+    "scout",
+    "research",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "SPY週五收759.97(-1.7%)，期貨ES +0.3%、NQ +0.58%；NVDA週五跌5%至210.96",
+   "decision": "SPY條件單維持；NVDA被風控否決，待查下跌原因"
+  },
+  {
+   "id": "2026-10-26-us-intraday-0940",
+   "date": "2026-10-26",
+   "time": "21:40",
+   "title": "美股盤中操盤會（開盤後）",
+   "topic": "SPY條件單執行、NVDA是否短線進場",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "S&P 500開盤+0.36%，SPY條件單成立以762.79成交$250；NVDA下跌原因查清為AI族群殺盤，開盤+1.86%，風控有條件通過$250（停損207、停利225）。",
+   "decision": "買SPY $250、NVDA $250；現金4,500（90%）"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1000",
+   "date": "2026-10-26",
+   "time": "22:07",
+   "title": "美股盤中操盤會（第二場）",
+   "topic": "持股停損停利檢查、是否加碼",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "S&P +0.41%，SPY 763.05、NVDA 214.10，持股都在±5%內；scout提MU $150被風控以本週現金≥90%否決。",
+   "decision": "不交易，SPY、NVDA續抱；MU觀察"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1030",
+   "date": "2026-10-26",
+   "time": "22:37",
+   "title": "美股盤中操盤會（第三場）",
+   "topic": "持股停損停利檢查、是否加碼",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "S&P +0.67%，SPY 764.91、NVDA 214.93，持股都在±5%內；scout想加碼MU或SPY，風控以本週現金≥90%擋下（未正式提案）。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1130",
+   "date": "2026-10-26",
+   "time": "23:45",
+   "title": "美股盤中巡邏（紐約11:30）",
+   "topic": "持股停損停利檢查、掃描器訊號",
+   "attendees": [
+    "gm",
+    "research",
+    "risk"
+   ],
+   "summary": "S&P +0.91%，SPY 766.69、NVDA 216.137，持股都在±5%內；掃描器無美股訊號。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1230",
+   "date": "2026-10-26",
+   "time": "00:47(10/27台北)",
+   "title": "美股盤中巡邏（紐約12:30）",
+   "topic": "持股停損停利檢查、掃描器訊號",
+   "attendees": [
+    "gm",
+    "research",
+    "risk"
+   ],
+   "summary": "S&P 500 7,669.20 +0.60%（漲幅從11:45的+0.91%收斂），SPY 764.41、NVDA 215.02，持股都在±5%內；掃描器無美股訊號。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1330",
+   "date": "2026-10-26",
+   "time": "01:52(10/27台北)",
+   "title": "美股盤中巡邏（紐約13:30場）",
+   "topic": "持股停損停利與訊號巡邏",
+   "attendees": [
+    "gm",
+    "research",
+    "risk"
+   ],
+   "summary": "S&P +0.67%，SPY 764.94、NVDA 215.935，持股在±5%內；掃描器無美股訊號；總資產5001.93。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1430",
+   "date": "2026-10-26",
+   "time": "02:42(10/27台北)",
+   "title": "美股盤中巡邏（紐約14:30場）",
+   "topic": "持股停損停利檢查、掃描器訊號",
+   "attendees": [
+    "gm",
+    "research",
+    "risk"
+   ],
+   "summary": "S&P 500 7,679.23 +0.73%，SPY 765.42、NVDA 216.06，持股都在±5%內；掃描器無美股訊號。總資產5002.24。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-26-us-intraday-1530",
+   "date": "2026-10-26",
+   "time": "03:45(10/27台北)",
+   "title": "美股盤中巡邏（15:30場，收盤前最後一場）",
+   "topic": "持股停損停利檢查、掃描器訊號",
+   "attendees": [
+    "research",
+    "risk",
+    "gm"
+   ],
+   "summary": "S&P 500 7,681.26 +0.76%；SPY 765.57、NVDA 216.46，持股都在±5%內；掃描器美股0訊號。",
+   "decision": "不交易，SPY、NVDA續抱"
+  },
+  {
+   "id": "2026-10-27-us-close-review",
+   "date": "2026-10-27",
+   "time": "06:12(10/27台北)",
+   "title": "美股收盤檢討會（10/26交易日）",
+   "topic": "10/26美股損益檢討、未成交條件單處理、10/27操作策略",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "S&P +0.70%、NVDA +2.39%；SPY 765.37、NVDA 216.00收盤；總資產5002.15；無條件單；掃描器無美股訊號。",
+   "decision": "不交易、不掛新條件單；SPY、NVDA續抱；本週現金≥90%；週三15:30紐約場檢討NVDA是否抱過財報"
+  },
+  {
+   "id": "2026-10-27-tw-intraday-0900",
+   "date": "2026-10-27",
+   "time": "09:02",
+   "title": "台股盤中巡邏（開盤）",
+   "topic": "開盤報價、掃描訊號、持股與條件單檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "加權指數09:02:10報46,484.30，較昨收46,041.43漲0.96%（來源：證交所MIS即時行情，查詢09:02台北）。台積電開盤2,380（昨收2,385）。台股無持股、無條件單。掃描器唯一訊號為2412中華電突破，但其Yahoo資料停在10/22，且台股突破訊號回測虧損，依流程不得作為進場依據。",
+   "decision": "不交易；台股空手，美股SPY、NVDA續抱（美股休市中），總資產沿用美股收盤估值US$5,002.15"
+  },
+  {
+   "id": "2026-10-27-tw-intraday-1000",
+   "date": "2026-10-27",
+   "time": "09:51",
+   "title": "台股盤中巡邏（10:00場）",
+   "topic": "即時報價、掃描訊號、持股與條件單檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "加權指數09:51:00報46,259.91，較昨收46,041.43漲0.47%，開盤46,211.20（證交所MIS即時行情，查詢09:51台北）；台積電開2,380、中華電開159.5，09:50暫無最新成交價欄位。掃描器09:51重跑（Yahoo）：唯一訊號仍是2412中華電突破，資料停在10/22且台股突破回測虧損，不得作為進場依據；美股無訊號。台股無持股、無條件單；美股休市。",
+   "decision": "不交易；台股空手，SPY、NVDA續抱，總資產US$5,002.15（美股10/26收盤估值）"
+  },
+  {
+   "id": "2026-10-27-tw-intraday-1100",
+   "date": "2026-10-27",
+   "time": "10:54",
+   "title": "台股盤中巡邏（11:00場）",
+   "topic": "即時報價、新聞、掃描訊號、持股與條件單檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "加權指數10:54:00報45,768.04，較昨收46,041.43跌0.59%（證交所MIS即時行情，查詢10:54台北）；盤中高點46,585.45後翻黑（Newtalk、中時10/27盤中報導）。台積電暫無最新成交欄位（昨收2,385、開2,380）。新聞：權值股台達電、聯發科轉弱，記憶體、機器人股強；本週Fed利率決議與科技巨頭財報，分析師建議觀望。掃描器10:54重跑（Yahoo）：唯一訊號仍是2412中華電突破，資料停在10/22且台股突破回測虧損，不得作為進場依據；美股無訊號。台股無持股、無條件單；美股休市。",
+   "decision": "不交易；台股空手，SPY、NVDA續抱，總資產US$5,002.15（美股10/26收盤估值）"
+  },
+  {
+   "id": "2026-10-27-tw-intraday-1200",
+   "date": "2026-10-27",
+   "time": "11:52",
+   "title": "台股盤中巡邏（12:00場）",
+   "topic": "即時報價、掃描訊號、持股與條件單檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "加權指數11:52:00報45,973.36，較昨收46,041.43跌0.15%，盤中高46,585.45、低45,676.67（證交所MIS即時行情，查詢11:52台北）；台積電11:52報2,390，漲0.21%（昨收2,385）。掃描器11:52重跑（Yahoo）：唯一訊號仍是2412中華電突破，資料停在10/22且台股突破回測虧損，不得作為進場依據；美股無新訊號。台股無持股、無條件單；美股休市。",
+   "decision": "不交易；台股空手，SPY、NVDA續抱，總資產US$5,002.15（美股10/26收盤估值）"
+  },
+  {
+   "id": "2026-10-27-tw-intraday-1300",
+   "date": "2026-10-27",
+   "time": "12:48",
+   "title": "台股盤中巡邏（13:00場）",
+   "topic": "即時報價、掃描訊號、持股與條件單檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "加權指數12:48:00報45,931.51，較昨收46,041.43跌0.24%，盤中高46,585.45、低45,676.67（證交所MIS即時行情，查詢12:48台北）；台積電12:47:55暫無最新成交欄位（昨收2,385、盤中高2,405、低2,380）。掃描器12:48重跑（Yahoo）：唯一訊號仍是2412中華電突破，資料停在10/22且台股突破回測虧損，不得作為進場依據；美股無訊號。台股無持股、無條件單；美股休市。",
+   "decision": "不交易；台股空手，SPY、NVDA續抱，總資產US$5,002.15（美股10/26收盤估值）"
+  },
+  {
+   "id": "2026-10-27-tw-close-review",
+   "date": "2026-10-27",
+   "time": "14:05",
+   "title": "台股收盤檢討會（全員）",
+   "topic": "今日損益檢討、以收盤價處理台積電、明日策略",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "加權指數收46,096.23（+0.12%），台積電收2,400（+0.63%）（證交所MIS即時行情（收盤13:30，查詢14:04台北）；經濟日報10/27 13:41報導；掃描器14:04重跑（Yahoo））。今日無成交、無否決、無停損停利。4檔台股突破訊號依規不採用。三大法人資料尚未公布。",
+   "decision": "不交易；台積電列觀察，待FOMC與美科技巨頭財報後重評；10/28台股空手巡邏；SPY、NVDA續抱（NVDA停損207/停利225）；總資產US$5,002.15"
+  },
+  {
+   "id": "2026-10-27-us-intraday-0930",
+   "date": "2026-10-27",
+   "time": "21:48",
+   "title": "美股盤中巡邏（09:30場）",
+   "topic": "即時報價、掃描訊號、持股停損停利檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "SPY 767.255（昨收765.37，+0.25%）、NVDA 216.87（昨收216.00，+0.40%），Yahoo Finance chart API即時報價（09:49:01紐約／21:49台北）；Reuters/Yahoo：S&P開盤+0.30%、Nasdaq+0.45%，油價回落，週三Fed利率決議、本週科技巨頭財報。 掃描器21:48重跑（Yahoo）：美股無超賣反彈或突破訊號；只有4檔台股突破訊號，依規不採用。無條件單。",
+   "decision": "不交易；SPY、NVDA續抱；總資產US$5003.78"
+  },
+  {
+   "id": "2026-10-27-us-intraday-1030",
+   "date": "2026-10-27",
+   "time": "22:46",
+   "title": "美股盤中巡邏（10:30場）",
+   "topic": "即時報價、新聞、掃描訊號、持股停損停利檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "SPY 767.81（昨收765.37，+0.32%）、NVDA 217.00（昨收216.00，+0.46%），S&P 500 7,702.97（+0.34%）、Nasdaq 26,359.19（+0.73%），Yahoo Finance chart API即時報價（10:46:20紐約／22:46台北）；新聞（Yahoo Finance 10:29 ET、AP 9:58 ET、Reuters 9:37 ET）：AI晶片股受Anthropic上市題材與Broadcom融資消息帶動，油價回落，Fed今明兩天開會（CME估升息機率約10%），週三微軟、Google財報。 掃描器22:46重跑（Yahoo）：美股無超賣反彈或突破訊號；4檔台股突破訊號（2892、5880、2207、3034）依規不採用。無條件單。",
+   "decision": "不交易；SPY、NVDA續抱；總資產US$5004.11"
+  },
+  {
+   "id": "2026-10-27-us-intraday-1130",
+   "date": "2026-10-27",
+   "time": "23:48",
+   "title": "美股盤中巡邏（11:30場）",
+   "topic": "即時報價、新聞、掃描訊號、持股停損停利檢查",
+   "attendees": [
+    "research",
+    "risk"
+   ],
+   "summary": "SPY 770.13（昨收765.37，+0.62%）、NVDA 218.54（昨收216.00，+1.18%），S&P 500 7,726.81（+0.65%）、Nasdaq 26,480.48（+1.19%），Yahoo Finance chart API即時報價（11:48:38紐約／23:48台北）；新聞（Yahoo Finance 11:15 ET、WSJ 11:18 ET、AP 11:00 ET）：Anthropic上市題材延續，晶片與AI基建股領漲，Brent約109美元仍高，Fed今明開會（CME估升息機率約10%），週三微軟、Google財報。 掃描器23:48重跑（Yahoo）：美股無超賣反彈或突破訊號；4檔台股突破訊號（2892、5880、2207、3034）依規不採用。無條件單。",
+   "decision": "不交易；SPY、NVDA續抱；總資產US$5006.66"
+  },
+  {
+   "id": "2026-10-28-strategy-reset",
+   "date": "2026-10-28",
+   "time": "00:00",
+   "title": "全員策略會（入金後策略重定）",
+   "topic": "成本門檻、新資金配置、NVDA抱不抱過財報、掃描器用法",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "入金25,000後總資本30,007.39。公司成本550,000台幣＝16,976.88美金（USD/TWD 32.397 Yahoo 00:02:50台北，Google 32.4097交叉驗證），打平需月報酬56.58%，團隊認為不合理、不當交易目標，內部目標月2–4%並打敗SPY。新配置：現金20–25%、ETF核心35%、個股波段20%、短線20–25%，美台75:25；本週事件前現金≥85%。執行SPY買3.5651股@770.66（Yahoo/Nasdaq雙來源）。NVDA抱過MSFT/GOOGL財報不加碼。掃描器加財報黑名單與事件前不開短線單。",
+   "decision": "新策略生效；買SPY 3.5651股@770.66（$2,747.48）；NVDA續抱；現金26752.54、總資產30007.31"
+  }
+ ],
+ "dailyReport": {
+  "date": "2026-10-28",
+  "summary": "00:00 Shane入金25,000，總資本30,007.39；全員策略會重定策略，成本55萬台幣＝16,976.88美金/月（USD/TWD 32.397 Yahoo，Google交叉驗證），打平需月報酬56.58%。買SPY 3.5651股@770.66補到10%；NVDA抱過微軟/Google財報。現金26,752.54、總資產30,007.31。本期淨收支（扣第1天成本攤提547.64）-540.33。"
+ },
+ "rules": {
+  "maxPositionPct": 10,
+  "dailyStopLossPct": 3,
+  "leverage": false
+ },
+ "capitalEvents": [
+  {
+   "date": "2026-10-28",
+   "time": "00:00",
+   "type": "DEPOSIT",
+   "amountUSD": 25000,
+   "approvedBy": "Shane",
+   "note": "Shane 2026-10-28 00:00 明確指令入金虛擬資金25,000美金；原持股SPY 0.3277股、NVDA 1.1635股與現金4,500.02照舊",
+   "equity_before_usd": 5007.39,
+   "equity_after_usd": 30007.39,
+   "equity_before_source": "SPY 770.80、NVDA 218.975（Yahoo chart API 2026-10-28 00:02:50 台北）"
+  }
+ ],
+ "companyCosts": {
+  "monthly_twd": 550000,
+  "breakdown_twd": {
+   "salaries": {
+    "headcount": 10,
+    "per_person": 45000,
+    "total": 450000
+   },
+   "operations": 100000
+  },
+  "fx_usd_twd": 32.397,
+  "fx_source": "Yahoo Finance chart API TWD=X 32.397（2026-10-28 00:02:50 台北）；交叉驗證 Google Finance USD/TWD 32.4097（2026-10-27 15:58 UTC＝23:58 台北），差0.04%；參考鉅亨網台北外匯收盤32.452（10/27 16:00台北，onshore）",
+  "monthly_usd": 16976.88,
+  "monthly_usd_check_with_google_fx": 16970.23,
+  "settlement_day": 10,
+  "cycle": "每月10日結算，涵蓋上月10日至本月9日；結算當下重查即時匯率（兩個來源）換算",
+  "accrual": "每日依日曆日攤提：當期月成本÷該結算週期天數；第一期2026-10-28~2026-11-09共13天、週期10/10~11/09共31天，預估按比例攤提13/31（待Shane確認，若他要整月就改）",
+  "first_period_estimate": {
+   "period": "2026-10-28~2026-11-09",
+   "days": 13,
+   "cycle_days": 31,
+   "cost_twd": 230645,
+   "cost_usd_at_fx": 7119.34,
+   "status": "預估，結算日以當天匯率重算"
+  },
+  "breakeven_monthly_return_pct": 56.58,
+  "breakeven_daily_return_pct_21d": 2.16,
+  "settlement_treatment": "結算日把當期成本從現金扣除（記一筆COMPANY_COST事件），若現金不足記為應付成本並觸發資金告急；之後由Shane決定是否續發30,000可操作金額，經他同意才入金"
+ },
+ "incomeStatement": {
+  "format": {
+   "trading": [
+    "realized_pnl_usd 已實現損益（含手續費後）",
+    "unrealized_pnl_usd 未實現損益（市值−成本）",
+    "fees_usd 手續費與證交稅",
+    "trading_net_usd 交易盈餘＝已實現+未實現（手續費已含在內，另列供檢查）"
+   ],
+   "company_cost": [
+    "salaries_twd/usd 薪資10人×45,000",
+    "operations_twd/usd 營運100,000",
+    "cost_total_twd/usd",
+    "fx 匯率、兩個來源與查詢時間"
+   ],
+   "net": [
+    "net_after_cost_usd 扣成本後淨收支＝trading_net_usd−cost_total_usd",
+    "cumulative 期初至今累計"
+   ]
+  },
+  "daily": [
+   {
+    "date": "2026-10-28",
+    "time": "00:07",
+    "period": "2026-10-28~2026-11-09",
+    "realized_pnl_usd": 0,
+    "unrealized_pnl_usd": 7.31,
+    "fees_usd": 0,
+    "trading_net_usd": 7.31,
+    "cost_accrued_today_twd": 17741.94,
+    "cost_accrued_today_usd": 547.64,
+    "cost_accrued_cum_twd": 17741.94,
+    "cost_accrued_cum_usd": 547.64,
+    "salaries_cum_twd": 14516.13,
+    "operations_cum_twd": 3225.81,
+    "net_after_cost_cum_usd": -540.33,
+    "fx": 32.397,
+    "fx_source": "Yahoo Finance chart API TWD=X 32.397（2026-10-28 00:02:50 台北）；交叉驗證 Google Finance USD/TWD 32.4097（2026-10-27 15:58 UTC＝23:58 台北），差0.04%；參考鉅亨網台北外匯收盤32.452（10/27 16:00台北，onshore）",
+    "note": "未實現含10/26起SPY/NVDA持股損益；10/28第1天攤提成本"
+   }
+  ],
+  "monthly": []
+ }
 }
