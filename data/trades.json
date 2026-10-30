@@ -1,10 +1,10 @@
 {
  "sample": false,
- "updatedAt": "2026-10-30T21:52:00+08:00",
+ "updatedAt": "2026-10-31T06:15:00+08:00",
  "month": "2026-10",
  "budgetUSD": 30000,
  "cashUSD": 25493.45,
- "equityUSD": 29891.25,
+ "equityUSD": 29874.13,
  "positions": [
   {
    "market": "US",
@@ -12,14 +12,14 @@
    "shares": 3.8928,
    "avgCost": 769.998,
    "costUSD": 2997.45,
-   "lastPrice": 760.285,
-   "marketValueUSD": 2959.64,
+   "lastPrice": 755.72,
+   "marketValueUSD": 2941.87,
    "stopLoss": 732,
    "takeProfit": 817,
    "note": "核心波段，持有2–4週；停損732（約-5%）、停利/檢討817（約+6%）",
    "role": "core_etf_swing",
-   "pnlPct": -1.26,
-   "priceSource": "SPY Yahoo chart 760.285（21:51:06 台北）／Nasdaq.com 760.41（9:50 AM ET），差0.02%，採較低760.285",
+   "pnlPct": -1.85,
+   "priceSource": "SPY Yahoo chart 755.72（10/30 4:00 PM ET收盤，查詢2026-10-31 06:10 台北）／Nasdaq.com 755.78（Closed 4:00 PM ET），差0.008%，採較低755.72",
    "name": "SPDR S&P 500 ETF",
    "currency": "USD"
   },
@@ -33,14 +33,14 @@
    "costTWD": 48568.5,
    "costUSD": 1499.81,
    "lastPrice": 104.95,
-   "marketValueUSD": 1438.16,
+   "marketValueUSD": 1438.82,
    "stopLoss": 103.07,
    "takeProfit": 115.01,
    "note": "核心波段第一批5%，持有2–4週；停損103.07（-5%）停利115.01（+6%）；第二批延後至外資賣超緩和或加權站回季線，加碼分兩次進場",
    "role": "core_etf_swing",
    "pnlPct": -3.27,
    "priceSource": "證交所MIS 0050 收盤104.95（13:30:00）／Yahoo chart 0050.TW 104.95（13:30:04），一致；查詢2026-10-30 14:05 台北",
-   "fxNote": "Yahoo TWD=X 32.62（14:05:03 台北）／鉅亨網USD/TWD 32.64（14:05:04），差0.06%，採Yahoo 32.62"
+   "fxNote": "USD/TWD：Yahoo TWD=X 32.605（2026-10-31 06:08:10 台北）；交叉驗證 Google Finance USD/TWD 32.6214（2026-10-31 06:07 台北），差0.05%，採Yahoo 32.605；鉅亨網32.478為10/30 16:00在岸收盤僅參考"
   }
  ],
  "trades": [
@@ -2540,6 +2540,286 @@
    "time": "21:52",
    "role": "recorder",
    "text": "已記帳：現金25493.45、總資產29891.25，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-30-2247-us-intraday",
+   "date": "2026-10-30",
+   "time": "22:47",
+   "role": "research",
+   "text": "SPY 759.69（Nasdaq 10:46 ET／Yahoo 759.80），QQQ 696.79（-2.59%），LLY 1,428.545（+3.99%），S&P -1.28%，VIX 19.83（單一來源僅參考）。"
+  },
+  {
+   "meetingId": "2026-10-30-2247-us-intraday",
+   "date": "2026-10-30",
+   "time": "22:47",
+   "role": "risk",
+   "text": "LLY超過上限1,415、QQQ低於下限704.61，兩筆條件單都不成立，照原條件取消，不放寬。SPY -1.3%，距停損732還遠，續抱。"
+  },
+  {
+   "meetingId": "2026-10-30-2247-us-intraday",
+   "date": "2026-10-30",
+   "time": "22:48",
+   "role": "decision",
+   "text": "同意：LLY、QQQ取消，今天科技賣壓還在，不開新單。"
+  },
+  {
+   "meetingId": "2026-10-30-2247-us-intraday",
+   "date": "2026-10-30",
+   "time": "22:48",
+   "role": "recorder",
+   "text": "已記帳：兩筆條件單取消、現金25493.45、總資產29888.93，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-30-2345-us-intraday",
+   "date": "2026-10-30",
+   "time": "23:45",
+   "role": "research",
+   "text": "SPY 757.39（Yahoo／Nasdaq 757.41），S&P -1.59%，Nasdaq -3.1%，VIX 19.58僅參考；Reuters說AMZN、INTC加深AI資本支出疑慮。"
+  },
+  {
+   "meetingId": "2026-10-30-2345-us-intraday",
+   "date": "2026-10-30",
+   "time": "23:46",
+   "role": "risk",
+   "text": "S&P跌超過1.5%，照策略不加碼也不開新短線；SPY -1.64%離停損732還遠，續抱。"
+  },
+  {
+   "meetingId": "2026-10-30-2345-us-intraday",
+   "date": "2026-10-30",
+   "time": "23:46",
+   "role": "recorder",
+   "text": "已記帳：現金25493.45、總資產29879.98，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-31-0046-us-intraday",
+   "date": "2026-10-31",
+   "time": "00:46",
+   "role": "research",
+   "text": "SPY 756.41（Yahoo）／757.18（Nasdaq），S&P -1.72%、Nasdaq 100 跌3%多，Alphabet、Amazon、Intel財報後科技股重挫；無條件單、掃描器訊號仍是10/29日線。"
+  },
+  {
+   "meetingId": "2026-10-31-0046-us-intraday",
+   "date": "2026-10-31",
+   "time": "00:47",
+   "role": "risk",
+   "text": "S&P跌超過1.5%，不加碼不開新單；SPY -1.76%離停損732還遠，續抱；總資產較今天14:05 -0.19%，沒到-2%。"
+  },
+  {
+   "meetingId": "2026-10-31-0046-us-intraday",
+   "date": "2026-10-31",
+   "time": "00:47",
+   "role": "recorder",
+   "text": "已記帳：現金25493.45、總資產29876.16，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-31-0145-us-intraday",
+   "date": "2026-10-31",
+   "time": "01:45",
+   "role": "research",
+   "text": "SPY 754.94（Nasdaq）／755.44（Yahoo），S&P -1.89%、QQQ -3.67%，VIX 21.02僅參考；Bloomberg、NBC說AI資本支出疑慮讓科技股賣壓加深。"
+  },
+  {
+   "meetingId": "2026-10-31-0145-us-intraday",
+   "date": "2026-10-31",
+   "time": "01:46",
+   "role": "risk",
+   "text": "S&P跌超過1.5%、VIX破20，不加碼不開新單；SPY -1.96%離停損732還遠，續抱；總資產較14:05 -0.21%，沒到-2%。"
+  },
+  {
+   "meetingId": "2026-10-31-0145-us-intraday",
+   "date": "2026-10-31",
+   "time": "01:46",
+   "role": "recorder",
+   "text": "已記帳：現金25493.45、總資產29870.44，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-31-0250-us-intraday",
+   "date": "2026-10-31",
+   "time": "02:50",
+   "role": "research",
+   "text": "SPY 751.07（Nasdaq）／753.26（Yahoo），S&P -2.43%、QQQ -4.33%，VIX 23.50僅參考；AP說科技股賣壓拖累華爾街，可能是6月以來最慘的一天，Intel跌近30%。"
+  },
+  {
+   "meetingId": "2026-10-31-0250-us-intraday",
+   "date": "2026-10-31",
+   "time": "02:51",
+   "role": "risk",
+   "text": "S&P跌超過1.5%、VIX破20，不加碼不開新單；SPY -2.46%未達±5%，離停損732還遠，續抱；總資產較14:05 -0.26%，沒到-2%。"
+  },
+  {
+   "meetingId": "2026-10-31-0250-us-intraday",
+   "date": "2026-10-31",
+   "time": "02:51",
+   "role": "recorder",
+   "text": "已記帳：現金25493.45、總資產29855.37，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-31-0348-us-intraday",
+   "date": "2026-10-31",
+   "time": "03:48",
+   "role": "research",
+   "text": "SPY 753.67（Yahoo）／753.68（Nasdaq），S&P -2.08%、QQQ -3.74%，尾盤比14:50稍微收斂；VIX 21.06僅參考；Reuters說AI燒錢疑慮帶動科技股賣壓。"
+  },
+  {
+   "meetingId": "2026-10-31-0348-us-intraday",
+   "date": "2026-10-31",
+   "time": "03:49",
+   "role": "risk",
+   "text": "S&P跌超過1.5%、VIX仍在20以上，不開新單、不加碼；SPY -2.12%未達±5%，離停損732還遠，續抱；總資產較14:05 -0.23%，沒到-2%。"
+  },
+  {
+   "meetingId": "2026-10-31-0348-us-intraday",
+   "date": "2026-10-31",
+   "time": "03:49",
+   "role": "recorder",
+   "text": "已記帳：現金25493.45、總資產29865.50，Decimal和float驗算一致。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:05",
+   "role": "gm",
+   "text": "美股收盤檢討會＋本週覆盤開始：檢討10/30美股損益、處理條件單、決定下週一（11/2）操作。Shane這場沒有新插話。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:06",
+   "role": "research",
+   "text": "SPY收755.72（Yahoo）／755.78（Nasdaq），採755.72，單日-1.77%；QQQ收690.49（-3.47%，兩邊一致）。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:06",
+   "role": "research",
+   "text": "大盤：S&P 7,580.07（-1.82%）、Nasdaq 25,437.00（-2.86%），Yahoo；VIX 19.42（Yahoo 04:15，單一來源僅參考），還在20以下。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:07",
+   "role": "research",
+   "text": "新聞：Reuters「Wall Street closes sharply lower as AI cash burn fears spark tech selloff」、NYT「Tech Stocks See Worst Day Since June」；INTC單日-28.58%、AMZN財報後重挫。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:07",
+   "role": "research",
+   "text": "匯率：Yahoo 32.605（06:08）／Google Finance 32.6214（06:07），差0.05%，採32.605。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:08",
+   "role": "risk",
+   "text": "昨晚損益：NVDA 21:51停損出場-9.29（-3.72%）；SPY收盤較昨天少53.04；總資產29,874.13，比前一場收盤檢討29,971.20少97.06（-0.32%），沒碰3%停手線。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:08",
+   "role": "risk",
+   "text": "停損做得對：NVDA收在204.64，比我們出場價206.89再低1.1%。SPY距停損732還有3.1%，續抱。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:09",
+   "role": "scout",
+   "text": "掃描器06:08重跑（10/30日線）：超賣反彈GOOGL、INTC；突破WMT、XOM、CVX、LLY。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:09",
+   "role": "scout",
+   "text": "提案一：WMT突破，收123.51（Nasdaq 123.51一致），量比1.51，財報11/19不在黑名單；科技殺盤時資金流向防禦股（IBD「Investors Snack On Mondelez, Walmart As Tech Stocks Rocked」），短線5%。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:10",
+   "role": "scout",
+   "text": "提案二：XOM突破，收187.25（Nasdaq 187.26），量比1.84；10/30財報優於預期（Reuters、CNBC），財報已過；和大盤科技股走勢相關性低，短線5%。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:10",
+   "role": "devil",
+   "text": "XOM是因為戰爭推高煉油利潤創新高，題材型行情很容易反轉；WMT RSI 72.7也偏熱。昨天S&P跌1.82%，週一可能續跌，進場要等開盤確認。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:11",
+   "role": "risk",
+   "text": "同意WMT、XOM各5%（約1,490美金，低於單筆上限2,987.41），但要條件單：週一紐約10:30後S&P當日跌幅未超過1.5%、VIX<20、價格守在突破點上方且不追超過+3%。停損-4%、停利+6%、最多10個交易日。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:11",
+   "role": "scout",
+   "text": "CVX和XOM同產業，只選一檔避免集中，CVX不提。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:12",
+   "role": "scout",
+   "text": "LLY突破續強，收1,417.54，提案再進場5%。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:12",
+   "role": "risk",
+   "text": "否決LLY：距20日線+13.8%、RSI 77.9過熱，已經超過我們昨天定的不追高上限1,415，追高風險太大。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:12",
+   "role": "risk",
+   "text": "否決GOOGL、INTC：都是財報暴跌造成的超賣（INTC單日-28.58%），GOOGL又再破底到279.84，比照BA、CAT先例不接刀。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:13",
+   "role": "scout",
+   "text": "QQQ核心第二批：週一不進，等AAPL（11/2盤後）、AMD（11/3盤後）財報和11/3美國期中選舉後，週三再評估。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:13",
+   "role": "decision",
+   "text": "拍板：一、SPY、0050續抱，停損停利不變；二、新增WMT 5%、XOM 5%週一條件單；三、否決LLY、GOOGL、INTC；四、QQQ延到週三再評估。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:14",
+   "role": "decision",
+   "text": "理由：大盤剛出現6月以來最大跌幅，但VIX仍<20，現金85%太保守會跑輸目標；用非科技、財報已過的突破股分散，加碼後現金仍約75%，符合策略配置。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:14",
+   "role": "gm",
+   "text": "提醒：美國11/1結束夏令時間，週一起美股開盤是台北22:30，10:30 ET條件確認是台北23:30。"
+  },
+  {
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:15",
+   "role": "recorder",
+   "text": "本週覆盤已寫進reviews；帳本更新：現金25,493.45、總資產29,874.13，Decimal和float驗算一致。"
   }
  ],
  "meetings": [
@@ -3416,11 +3696,114 @@
    ],
    "summary": "美股盤中會（22:30前09:30–10:30 ET時段，21:49台北開＝09:49 ET）。報價：SPY Yahoo 760.285／Nasdaq 760.41（-1.16%）；NVDA Yahoo 206.852→206.89／Nasdaq 206.865→206.90（-3.16%），跌破停損207；QQQ Yahoo 696.37／Nasdaq 696.65（-2.6%）；LLY Yahoo 1,424.09／Nasdaq 1,424.085（+3.7%）；S&P 500 Yahoo ^GSPC 7,627.60（-1.20%，21:50台北）；VIX 19.08（Yahoo 21:35，單一來源僅參考）。新聞（Google News RSS 21:50台北）：Bloomberg『Tech Stock Selloff Deepens on Earnings, Oil Rises』、NYT『Tech Stocks Tumble, but Broader Market Is Holding On』、Yahoo Finance『US Stock Futures Fall As AMZN, INTC Earnings Trigger Tech Sell-Off』、Yahoo Finance『Nvidia Facing Questions As Suspected Chinese Intelligence Asset Got Close to Jensen Huang』。風控判定NVDA觸停損，直接通知整合決策以206.89出場，實現-9.29美金（-3.72%），無手續費。LLY、QQQ條件單依原設定在紐約10:30後（22:30場）判斷，目前LLY高於上限1,415、QQQ低於下限704.61，若22:30仍如此就取消。掃描器（21:50跑，10/29資料）美股訊號GOOGL、CAT超賣反彈、LLY突破；CAT早上已被風控否決，科技賣壓擴大中不開新單。總資產29891.25（較14:05的29,934.44 -0.14%），未達-2%。Decimal與float驗算一致。",
    "decision": "NVDA停損出場206.89；SPY續抱（-1.4%，距停損732仍遠）；不開新單；LLY、QQQ條件單留待22:30場判斷"
+  },
+  {
+   "id": "2026-10-30-2247-us-intraday",
+   "date": "2026-10-30",
+   "time": "22:47",
+   "title": "美股盤中會（22:47場，條件單判斷）",
+   "topic": "紐約10:30後判斷LLY、QQQ條件單；SPY巡邏",
+   "attendees": [
+    "research",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "美股盤中會（22:47台北＝10:47 ET）。報價：SPY Yahoo 759.80（22:47:19台北）／Nasdaq 759.69（10:46 AM ET，-1.26%），差0.01%；QQQ Yahoo 696.91／Nasdaq 696.79（-2.59%）；LLY Yahoo 1,428.545／Nasdaq 1,428.545（+3.99%）；S&P 500 Yahoo ^GSPC 7,621.34（-1.28%，22:47台北）；VIX 19.83（Yahoo 22:32，單一來源僅參考）。新聞（Google News RSS 22:47台北）：CNBC『Nasdaq falls more than 2% as investors rotate out of tech after Amazon, Intel earnings』（22:03台北）、Yahoo Finance『S&P 500 sinks as Amazon, Intel losses shake Wall Street』（22:11台北）。掃描器22:47重跑：美股訊號仍為GOOGL、CAT超賣反彈與LLY突破（10/29日線資料），科技賣壓中不開新單。LLY條件單因高於上限1,415取消、QQQ條件單因低於下限704.61取消，皆依原條件，未放寬。SPY續抱（較成本769.998 -1.34%，距停損732仍遠）。0050沿用台股收盤104.95、FX 32.62。總資產29888.93（較21:51的29,891.25 -2.32），未達-2%。Decimal與float驗算一致。",
+   "decision": "LLY、QQQ條件單依條件取消；SPY續抱，停損732停利817不變；不開新單"
+  },
+  {
+   "id": "2026-10-30-2345-us-intraday",
+   "date": "2026-10-30",
+   "time": "23:45",
+   "title": "美股盤中會（23:45場，巡邏）",
+   "topic": "持股巡邏、掃描器訊號、大盤跌幅檢查",
+   "attendees": [
+    "research",
+    "risk",
+    "recorder"
+   ],
+   "summary": "23:45台北＝11:45 ET。報價：SPY Yahoo 757.39（23:45:22台北）／Nasdaq 757.41（11:44 AM ET，-1.55%）；QQQ Yahoo 693.067／Nasdaq 693.16（-3.10%）；S&P 500 Yahoo ^GSPC 7,597.34（-1.59%，23:45台北）；VIX 19.58（Yahoo 23:30，單一來源僅參考）；GOOGL Yahoo 281.91／Nasdaq 281.92（-0.67%）；CAT Yahoo 632.80／Nasdaq 632.80（-2.25%）；LLY Yahoo 1,423.84（+3.65%）。新聞（Google News RSS 23:45台北）：Reuters『Nasdaq hits near three-month low as Amazon, Intel deepen AI capex concerns』（22:36台北）、CBS『Tech stocks crushed as Nasdaq tumbles more than 600 points』（22:43台北）、Bloomberg『Tech Stock Selloff Deepens on Earnings, Oil Rises』（22:50台北）。掃描器23:45跑：美股GOOGL、CAT超賣反彈、LLY突破（10/29日線）。S&P當日-1.59%已超過策略的1.5%加碼門檻，不開新單、不需提案。SPY較成本-1.64%，距停損732還遠，續抱；0050沿用台股收盤104.95、FX 32.62。總資產29,879.98（較14:05的29,934.44 -0.18%），未達-2%。Decimal與float驗算一致。無待執行條件單。",
+   "decision": "不交易；SPY續抱（停損732、停利817不變）；S&P跌逾1.5%暫停加碼"
+  },
+  {
+   "id": "2026-10-31-0046-us-intraday",
+   "date": "2026-10-31",
+   "time": "00:46",
+   "title": "美股盤中會（00:46場，巡邏）",
+   "topic": "持股巡邏、掃描器訊號、大盤跌幅檢查",
+   "attendees": [
+    "research",
+    "risk",
+    "recorder"
+   ],
+   "summary": "00:46台北＝10/30 12:46 ET。報價：SPY Yahoo 756.41（00:46:33台北）／Nasdaq 757.18（12:46 PM ET，-1.58%），差0.10%；QQQ Yahoo 690.972／Nasdaq 691.34（-3.36%）；S&P 500 Yahoo ^GSPC 7,587.69（-1.72%）；VIX 19.91（Yahoo 00:31，單一來源僅參考）。新聞（Google News RSS 00:46台北）：NYT『Tech Stocks Tumble, but Broader Market Is Holding On』（23:53台北）、Yahoo Finance『Alphabet loses $475 billion in market value, the biggest drop in its history』（00:17台北）、Morningstar『Tech Stocks Sell Off as Intel, Amazon Earnings Spook Investors』（00:11台北）。掃描器00:46跑：美股GOOGL、CAT超賣反彈、LLY突破（10/29日線）；S&P當日-1.72%超過1.5%門檻，不開新單。無待執行條件單。SPY較成本769.998 -1.76%，距停損732還遠，續抱；0050沿用台股收盤104.95、FX 32.62。總資產29876.16（較14:05的29,934.44 -0.19%），未達-2%。Decimal與float驗算一致。",
+   "decision": "不交易；SPY續抱（停損732、停利817不變）；S&P跌逾1.5%暫停加碼"
+  },
+  {
+   "id": "2026-10-31-0145-us-intraday",
+   "date": "2026-10-31",
+   "time": "01:45",
+   "title": "美股盤中會（01:45場，巡邏）",
+   "topic": "持股巡邏、掃描器訊號、大盤跌幅檢查",
+   "attendees": [
+    "research",
+    "risk",
+    "recorder"
+   ],
+   "summary": "01:45台北＝10/30 13:45 ET。報價：SPY Nasdaq 754.94（1:46 PM ET，-1.87%）／Yahoo 755.44（01:21:37台北），差0.07%採754.94；QQQ Yahoo 688.72（01:44:32台北）／Nasdaq 689.09（1:46 PM ET，-3.67%）；S&P 500 Yahoo ^GSPC 7,574.62（-1.89%，01:44台北）；VIX 21.02（Yahoo 01:29，單一來源僅參考）。新聞（Google News RSS 01:46台北）：Bloomberg『Tech Stock Selloff Deepens on Earnings, Oil Rises』（01:12台北）、NBC『Tech stocks set to wipe out more than $1 trillion as concerns deepen about the AI boom』（00:38台北）、Business Insider『Nasdaq plunges after dismal earnings from Amazon and Intel』（00:42台北）。掃描器01:45跑（日線訊號未變）；S&P當日-1.89%超過1.5%門檻且VIX>20，不開新單。無待執行條件單。SPY較成本769.998 -1.96%，距停損732還遠，續抱；0050沿用台股收盤104.95、FX 32.62。總資產29,870.44（較14:05的29,934.44 -0.21%），未達-2%。Decimal與float驗算一致。",
+   "decision": "不交易；SPY續抱（停損732、停利817不變）；S&P跌逾1.5%、VIX破20暫停加碼"
+  },
+  {
+   "id": "2026-10-31-0250-us-intraday",
+   "date": "2026-10-31",
+   "time": "02:50",
+   "title": "美股盤中會（02:50場，巡邏）",
+   "topic": "持股巡邏、掃描器訊號、大盤跌幅檢查",
+   "attendees": [
+    "research",
+    "risk",
+    "recorder"
+   ],
+   "summary": "02:50台北＝10/30 14:50 ET。報價：SPY Nasdaq 751.0699（2:50 PM ET，-2.38%）／Yahoo 753.26（regularMarketTime 02:13:01台北），差0.29%採751.07；QQQ Nasdaq 684.36（2:50 PM ET，-4.33%）／Yahoo 684.24（02:50:30台北）；S&P 500 Yahoo ^GSPC 7,532.80（前收7,720.39，-2.43%，02:50:30台北）；VIX 23.50（Yahoo 02:28，單一來源僅參考）。新聞（Google News RSS 02:50台北）：AP『The sell-off for tech stocks deepens and drags Wall Street toward its worst day since June』（02:30台北）、Guardian『Tech sell-off drives US markets down by nearly $1tn after subpar earnings reports』（02:28台北）、Yahoo Finance『Intel stock plunges nearly 30%, on pace for its worst day since 1974』（02:04台北）。掃描器02:50跑（80檔、日線訊號未變：GOOGL、CAT超賣反彈、LLY突破，皆10/29日線）；S&P當日-2.43%超過1.5%門檻且VIX>20，不開新單。無待執行條件單。SPY較成本769.998 -2.46%，未達±5%，距停損732還遠，續抱；0050沿用台股收盤104.95、FX 32.62（市值1,438.16）。總資產29,855.37（較14:05的29,934.44 -0.26%），未達-2%。Decimal與float驗算一致。",
+   "decision": "不交易；SPY續抱（停損732、停利817不變）；S&P跌逾1.5%、VIX破20暫停加碼"
+  },
+  {
+   "id": "2026-10-31-0348-us-intraday",
+   "date": "2026-10-31",
+   "time": "03:48",
+   "title": "美股盤中會（03:48場，巡邏）",
+   "topic": "持股巡邏、掃描器訊號、大盤跌幅檢查",
+   "attendees": [
+    "research",
+    "risk",
+    "recorder"
+   ],
+   "summary": "03:48台北＝10/30 15:48 ET。報價：SPY Yahoo 753.67（03:48:00台北）／Nasdaq 753.68（3:47 PM ET，-2.04%），一致；QQQ Yahoo 688.57（03:47:54台北）／Nasdaq 688.56（3:47 PM ET，-3.74%）；S&P 500 Yahoo ^GSPC 7,559.84（前收7,720.39，-2.08%，03:48:01台北）；VIX 21.06（Yahoo 03:32，單一來源僅參考）。新聞（Google News RSS 03:48台北）：Reuters『Wall Street slides as AI cash burn worries spark tech selloff』（02:45台北）、Bloomberg『Tech Stock Selloff Deepens on Earnings, Oil Rises』（03:09台北）、Yahoo Finance『Alphabet loses $475 billion in market value, the biggest drop in its history』。掃描器03:48跑（80檔，日線訊號未變）；S&P當日-2.08%超過1.5%門檻且VIX>20，不開新單；週五尾盤也不追。無待執行條件單。SPY較成本769.998 -2.12%，未達±5%，續抱；0050沿用台股收盤104.95、FX 32.62（市值1,438.16）。總資產29,865.50（較14:05的29,934.44 -0.23%），未達-2%。Decimal與float驗算一致。",
+   "decision": "不交易；SPY續抱（停損732、停利817不變）；S&P跌逾1.5%、VIX>20暫停加碼"
+  },
+  {
+   "id": "2026-10-31-0605-us-close-review",
+   "date": "2026-10-31",
+   "time": "06:05",
+   "title": "美股收盤檢討會＋週五覆盤",
+   "topic": "10/30美股損益檢討、條件單處理、11/2（週一）操作策略、本週覆盤",
+   "attendees": [
+    "gm",
+    "research",
+    "scout",
+    "devil",
+    "risk",
+    "decision",
+    "recorder"
+   ],
+   "summary": "美股10/30收盤檢討（台北06:05，報價查詢06:08–06:12）。SPY Yahoo chart 755.72（10/30 4:00 PM ET收盤，查詢2026-10-31 06:10 台北）／Nasdaq.com 755.78（Closed 4:00 PM ET），差0.008%，採較低755.72；QQQ Yahoo 690.49／Nasdaq 690.49（-3.47%）；S&P 7,580.07（-1.82%）、Nasdaq 25,437.00（-2.86%）（Yahoo ^GSPC/^IXIC）；VIX 19.42（Yahoo 04:15，單一來源僅參考）。新聞：Reuters、NYT、NBC 10/30 科技股6月以來最大跌幅；INTC -28.58%。NVDA 21:51停損-9.29。掃描器06:08（10/30日線）：GOOGL、INTC超賣反彈（財報暴跌，否決）；WMT、XOM、CVX、LLY突破。WMT Nasdaq 123.51、XOM 187.26、LLY 1,415.68、GOOGL 279.84、INTC 65.76（4:00 PM ET收盤）。USD/TWD：Yahoo TWD=X 32.605（2026-10-31 06:08:10 台北）；交叉驗證 Google Finance USD/TWD 32.6214（2026-10-31 06:07 台北），差0.05%，採Yahoo 32.605；鉅亨網32.478為10/30 16:00在岸收盤僅參考。總資產29874.13（現金25,493.45＋SPY 2941.87＋0050 1438.82），較期初30,007.39 -133.26。Decimal與float驗算一致。",
+   "decision": "SPY/0050續抱；否決LLY、GOOGL、INTC；新增WMT 5%、XOM 5%週一（11/2）條件單；QQQ第二批延到AAPL/AMD財報與11/3期中選舉後（週三）再評估"
   }
  ],
  "dailyReport": {
-  "date": "2026-10-30",
-  "summary": "美股10/29收盤檢討（06:05）：沒有成交；否決GOOGL、CAT（財報暴跌不接刀）；新增LLY、QQQ各5%條件單（今晚22:30場判斷）；台積電條件單9:00照原條件判斷。現金25,252.73、總資產29,971.20（較期初-0.12%）。模擬交易、非投資建議。"
+  "date": "2026-10-31",
+  "summary": "美股10/30收盤檢討（06:05）：沒有新成交（NVDA 10/30 21:51已停損-9.29）；否決LLY、GOOGL、INTC；新增WMT、XOM各5%週一條件單；QQQ延到週三評估。現金25,493.45、總資產29874.13（較期初-133.26）。模擬交易、非投資建議。"
  },
  "rules": {
   "maxPositionPct": 10,
@@ -3602,6 +3985,44 @@
     "fx": 32.504,
     "fx_source": "USD/TWD：Yahoo TWD=X 32.504（2026-10-30 05:57:44 台北）；交叉驗證 Google Finance USD/TWD 32.5203（06:04 台北），差0.05%，採Yahoo 32.504；鉅亨網32.492為10/29 16:00在岸收盤僅參考",
     "note": "10/30第3天攤提；美股10/29收盤估值；未實現SPY -2.49、NVDA -1.42、0050 -24.89；Decimal與float驗算一致"
+   },
+   {
+    "date": "2026-10-30",
+    "time": "14:05",
+    "period": "2026-10-28~2026-11-09",
+    "realized_pnl_usd": 0,
+    "unrealized_pnl_usd": -65.56,
+    "fees_usd": 2.13,
+    "trading_net_usd": -65.56,
+    "cost_accrued_today_twd": 17741.94,
+    "cost_accrued_today_usd": 543.9,
+    "cost_accrued_cum_twd": 53225.81,
+    "cost_accrued_cum_usd": 1631.69,
+    "salaries_cum_twd": 43548.39,
+    "operations_cum_twd": 9677.42,
+    "net_after_cost_cum_usd": -1697.25,
+    "fx": 32.62,
+    "fx_source": "USD/TWD：Yahoo TWD=X 32.62（14:05:03 台北）／鉅亨網USD/TWD 32.64（14:05:04），差0.06%，採Yahoo 32.62",
+    "note": "台股收盤；10/30第3天攤提（06:05已記，不重複，以最新匯率重算美金）；未實現SPY -2.49、NVDA -1.42、0050 -61.65；Decimal與float驗算一致"
+   },
+   {
+    "date": "2026-10-31",
+    "time": "06:05",
+    "period": "2026-10-28~2026-11-09",
+    "realized_pnl_usd": -9.29,
+    "unrealized_pnl_usd": -116.58,
+    "fees_usd": 2.13,
+    "trading_net_usd": -125.87,
+    "cost_accrued_today_twd": 17741.94,
+    "cost_accrued_today_usd": 544.15,
+    "cost_accrued_cum_twd": 70967.74,
+    "cost_accrued_cum_usd": 2176.59,
+    "salaries_cum_twd": 58064.52,
+    "operations_cum_twd": 12903.23,
+    "net_after_cost_cum_usd": -2302.46,
+    "fx": 32.605,
+    "fx_source": "USD/TWD：Yahoo TWD=X 32.605（2026-10-31 06:08:10 台北）；交叉驗證 Google Finance USD/TWD 32.6214（2026-10-31 06:07 台北），差0.05%，採Yahoo 32.605；鉅亨網32.478為10/30 16:00在岸收盤僅參考",
+    "note": "10/31第4天攤提（日曆日，週末照攤）；美股10/30收盤估值；已實現NVDA -9.29；未實現SPY -55.58、0050 -60.99；Decimal與float驗算一致"
    }
   ],
   "monthly": []
@@ -3719,6 +4140,57 @@
    "priceSource": "Nasdaq.com 10/29收盤647.24（-9.27%）／scanner Yahoo 647.39，差0.02%",
    "quoteTime": "2026-10-30 06:04 台北",
    "meetingId": "2026-10-30-0605-us-close-review"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "06:12",
+   "market": "US",
+   "symbol": "LLY",
+   "name": "Eli Lilly",
+   "currency": "USD",
+   "side": "BUY",
+   "amountUSD": 1493.71,
+   "proposedBy": "scout",
+   "vetoedBy": "risk",
+   "reason": "突破後過熱：距MA20 +13.8%、RSI 77.9，已超過前一日不追高上限1,415，不追高",
+   "price": 1417.54,
+   "priceSource": "scanner Yahoo 10/30收盤1,417.54／Nasdaq.com 1,415.68（4:00 PM ET），差0.13%",
+   "quoteTime": "2026-10-31 06:08–06:12 台北",
+   "meetingId": "2026-10-31-0605-us-close-review"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "06:12",
+   "market": "US",
+   "symbol": "GOOGL",
+   "name": "Alphabet",
+   "currency": "USD",
+   "side": "BUY",
+   "amountUSD": 1493.71,
+   "proposedBy": "scout",
+   "vetoedBy": "risk",
+   "reason": "財報後暴跌造成的超賣，10/30再破底，比照BA、CAT先例不接刀",
+   "price": 279.84,
+   "priceSource": "scanner Yahoo 10/30收盤279.84／Nasdaq.com 279.84",
+   "quoteTime": "2026-10-31 06:08–06:12 台北",
+   "meetingId": "2026-10-31-0605-us-close-review"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "06:12",
+   "market": "US",
+   "symbol": "INTC",
+   "name": "Intel",
+   "currency": "USD",
+   "side": "BUY",
+   "amountUSD": 1493.71,
+   "proposedBy": "scout",
+   "vetoedBy": "risk",
+   "reason": "財報後單日-28.58%崩跌，屬公司利空不是單純超賣，不接刀",
+   "price": 65.76,
+   "priceSource": "scanner Yahoo 10/30收盤65.76／Nasdaq.com 65.76（-28.58%）",
+   "quoteTime": "2026-10-31 06:08–06:12 台北",
+   "meetingId": "2026-10-31-0605-us-close-review"
   }
  ],
  "pendingOrders": [
@@ -3801,8 +4273,11 @@
    "takeProfitPct": 6,
    "holdDays": "短線，最多10個交易日（第10個交易日收盤到期出場）",
    "reason": "掃描器美股突破訊號（10/29收1,373.70，突破20日高1,321.21，量比1.92）；10/29公布Q3並上調全年財測（Lilly官方新聞稿、CNBC、Reuters），財報已過不在黑名單；盤後1,382.02（+0.66%，Nasdaq 6:05 PM ET）",
-   "status": "conditional",
-   "meetingId": "2026-10-30-0605-us-close-review"
+   "status": "cancelled",
+   "meetingId": "2026-10-30-0605-us-close-review",
+   "cancelledAt": "2026-10-30 22:47",
+   "cancelMeetingId": "2026-10-30-2247-us-intraday",
+   "cancelReason": "紐約10:47 LLY Yahoo 1,428.545／Nasdaq 1,428.545（+3.99%），高於條件上限1,415（不追高），依條件取消"
   },
   {
    "id": "2026-10-30-QQQ-core1",
@@ -3819,8 +4294,74 @@
    "takeProfitPct": 6,
    "holdDays": "2–4週（核心波段）",
    "reason": "策略會規劃FOMC與大型財報後VIX<20、S&P跌幅未超過1.5%就分批加碼；QQQ核心目標10%先進第一批5%。但AMZN、INTC盤後財報重挫、QQQ盤後704.97（-1.45%，Nasdaq 6:03 PM ET），所以設開盤後一小時確認、不在盤前追",
-   "status": "conditional",
-   "meetingId": "2026-10-30-0605-us-close-review"
+   "status": "cancelled",
+   "meetingId": "2026-10-30-0605-us-close-review",
+   "cancelledAt": "2026-10-30 22:47",
+   "cancelMeetingId": "2026-10-30-2247-us-intraday",
+   "cancelReason": "紐約10:46 QQQ Yahoo 696.91／Nasdaq 696.79（-2.59%），低於條件下限704.61，依條件取消"
+  },
+  {
+   "id": "2026-11-02-WMT-short1",
+   "created": "2026-10-31 06:13",
+   "market": "US",
+   "symbol": "WMT",
+   "name": "Walmart",
+   "currency": "USD",
+   "side": "BUY",
+   "sizePct": 5,
+   "approxUSD": 1493.71,
+   "condition": "11/2紐約10:30後（台北23:30場，夏令時間結束）WMT雙來源報價介於122.40～127.22（跌破前20日高122.40代表突破失敗不接、高於10/30收盤123.51超過+3%不追）、S&P當日跌幅未超過1.5%、VIX<20；不符則取消",
+   "stopLossPct": -4,
+   "takeProfitPct": 6,
+   "holdDays": "短線，最多10個交易日",
+   "reason": "掃描器美股突破訊號（10/30收123.51，突破20日高122.40，量比1.51）；財報11/19不在黑名單；科技殺盤時資金轉向防禦股（IBD 10/30）",
+   "status": "pending",
+   "meetingId": "2026-10-31-0605-us-close-review"
+  },
+  {
+   "id": "2026-11-02-XOM-short1",
+   "created": "2026-10-31 06:13",
+   "market": "US",
+   "symbol": "XOM",
+   "name": "Exxon Mobil",
+   "currency": "USD",
+   "side": "BUY",
+   "sizePct": 5,
+   "approxUSD": 1493.71,
+   "condition": "11/2紐約10:30後（台北23:30場）XOM雙來源報價介於184.88～192.87（跌破前20日高184.88不接、高於10/30收盤187.25超過+3%不追）、S&P當日跌幅未超過1.5%、VIX<20；不符則取消",
+   "stopLossPct": -4,
+   "takeProfitPct": 6,
+   "holdDays": "短線，最多10個交易日",
+   "reason": "掃描器美股突破訊號（10/30收187.25，突破20日高184.88，量比1.84）；10/30財報優於預期（Reuters、CNBC 10/30），財報已過；與科技股相關性低可分散",
+   "status": "pending",
+   "meetingId": "2026-10-31-0605-us-close-review"
+  }
+ ],
+ "reviews": [
+  {
+   "week": "2026-10-26~2026-10-30",
+   "date": "2026-10-31",
+   "time": "06:15",
+   "meetingId": "2026-10-31-0605-us-close-review",
+   "right": [
+    "FOMC與大型財報週維持現金約85%：本週S&P 10/27收7,722.60→10/30收7,580.07（-1.85%），我們總資產10/28期初30,007.39→29,874.14（-0.44%）",
+    "條件單紀律：MSFT（開盤跌到522）、台積電（開2,380低於下限）、QQQ（10:46跌到696.91，收690.49）全部依條件取消，沒有在下跌中接到",
+    "風控否決BA、GOOGL、CAT不接刀：GOOGL從283.82再跌到279.84",
+    "NVDA照停損207出場（206.89），收盤204.64，少虧約1.1%"
+   ],
+   "wrong": [
+    "NVDA 10/26進場是掃描器上線前的反彈單，沒有訊號依據，最後-3.72%停損",
+    "SPY 10/28在770.66加碼到10%，買在本週高點附近（10/28收772.31），目前-1.85%；核心部位一次補滿太快，之後核心改分兩批",
+    "0050 10/29只看美股條件就進場，忽略外資連續賣超，目前-3.27%；台股進場條件要加外資買賣超",
+    "LLY不追高上限+3%設太緊，錯過10/30的+3.25%；但突破股追高風險本來就大，規則先不改，下週累積樣本再看"
+   ],
+   "scanner_vs_backtest": "本週沒有依掃描器訊號成交的交易，無實績可對照回測；下週WMT、XOM若成交開始累積樣本",
+   "lessons": [
+    "重大事件週保守配置有效，下週可在條件成立時分批提高投入",
+    "核心ETF改兩批進場，間隔至少2個交易日",
+    "台股進場條件加入外資買賣超",
+    "財報暴跌的超賣訊號一律先觀察止跌紅K"
+   ]
   }
  ]
 }
