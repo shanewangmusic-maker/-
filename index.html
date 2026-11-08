@@ -1302,6 +1302,7 @@
     </div>
 
     <!-- ==================== JS 業務處理核心邏輯 ==================== -->
+    <script src="crm-access.js"></script>
     <script>
         // --- 橋樑函數區 (雲端外掛專用，完全不影響原邏輯) ---
         window.syncFromCloud = function(data) {
@@ -1842,14 +1843,19 @@
         window.aqTwDate = aqTwDate;
         window.aqJob = aqJob;
         window.AQ_AUTO_START = AQ_AUTO_START;
-        function findMember(email) { email = (email || '').toLowerCase(); return teamMembers.find(function (m) { return (m.email || '').toLowerCase() === email; }); }
+        function findMember(email) {
+            if (window.CrmAccess) return window.CrmAccess.findMemberByEmail(teamMembers, email);
+            email = String(email || '').trim().toLowerCase();
+            if (!email || !Array.isArray(teamMembers)) return null;
+            return teamMembers.find(function (m) { return m && String(m.email || '').trim().toLowerCase() === email; }) || null;
+        }
         function isAdmin() {
-            var e = myEmail();
-            if (!e) return true;                 // 尚未取得登入身分 → 給全部，避免誤鎖
-            if (e === OWNER_EMAIL) return true;  // 擁有者永遠是管理者
+            if (window.CrmAccess) return window.CrmAccess.isCrmAdmin(myEmail(), teamMembers, OWNER_EMAIL);
+            var e = String(myEmail() || '').trim().toLowerCase();
+            if (!e) return false;
+            if (e === String(OWNER_EMAIL || '').trim().toLowerCase()) return true;
             var m = findMember(e);
-            if (!m) return true;                 // 能登入但不在名單 → 預設管理者，避免鎖死
-            return !!m.admin;
+            return !!(m && m.admin === true);
         }
         function myAllowedTabs() {
             if (isAdmin()) return ALL_TABS.map(function (t) { return t.key; });
@@ -1913,7 +1919,7 @@
         function renderMemberAdmin() {
             var box = document.getElementById('memberAdminList');
             if (!box) return;
-            if (!tempMembers.length) { box.innerHTML = '<p class="text-xs text-slate-400">尚無成員設定。未列入名單、但能登入的帳號，預設視為「管理者（可見全部分頁）」。</p>'; return; }
+            if (!tempMembers.length) { box.innerHTML = '<p class="text-xs text-slate-400">尚無成員設定。未列入名單的登入帳號不是管理者；只有擁有者帳號，以及這裡勾選「管理者」的成員，可以看到全部分頁。</p>'; return; }
             box.innerHTML = tempMembers.map(function (m, i) {
                 var tabsHtml = ALL_TABS.map(function (t) {
                     var on = (m.tabs || []).indexOf(t.key) >= 0;

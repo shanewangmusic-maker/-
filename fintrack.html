@@ -3201,6 +3201,7 @@ window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDa
 setTab(TAB,false);renderAll();
 })();
 </script>
+<script src="crm-access.js"></script>
 <script type="module">
 /* Per-client persistence. Same Firebase project and login as index.html.
    Doc: artifacts/youtrend-crm/public/data/global_state/{teamId}/fintrack/{planId}
@@ -3217,24 +3218,8 @@ setTab(TAB,false);renderAll();
   const SAVE_MS = 700;
 
   function canAccessClient(email, client, members) {
-    email = String(email || '').trim().toLowerCase();
-    if (!email || !client) return { ok: false, reason: 'missing' };
-    const agentName = String(client.agentName || '').trim();
-    const list = Array.isArray(members) ? members : [];
-    const member = list.find(function (m) {
-      return m && String(m.email || '').trim().toLowerCase() === email;
-    });
-    const hasEmails = list.some(function (m) {
-      return m && String(m.email || '').trim();
-    });
-    if (email === OWNER_EMAIL || !hasEmails || (member && member.admin === true)) {
-      return { ok: true, role: 'owner', agentName: agentName };
-    }
-    if (!member) return { ok: false, reason: 'personal', agentName: agentName };
-    if (!agentName || String(member.name || '').trim() === agentName) {
-      return { ok: true, role: 'agent', agentName: agentName };
-    }
-    return { ok: false, reason: 'not-agent', agentName: agentName };
+    if (!globalThis.CrmAccess) return { ok: false, reason: 'missing', role: '', agentName: '' };
+    return globalThis.CrmAccess.canAccessClient(email, client, members, OWNER_EMAIL);
   }
   window.__ftCanAccess = canAccessClient;
 
@@ -3272,6 +3257,7 @@ setTab(TAB,false);renderAll();
   let teamId = '';
   let clickedId = '';
   let clientId = '';
+  let accessGrant = null;
   let email = '';
   let crmClient = null;
   let authApi = null;
@@ -3332,6 +3318,9 @@ setTab(TAB,false);renderAll();
 
   function denyMessage(access, client) {
     const who = access.agentName ? ('「' + esc(access.agentName) + '」') : '帳號擁有者（個人業績）';
+    if (access.reason === 'cross-plan') {
+      return '這份規劃不屬於你有權限的客戶，不能用另一個客戶編號開啟或儲存。';
+    }
     if (access.reason === 'personal') {
       return '目前登入的帳號 ' + esc(email) + ' 不在這個團隊的成員名單裡。請帳號擁有者到 CRM 的「成員權限設定」加入這個 Email。';
     }
@@ -3438,9 +3427,16 @@ setTab(TAB,false);renderAll();
     if (otherPerson || otherSession) showConflict(doc);
   }
 
+  function mayWriteCurrent() {
+    return !!(globalThis.CrmAccess && globalThis.CrmAccess.mayWritePlan(accessGrant, clientId, email));
+  }
   async function saveNow() {
     if (!booted || hydrating || !store || !crmClient) return;
     if (pauseAuto && !keepMine) return;
+    if (!mayWriteCurrent()) {
+      setStatus('err', '儲存失敗', '沒有這份規劃的寫入權限');
+      return;
+    }
     if (saving) { pending = true; return; }
     const snap = exportSnap();
     const json = JSON.stringify(snap);
@@ -3460,6 +3456,25 @@ setTab(TAB,false);renderAll();
     setStatus('saving', '儲存中');
     try {
       const prev = await store.loadDoc(teamId, clientId);
+      if (accessGrant && accessGrant.role !== 'owner' && prev && globalThis.CrmAccess) {
+        const again = globalThis.CrmAccess.selectPlanTarget({
+          email: email,
+          members: accessGrant.members,
+          ownerEmail: OWNER_EMAIL,
+          clickedId: accessGrant.clickedId,
+          clickedClient: accessGrant.clickedClient,
+          requestedPlan: clientId,
+          planClient: clientId === accessGrant.clickedId ? accessGrant.clickedClient : accessGrant.planClient,
+          planDoc: clientId === accessGrant.clickedId ? null : prev,
+          planKnown: true,
+          ownDoc: clientId === accessGrant.clickedId ? prev : null,
+          ownKnown: true
+        });
+        if (!again.ok || again.planId !== clientId) {
+          setStatus('err', '儲存失敗', '沒有這份規劃的寫入權限');
+          return;
+        }
+      }
       if (prev && (prev.rev || 0) > loadedRev && !keepMine && !(prev.sessionId && prev.sessionId === mySession)) {
         showConflict(prev);
         writeLocal(snap);
@@ -3762,13 +3777,15 @@ setTab(TAB,false);renderAll();
       return;
     }
     const members = (crm && crm.members) || [];
-    const cust = ((crm && crm.cust) || []).find(function (c) { return c && c.id === clickedId; });
+    const custList = (crm && crm.cust) || [];
+    const cust = custList.find(function (c) { return c && c.id === clickedId; });
     if (!cust) {
       gate('deny', '找不到客戶', '團隊 ' + esc(teamId) + ' 的 CRM 裡沒有編號 ' + esc(clickedId) + ' 的客戶。');
       return;
     }
     const access = canAccessClient(email, cust, members);
     if (!access.ok) {
+      accessGrant = null;
       gate('deny', '沒有權限', denyMessage(access, cust));
       return;
     }
@@ -3779,28 +3796,64 @@ setTab(TAB,false);renderAll();
       agentName: String(cust.agentName || '').trim()
     };
     window.__crmClient = crmClient;
+    const planClient = requestedPlan !== clickedId
+      ? (custList.find(function (c) { return c && c.id === requestedPlan; }) || null)
+      : cust;
 
     let existing = null;
+    let decision = null;
     try {
-      if (requestedPlan !== clickedId) {
-        const sharedDoc = await store.loadDoc(teamId, requestedPlan);
-        if (sharedDoc) {
-          clientId = requestedPlan;
-          existing = sharedDoc;
-        } else {
-          const ownDoc = await store.loadDoc(teamId, clickedId);
-          if (ownDoc) {
-            clientId = clickedId;
-            existing = ownDoc;
-          } else {
-            clientId = requestedPlan;
-            existing = null;
-          }
-        }
-      } else {
-        clientId = clickedId;
-        existing = await store.loadDoc(teamId, clickedId);
+      if (!globalThis.CrmAccess) throw new Error('缺少權限模組');
+      decision = globalThis.CrmAccess.selectPlanTarget({
+        email: email,
+        members: members,
+        ownerEmail: OWNER_EMAIL,
+        clickedId: clickedId,
+        clickedClient: cust,
+        requestedPlan: requestedPlan,
+        planClient: planClient,
+        planDoc: null,
+        planKnown: false,
+        ownDoc: null
+      });
+      if (!decision.ok) {
+        accessGrant = null;
+        gate('deny', '沒有權限', denyMessage(decision, cust));
+        return;
       }
+      if (decision.needsLoad && decision.planId !== clickedId) {
+        const loaded = await store.loadDoc(teamId, decision.planId);
+        decision = globalThis.CrmAccess.selectPlanTarget({
+          email: email,
+          members: members,
+          ownerEmail: OWNER_EMAIL,
+          clickedId: clickedId,
+          clickedClient: cust,
+          requestedPlan: requestedPlan,
+          planClient: planClient,
+          planDoc: loaded,
+          planKnown: true,
+          ownDoc: null
+        });
+        if (!decision.ok) {
+          accessGrant = null;
+          gate('deny', '沒有權限', denyMessage(decision, cust));
+          return;
+        }
+      }
+      clientId = decision.planId;
+      existing = decision.existing || null;
+      if (!existing) existing = await store.loadDoc(teamId, clientId);
+      accessGrant = {
+        ok: true,
+        email: email,
+        planId: clientId,
+        role: decision.role,
+        clickedId: clickedId,
+        members: members,
+        clickedClient: cust,
+        planClient: planClient
+      };
     }
     catch (e) {
       console.error(e);
@@ -3817,7 +3870,7 @@ setTab(TAB,false);renderAll();
     try {
       if (existing && existing.snap) window.__fintrack.ftImportState(existing.snap);
       window.__fintrack.ftSeedClient(crmClient.name, crmClient.birthday);
-      if (existing && String(existing.agentName || '').trim() !== crmClient.agentName && access.role === 'owner') {
+      if (existing && clientId === clickedId && String(existing.agentName || '').trim() !== crmClient.agentName && access.role === 'owner') {
         try {
           await store.saveDoc(teamId, clientId, Object.assign({}, existing, {
             agentName: crmClient.agentName,
