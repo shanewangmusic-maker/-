@@ -197,6 +197,13 @@ svg text{font-family:"Noto Sans TC",sans-serif}
 .sec-t{font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:10px;letter-spacing:.04em}
 .list-row{display:grid;grid-template-columns:1fr 92px 24px;gap:6px;margin-bottom:6px;align-items:center}
 .list-row.tagged{grid-template-columns:1fr 84px 24px}
+.list-row.has-o{grid-template-columns:auto minmax(0,1fr) 84px 24px}
+.list-row.tagged.has-o{grid-template-columns:auto minmax(0,1fr) 76px 24px}
+.o-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:0 6px;height:22px;font-size:10.5px;line-height:20px;color:#8a6a24;cursor:pointer;white-space:nowrap}
+.o-chip.is-new{color:#3f6b96;background:#f4f8fb;border-color:#d3e0ea}
+.list-row.tagged.has-o .o-chip{margin-left:10px}
+.origin-line{font-size:11px;color:#9a9ea4;text-align:center;line-height:1.45}
+.gt-poster.ro .o-chip{pointer-events:none}
 .list-row input{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;min-width:0;color:var(--ink);background:#fff}
 .list-row input.amt{text-align:right}
 .list-row .rm{border:1px solid var(--line);background:#fff;border-radius:7px;height:26px;color:var(--muted);cursor:pointer}
@@ -387,6 +394,8 @@ body.present .client-name{font-size:34px}
 body.present .gt-poster input{pointer-events:none;border-color:transparent!important;background:transparent}
 body.present .list-row .rm{display:none}
 body.present .list-row,body.present .list-row.tagged{grid-template-columns:1fr 92px}
+body.present .list-row.has-o,body.present .list-row.tagged.has-o{grid-template-columns:auto minmax(0,1fr) 84px}
+body.present .o-chip{pointer-events:none}
 /* responsive */
 @media (max-width:1180px){.gt-poster{grid-template-rows:none;grid-template-columns:1fr 1fr 1fr;grid-template-areas:"life life life" "tri tri tri" "riskC stock investC" "left left right" "notes notes notes"}}
 @media (max-width:1024px){.goals{grid-template-columns:1fr}.ov-grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.client-card{grid-template-columns:auto 1fr}.meta-grid{grid-column:1/-1;justify-content:start;grid-template-columns:repeat(2,auto)}body.present .goal-in{display:block}}
@@ -906,6 +915,7 @@ body.pdfm .gt-poster{grid-template-columns:240px minmax(150px,1fr) 210px minmax(
 body.pdfm .gt-poster input,body.pdfm .gt-poster textarea,body.pdfm .gt-poster select,body.pdfm .client-card input{border-color:transparent!important;background:transparent!important;box-shadow:none!important;-webkit-appearance:none;appearance:none;resize:none}
 body.pdfm .gt-notes textarea{min-height:40px!important}
 body.pdfm .list-row,body.pdfm .list-row.tagged{grid-template-columns:1fr 92px!important}
+body.pdfm .list-row.has-o,body.pdfm .list-row.tagged.has-o{grid-template-columns:auto minmax(0,1fr) 84px!important}
 body.pdfm .tl button{pointer-events:none}
 body.pdfm .tbl-wrap{display:block!important;overflow:visible!important}
 body.pdfm .log-cards{display:none!important}
@@ -949,6 +959,7 @@ body.pdfm .footer{margin-top:10px!important;padding:6px 12px!important;font-size
 .gt-poster input,.gt-poster textarea,.gt-poster select,.client-card input{border-color:transparent!important;background:transparent!important;box-shadow:none!important;-webkit-appearance:none;appearance:none;resize:none}
 .gt-notes textarea{min-height:40px!important}
 .list-row,.list-row.tagged{grid-template-columns:1fr 92px!important}
+.list-row.has-o,.list-row.tagged.has-o{grid-template-columns:auto minmax(0,1fr) 84px!important}
 .tl button{pointer-events:none}
 .tbl-wrap{display:block!important;overflow:visible!important}
 .log-cards{display:none!important}
@@ -1190,7 +1201,7 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
   <div class="tab-panel" data-panel="gt">
   <!-- 4. golden triangle -->
   <section class="sec" id="secGT">
-    <div class="sec-head"><div><div class="sec-no">03 · GOLDEN TRIANGLE</div><h2>理財金三角現況</h2></div><p>理想 50 / 10 / 40（虛線）vs. 實際比例（實心）；月收入、固定支出、每月儲蓄成本自動帶入定期追蹤。</p></div>
+    <div class="sec-head"><div><div class="sec-no">03 · GOLDEN TRIANGLE</div><h2>理財金三角現況</h2></div><p>理想 50 / 10 / 40（虛線）vs. 實際比例（實心）；月收入、固定支出、儲蓄自動帶入定期追蹤。</p></div>
     <div id="gtBanner"></div><div class="gt-poster" id="gt"></div>
   </section>
 
@@ -1286,7 +1297,7 @@ function resetGoals(){KEYS.forEach(k=>{const g=GOALS[k];Object.assign(g,{target:
 function makeState(){
   resetGoals();BASE.date='';BASE.netWorth=0;
   return {freq:'m',mode:'advisor',selected:[],otherOpen:false,editing:{},rows:[],client:{name:'',birth:'',job:'',note:''},
-   gt:{income:'',yearEnd:'',fixed:[],risk:'',riskNote:'',invest:'',investNote:'',core:[],sat:[],emergNote:'',stock:'',flow:'',note:'',
+   gt:{income:'',yearEnd:'',fixed:[],risk:'',riskNote:'',invest:'',investNote:'',core:[],sat:[],emergNote:'',stock:'',assets:[],flow:'',note:'',
      gaps:[false,false,false,false,false,false],snaps:[],cmp:0}};
 }
 let S=makeState();
@@ -2773,7 +2784,7 @@ function setupForm(k){
   const tl=g.kind==='protect'?f('cover','目前保單保額','例 2400000'):f('toolMonthly','規劃工具・每月投入','例 6000')+f('rate','工具預估年化 %','例 2.5');
   return `<div class="setup"><div class="setup-h"><b>${g.configured?'調整目標設定':'設定這個需求的目標'}</b><span class="lbl">${k==='retire'?'目標＝退休時需要的資本（年化 '+g.yieldPct+'% 換算月被動收入）':g.kind==='protect'?'目標＝保障缺口總額':'先填目標與期初累積，之後每次檢視會自動更新'}</span></div>
    <div class="fgrid">${f('target',k==='retire'?'目標資本':g.kind==='protect'?'保障缺口（目標）':'目標金額','例 '+(k==='retire'?'10000000':'1000000'))}${f('start','自己已累積（期初）','例 200000')}${f('selfPlan','自己每月計畫提撥','例 5000')}${tl}${ex}</div>${(k==='retire'||k==='dream')&&!pvBox().policies.length?'<p class="pv-from"><button type="button" class="btn sm edit-only" data-pv-from>從建議書帶入</button></p>':''}${k==='retire'?pvRetireHTML():''}
-   <div class="setup-f"><span class="lbl" id="suMsg-${k}">自己累積＝自己已累積（期初）＋各期檢視分配到此需求的儲蓄。核心／衛星的每月金額只計入「每月儲蓄成本」，不計入已累積。</span><button class="btn primary" data-sugo="${k}">${g.configured?'更新':'開始追蹤'}</button>${g.configured?`<button class="btn" data-sucancel="${k}">取消</button>`:''}</div></div>`;
+   <div class="setup-f"><span class="lbl" id="suMsg-${k}">自己累積＝自己已累積（期初）＋各期檢視分配到此需求的儲蓄。核心／衛星的每月金額只計入「儲蓄」，不計入已累積。</span><button class="btn primary" data-sugo="${k}">${g.configured?'更新':'開始追蹤'}</button>${g.configured?`<button class="btn" data-sucancel="${k}">取消</button>`:''}</div></div>`;
 }
 function renderGoals(P){
   renderPicker();renderOther();
@@ -2831,12 +2842,17 @@ function gtShares(o){if(!o)return null;const inc=Number(o.income)||0;const l=Num
 function snapRatios(s){const h=gtShares(s);return h?{life:h.life/0.5,risk:h.risk/0.1,invest:h.invest/0.4}:null;}
 
 /* ---- snapshot full state ---- */
-function ST_F(){return ['income','yearEnd','fixed','risk','riskNote','invest','investNote','core','sat','emergNote','stock','flow','note','gaps'];}
+function ST_F(){return ['income','yearEnd','fixed','risk','riskNote','invest','investNote','core','sat','emergNote','stock','assets','flow','note','gaps'];}
 function cloneSt(src){const o={};ST_F().forEach(f=>{const v=src[f];o[f]=v==null?'':JSON.parse(JSON.stringify(v));});return o;}
 function listAmt(arr){return (arr||[]).reduce((s,i)=>s+(Number(i.a)||0),0);}
 function coreSatSum(st){return listAmt(st&&st.core)+listAmt(st&&st.sat);}
+function originOf(it){return it&&it.o==='new'?'new':'old';}
+function originText(items){let oldA=0,neu=0;(items||[]).forEach(it=>{const a=Number(it.a)||0;if(originOf(it)==='new')neu+=a;else oldA+=a;});return '原有 '+fmt(oldA)+'｜新規劃 '+fmt(neu);}
+function assetListOn(st){return Array.isArray(st&&st.assets);}
+function migrateLiveAssets(){const g=S.gt;if(!g)return;if(!Array.isArray(g.assets)){const stock=Number(g.stock);if(isFinite(stock)&&stock>0)g.assets=[{n:'既有資產（舊資料）',a:stock,o:'old'}];else g.assets=[];}g.stock=listAmt(g.assets);}
+function gtMarkDirty(){const el=$('gt');if(el)el.dispatchEvent(new Event('input',{bubbles:true}));}
 function stSum(st){return {income:Number(st.income)||0,life:listAmt(st.fixed),risk:Number(st.risk)||0,invest:Number(st.invest)||0};}
-function liveState(){const o=cloneSt(S.gt);o.invest=coreSatSum(S.gt);return o;}
+function liveState(){migrateLiveAssets();const o=cloneSt(S.gt);o.invest=coreSatSum(S.gt);return o;}
 function gapYuan(act,ideal){return '與合理差 '+fmt(Math.abs((Number(act)||0)-(Number(ideal)||0)))+' 元';}
 function snapState(s){if(!s.state)s.state={income:s.income,yearEnd:'',fixed:[{n:'生活開銷（摘要）',a:s.life}],risk:s.risk,riskNote:'',invest:s.invest,investNote:'',core:[],sat:[],emergNote:'',stock:'',flow:'',note:'（此快照僅存比例摘要）',gaps:[false,false,false,false,false,false]};return s.state;}
 function viewSnap(){const G=S.gt;return G.view!=null&&G.snaps[G.view]?G.snaps[G.view]:null;}
@@ -2852,10 +2868,10 @@ function triSVG(){
   const ideal=triPoly({life:1,risk:1,invest:1},1),act=rn?triPoly(rn,1):null,old=rc?triPoly(rc,1):null;
   const ok={life:gtStatus('life',now.life,now.income*.5),risk:gtStatus('risk',now.risk,now.income*.1),invest:gtStatus('invest',now.invest,now.income*.4)};
   const P=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
-  const keys=['life','risk','invest'],names={life:'生活',risk:'風險',invest:'每月儲蓄成本'},ideals={life:.5,risk:.1,invest:.4};
+  const keys=['life','risk','invest'],names={life:'生活',risk:'風險',invest:'儲蓄'},ideals={life:.5,risk:.1,invest:.4};
   const dots=!act?'':act.map((p,i)=>{const k=keys[i],col=ok[k]?'#2f7a63':'#55606e',val=(gtShares(now)||{})[k]||0;const dx=i===0?12:i===1?-12:12,dy=i===0?5:16;
     return `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${col}" stroke="#fff" stroke-width="2.5"/><text x="${p[0]+dx}" y="${p[1]+dy}" text-anchor="${i===1?'end':'start'}" font-size="12.5" font-weight="700" fill="${col}">${pct(val,1)}</text>`;}).join('');
-  const corner=[[TRI.top[0]-16,TRI.top[1]+14,'生活 50%','end'],[TRI.bl[0]+4,TRI.bl[1]+16,'風險 10%','start'],[TRI.br[0]-4,TRI.br[1]+16,'每月儲蓄成本 40%','end']].map(c=>`<text x="${c[0]}" y="${c[1]}" text-anchor="${c[3]}" font-size="11" fill="#8a6a24" font-weight="600">${c[2]}</text>`).join('');
+  const corner=[[TRI.top[0]-16,TRI.top[1]+14,'生活 50%','end'],[TRI.bl[0]+4,TRI.bl[1]+16,'風險 10%','start'],[TRI.br[0]-4,TRI.br[1]+16,'儲蓄 40%','end']].map(c=>`<text x="${c[0]}" y="${c[1]}" text-anchor="${c[3]}" font-size="11" fill="#8a6a24" font-weight="600">${c[2]}</text>`).join('');
   return `<svg viewBox="0 0 470 374"><polygon points="${P([TRI.top,TRI.bl,TRI.br])}" fill="#efe0bd" stroke="#C7A868" stroke-width="3" stroke-linejoin="round"/>
     ${corner}<polygon points="${P(ideal)}" fill="none" stroke="#1E2E3D" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 5"/>
     ${old?`<polygon points="${P(old)}" fill="none" stroke="#7a4a6b" stroke-width="2" stroke-dasharray="3 3"/>${old.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#7a4a6b"/>`).join('')}`:''}
@@ -2897,15 +2913,17 @@ function finishReview(roc){
   toast('已完成 '+date+' 檢視，下次 '+next);
   return {ok:true,date:date,next:next};
 }
-const SAVE_HINT='只填每個月固定在存的錢（定期定額、每月存款、儲蓄型保費等），年繳請換算成每月；純保障型保費請放在「風險規劃」';
+const SAVE_HINT='只填每個月固定在存的錢（定期定額、每月存款、儲蓄型保費等），年繳請換算成每月；純保障型保費請放在「風險規劃」。已經存下的錢或躉繳、單筆投入，請記在下方『全部擁有的資產』清單';
 function listRows(arr,key,tagged){
+  const withO=key==='core'||key==='sat'||key==='assets';
   if(!arr.length)return `<div class="list-empty">${key==='fixed'?'尚無固定支出・點「＋新增項目」逐項輸入（房租、孝親費、伙食…）':'尚無項目・點「＋新增項目」'}</div>`;
-  return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}"><input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="${tagged?SAVE_HINT:'金額'}"${tagged?` title="${SAVE_HINT}"`:''}><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
+  return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}${withO?' has-o':''}">${withO?`<button type="button" class="o-chip ${originOf(it)==='new'?'is-new':'is-old'}" data-o="${key}" data-i="${i}" aria-label="${originOf(it)==='new'?'新':'原有'}">${originOf(it)==='new'?'新':'原有'}</button>`:''}<input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="${tagged?SAVE_HINT:'金額'}"${tagged?` title="${SAVE_HINT}"`:''}><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
    ${tagged?(()=>{const sel=S.selected.includes(it.g);const has=!!GOALS[it.g];const opts=S.selected.map(k=>`<option value="${k}" ${it.g===k?'selected':''}>${GOALS[k].label}</option>`).join('')+(sel?'':has?`<option value="${it.g}" selected>${GOALS[it.g].label}（未選）</option>`:`<option value="" selected>未指定需求</option>`);
    return `<div class="tag-sel">↳ 所屬<select class="tag-pick" data-tag="${key}" data-i="${i}" style="background:${sel?GOALS[it.g].c:'#b9b6ae'}">${opts}</select>${sel?'':has?'<span class="tag-unsel" title="此項目所屬需求目前未選，不計入任何目標">未選需求・暫不計入</span>':`<span class="tag-unsel">${S.selected.length?'請選擇所屬需求':'先到「六大需求」選擇需求'}</span>`}</div>`;})():''}</div>`).join('');
 }
 function renderGT(){
-  const G=GV(),RO=G!==S.gt,VS=viewSnap();
+  if(!viewSnap())migrateLiveAssets();
+  const G=GV(),RO=G!==S.gt,VS=viewSnap(),assetsOn=assetListOn(G);
   $('gtBanner').innerHTML=RO?`<div class="gt-banner"><span>👁</span><b>正在檢視 ${esc(VS.date)} 紀錄（唯讀）</b><span>${esc(VS.label)}・修改請先回到現在</span><span class="sp"></span><button class="btn sm" id="gtDraft">以此為底稿編輯</button><button class="btn sm primary" id="gtBack">回到現在</button></div>`:'';
   $('gt').innerHTML=`
   <div class="gt-left"><div class="gt-card" style="padding:14px"><div class="sec-t">保障缺口檢查表</div>
@@ -2923,32 +2941,34 @@ function renderGT(){
   <div class="gt-riskC gt-card cat"><div class="cat-top"><span>風險規劃</span><span class="p">10%</span></div><div class="cat-body">
     <div class="cat-line"><span class="l">合理</span><span class="v num" id="riskR"></span></div><div class="cat-line"><span class="l">實際</span><input type="number" class="num" data-gt="risk" value="${G.risk}"></div><span class="st" id="riskS"></span>
     <input class="cat-note" data-gt="riskNote" value="${esc(G.riskNote)}" placeholder="備註,例如年繳保費"></div></div>
-  <div class="gt-stock gt-card stock-box"><div><div class="lbl">全部擁有的資產</div><div class="stock-v num" id="stockV"></div></div>
-    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="stock" value="${G.stock??''}" placeholder="金額" aria-label="全部擁有的資產（元）"><span class="lbl">元</span></div>
+  <div class="gt-stock gt-card stock-box"><div><div class="lbl">全部擁有的資產</div><div class="stock-v num" id="stockV"></div>${assetsOn?`<div class="origin-line" id="stockOrigin"></div>`:''}</div>
+    ${assetsOn?'':`<div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="stock" value="${G.stock??''}" placeholder="金額" aria-label="全部擁有的資產（元）"><span class="lbl">元</span></div>`}
     <div class="ref-hint">存款、投資、保單價值、不動產…（是否扣房貸由顧問自行決定）</div>
     <input class="cat-note" data-gt="emergNote" value="${esc(G.emergNote)}" placeholder="含緊急預備金備註"><hr style="border:0;border-top:1px solid var(--line);width:100%;margin:2px 0">
     <div><div class="lbl">流量・約</div><div class="flow-v num" id="flowV"></div></div>
-    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="flow" value="${G.flow??''}" placeholder="手動輸入流量" aria-label="流量金額（元）"><button class="btn sm" id="flowReset" title="把每月儲蓄成本合計帶入流量">重新加總</button></div>
+    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="flow" value="${G.flow??''}" placeholder="手動輸入流量" aria-label="流量金額（元）"><button class="btn sm" id="flowReset" title="把儲蓄合計帶入流量">重新加總</button></div>
     <div class="ref-hint" id="flowRef"></div></div>
-  <div class="gt-investC gt-card cat"><div class="cat-top"><span>每月儲蓄成本</span><span class="p">40%</span></div><div class="cat-body">
-    <div class="cat-line"><span class="l">合理</span><span class="v num" id="invR"></span></div><div class="cat-line"><span class="l">實際（自動加總）</span><span class="v num" id="invA"></span></div><span class="st" id="invS"></span>
+  <div class="gt-investC gt-card cat"><div class="cat-top"><span>儲蓄</span><span class="p">40%</span></div><div class="cat-body">
+    <div class="cat-line"><span class="l">合理</span><span class="v num" id="invR"></span></div><div class="cat-line"><span class="l">實際（自動加總）</span><span class="v num" id="invA"></span></div><div class="origin-line" id="saveOrigin"></div><span class="st" id="invS"></span>
     <div class="cs-note">＝【核心規劃】小計＋【衛星規劃】小計<span id="csSum"></span></div>
     <input class="cat-note" data-gt="investNote" value="${esc(G.investNote)}" placeholder="備註,例如定期定額標的"></div></div>
   <div class="gt-right">
     <div class="gt-card list-card"><div class="sec-t">固定支出<span style="font-weight:400;color:var(--muted)"> ・加總＝生活開銷實際</span></div>${listRows(G.fixed,'fixed',false)}<button class="add-btn edit-only" data-add="fixed">＋新增項目</button><div class="list-sum"><span>合計</span><b class="num" id="fixedSum"></b></div></div>
     <div class="gt-card list-card"><div class="sec-t">【核心規劃】</div><div class="feed-note" style="font-weight:400;margin-top:0">${SAVE_HINT}</div>${listRows(G.core,'core',true)}<button class="add-btn edit-only" data-add="core">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="coreSum"></b></div></div>
-    <div class="gt-card list-card"><div class="sec-t">【衛星規劃】</div><div class="feed-note" style="font-weight:400;margin-top:0">${SAVE_HINT}</div>${listRows(G.sat,'sat',true)}<button class="add-btn edit-only" data-add="sat">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="satSum"></b></div></div></div>
+    <div class="gt-card list-card"><div class="sec-t">【衛星規劃】</div><div class="feed-note" style="font-weight:400;margin-top:0">${SAVE_HINT}</div>${listRows(G.sat,'sat',true)}<button class="add-btn edit-only" data-add="sat">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="satSum"></b></div></div>
+    ${assetsOn?`<div class="gt-card list-card" id="assetCard"><div class="sec-t">全部擁有的資產</div>${listRows(G.assets,'assets',false)}<button class="add-btn edit-only" data-add="assets">＋新增項目</button></div>`:''}</div>
   <div class="gt-notes gt-card" style="padding:14px"><div class="sec-t">備註</div><textarea data-gt="note" placeholder="可自由輸入任何備註內容…">${esc(G.note)}</textarea></div>`;
   const root=$('gt');root.classList.toggle('ro',RO);
-  if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=useAsDraft;}
+  if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});root.querySelectorAll('.o-chip').forEach(b=>b.setAttribute('aria-disabled','true'));$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=useAsDraft;}
   root.querySelectorAll('[data-gt]').forEach(el=>el.addEventListener('input',()=>{const f=el.dataset.gt;S.gt[f]=el.type==='number'?(el.value===''?'':Number(el.value)):el.value;updateGT();renderLinked();}));
-  root.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{const it=S.gt[el.dataset.l][+el.dataset.i];it[el.dataset.f]=el.dataset.f==='a'?Number(el.value)||0:el.value;updateGT();renderLinked();}));
+  root.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{const it=S.gt[el.dataset.l][+el.dataset.i];it[el.dataset.f]=el.dataset.f==='a'?Number(el.value)||0:el.value;if(el.dataset.l==='assets')S.gt.stock=listAmt(S.gt.assets);updateGT();renderLinked();}));
+  root.querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>{if(RO||S.mode==='client'||document.body.classList.contains('printing'))return;const list=S.gt[el.dataset.o];const it=list&&list[+el.dataset.i];if(!it)return;it.o=originOf(it)==='new'?'old':'new';if(el.dataset.o==='assets')S.gt.stock=listAmt(S.gt.assets);renderGT();renderLinked();gtMarkDirty();});
   root.querySelectorAll('[data-gap]').forEach(el=>el.onchange=()=>{S.gt.gaps[+el.dataset.gap]=el.checked;renderLinked();});
   root.querySelectorAll('[data-tag]').forEach(el=>el.onchange=()=>{retag(S.gt[el.dataset.tag][+el.dataset.i],el.value);renderGT();renderLinked();});
   decorateTools();
-  root.querySelectorAll('[data-rm]').forEach(el=>el.onclick=()=>{S.gt[el.dataset.rm].splice(+el.dataset.i,1);renderGT();renderLinked();});
-  root.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{const l=el.dataset.add;S.gt[l].push(l==='fixed'?{n:'',a:0}:{n:'',a:0,g:S.selected[0]||''});renderGT();});
-  $('flowReset').onclick=()=>{const G=S.gt;G.flow=coreSatSum(G);renderGT();renderLinked();toast('已將每月儲蓄成本合計帶入流量');};
+  root.querySelectorAll('[data-rm]').forEach(el=>el.onclick=()=>{const k=el.dataset.rm;S.gt[k].splice(+el.dataset.i,1);if(k==='assets')S.gt.stock=listAmt(S.gt.assets);renderGT();renderLinked();gtMarkDirty();});
+  root.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{const l=el.dataset.add;if(l==='fixed')S.gt.fixed.push({n:'',a:0});else if(l==='assets'){if(!Array.isArray(S.gt.assets))S.gt.assets=[];S.gt.assets.push({n:'',a:0,o:'new'});S.gt.stock=listAmt(S.gt.assets);}else S.gt[l].push({n:'',a:0,o:'new',g:S.selected[0]||''});renderGT();gtMarkDirty();});
+  $('flowReset').onclick=()=>{const G=S.gt;G.flow=coreSatSum(G);renderGT();renderLinked();toast('已將儲蓄合計帶入流量');};
   $('snapBtn').onclick=()=>{if(S.gt.view!=null)return;if(!(Number(S.gt.income)>0))return;const n=gtNow();n.label=S.gt.snaps.length?n.date.slice(0,6)+' 檢視':'初次會談';if(!S.gt.snaps.length&&BASE.date)n.date=BASE.date;n.needs=S.selected.slice();saveSnap(n);};
   updateGT();
 }
@@ -2966,9 +2986,10 @@ function updateGT(){
   
   const core=G.core.reduce((s,i)=>s+(+i.a||0),0),sat=G.sat.reduce((s,i)=>s+(+i.a||0),0);
   {const e=$('csSum');if(e)e.textContent=` ・核心 ${G.core.length} 項／衛星 ${G.sat.length} 項`;}$('fixedSum').textContent=fmt(now.life)+'元';$('coreSum').textContent=fmt(core)+'元';$('satSum').textContent=fmt(sat)+'元';
-  {const sv=G.stock;$('stockV').textContent=sv===''||sv==null||!isFinite(+sv)?'—':(Number(sv)/10000).toFixed(1)+'萬';}
+  if($('saveOrigin'))$('saveOrigin').textContent=originText([].concat(G.core||[],G.sat||[]));
+  {const has=assetListOn(G);const sv=has?listAmt(G.assets):G.stock;$('stockV').textContent=!has&&(sv===''||sv==null||!isFinite(+sv))?'—':(Number(sv)/10000).toFixed(1)+'萬';if($('stockOrigin'))$('stockOrigin').textContent=originText(G.assets||[]);}
   {const fv=G.flow,has=!(fv===''||fv==null||!isFinite(+fv)),flow=Number(fv)||0;$('flowV').textContent=has?(flow<0?'－':'')+fmt(Math.abs(flow))+'元':'—';$('flowV').classList.toggle('neg',has&&flow<0);
-   $('flowRef').textContent=(core+sat)?'每月儲蓄成本合計 '+fmt(core+sat)+'（參考）':'';}
+   $('flowRef').textContent=(core+sat)?'儲蓄合計 '+fmt(core+sat)+'（參考）':'';}
   $('triSvg').innerHTML=triSVG();
   const all=SG.snaps.concat([now]);
   $('tl').style.display=SG.snaps.length?'':'none';$('tlHint').style.display=SG.snaps.length?'none':'';$('snapBtn').disabled=!inc;$('snapBtn').textContent=SG.snaps.length?'＋ 存為本期金三角快照':'＋ 存為「初次會談」快照';
@@ -2992,7 +3013,7 @@ function updateGT(){
   const row=(n,k,ideal)=>{const a=A?A[k]:null,b=B?B[k]:null;let chg='<span class="rchg flat">—</span>';
     if(a!=null&&b!=null){const d=(b-a)*100;if(Math.abs(d)>=0.05){const toward=Math.abs(b-ideal)<Math.abs(a-ideal);chg=`<span class="rchg ${toward?'good':'bad'}" title="${toward?'更接近理想':'偏離理想'}">${d>0?'+':'−'}${Math.abs(d).toFixed(1)}pt</span>`;}}
     return `<tr data-k="${k}"><td style="text-align:left">${n}</td><td>${pct(ideal)}</td><td style="color:#7a4a6b">${a==null?'—':pct(a,1)}</td><td><b>${b==null?'—':pct(b,1)}</b></td><td>${chg}</td></tr>`;};
-  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(SG.view==null?'現在':now.label)}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('每月儲蓄成本','invest',.4);
+  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(SG.view==null?'現在':now.label)}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('儲蓄','invest',.4);
   $('ratioLeg').innerHTML=`<span><i style="background:#2f7a63"></i>綠＝更接近理想</span><span><i style="background:#c8742e"></i>橙＝偏離理想</span><span><i style="background:#a8acb2"></i>—＝無變化</span><div class="rl-note">比例＝各項 ÷ 月收入（同為每月金額，年終不計入）${(A&&A.over)||(B&&B.over)?'；三項合計超過月收入時，以三項合計為 100% 計算':''}</div>`;
 }
 
@@ -3188,6 +3209,7 @@ function ftImportState(raw){
     if(o.FSTD&&o.FSTD.adult&&o.FSTD.senior&&o.FSTD.kid)FSTD=JSON.parse(JSON.stringify(o.FSTD));
     if(o.UIX){UIX.more=o.UIX.more||{};UIX.adv=!!o.UIX.adv;UIX.npAll=!!o.UIX.npAll;}
     if(!S.client)S.client={name:'',birth:'',job:'',note:''};
+    if(S.gt)migrateLiveAssets();
     document.body.classList.remove('present');
     const bm=document.getElementById('btnMode');if(bm)bm.textContent='切換為客戶簡報模式';
     renderAll();
