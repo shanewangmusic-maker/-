@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>御謙VIP菁英會｜專屬財務諮詢預約</title>
+
+<!-- ===== Firebase SDK（連 fish-teem 用；預覽時載入失敗會自動切換示範模式，不影響操作）===== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --pine:#16332e;
+    --pine-2:#1e453d;
+    --brass:#b58a4a;
+    --brass-soft:#c9a361;
+    --paper:#f4efe6;
+    --surface:#fffdf8;
+    --ink:#22322d;
+    --muted:#6c776f;
+    --line:#ddd6c6;
+    --line-strong:#cbc3af;
+    --error:#a5432f;
+    --ok:#2f6f4f;
+    --radius:14px;
+    --serif:"Noto Serif TC",serif;
+    --sans:"Noto Sans TC",sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:0 0 64px;}
+
+  /* ---------- Header ---------- */
+  .hero{
+    background:linear-gradient(160deg,var(--pine) 0%,var(--pine-2) 100%);
+    color:#f3efe4;
+    padding:44px 26px 40px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;left:26px;right:26px;bottom:30px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--brass-soft) 20%,var(--brass-soft) 80%,transparent);
+    opacity:.55;
+  }
+  .brand-eyebrow{
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--brass-soft);margin:0 0 14px;font-weight:500;
+  }
+  .brand{
+    font-family:var(--serif);font-weight:700;
+    font-size:clamp(27px,6.2vw,34px);letter-spacing:.04em;margin:0;color:#fbf8f0;
+  }
+  .brand-sub{
+    font-family:var(--serif);font-size:16px;letter-spacing:.06em;
+    color:#d7cdb8;margin:10px 0 0;font-weight:500;
+  }
+  .hero-note{
+    font-size:14px;color:#c3cbc2;margin:26px 0 0;max-width:44ch;
+  }
+  .hero-note strong{color:#efe7d3;font-weight:500;}
+
+  /* ---------- Sections ---------- */
+  form{padding:0 22px;}
+  .section{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px 22px 26px;
+    margin-top:20px;
+    box-shadow:0 1px 0 rgba(22,51,46,.02);
+  }
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin:0 0 20px;}
+  .sec-num{
+    font-family:var(--serif);font-size:15px;color:var(--brass);
+    font-weight:600;letter-spacing:.08em;min-width:26px;
+    border-bottom:1.5px solid var(--brass);padding-bottom:2px;line-height:1;
+  }
+  .sec-title{font-family:var(--serif);font-size:19px;font-weight:600;margin:0;letter-spacing:.03em;}
+
+  .field{margin-bottom:20px;}
+  .field:last-child{margin-bottom:0;}
+  label.q{display:block;font-weight:500;font-size:15px;margin-bottom:9px;color:var(--ink);}
+  .req{color:var(--brass);font-weight:700;margin-left:3px;}
+  .hint{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:2px;}
+
+  input[type=text],input[type=tel],input[type=email],input[type=date],select,textarea{
+    width:100%;font-family:var(--sans);font-size:16px;color:var(--ink);
+    background:#fefdfa;border:1px solid var(--line-strong);border-radius:9px;
+    padding:12px 13px;transition:border-color .15s,box-shadow .15s;
+  }
+  textarea{resize:vertical;min-height:82px;line-height:1.6;}
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(22,51,46,.09);
+  }
+  input.invalid,select.invalid,textarea.invalid{border-color:var(--error);box-shadow:0 0 0 3px rgba(165,67,47,.10);}
+
+  /* choices */
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .choices.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .opt{
+    display:flex;align-items:center;gap:10px;
+    border:1px solid var(--line-strong);border-radius:9px;
+    padding:11px 13px;cursor:pointer;background:#fefdfa;
+    font-size:15px;transition:border-color .15s,background .15s;
+    user-select:none;
+  }
+  .opt:hover{border-color:var(--brass-soft);}
+  .opt input{accent-color:var(--pine);width:17px;height:17px;flex-shrink:0;margin:0;}
+  .opt.checked{border-color:var(--pine);background:#f3f6f2;}
+  .choices.invalid .opt{border-color:var(--error);}
+
+  /* consent */
+  .consent-box{
+    font-size:12.5px;color:var(--muted);line-height:1.65;
+    background:#f6f3ea;border:1px solid var(--line);border-radius:9px;
+    padding:13px 14px;margin-bottom:14px;
+  }
+
+  /* submit */
+  .submit-wrap{padding:26px 22px 0;}
+  button.submit{
+    width:100%;font-family:var(--sans);font-weight:700;font-size:17px;letter-spacing:.08em;
+    color:#fbf8f0;background:var(--pine);border:none;border-radius:11px;
+    padding:16px;cursor:pointer;transition:background .18s,transform .05s;
+  }
+  button.submit:hover{background:#0f2823;}
+  button.submit:active{transform:translateY(1px);}
+  button.submit:disabled{opacity:.6;cursor:default;}
+  .form-error{
+    color:var(--error);font-size:14px;margin:14px 2px 0;display:none;text-align:center;
+  }
+  .form-error.show{display:block;}
+  .privacy-tiny{text-align:center;font-size:12px;color:var(--muted);margin:16px 0 0;}
+
+  /* success */
+  .success{display:none;padding:20px 22px;}
+  .success.show{display:block;}
+  .success-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:40px 26px;text-align:center;
+  }
+  .check{
+    width:58px;height:58px;border-radius:50%;background:#eef4ef;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+    border:1.5px solid var(--ok);
+  }
+  .check svg{width:28px;height:28px;stroke:var(--ok);}
+  .success h2{font-family:var(--serif);font-size:23px;margin:0 0 12px;letter-spacing:.03em;}
+  .success p{color:var(--muted);font-size:15px;margin:0 auto 8px;max-width:34ch;}
+  .line-cta{
+    display:inline-block;margin-top:22px;background:#06c755;color:#fff;
+    font-weight:700;text-decoration:none;padding:13px 30px;border-radius:10px;font-size:15px;
+  }
+  .again{
+    display:block;margin:18px auto 0;background:none;border:none;
+    color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;
+  }
+
+  .footer{text-align:center;font-size:12px;color:var(--muted);padding:34px 22px 0;letter-spacing:.04em;}
+
+  .demo-flag{
+    display:none;background:#f6f3ea;border-top:1px dashed var(--line-strong);
+    color:var(--muted);font-size:12px;text-align:center;padding:9px;letter-spacing:.03em;
+  }
+  .demo-flag.show{display:block;}
+
+  @media (max-width:420px){
+    .choices.grid{grid-template-columns:1fr;}
+    .hero{padding:38px 20px 36px;}
+    form{padding:0 14px;}
+    .submit-wrap{padding:24px 14px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="brand-eyebrow">御謙VIP菁英會</p>
+    <h1 class="brand">專屬財務諮詢預約</h1>
+    <p class="brand-sub">人生理想規劃 · 為你量身安排</p>
+    <p class="hero-note">感謝您預約專屬財務諮詢。請花 <strong>2–3 分鐘</strong>填寫，顧問將於 <strong>1–2 個工作天內</strong>主動與您聯繫、安排時間。表內資料僅用於本次諮詢安排。</p>
+  </header>
+
+  <!-- ========== FORM ========== -->
+  <form id="bookingForm" novalidate>
+
+    <!-- I 基本聯絡資訊 -->
+    <section class="section">
+      <div class="sec-head"><span class="sec-num">I</span><h2 class="sec-title">基本聯絡資訊</h2></div>
+
+      <div class="field">
+        <label class="q">您的姓名／稱呼<span class="req">*</span></label>
+        <input type="text" name="姓名" autocomplete="name" placeholder="怎麼稱呼您">
+      </div>
+      <div class="field">
+        <label class="q">聯絡電話<span class="req">*</span>
+          <span class="hint">方便顧問與您聯繫，例：0912-345-678</span></label>
+        <input type="tel" name="電話" autocomplete="tel" inputmode="numeric" placeholder="手機或市話">
+      </div>
+      <div class="field">
+        <label class="q">Email</label>
+        <input type="email" name="Email" autocomplete="email" placeholder="選填">
+      </div>
+      <div class="field">
+        <label class="q">LINE ID<span class="hint">方便快速聯繫與傳送資料</span></label>
+        <input type="text" name="LINE" placeholder="選填">
+      </div>
+      <div class="field">
+        <label class="q">方便會面的區域</label>
+        <select name="區域">
+          <option value="">請選擇（選填）</option>
+          <option>板橋</option><option>中和</option><option>永和</option>
+          <option>新莊</option><option>台北市</option>
+          <option>其他（雙北皆可安排）</option><option>線上不限</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- II 諮詢需求 -->
+    <section class="section">
+      <div class="sec-head"><span class="sec-num">II</span><h2 class="sec-title">您的諮詢需求</h2></div>
+
+      <div class="field">
+        <label class="q">這次最想了解的主題<span class="req">*</span>
+          <span class="hint">可複選</span></label>
+        <div class="choices" data-group="諮詢主題">
+          <label class="opt"><input type="checkbox" value="退休金與退休規劃"><span>退休金與退休規劃</span></label>
+          <label class="opt"><input type="checkbox" value="保險規劃／保單健檢"><span>保險規劃／保單健檢</span></label>
+          <label class="opt"><input type="checkbox" value="ETF與投資理財"><span>ETF 與投資理財（如 0050、00929）</span></label>
+          <label class="opt"><input type="checkbox" value="資產配置（核心衛星）"><span>資產配置（核心／衛星策略）</span></label>
+          <label class="opt"><input type="checkbox" value="子女教育金準備"><span>子女教育金準備</span></label>
+          <label class="opt"><input type="checkbox" value="資產傳承與稅務"><span>資產傳承與稅務規劃</span></label>
+          <label class="opt"><input type="checkbox" value="儲蓄與現金流"><span>儲蓄與現金流管理</span></label>
+          <label class="opt"><input type="checkbox" value="其他" data-other="topicOther"><span>其他</span></label>
+        </div>
+        <input type="text" name="其他主題" id="topicOther" placeholder="請簡述您想了解的內容" style="margin-top:9px;display:none;">
+      </div>
+
+      <div class="field">
+        <label class="q">您目前的人生階段</label>
+        <div class="choices grid" data-group="人生階段" data-single>
+          <label class="opt"><input type="radio" name="人生階段" value="社會新鮮人／單身"><span>社會新鮮人／單身</span></label>
+          <label class="opt"><input type="radio" name="人生階段" value="已婚無子女"><span>已婚無子女</span></label>
+          <label class="opt"><input type="radio" name="人生階段" value="育兒家庭"><span>育兒家庭</span></label>
+          <label class="opt"><input type="radio" name="人生階段" value="準退休（空巢期）"><span>準退休（空巢期）</span></label>
+          <label class="opt"><input type="radio" name="人生階段" value="已退休"><span>已退休</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">目前是否已有投資或保險？</label>
+        <div class="choices grid" data-group="已有投資保險" data-single>
+          <label class="opt"><input type="radio" name="已有投資保險" value="有"><span>有</span></label>
+          <label class="opt"><input type="radio" name="已有投資保險" value="沒有"><span>沒有</span></label>
+          <label class="opt"><input type="radio" name="已有投資保險" value="不確定"><span>不確定</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">目前最想解決的財務目標或困擾</label>
+        <textarea name="財務目標" placeholder="例如：想準備退休、檢視現有保單是否足夠、想開始投資但不知從何下手（選填）"></textarea>
+      </div>
+    </section>
+
+    <!-- III 預約時段 -->
+    <section class="section">
+      <div class="sec-head"><span class="sec-num">III</span><h2 class="sec-title">預約時段</h2></div>
+
+      <div class="field">
+        <label class="q">希望的諮詢方式<span class="req">*</span></label>
+        <div class="choices" data-group="諮詢方式" data-single>
+          <label class="opt"><input type="radio" name="諮詢方式" value="面對面諮詢"><span>面對面諮詢</span></label>
+          <label class="opt"><input type="radio" name="諮詢方式" value="視訊諮詢"><span>視訊諮詢（Google Meet／LINE）</span></label>
+          <label class="opt"><input type="radio" name="諮詢方式" value="電話諮詢"><span>電話諮詢</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">方便的日期<span class="req">*</span>
+          <span class="hint">先選個大概日期即可，實際時間會再與您確認</span></label>
+        <input type="date" name="希望日期">
+      </div>
+
+      <div class="field">
+        <label class="q">方便的時段<span class="hint">可複選</span></label>
+        <div class="choices grid" data-group="方便時段">
+          <label class="opt"><input type="checkbox" value="平日上午"><span>平日上午</span></label>
+          <label class="opt"><input type="checkbox" value="平日下午"><span>平日下午</span></label>
+          <label class="opt"><input type="checkbox" value="平日晚上"><span>平日晚上</span></label>
+          <label class="opt"><input type="checkbox" value="假日上午"><span>假日上午</span></label>
+          <label class="opt"><input type="checkbox" value="假日下午"><span>假日下午</span></label>
+          <label class="opt"><input type="checkbox" value="假日晚上"><span>假日晚上</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">預計一起參與的對象</label>
+        <div class="choices grid" data-group="參與對象" data-single>
+          <label class="opt"><input type="radio" name="參與對象" value="僅本人"><span>僅本人</span></label>
+          <label class="opt"><input type="radio" name="參與對象" value="與配偶一同"><span>與配偶一同</span></label>
+          <label class="opt"><input type="radio" name="參與對象" value="與家人一同"><span>與家人一同</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- IV 補充 -->
+    <section class="section">
+      <div class="sec-head"><span class="sec-num">IV</span><h2 class="sec-title">補充資訊</h2></div>
+
+      <div class="field">
+        <label class="q">您是如何得知御謙VIP菁英會？</label>
+        <div class="choices grid" data-group="得知管道" data-single>
+          <label class="opt"><input type="radio" name="得知管道" value="Instagram"><span>Instagram</span></label>
+          <label class="opt"><input type="radio" name="得知管道" value="TikTok"><span>TikTok</span></label>
+          <label class="opt"><input type="radio" name="得知管道" value="Facebook"><span>Facebook</span></label>
+          <label class="opt"><input type="radio" name="得知管道" value="朋友親友介紹"><span>朋友／親友介紹</span></label>
+          <label class="opt"><input type="radio" name="得知管道" value="LINE"><span>LINE</span></label>
+          <label class="opt"><input type="radio" name="得知管道" value="Google搜尋"><span>Google 搜尋</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">有沒有想先讓顧問知道的事？</label>
+        <textarea name="備註" placeholder="任何補充都歡迎，讓諮詢更聚焦（選填）"></textarea>
+      </div>
+    </section>
+
+    <!-- V 個資同意 -->
+    <section class="section">
+      <div class="sec-head"><span class="sec-num">V</span><h2 class="sec-title">個資同意</h2></div>
+      <div class="consent-box">
+        依《個人資料保護法》告知：本表由御謙VIP菁英會（王盛嶢）蒐集，蒐集目的為安排並提供財務諮詢服務，利用範圍為與您聯繫及諮詢安排，保存期間至諮詢服務結束後依法定期限止。您可依法要求查詢、閱覽、補充、更正或刪除個人資料。
+      </div>
+      <div class="choices" data-group="個資同意">
+        <label class="opt"><input type="checkbox" id="consent" value="同意"><span>我已閱讀並同意上述個資蒐集與利用說明<span class="req">*</span></span></label>
+      </div>
+    </section>
+
+    <div class="submit-wrap">
+      <button type="submit" class="submit" id="submitBtn">送出預約</button>
+      <p class="form-error" id="formError">請確認標示 * 的必填欄位都已填寫。</p>
+      <p class="privacy-tiny">送出即表示您同意本會與您聯繫安排諮詢</p>
+    </div>
+  </form>
+
+  <!-- ========== SUCCESS ========== -->
+  <div class="success" id="successView">
+    <div class="success-card">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h2>已收到您的預約</h2>
+      <p>感謝您的信任！顧問將於 <strong>1–2 個工作天內</strong>主動與您聯繫。</p>
+      <p>想更快聯繫，也可以直接加入官方 LINE。</p>
+      <a class="line-cta" id="lineCta" href="#" target="_blank" rel="noopener">加入官方 LINE</a>
+      <button class="again" id="againBtn" type="button">再填一筆預約</button>
+    </div>
+  </div>
+
+  <p class="footer">御謙VIP菁英會 · 王盛嶢</p>
+  <div class="demo-flag" id="demoFlag">示範模式：尚未接上 Firebase，送出僅為預覽、不會實際寫入。填入設定後即可上線。</div>
+</div>
+
+<script>
+/* ======================================================================
+   設定區（把這幾個值換成你自己的就會上線）
+   ====================================================================== */
+const CONFIG = {
+  // 1) 已填入你 fish-teem 的設定（與 CRM 相同專案）
+  firebaseConfig: {
+    apiKey: "AIzaSyBBvyKFhQOcgndQclbpnPv1npF2wpxudfU",
+    authDomain: "fish-teem.firebaseapp.com",
+    projectId: "fish-teem",
+    storageBucket: "fish-teem.firebasestorage.app",
+    messagingSenderId: "318120498514",
+    appId: "1:318120498514:web:b0766e54e4749f4dea968b",
+    measurementId: "G-GCTNYLTS5M"
+  },
+  // 2) 預約要寫進哪個 collection（建議獨立一個 bookings；要直接進客戶就改成你的客戶 collection 名稱）
+  collection: "bookings",
+  // 3) 送出後的 LINE 加好友連結（成功頁按鈕會用到）
+  lineUrl: "https://line.me/R/ti/p/你的LINE連結"
+};
+
+/* ======================================================================
+   以下不用改
+   ====================================================================== */
+let db = null, isLive = false;
+
+function initFirebase(){
+  const cfg = CONFIG.firebaseConfig;
+  const configured = cfg.apiKey && !cfg.apiKey.includes("貼上");
+  if (configured && typeof firebase !== "undefined") {
+    try {
+      firebase.initializeApp(cfg);
+      db = firebase.firestore();
+      isLive = true;
+    } catch(e){ console.warn("Firebase 初始化失敗，切換示範模式:", e); }
+  }
+  if (!isLive) document.getElementById("demoFlag").classList.add("show");
+}
+
+/* 選項卡片：點選時高亮 + 單選群組互斥 */
+document.querySelectorAll(".opt").forEach(opt => {
+  const input = opt.querySelector("input");
+  const sync = () => {
+    if (input.type === "radio") {
+      document.querySelectorAll(`input[name="${input.name}"]`)
+        .forEach(r => r.closest(".opt").classList.toggle("checked", r.checked));
+    } else {
+      opt.classList.toggle("checked", input.checked);
+    }
+  };
+  input.addEventListener("change", sync);
+  // 「其他」主題展開輸入框
+  if (input.dataset.other) {
+    input.addEventListener("change", () => {
+      const box = document.getElementById(input.dataset.other);
+      box.style.display = input.checked ? "block" : "none";
+      if (!input.checked) box.value = "";
+    });
+  }
+});
+
+/* 蒐集勾選值 */
+function getChecked(group){
+  return [...document.querySelectorAll(`[data-group="${group}"] input:checked`)].map(i => i.value);
+}
+function val(name){
+  const el = document.querySelector(`[name="${name}"]`);
+  return el ? el.value.trim() : "";
+}
+
+/* 驗證 + 送出 */
+const form = document.getElementById("bookingForm");
+const errBox = document.getElementById("formError");
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  clearInvalid();
+  const topics = getChecked("諮詢主題");
+  const consult = document.querySelector('input[name="諮詢方式"]:checked');
+  const consent = document.getElementById("consent").checked;
+
+  let firstBad = null;
+  const flag = el => { if (el && !firstBad) firstBad = el; };
+
+  if (!val("姓名")) flag(mark('[name="姓名"]'));
+  if (!val("電話")) flag(mark('[name="電話"]'));
+  if (topics.length === 0) flag(markGroup("諮詢主題"));
+  if (!consult) flag(markGroup("諮詢方式"));
+  if (!val("希望日期")) flag(mark('[name="希望日期"]'));
+  if (!consent) flag(markGroup("個資同意"));
+
+  if (firstBad){
+    errBox.classList.add("show");
+    firstBad.scrollIntoView({behavior:"smooth", block:"center"});
+    return;
+  }
+  errBox.classList.remove("show");
+
+  const payload = {
+    來源: "自來客",                 // ← 進 CRM 就標成自來客
+    狀態: "新預約",                 // ← 你的成交管線起始狀態（可改成你系統的名稱）
+    姓名: val("姓名"),
+    電話: val("電話"),
+    Email: val("Email"),
+    LINE: val("LINE"),
+    區域: val("區域"),
+    諮詢主題: topics,
+    其他主題: val("其他主題"),
+    人生階段: (document.querySelector('input[name="人生階段"]:checked')||{}).value || "",
+    已有投資保險: (document.querySelector('input[name="已有投資保險"]:checked')||{}).value || "",
+    財務目標: val("財務目標"),
+    諮詢方式: consult.value,
+    希望日期: val("希望日期"),
+    方便時段: getChecked("方便時段"),
+    參與對象: (document.querySelector('input[name="參與對象"]:checked')||{}).value || "",
+    得知管道: (document.querySelector('input[name="得知管道"]:checked')||{}).value || "",
+    備註: val("備註"),
+    個資同意: true
+  };
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "送出中…";
+
+  try {
+    if (isLive){
+      payload.建立時間 = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection(CONFIG.collection).add(payload);
+    } else {
+      console.log("【示範模式】將寫入的資料：", payload);
+      await new Promise(r => setTimeout(r, 700));
+    }
+    showSuccess();
+  } catch(err){
+    console.error(err);
+    btn.disabled = false; btn.textContent = "送出預約";
+    errBox.textContent = "送出時發生問題，請稍後再試，或直接以 LINE 與我們聯繫。";
+    errBox.classList.add("show");
+  }
+});
+
+function mark(sel){ const el=document.querySelector(sel); if(el) el.classList.add("invalid"); return el; }
+function markGroup(g){ const el=document.querySelector(`[data-group="${g}"]`); if(el) el.classList.add("invalid"); return el; }
+function clearInvalid(){ document.querySelectorAll(".invalid").forEach(el=>el.classList.remove("invalid")); }
+form.addEventListener("input", () => errBox.classList.remove("show"));
+
+function showSuccess(){
+  document.getElementById("bookingForm").style.display = "none";
+  document.querySelector(".submit-wrap").style.display = "none";
+  const cta = document.getElementById("lineCta");
+  if (CONFIG.lineUrl && !CONFIG.lineUrl.includes("你的")) cta.href = CONFIG.lineUrl;
+  else cta.style.display = "none";
+  const sv = document.getElementById("successView");
+  sv.classList.add("show");
+  sv.scrollIntoView({behavior:"smooth", block:"start"});
+}
+document.getElementById("againBtn").addEventListener("click", () => location.reload());
+
+initFirebase();
+</script>
+</body>
+</html>
