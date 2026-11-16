@@ -161,10 +161,6 @@
   .check svg{width:28px;height:28px;stroke:var(--ok);}
   .success h2{font-family:var(--serif);font-size:23px;margin:0 0 12px;letter-spacing:.03em;}
   .success p{color:var(--muted);font-size:15px;margin:0 auto 8px;max-width:34ch;}
-  .line-cta{
-    display:inline-block;margin-top:22px;background:#06c755;color:#fff;
-    font-weight:700;text-decoration:none;padding:13px 30px;border-radius:10px;font-size:15px;
-  }
   .again{
     display:block;margin:18px auto 0;background:none;border:none;
     color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;
@@ -246,6 +242,7 @@
           <label class="opt"><input type="checkbox" value="子女教育金準備"><span>子女教育金準備</span></label>
           <label class="opt"><input type="checkbox" value="資產傳承與稅務"><span>資產傳承與稅務規劃</span></label>
           <label class="opt"><input type="checkbox" value="儲蓄與現金流"><span>儲蓄與現金流管理</span></label>
+          <label class="opt"><input type="checkbox" value="房貸／房產規劃（換屋、過戶、贈與）"><span>房貸／房產規劃（換屋、過戶、贈與）</span></label>
           <label class="opt"><input type="checkbox" value="其他" data-other="topicOther"><span>其他</span></label>
         </div>
         <input type="text" name="其他主題" id="topicOther" placeholder="請簡述您想了解的內容" style="margin-top:9px;display:none;">
@@ -363,9 +360,7 @@
     <div class="success-card">
       <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
       <h2>已收到您的預約</h2>
-      <p>感謝您的信任！顧問將於 <strong>1–2 個工作天內</strong>主動與您聯繫。</p>
-      <p>想更快聯繫，也可以直接加入官方 LINE。</p>
-      <a class="line-cta" id="lineCta" href="#" target="_blank" rel="noopener">加入官方 LINE</a>
+      <p>收到囉！我會在一個工作天內跟你聯絡確認時間</p>
       <button class="again" id="againBtn" type="button">再填一筆預約</button>
     </div>
   </div>
@@ -522,9 +517,6 @@ form.addEventListener("input", () => errBox.classList.remove("show"));
 function showSuccess(){
   document.getElementById("bookingForm").style.display = "none";
   document.querySelector(".submit-wrap").style.display = "none";
-  const cta = document.getElementById("lineCta");
-  if (CONFIG.lineUrl && !CONFIG.lineUrl.includes("你的")) cta.href = CONFIG.lineUrl;
-  else cta.style.display = "none";
   const sv = document.getElementById("successView");
   sv.classList.add("show");
   sv.scrollIntoView({behavior:"smooth", block:"start"});
