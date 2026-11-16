@@ -411,6 +411,7 @@ body.present .o-chip{pointer-events:none}
 @media (max-width:640px){.wrap{padding:18px 14px 40px}.topbar-in{padding:10px 14px}.g-hero{grid-template-columns:1fr}.g-kpirow{grid-template-columns:1fr 1fr}.kpi .v{font-size:24px}.gt-poster{grid-template-columns:1fr;grid-template-areas:"life" "tri" "riskC" "stock" "investC" "left" "right" "notes"}.ratios{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr 1fr}}
 .seg button{white-space:nowrap}@media (max-width:640px){.seg button{padding-left:10px;padding-right:10px}}.gt-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 14px;border-radius:12px;background:#f3ebf1;border:1.5px solid #c9a9bf;color:#5c3352;font-size:13.5px}
 .gt-banner b{font-size:14.5px}.gt-banner .sp{flex:1}.gt-banner .btn{white-space:nowrap}
+.gt-banner.gt-editing{background:#f8f4ea;border-color:#e0d0a8;color:#6a5420;font-size:13px;padding:8px 12px}
 .gt-poster.ro{position:relative}.gt-poster.ro .edit-only{display:none!important}
 .gt-poster.ro input:disabled,.gt-poster.ro textarea:disabled,.gt-poster.ro select:disabled{background:#f7f3f6!important;color:var(--ink)!important;opacity:1;cursor:default;-webkit-text-fill-color:var(--ink)}
 .gt-poster.ro input.div-in:disabled{color:#8c929b!important;-webkit-text-fill-color:#8c929b;background:#f6f3ee!important;border-color:#efece4!important}
@@ -515,7 +516,7 @@ body.printing .stk *,body.printing .stk{animation:none!important}body.printing .
 .goal.simple .edu-set,.goal.simple .edu-split,.goal.simple .insight,.goal.simple .pol-sec,.goal.simple .gap-row,.goal.simple .fh-wrap,.goal.simple .fh-legend,.goal.simple .fam-sec-t,.goal.simple .fam-sug,.goal.simple .fam-hint,.goal.simple .fam-bar,.goal.simple .pol-note,.goal.simple .fam-tb,.goal.simple .wd-box,.goal.simple .fam-mt{display:none!important}
 .goal.more-closed>.goal-in>.insight{display:none}
 .simple-more{display:block;margin:10px auto 0}
-body.adv-off #famStd,body.adv-off .std-panel,body.adv-off #esRulesBtn,body.adv-off .es-rules,body.adv-off #gtDraft,body.adv-off label:has(>.inl>[data-rset="threshold"]),body.adv-off #btnRedo{display:none!important}
+body.adv-off #famStd,body.adv-off .std-panel,body.adv-off #esRulesBtn,body.adv-off .es-rules,body.adv-off label:has(>.inl>[data-rset="threshold"]),body.adv-off #btnRedo{display:none!important}
 .adv-tg.on{background:var(--gold,#c9a02c);color:#1E2E3D}
 body:not(.np-all) .np-btn:not(.on){display:none}.np-more{margin:8px 0 0}
 .tl-pick{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:10px auto 0;max-width:min(560px,100%);position:relative;z-index:1}.tl-pick select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);max-width:100%;min-width:0}
@@ -1310,7 +1311,7 @@ function makeState(){
   resetGoals();BASE.date='';BASE.netWorth=0;
   return {freq:'m',mode:'advisor',selected:[],otherOpen:false,editing:{},rows:[],client:{name:'',birth:'',job:'',note:''},
    gt:{income:'',yearEnd:'',fixed:[],risk:'',riskNote:'',invest:'',investNote:'',core:[],sat:[],emergNote:'',stock:'',assets:[],flow:'',note:'',
-     gaps:[false,false,false,false,false,false],snaps:[],cmp:0}};
+     gaps:[false,false,false,false,false,false],snaps:[],cmp:0,snapHist:[]}};
 }
 let S=makeState();
 
@@ -1332,7 +1333,7 @@ function refDate(){return (lastRow()&&lastRow().date)||BASE.date||todayRoc();}
 function emptyBox(t,sub,btn){return `<div class="empty-box"><div class="eb-t">${t}</div>${sub?`<div class="eb-s">${sub}</div>`:''}${btn||''}</div>`;}
 function rowsX(){let prev=BASE.netWorth;return S.rows.map((r,i)=>{const ye=+r.ye||0,prem=+r.prem||0,sug=theoSug(prev,r.income,ye,r.fixed,prem),theo=theoIsSet(r)?Number(r.theo):sug;const o=Object.assign({},r,{invest:(+r.invest||0)+(+r.save||0),save:0,ye,prem,i,m:mIdx(r.date),prev,sug,theo,growth:r.netWorth-prev,extra:theo-r.netWorth});prev=r.netWorth;return o;});}
 function theoFormula(p){const mo=p.n||1;const pre=p.n>1?`收入 ${fmt(p.income)}（${mo} 個月）`:`收入 ${fmt(p.income)}`;const shown=p.sug!=null?p.sug:p.theo;return `${fmt(p.prev)} ＋ ${pre}${p.ye?` ＋ 年終 ${fmt(p.ye)}`:''} － 固定支出 ${fmt(p.fixed)} － 保費 ${fmt(p.prem||0)} ＝ ${fmt(shown)}`;}
-function premDefault(){try{const F=famPrem();const y=F.ay!=null?F.ay:F.by;if(y)return Math.round(y/12);}catch(e){}return Number(S.gt.risk)||0;}
+function premDefault(){try{if(S.gt&&S.gt.edit!=null&&S.gt._stash){const st=S.gt._stash,prevP=S.policy,prevF=S.family;S.policy=JSON.parse(JSON.stringify(st.policy));S.family=JSON.parse(JSON.stringify(st.family));try{const F=famPrem();const y=F.ay!=null?F.ay:F.by;if(y)return Math.round(y/12);}finally{S.policy=prevP;S.family=prevF;}return Number(st.gt&&st.gt.risk)||0;}const F=famPrem();const y=F.ay!=null?F.ay:F.by;if(y)return Math.round(y/12);}catch(e){}return Number((S.gt&&S.gt.edit!=null&&S.gt._stash)?S.gt._stash.gt.risk:S.gt.risk)||0;}
 function periods(){
   const rows=rowsX();const f=S.freq;const groups=[];
   rows.forEach(r=>{const p=parseRoc(r.date);const key=f==='m'?r.date:f==='h'?p.y+(p.m<=6?' 上半年':' 下半年'):p.y+' 年';
@@ -2874,9 +2875,24 @@ function viewSnap(){const G=S.gt;return G.view!=null&&G.snaps[G.view]?G.snaps[G.
 function GV(){const v=viewSnap();return v?snapState(v):S.gt;}
 function gtView(){const v=viewSnap();if(!v)return gtNow();return Object.assign({label:v.label,date:v.date},stSum(snapState(v)));}
 function cmpObj(){const G=S.gt;const v=G.view;if(v!=null&&G.cmp===v)return Object.assign(gtNow(),{label:'現在'});return G.snaps[G.cmp]||null;}
-function gtDirty(){const L=S.gt.snaps[S.gt.snaps.length-1];if(!L||!L.state)return false;return JSON.stringify(liveState())!==JSON.stringify(L.state);}
-function setView(i){S.gt.view=(i==null||i<0)?null:i;renderGT();renderOther();}
-function useAsDraft(){const v=viewSnap();if(!v)return;const st=cloneSt(snapState(v));Object.assign(S.gt,st);S.gt.view=null;renderGT();renderLinked();toast('已將 '+v.date+' 紀錄複製為「現在」底稿');}
+const GT_KEEP={snaps:1,cmp:1,view:1,snapHist:1,edit:1,_stash:1};
+function gtPlain(src){const o={};Object.keys(src||{}).forEach(k=>{if(GT_KEEP[k])return;const v=src[k];o[k]=v&&typeof v==='object'?JSON.parse(JSON.stringify(v)):v;});return o;}
+function applyGtPlain(o){Object.keys(S.gt).forEach(k=>{if(GT_KEEP[k])return;if(!(k in o))delete S.gt[k];});Object.keys(o).forEach(k=>{const v=o[k];S.gt[k]=v&&typeof v==='object'?JSON.parse(JSON.stringify(v)):v;});}
+function goalsSnap(){const G={};Object.keys(GOALS).forEach(k=>{const g={};Object.keys(GOALS[k]).forEach(f=>{const v=GOALS[k][f];if(typeof v!=='function')g[f]=v;});G[k]=g;});return JSON.parse(JSON.stringify(G));}
+function restoreGoals(g){if(!g)return;Object.keys(g).forEach(k=>{if(!GOALS[k])return;Object.keys(g[k]).forEach(f=>{const v=g[k][f];GOALS[k][f]=v&&typeof v==='object'?JSON.parse(JSON.stringify(v)):v;});});}
+function captureLive(){const state=liveState();return {gt:gtPlain(S.gt),selected:(S.selected||[]).slice(),needNote:S.needNote,family:JSON.parse(JSON.stringify(FAM())),edu:JSON.parse(JSON.stringify(EDU())),stage:JSON.parse(JSON.stringify(STG())),estate:JSON.parse(JSON.stringify(ESI())),policy:JSON.parse(JSON.stringify(POL())),goals:goalsSnap(),editing:JSON.parse(JSON.stringify(S.editing||{})),view:S.gt.view,state:state};}
+function restoreLive(st){if(!st)return;applyGtPlain(st.gt);S.selected=st.selected.slice();if(st.needNote==null)delete S.needNote;else S.needNote=st.needNote;S.family=JSON.parse(JSON.stringify(st.family));S.edu=JSON.parse(JSON.stringify(st.edu));S.stage=JSON.parse(JSON.stringify(st.stage));S.estate=JSON.parse(JSON.stringify(st.estate));S.policy=JSON.parse(JSON.stringify(st.policy));S.editing=JSON.parse(JSON.stringify(st.editing||{}));restoreGoals(st.goals);}
+function maskEditBuffer(o){const gt=o.S&&o.S.gt;const st=gt&&gt._stash;if(!st)return;Object.keys(gt).forEach(k=>{if(!GT_KEEP[k]&&!(k in st.gt))delete gt[k];});Object.keys(st.gt||{}).forEach(k=>{gt[k]=st.gt[k];});delete gt._stash;delete gt.edit;gt.view=st.view==null?null:st.view;o.S.selected=st.selected;if(st.needNote==null)delete o.S.needNote;else o.S.needNote=st.needNote;o.S.family=st.family;o.S.edu=st.edu;o.S.stage=st.stage;o.S.estate=st.estate;o.S.policy=st.policy;o.S.editing=st.editing||{};if(st.goals)o.G=st.goals;}
+function draftGt(){if(S.gt&&S.gt.edit!=null&&S.gt._stash){const g=S.gt._stash.gt||{};return {income:Number(g.income)||0,fixed:listAmt(g.fixed),invest:coreSatSum(g),yearEnd:g.yearEnd,risk:Number(g.risk)||0,selected:S.gt._stash.selected||[]};}return {income:Number(S.gt.income)||0,fixed:gtLife(),invest:coreSatSum(S.gt),yearEnd:S.gt.yearEnd,risk:Number(S.gt.risk)||0,selected:S.selected};}
+function gtDirty(){const L=S.gt.snaps[S.gt.snaps.length-1];if(!L||!L.state)return false;if(S.gt.edit!=null&&S.gt._stash&&S.gt._stash.state)return JSON.stringify(S.gt._stash.state)!==JSON.stringify(L.state);return JSON.stringify(liveState())!==JSON.stringify(L.state);}
+function setView(i){if(S.gt.edit!=null||S.gt._stash){const dest=(i==null||i<0)?null:i;cancelSnapEdit();if(dest!=null){S.gt.view=dest;renderGT();renderOther();}return;}S.gt.view=(i==null||i<0)?null:i;renderGT();renderOther();}
+function applySnapToLive(v){const st=cloneSt(snapState(v));ST_F().forEach(f=>{S.gt[f]=st[f];});if(assetListOn(S.gt))S.gt.stock=listAmt(S.gt.assets);S.selected=Array.isArray(v.needs)?v.needs.slice():[];S.needNote=v.needNote!=null?String(v.needNote):'';S.family=v.family?JSON.parse(JSON.stringify(v.family)):familyInit();S.edu=v.edu?JSON.parse(JSON.stringify(v.edu)):eduInit();S.stage=v.stage?JSON.parse(JSON.stringify(v.stage)):stageInit();S.estate=v.estate?JSON.parse(JSON.stringify(v.estate)):estateInit();const P=POL();const ver=(P.versions||[]).find(x=>x&&x.date===v.date);if(ver){P.cells=polClone(ver.cells);P.prem=polClone(ver.prem);}else{const b=policyInit();P.cells=b.cells;P.prem=b.prem;}}
+function refreshSnapChrome(){renderAll();renderGT();}
+function editThisSnap(){const G=S.gt;const i=G.view;const v=i!=null&&G.snaps[i]?G.snaps[i]:null;if(!v||G.edit!=null)return;G._stash=captureLive();applySnapToLive(v);G.view=null;G.edit=i;refreshSnapChrome();}
+function cancelSnapEdit(){const G=S.gt;const stash=G._stash;if(G.edit==null&&!stash)return;if(stash)restoreLive(stash);G.edit=null;G._stash=null;G.view=null;refreshSnapChrome();}
+function polBlank(cells,prem){const empty=!cells||cells.every(c=>!c||!c.items||!c.items.length);const p=prem||{};return empty&&['by','bm','ay','am'].every(k=>p[k]==null||p[k]==='');}
+function writePolAt(date,cells,prem){const P=POL();const had=(P.versions||[]).find(x=>x&&x.date===date);if(!had&&polBlank(cells,prem))return;const keepC=polClone(P.cells),keepM=polClone(P.prem);P.cells=polClone(cells);P.prem=polClone(prem);polSaveVersion(had?had.label:(date+' 快照'),date);P.cells=keepC;P.prem=keepM;}
+function saveSnapEdit(){const G=S.gt;const i=G.edit;const prev=i!=null&&G.snaps[i]?G.snaps[i]:null;const stash=G._stash;if(!prev||!stash)return;const captured={family:JSON.parse(JSON.stringify(FAM())),edu:JSON.parse(JSON.stringify(EDU())),stage:JSON.parse(JSON.stringify(STG())),estate:JSON.parse(JSON.stringify(ESI())),needNote:String(S.needNote||''),needs:(S.selected||[]).slice(),state:liveState(),cells:polClone(POL().cells),prem:polClone(POL().prem)};if(!Array.isArray(G.snapHist))G.snapHist=[];G.snapHist.push({date:prev.date,label:prev.label,editedAt:new Date().toISOString(),prev:JSON.parse(JSON.stringify(prev))});while(G.snapHist.length>20)G.snapHist.shift();const n=JSON.parse(JSON.stringify(prev));n.date=prev.date;n.label=prev.label;n.family=captured.family;n.edu=captured.edu;n.stage=captured.stage;n.estate=captured.estate;n.needNote=captured.needNote;n.needs=captured.needs;n.state=captured.state;Object.assign(n,stSum(n.state));G.snaps[i]=n;const date=prev.date,cells=captured.cells,prem=captured.prem;restoreLive(stash);G.edit=null;G._stash=null;G.view=null;writePolAt(date,cells,prem);refreshSnapChrome();toast('已存回 '+date+' 紀錄');}
 function gtNow(){return {label:'現在',date:refDate(),income:Number(S.gt.income)||0,life:gtLife(),risk:Number(S.gt.risk)||0,invest:coreSatSum(S.gt)};}
 function triSVG(){
   const now=gtView(),cmp=cmpObj();const rn=snapRatios(now),rc=cmp?snapRatios(cmp):null;
@@ -2894,7 +2910,7 @@ function triSVG(){
 }
 function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400);}
 function snapKey(d){const p=parseRoc(d);return (p.y*12+p.m)*100+p.d;}
-function saveSnap(n,opt){const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));n.needNote=String(S.needNote||'');G.view=null;n.state=liveState();Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
+function saveSnap(n,opt){if(S.gt.edit!=null)return;const G=S.gt;polSaveVersion(n.date+' 快照',n.date);n.family=JSON.parse(JSON.stringify(FAM()));n.edu=JSON.parse(JSON.stringify(EDU()));n.stage=JSON.parse(JSON.stringify(STG()));n.estate=JSON.parse(JSON.stringify(ESI()));n.needNote=String(S.needNote||'');G.view=null;n.state=liveState();Object.assign(n,stSum(n.state));const ex=G.snaps.findIndex(x=>x.date===n.date);
   if(ex>=0){n.label=G.snaps[ex].label;G.snaps[ex]=n;G.cmp=Math.min(G.cmp,G.snaps.length-1);if(!(opt&&opt.quiet))toast('已更新今天的快照');}
   else{G.snaps.push(n);G.snaps.sort((a,b)=>snapKey(a.date)-snapKey(b.date));if(!(opt&&opt.quiet))toast('已存下金三角快照・'+n.date);}
   renderGT();}
@@ -2914,6 +2930,7 @@ function refreshReviewPreview(){
   const el=$('ftReviewNext');if(el)el.textContent=n?nextReviewRoc(n):'—';
 }
 function finishReview(roc){
+  if(S.gt.edit!=null)return {ok:false,reason:'editing'};
   const date=normRoc(roc);
   if(!date)return {ok:false,reason:'date'};
   if(!(Number(S.gt.income)>0))return {ok:false,reason:'income'};
@@ -2942,7 +2959,8 @@ function listRows(arr,key,tagged){
 function renderGT(){
   if(!viewSnap())migrateLiveAssets();
   const G=GV(),RO=G!==S.gt,VS=viewSnap(),assetsOn=assetListOn(G);
-  $('gtBanner').innerHTML=RO?`<div class="gt-banner"><span>👁</span><b>正在檢視 ${esc(VS.date)} 紀錄（唯讀）</b><span>${esc(VS.label)}・修改請先回到現在</span><span class="sp"></span><button class="btn sm" id="gtDraft">以此為底稿編輯</button><button class="btn sm primary" id="gtBack">回到現在</button></div>`:'';
+  const edSnap=!RO&&S.gt.edit!=null&&S.gt.snaps[S.gt.edit]?S.gt.snaps[S.gt.edit]:null;
+  $('gtBanner').innerHTML=RO?`<div class="gt-banner"><span>👁</span><b>正在檢視 ${esc(VS.date)} 紀錄（唯讀）</b><span>${esc(VS.label)}・可就地修改這筆紀錄</span><span class="sp"></span><button class="btn sm" id="gtDraft">修改這筆紀錄</button><button class="btn sm primary" id="gtBack">回到現在</button></div>`:(edSnap?`<div class="gt-banner gt-editing"><b>正在修改 ${esc(edSnap.date)} ${esc(edSnap.label)}</b><span class="sp"></span><button class="btn sm primary" id="gtBack">回到現在</button></div>`:'');
   $('gt').innerHTML=`
   <div class="gt-left"><div class="gt-card" style="padding:14px"><div class="sec-t">保障缺口檢查表</div>
     <div class="risk-row"><div class="risk-lines">${[0,1,2].map(i=>`<label><input type="checkbox" data-gap="${i}" ${G.gaps[i]?'checked':''}>${i+1}．${GAP_ITEMS[i]}</label>`).join('')}</div><div class="risk-side">院內</div></div><hr class="risk-div">
@@ -2978,7 +2996,8 @@ function renderGT(){
     ${assetsOn?`<div class="gt-card list-card" id="assetCard"><div class="sec-t">全部擁有的資產</div>${listRows(G.assets,'assets',false)}<button class="add-btn edit-only" data-add="assets">＋新增項目</button></div>`:''}</div>
   <div class="gt-notes gt-card" style="padding:14px"><div class="sec-t">備註</div><textarea data-gt="note" placeholder="可自由輸入任何備註內容…">${esc(G.note)}</textarea></div>`;
   const root=$('gt');root.classList.toggle('ro',RO);
-  if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});root.querySelectorAll('.o-chip').forEach(b=>b.setAttribute('aria-disabled','true'));$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=useAsDraft;}
+  if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});root.querySelectorAll('.o-chip').forEach(b=>b.setAttribute('aria-disabled','true'));$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=editThisSnap;}
+  else if($('gtBack'))$('gtBack').onclick=()=>cancelSnapEdit();
   root.querySelectorAll('[data-gt]').forEach(el=>el.addEventListener('input',()=>{const f=el.dataset.gt;S.gt[f]=el.type==='number'?(el.value===''?'':Number(el.value)):el.value;updateGT();renderLinked();}));
   root.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{const it=S.gt[el.dataset.l][+el.dataset.i];if(!it)return;const f=el.dataset.f;if(f==='d'){const n=Number(el.value);if(el.value===''||!isFinite(n)||n<=0)delete it.d;else it.d=n;}else if(f==='a')it.a=Number(el.value)||0;else it[f]=el.value;if(el.dataset.l==='assets'&&f!=='d')S.gt.stock=listAmt(S.gt.assets);updateGT();renderLinked();}));
   root.querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>{if(RO||S.mode==='client'||document.body.classList.contains('printing'))return;const list=S.gt[el.dataset.o];const it=list&&list[+el.dataset.i];if(!it)return;it.o=originOf(it)==='new'?'old':'new';if(el.dataset.o==='assets')S.gt.stock=listAmt(S.gt.assets);renderGT();renderLinked();gtMarkDirty();});
@@ -2988,7 +3007,7 @@ function renderGT(){
   root.querySelectorAll('[data-rm]').forEach(el=>el.onclick=()=>{const k=el.dataset.rm;S.gt[k].splice(+el.dataset.i,1);if(k==='assets')S.gt.stock=listAmt(S.gt.assets);renderGT();renderLinked();gtMarkDirty();});
   root.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{const l=el.dataset.add;if(l==='fixed')S.gt.fixed.push({n:'',a:0});else if(l==='assets'){if(!Array.isArray(S.gt.assets))S.gt.assets=[];S.gt.assets.push({n:'',a:0,o:'new'});S.gt.stock=listAmt(S.gt.assets);}else S.gt[l].push({n:'',a:0,o:'new',g:S.selected[0]||''});renderGT();gtMarkDirty();});
   $('flowReset').onclick=()=>{const G=S.gt;G.flow=coreSatSum(G);renderGT();renderLinked();toast('已將儲蓄合計帶入流量');};
-  $('snapBtn').onclick=()=>{if(S.gt.view!=null)return;if(!(Number(S.gt.income)>0))return;const n=gtNow();n.label=S.gt.snaps.length?n.date.slice(0,6)+' 檢視':'初次會談';if(!S.gt.snaps.length&&BASE.date)n.date=BASE.date;n.needs=S.selected.slice();saveSnap(n);};
+  $('snapBtn').onclick=()=>{if(S.gt.edit!=null){saveSnapEdit();return;}if(S.gt.view!=null)return;if(!(Number(S.gt.income)>0))return;const n=gtNow();n.label=S.gt.snaps.length?n.date.slice(0,6)+' 檢視':'初次會談';if(!S.gt.snaps.length&&BASE.date)n.date=BASE.date;n.needs=S.selected.slice();saveSnap(n);};
   updateGT();
 }
 function updateGT(){
@@ -3012,20 +3031,22 @@ function updateGT(){
    $('flowRef').textContent=(core+sat)?'儲蓄合計 '+fmt(core+sat)+'（參考）':'';}
   $('triSvg').innerHTML=triSVG();
   const all=SG.snaps.concat([now]);
-  $('tl').style.display=SG.snaps.length?'':'none';$('tlHint').style.display=SG.snaps.length?'none':'';$('snapBtn').disabled=!inc;$('snapBtn').textContent=SG.snaps.length?'＋ 存為本期金三角快照':'＋ 存為「初次會談」快照';
+  $('tl').style.display=SG.snaps.length?'':'none';$('tlHint').style.display=SG.snaps.length?'none':'';
+  const edI=SG.edit!=null&&SG.snaps[SG.edit]?SG.edit:null;const edLab=edI!=null?SG.snaps[edI].label:'';
+  if($('snapBtn')){if(edI!=null){$('snapBtn').disabled=false;$('snapBtn').textContent='存回 '+edLab+'（'+SG.snaps[edI].date+'）';}else{$('snapBtn').disabled=!inc;$('snapBtn').textContent=SG.snaps.length?'＋ 存為本期金三角快照':'＋ 存為「初次會談」快照';}}
   {const ns=SG.snaps.length;const vis=[];if(ns){vis.push(0);for(let q=Math.max(1,ns-4);q<ns;q++)vis.push(q);}const hidden=ns-vis.length;
-   const btn=(sn,idx,isNow)=>`<button type="button" data-s="${isNow?'now':idx}" class="${isNow?'now':idx===SG.cmp&&idx!==SG.view?'cmp':''}${isNow?(SG.view==null?' cur':''):(idx===SG.view?' cur view':'')}" title="${esc(sn.label)} · ${sn.date}"><i></i><span class="lb">${esc(sn.label)}</span><span class="lb sm">${isNow&&gtDirty()?'<span class="tl-dirty">● 未存變更</span>':sn.date+' · '+(sn.needs||S.selected).length+' 需求'}</span></button>`;
+   const btn=(sn,idx,isNow)=>`<button type="button" data-s="${isNow?'now':idx}" class="${isNow?'now':idx===SG.cmp&&idx!==SG.view&&idx!==edI?'cmp':''}${isNow?(SG.view==null&&edI==null?' cur':''):(idx===SG.view||idx===edI?' cur view':'')}" title="${esc(sn.label)} · ${sn.date}"><i></i><span class="lb">${esc(sn.label)}</span><span class="lb sm">${isNow&&gtDirty()?'<span class="tl-dirty">● 未存變更</span>':sn.date+' · '+(sn.needs||S.selected).length+' 需求'}</span></button>`;
    const dots=[];
    vis.forEach(function(idx,i){if(i>0&&idx>vis[i-1]+1)dots.push('<span class="tl-gap" title="中間 '+hidden+' 筆在更多歷史">⋯<small>'+hidden+'</small></span>');dots.push(btn(SG.snaps[idx],idx,false));});
-   if(ns)dots.push(btn({label:'現在',date:refDate(),needs:S.selected},null,true));
+   if(ns)dots.push(btn({label:'現在',date:refDate(),needs:(SG.edit!=null&&SG._stash?SG._stash.selected:S.selected)},null,true));
    $('tl').innerHTML=dots.join('');
    $('tl').querySelectorAll('[data-s]').forEach(function(b){b.onclick=function(){setView(b.dataset.s==='now'?null:+b.dataset.s);};});
    const pick=document.querySelector('#gt .tl-pick');if(pick)pick.classList.toggle('is-off',!ns);
-   if($('tlSel')){$('tlSel').innerHTML='<option value="now" '+(SG.view==null?'selected':'')+'>現在（工作中）'+(gtDirty()?'・未存變更':'')+'</option>'+SG.snaps.map(function(sn,q){return '<option value="'+q+'" '+(q===SG.view?'selected':'')+'>'+sn.date+'｜'+esc(sn.label)+'</option>';}).reverse().join('');$('tlSel').onchange=function(e){setView(e.target.value==='now'?null:+e.target.value);};}
+   if($('tlSel')){$('tlSel').innerHTML='<option value="now" '+(SG.view==null&&edI==null?'selected':'')+'>現在（工作中）'+(gtDirty()?'・未存變更':'')+'</option>'+SG.snaps.map(function(sn,q){return '<option value="'+q+'" '+(q===SG.view||q===edI?'selected':'')+'>'+sn.date+'｜'+esc(sn.label)+'</option>';}).reverse().join('');$('tlSel').onchange=function(e){setView(e.target.value==='now'?null:+e.target.value);};}
    const hid=[];for(let q=0;q<ns;q++)if(vis.indexOf(q)<0)hid.push(q);
-   $('tlMore').innerHTML=hid.length?'<label>更多歷史 <select id="tlMoreSel" aria-label="更多歷史"><option value="">較早的快照</option>'+hid.map(function(q){return '<option value="'+q+'" '+(q===SG.view?'selected':'')+'>'+SG.snaps[q].date+'｜'+esc(SG.snaps[q].label)+'</option>';}).join('')+'</select></label>':'';
+   $('tlMore').innerHTML=hid.length?'<label>更多歷史 <select id="tlMoreSel" aria-label="更多歷史"><option value="">較早的快照</option>'+hid.map(function(q){return '<option value="'+q+'" '+(q===SG.view||q===edI?'selected':'')+'>'+SG.snaps[q].date+'｜'+esc(SG.snaps[q].label)+'</option>';}).join('')+'</select></label>':'';
    const more=$('tlMoreSel');if(more)more.onchange=function(e){if(e.target.value!=='')setView(+e.target.value);};}
-  $('curName').textContent=SG.view==null?'現在':now.label;
+  $('curName').textContent=edI!=null?edLab:(SG.view==null?'現在':now.label);
   $('cmpSel').innerHTML=SG.snaps.length?SG.snaps.map((sn,q)=>`<option value="${q}" ${q===SG.cmp?'selected':''}>${q===SG.view?'現在（工作中）':esc(sn.label)}</option>`).join(''):'<option>—</option>';$('cmpSel').disabled=!SG.snaps.length;
   $('cmpSel').onchange=e=>{SG.cmp=+e.target.value;updateGT();};
   if(!SG.snaps.length){$('ratioLeg').innerHTML='';$('ratioTbl').innerHTML=`<tr><td class="tbl-hint">${!inc?'輸入月收入開始建立金三角，存下快照後可比較每次檢視的比例變化。':'存下第一個快照後，這裡會比較每次檢視的比例變化。'}</td></tr>`;return;}
@@ -3033,7 +3054,7 @@ function updateGT(){
   const row=(n,k,ideal)=>{const a=A?A[k]:null,b=B?B[k]:null;let chg='<span class="rchg flat">—</span>';
     if(a!=null&&b!=null){const d=(b-a)*100;if(Math.abs(d)>=0.05){const toward=Math.abs(b-ideal)<Math.abs(a-ideal);chg=`<span class="rchg ${toward?'good':'bad'}" title="${toward?'更接近理想':'偏離理想'}">${d>0?'+':'−'}${Math.abs(d).toFixed(1)}pt</span>`;}}
     return `<tr data-k="${k}"><td style="text-align:left">${n}</td><td>${pct(ideal)}</td><td style="color:#7a4a6b">${a==null?'—':pct(a,1)}</td><td><b>${b==null?'—':pct(b,1)}</b></td><td>${chg}</td></tr>`;};
-  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(SG.view==null?'現在':now.label)}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('儲蓄','invest',.4);
+  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(edI!=null?edLab:(SG.view==null?'現在':now.label))}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('儲蓄','invest',.4);
   $('ratioLeg').innerHTML=`<span><i style="background:#2f7a63"></i>綠＝更接近理想</span><span><i style="background:#c8742e"></i>橙＝偏離理想</span><span><i style="background:#a8acb2"></i>—＝無變化</span><div class="rl-note">比例＝各項 ÷ 月收入（同為每月金額，年終不計入）${(A&&A.over)||(B&&B.over)?'；三項合計超過月收入時，以三項合計為 100% 計算':''}</div>`;
 }
 
@@ -3043,7 +3064,7 @@ function logAllocText(a){if(!a)return '—';const parts=KEYS.filter(k=>a[k]>0).m
 function renderLogCards(P){
   const box=$('logCards'); if(!box) return;
   const editable=S.freq==='m';
-  const emptyHtml=emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAddCard">＋ 新增第一筆檢視紀錄</button>');
+  const emptyHtml=emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(draftGt().income>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAddCard">＋ 新增第一筆檢視紀錄</button>');
   if(!P.length){box.innerHTML=emptyHtml;const b=$('firstAddCard');if(b)b.onclick=()=>openModal(-1);return;}
   const field=(lb,val,wide)=>`<div class="${wide?'lc-wide':''}"><dt>${lb}</dt><dd>${val}</dd></div>`;
   const item=(title,sub,fields,edit)=>`<article class="lc-item"><div class="lc-h"><b>${title}</b>${sub?`<span class="gap-tag">${sub}</span>`:''}</div><dl class="lc-grid">${fields}</dl>${edit?`<div class="lc-acts">${edit}</div>`:''}</article>`;
@@ -3067,7 +3088,7 @@ function renderLogCards(P){
 function renderLog(P){
   const editable=S.freq==='m';
   const head=`<thead><tr><th class="l">開始日 <span class="sort-tag">新→舊</span></th><th>收入</th><th>固定支出</th><th>儲蓄</th><th>資產淨值</th><th>身價已累積</th><th>理論淨值</th><th>淨增長</th><th class="extra">額外支出</th><th class="l">備註</th><th class="l">分配到六大需求 <span style="font-weight:400;color:var(--muted)">(${S.selected.map(k=>`<i class="dot" style="background:${GOALS[k].c}"></i>`).join('')})</span></th><th class="edit-only"></th></tr></thead>`;
-  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="13" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(Number(S.gt.income)>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);renderLogCards(P);}
+  if(!P.length){$('logTbl').innerHTML=head+`<tbody><tr><td colspan="13" class="l" style="padding:0;border:0">${emptyBox('新增第一筆檢視紀錄','建議每月記錄一次：收入、固定支出、投資、儲蓄與資產淨值。系統會自動算出淨增長、理論淨值與額外支出，並更新六大需求進度。'+(draftGt().income>0?'<br>已可由「理財金三角」帶入本期草稿。':''),'<button class="btn primary edit-only" id="firstAdd">＋ 新增第一筆檢視紀錄</button>')}</td></tr></tbody>`;$('firstAdd').onclick=()=>openModal(-1);renderLogCards(P);}
   else{
   const base=`<tr style="color:var(--muted)"><td class="l num">${BASE.date||'—'}<span class="gap-tag"> 面談</span></td><td colspan="3"></td><td class="num">${fmt(BASE.netWorth)}</td><td class="num face">${pvFaceText({date:BASE.date})}</td><td colspan="5" class="l gap-tag">期初淨值（金三角初次會談）</td><td class="edit-only"></td></tr>`;
   const body=P.slice().reverse().map(p=>{const notes=Object.keys(p.notes);const pi=p.first.i;const nd=pi>0?needDiff(S.rows[pi-1].needs,p.last.needs):{add:[],rm:[]};return `<tr><td class="l num">${esc(p.label)}${p.n>1?`<span class="gap-tag"> ・${p.n}期</span>`:''}</td><td class="num">${fmt(p.income)}</td><td class="num">${fmt(p.fixed)}</td><td class="num">${fmt(p.invest)}</td>
@@ -3081,8 +3102,8 @@ function renderLog(P){
   {let h=$('theoHow');if(!h){h=document.createElement('details');h.id='theoHow';h.className='theo-how';$('logTbl').closest('.tbl-wrap,div').after(h);}const Lp=P[P.length-1];const op=h.open;h.innerHTML=Lp?`<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div><div class="th-n num">${esc(Lp.label)}：${theoFormula(Lp)}</div><div class="th-d">與實際差異 ＝ 理論淨值 － 資產淨值（實際）＝ ${fmt(Lp.theo)} － ${fmt(Lp.netWorth)} ＝ ${Lp.extra<0?'−':''}${fmt(Math.abs(Lp.extra))}</div><div class="th-s">保費優先取自「保障」頁的年保費÷12；未填保單時可於檢視紀錄手動輸入。</div>`:'<summary>怎麼算？理論淨值</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終，如在本期）－ 固定支出 － 保費</div>';h.open=op;}
   $('logTbl').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(+b.dataset.edit)); renderLogCards(P);}
   const L=lastRow();
-  const G=S.gt,inv=coreSatSum(G);
-  $('feedBar').innerHTML=`<b>金三角帶入・本期草稿</b>${Number(S.gt.income)>0?'':'<span class="lbl">（尚未建立金三角，可直接手動輸入）</span>'}<div class="f"><span>收入 <strong class="num">${fmt(G.income)}</strong></span><span>固定支出 <strong class="num">${fmt(gtLife())}</strong></span><span>保費 <strong class="num">${fmt(premDefault())}</strong></span><span>儲蓄 <strong class="num">${fmt(inv)}</strong></span><span>下次檢視 <strong class="num">${L?addMonths(L.date,FREQ[S.freq][1]):'—'}</strong></span>${!L?'':(()=>{const d=needDiff(L.needs,S.selected);return d.add.length||d.rm.length?`<span>需求變更 ${needChips(d)}</span>`:'';})()}</div><button class="btn sm primary" style="margin-left:auto" id="feedAdd">以此新增本期檢視</button>`;
+  const DG=draftGt(),inv=DG.invest;
+  $('feedBar').innerHTML=`<b>金三角帶入・本期草稿</b>${DG.income>0?'':'<span class="lbl">（尚未建立金三角，可直接手動輸入）</span>'}<div class="f"><span>收入 <strong class="num">${fmt(DG.income)}</strong></span><span>固定支出 <strong class="num">${fmt(DG.fixed)}</strong></span><span>保費 <strong class="num">${fmt(premDefault())}</strong></span><span>儲蓄 <strong class="num">${fmt(inv)}</strong></span><span>下次檢視 <strong class="num">${L?addMonths(L.date,FREQ[S.freq][1]):'—'}</strong></span>${!L?'':(()=>{const d=needDiff(L.needs,DG.selected);return d.add.length||d.rm.length?`<span>需求變更 ${needChips(d)}</span>`:'';})()}</div><button class="btn sm primary" style="margin-left:auto" id="feedAdd">以此新增本期檢視</button>`;
   $('feedAdd').onclick=()=>openModal(-1);
 }
 
@@ -3090,9 +3111,9 @@ function renderLog(P){
 function openModal(idx){
   const isNew=idx<0;const last=S.rows[S.rows.length-1];const G=S.gt;
   let r;
-  if(isNew){const date=last?addMonths(last.date,1):(BASE.date||todayRoc());const m=mIdx(date);const inv=coreSatSum(G),sav=0;const income=Number(G.income)||0,fixed=gtLife(),prem=premDefault(),ye=parseRoc(date).m===(Number(G.yeMonth)||2)?(Number(G.yearEnd)||0):0;
+  if(isNew){const date=last?addMonths(last.date,1):(BASE.date||todayRoc());const m=mIdx(date);const DG=draftGt();const inv=DG.invest,sav=0;const income=DG.income,fixed=DG.fixed,prem=premDefault(),ye=parseRoc(date).m===(Number(G.yeMonth)||2)?(Number(DG.yearEnd)||0):0;
     const tool={};KEYS.forEach(k=>{const g=GOALS[k];const ratio=last?(last.tool[k]||0)/(toolExp(g,mIdx(last.date))||1)||1:1;tool[k]=g.kind==='protect'?g.toolAct(m):Math.round(toolExp(g,m)*ratio/100)*100;});
-    r={date,income,ye,fixed,prem,invest:inv,netWorth:(last?last.netWorth:(BASE.netWorth||0))+income+ye-fixed-prem,note:'',alloc:allocActive(inv,0,S.selected),tool,needs:S.selected.slice()};}
+    r={date,income,ye,fixed,prem,invest:inv,netWorth:(last?last.netWorth:(BASE.netWorth||0))+income+ye-fixed-prem,note:'',alloc:allocActive(inv,0,DG.selected),tool,needs:DG.selected.slice()};}
   else r=JSON.parse(JSON.stringify(S.rows[idx]));
   const rn=r.needs||S.selected;const showK=KEYS.filter(k=>(rn.includes(k)&&(!isNew||needActive(k)))||r.alloc[k]>0);
   const prev=isNew?(last?last.netWorth:BASE.netWorth):(idx>0?S.rows[idx-1].netWorth:BASE.netWorth);const isFirst=(isNew&&!last)||idx===0;
@@ -3183,7 +3204,7 @@ $('btnPdf').onclick=()=>{preparePrint();setTimeout(()=>{window.print();},60);};
 /* ===== 復原／重做 ===== */
 const UNDO={st:[],rd:[],max:50,base:null,pend:null,busy:false};
 const UNDO_UI=s=>{if(!s)return s;const o=JSON.parse(s);delete o.S.mode;delete o.S.tab;if(o.S.edu)delete o.S.edu.sel;if(o.S.stage){delete o.S.stage.more;if(o.S.stage.dreams){delete o.S.stage.dreams.sel;delete o.S.stage.dreams.adding;}}if(o.S.family){delete o.S.family.open;delete o.S.family.edit;}if(o.S.gt)delete o.S.gt.view;return JSON.stringify(o);};
-function undoSnap(){const G={};Object.keys(GOALS).forEach(k=>{const g={};Object.keys(GOALS[k]).forEach(f=>{const v=GOALS[k][f];if(typeof v!=='function')g[f]=v;});G[k]=g;});return JSON.stringify({S,G});}
+function undoSnap(){const G={};Object.keys(GOALS).forEach(k=>{const g={};Object.keys(GOALS[k]).forEach(f=>{const v=GOALS[k][f];if(typeof v!=='function')g[f]=v;});G[k]=g;});const o={S:S,G:G};let s=JSON.stringify(o);if(S.gt&&S.gt._stash){const p=JSON.parse(s);maskEditBuffer(p);s=JSON.stringify(p);}return s;}
 function undoRestore(str){const o=JSON.parse(str);const mode=S.mode;Object.keys(S).forEach(k=>{if(!(k in o.S))delete S[k];});Object.assign(S,o.S);S.mode=mode;Object.keys(o.G).forEach(k=>{if(GOALS[k])Object.assign(GOALS[k],o.G[k]);});renderAll();}
 function undoBtns(){const u=document.getElementById('btnUndo'),r=document.getElementById('btnRedo');if(u){u.disabled=!UNDO.st.length;u.title=UNDO.st.length?'復原：'+UNDO.st[UNDO.st.length-1].label+'（Ctrl/⌘+Z）':'沒有可復原的動作';}if(r){r.disabled=!UNDO.rd.length;r.title=UNDO.rd.length?'重做：'+UNDO.rd[UNDO.rd.length-1].label+'（Ctrl/⌘+Shift+Z）':'沒有可重做的動作';}}
 function undoLazy(base,cur){/* lazily-created defaults (per-kid settings, celebration markers) are not user edits */const b=JSON.parse(base),c=JSON.parse(cur);let ch=false;const ck=c.S.edu&&c.S.edu.kids,bk=b.S.edu&&b.S.edu.kids;if(ck&&bk)Object.keys(ck).forEach(id=>{if(!bk[id]&&(b.S.family||{members:[]}).members.some(m=>m.id===id)){bk[id]=ck[id];ch=true;}if(bk[id]&&ck[id]&&ck[id].payMsSeen!==undefined&&bk[id].payMsSeen!==ck[id].payMsSeen){bk[id].payMsSeen=ck[id].payMsSeen;ch=true;}});return ch?JSON.stringify(b):base;}
@@ -3229,7 +3250,7 @@ function ftImportState(raw){
     if(o.FSTD&&o.FSTD.adult&&o.FSTD.senior&&o.FSTD.kid)FSTD=JSON.parse(JSON.stringify(o.FSTD));
     if(o.UIX){UIX.more=o.UIX.more||{};UIX.adv=!!o.UIX.adv;UIX.npAll=!!o.UIX.npAll;}
     if(!S.client)S.client={name:'',birth:'',job:'',note:''};
-    if(S.gt)migrateLiveAssets();
+    if(S.gt){migrateLiveAssets();if(!Array.isArray(S.gt.snapHist))S.gt.snapHist=[];}
     document.body.classList.remove('present');
     const bm=document.getElementById('btnMode');if(bm)bm.textContent='切換為客戶簡報模式';
     renderAll();
