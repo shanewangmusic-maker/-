@@ -1190,7 +1190,7 @@ body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body
   <div class="tab-panel" data-panel="gt">
   <!-- 4. golden triangle -->
   <section class="sec" id="secGT">
-    <div class="sec-head"><div><div class="sec-no">03 · GOLDEN TRIANGLE</div><h2>理財金三角現況</h2></div><p>理想 50 / 10 / 40（虛線）vs. 實際比例（實心）；月收入、固定支出、儲蓄自動帶入定期追蹤。</p></div>
+    <div class="sec-head"><div><div class="sec-no">03 · GOLDEN TRIANGLE</div><h2>理財金三角現況</h2></div><p>理想 50 / 10 / 40（虛線）vs. 實際比例（實心）；月收入、固定支出、每月儲蓄成本自動帶入定期追蹤。</p></div>
     <div id="gtBanner"></div><div class="gt-poster" id="gt"></div>
   </section>
 
@@ -1293,7 +1293,9 @@ let S=makeState();
 
 /* ============ calculations ============ */
 function gtLife(){return S.gt.fixed.reduce((s,i)=>s+(Number(i.a)||0),0);}
-function selfBase(k,m){return (Number(GOALS[k].start)||0)+[...S.gt.core,...S.gt.sat].filter(i=>tagAt(i,m)===k).reduce((s,i)=>s+(Number(i.a)||0),0);}
+function selfBase(k){return Number(GOALS[k].start)||0;}
+function theoIsSet(r){return !!r&&r.theo!=null&&r.theo!==''&&isFinite(Number(r.theo));}
+function theoSug(prev,income,ye,fixed,prem){return (Number(prev)||0)+(Number(income)||0)+(Number(ye)||0)-(Number(fixed)||0)-(Number(prem)||0);}
 function lastRow(){return S.rows[S.rows.length-1]||null;}
 function reviewDatesISO(){
   const mark=S.reviewMark;
@@ -1305,8 +1307,8 @@ function reviewDatesISO(){
 }
 function refDate(){return (lastRow()&&lastRow().date)||BASE.date||todayRoc();}
 function emptyBox(t,sub,btn){return `<div class="empty-box"><div class="eb-t">${t}</div>${sub?`<div class="eb-s">${sub}</div>`:''}${btn||''}</div>`;}
-function rowsX(){let prev=BASE.netWorth;return S.rows.map((r,i)=>{const ye=+r.ye||0,prem=+r.prem||0,theo=prev+r.income+ye-r.fixed-prem;const o=Object.assign({},r,{invest:(+r.invest||0)+(+r.save||0),save:0,ye,prem,i,m:mIdx(r.date),prev,theo,growth:r.netWorth-prev,extra:theo-r.netWorth});prev=r.netWorth;return o;});}
-function theoFormula(p){const mo=p.n||1;const pre=p.n>1?`收入 ${fmt(p.income)}（${mo} 個月）`:`收入 ${fmt(p.income)}`;return `${fmt(p.prev)} ＋ ${pre}${p.ye?` ＋ 年終 ${fmt(p.ye)}`:''} － 固定支出 ${fmt(p.fixed)} － 保費 ${fmt(p.prem||0)} ＝ ${fmt(p.theo)}`;}
+function rowsX(){let prev=BASE.netWorth;return S.rows.map((r,i)=>{const ye=+r.ye||0,prem=+r.prem||0,sug=theoSug(prev,r.income,ye,r.fixed,prem),theo=theoIsSet(r)?Number(r.theo):sug;const o=Object.assign({},r,{invest:(+r.invest||0)+(+r.save||0),save:0,ye,prem,i,m:mIdx(r.date),prev,sug,theo,growth:r.netWorth-prev,extra:theo-r.netWorth});prev=r.netWorth;return o;});}
+function theoFormula(p){const mo=p.n||1;const pre=p.n>1?`收入 ${fmt(p.income)}（${mo} 個月）`:`收入 ${fmt(p.income)}`;const shown=p.sug!=null?p.sug:p.theo;return `${fmt(p.prev)} ＋ ${pre}${p.ye?` ＋ 年終 ${fmt(p.ye)}`:''} － 固定支出 ${fmt(p.fixed)} － 保費 ${fmt(p.prem||0)} ＝ ${fmt(shown)}`;}
 function premDefault(){try{const F=famPrem();const y=F.ay!=null?F.ay:F.by;if(y)return Math.round(y/12);}catch(e){}return Number(S.gt.risk)||0;}
 function periods(){
   const rows=rowsX();const f=S.freq;const groups=[];
@@ -1314,10 +1316,10 @@ function periods(){
     let g=groups[groups.length-1];if(!g||g.key!==key){g={key,rows:[]};groups.push(g);}g.rows.push(r);});
   return groups.map(g=>{const L=g.rows[g.rows.length-1],F=g.rows[0];const sum=k=>g.rows.reduce((s,r)=>s+r[k],0);
     const alloc={};KEYS.forEach(k=>alloc[k]=g.rows.reduce((s,r)=>s+r.alloc[k],0));
-    const income=sum('income'),fixed=sum('fixed'),ye=sum('ye'),prem=sum('prem'),theo=F.prev+income+ye-fixed-prem;
+    const income=sum('income'),fixed=sum('fixed'),ye=sum('ye'),prem=sum('prem'),sug=theoSug(F.prev,income,ye,fixed,prem),theo=g.rows.reduce((s,r)=>s+(r.theo-r.prev),F.prev);
     const notes={};g.rows.forEach(r=>{if(r.note)notes[r.note]=(notes[r.note]||0)+r.extra;});
     return {key:g.key,label:f==='m'?g.key:g.key,short:f==='m'?g.key.slice(0,6):g.key.replace(' 年','').replace(' 上半年','H1').replace(' 下半年','H2'),
-      n:g.rows.length,income,ye,prem,fixed,invest:sum('invest'),netWorth:L.netWorth,prev:F.prev,theo,growth:L.netWorth-F.prev,extra:theo-L.netWorth,
+      n:g.rows.length,income,ye,prem,fixed,invest:sum('invest'),netWorth:L.netWorth,prev:F.prev,sug,theo,growth:L.netWorth-F.prev,extra:theo-L.netWorth,
       alloc,notes,last:L,first:F};});
 }
 function gv(k,i){ // goal values at monthly row index i (-1 = baseline)
@@ -2438,7 +2440,7 @@ function decorateGoals(){const ro=S.mode==='client';
 function decorateTools(){const G=GV(),ro=G!==S.gt||S.mode==='client';
   document.querySelectorAll('#gt .list-row.tagged').forEach(row=>{const inp=row.querySelector('[data-l][data-i]');if(!inp)return;const l=inp.dataset.l,i=+inp.dataset.i,it=G[l]&&G[l][i];if(!it)return;const st=itemSt(it);
     row.insertAdjacentHTML('afterbegin',stkHTML('tool',l+':'+i,st,it.n||'工具',ro));row.classList.toggle('t-off',st!=='active');
-    const ts=row.querySelector('.tag-sel');if(ts){if(st!=='active')ts.insertAdjacentHTML('beforeend',`<span class="t-st">${ST_T[st]}・新檢視不分配</span>`);if(it.since&&it.hist&&it.hist.length)ts.insertAdjacentHTML('beforeend',`<span class="t-st since" title="改列需求只從該期起生效，過去各期仍計入原需求">自 ${esc(it.since.slice(0,6))} 起改列（原：${GOALS[it.hist[it.hist.length-1].g].label}）</span>`);}});
+    const ts=row.querySelector('.tag-sel');if(ts){if(st!=='active')ts.insertAdjacentHTML('beforeend',`<span class="t-st">${ST_T[st]}・新檢視不分配</span>`);if(it.since&&it.hist&&it.hist.length)ts.insertAdjacentHTML('beforeend',`<span class="t-st since" title="改列需求只從該期起生效。每月金額不計入自己累積">自 ${esc(it.since.slice(0,6))} 起改列（原：${GOALS[it.hist[it.hist.length-1].g].label}）</span>`);}});
   wireStk($('gt'));eduTagFix();dreamTagFix();}
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 function confetti(origin,color){if(RM())return;const cv=document.createElement('canvas');cv.className='confetti-cv';const W=cv.width=innerWidth*devicePixelRatio,H=cv.height=innerHeight*devicePixelRatio;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';document.body.appendChild(cv);
@@ -2771,7 +2773,7 @@ function setupForm(k){
   const tl=g.kind==='protect'?f('cover','目前保單保額','例 2400000'):f('toolMonthly','規劃工具・每月投入','例 6000')+f('rate','工具預估年化 %','例 2.5');
   return `<div class="setup"><div class="setup-h"><b>${g.configured?'調整目標設定':'設定這個需求的目標'}</b><span class="lbl">${k==='retire'?'目標＝退休時需要的資本（年化 '+g.yieldPct+'% 換算月被動收入）':g.kind==='protect'?'目標＝保障缺口總額':'先填目標與期初累積，之後每次檢視會自動更新'}</span></div>
    <div class="fgrid">${f('target',k==='retire'?'目標資本':g.kind==='protect'?'保障缺口（目標）':'目標金額','例 '+(k==='retire'?'10000000':'1000000'))}${f('start','自己已累積（期初）','例 200000')}${f('selfPlan','自己每月計畫提撥','例 5000')}${tl}${ex}</div>${(k==='retire'||k==='dream')&&!pvBox().policies.length?'<p class="pv-from"><button type="button" class="btn sm edit-only" data-pv-from>從建議書帶入</button></p>':''}${k==='retire'?pvRetireHTML():''}
-   <div class="setup-f"><span class="lbl" id="suMsg-${k}">金三角中標記為「${g.label}」的核心／衛星項目也會自動計入「自己累積」。</span><button class="btn primary" data-sugo="${k}">${g.configured?'更新':'開始追蹤'}</button>${g.configured?`<button class="btn" data-sucancel="${k}">取消</button>`:''}</div></div>`;
+   <div class="setup-f"><span class="lbl" id="suMsg-${k}">自己累積＝自己已累積（期初）＋各期檢視分配到此需求的儲蓄。核心／衛星的每月金額只計入「每月儲蓄成本」，不計入已累積。</span><button class="btn primary" data-sugo="${k}">${g.configured?'更新':'開始追蹤'}</button>${g.configured?`<button class="btn" data-sucancel="${k}">取消</button>`:''}</div></div>`;
 }
 function renderGoals(P){
   renderPicker();renderOther();
@@ -2850,10 +2852,10 @@ function triSVG(){
   const ideal=triPoly({life:1,risk:1,invest:1},1),act=rn?triPoly(rn,1):null,old=rc?triPoly(rc,1):null;
   const ok={life:gtStatus('life',now.life,now.income*.5),risk:gtStatus('risk',now.risk,now.income*.1),invest:gtStatus('invest',now.invest,now.income*.4)};
   const P=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
-  const keys=['life','risk','invest'],names={life:'生活',risk:'風險',invest:'儲蓄'},ideals={life:.5,risk:.1,invest:.4};
+  const keys=['life','risk','invest'],names={life:'生活',risk:'風險',invest:'每月儲蓄成本'},ideals={life:.5,risk:.1,invest:.4};
   const dots=!act?'':act.map((p,i)=>{const k=keys[i],col=ok[k]?'#2f7a63':'#55606e',val=(gtShares(now)||{})[k]||0;const dx=i===0?12:i===1?-12:12,dy=i===0?5:16;
     return `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${col}" stroke="#fff" stroke-width="2.5"/><text x="${p[0]+dx}" y="${p[1]+dy}" text-anchor="${i===1?'end':'start'}" font-size="12.5" font-weight="700" fill="${col}">${pct(val,1)}</text>`;}).join('');
-  const corner=[[TRI.top[0]-16,TRI.top[1]+14,'生活 50%','end'],[TRI.bl[0]+4,TRI.bl[1]+16,'風險 10%','start'],[TRI.br[0]-4,TRI.br[1]+16,'儲蓄 40%','end']].map(c=>`<text x="${c[0]}" y="${c[1]}" text-anchor="${c[3]}" font-size="11" fill="#8a6a24" font-weight="600">${c[2]}</text>`).join('');
+  const corner=[[TRI.top[0]-16,TRI.top[1]+14,'生活 50%','end'],[TRI.bl[0]+4,TRI.bl[1]+16,'風險 10%','start'],[TRI.br[0]-4,TRI.br[1]+16,'每月儲蓄成本 40%','end']].map(c=>`<text x="${c[0]}" y="${c[1]}" text-anchor="${c[3]}" font-size="11" fill="#8a6a24" font-weight="600">${c[2]}</text>`).join('');
   return `<svg viewBox="0 0 470 374"><polygon points="${P([TRI.top,TRI.bl,TRI.br])}" fill="#efe0bd" stroke="#C7A868" stroke-width="3" stroke-linejoin="round"/>
     ${corner}<polygon points="${P(ideal)}" fill="none" stroke="#1E2E3D" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 5"/>
     ${old?`<polygon points="${P(old)}" fill="none" stroke="#7a4a6b" stroke-width="2" stroke-dasharray="3 3"/>${old.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#7a4a6b"/>`).join('')}`:''}
@@ -2895,11 +2897,12 @@ function finishReview(roc){
   toast('已完成 '+date+' 檢視，下次 '+next);
   return {ok:true,date:date,next:next};
 }
+const SAVE_HINT='只填每個月固定在存的錢（定期定額、每月存款、儲蓄型保費等），年繳請換算成每月；純保障型保費請放在「風險規劃」';
 function listRows(arr,key,tagged){
-  if(!arr.length)return `<div class="list-empty">${key==='fixed'?'尚無固定支出・點「＋新增項目」逐項輸入（房租、孝親費、伙食…）':key==='core'?'尚無核心規劃・可新增既有保單、定期定額等，並標記所屬需求':'尚無衛星規劃・可新增個股、定存等'}</div>`;
-  return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}"><input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="金額"><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
+  if(!arr.length)return `<div class="list-empty">${key==='fixed'?'尚無固定支出・點「＋新增項目」逐項輸入（房租、孝親費、伙食…）':'尚無項目・點「＋新增項目」'}</div>`;
+  return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}"><input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="${tagged?SAVE_HINT:'金額'}"${tagged?` title="${SAVE_HINT}"`:''}><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
    ${tagged?(()=>{const sel=S.selected.includes(it.g);const has=!!GOALS[it.g];const opts=S.selected.map(k=>`<option value="${k}" ${it.g===k?'selected':''}>${GOALS[k].label}</option>`).join('')+(sel?'':has?`<option value="${it.g}" selected>${GOALS[it.g].label}（未選）</option>`:`<option value="" selected>未指定需求</option>`);
-   return `<div class="tag-sel">↳ 計入<select class="tag-pick" data-tag="${key}" data-i="${i}" style="background:${sel?GOALS[it.g].c:'#b9b6ae'}">${opts}</select>${sel?'<span>自己累積</span>':has?'<span class="tag-unsel" title="此項目所屬需求目前未選，不計入任何目標">未選需求・暫不計入</span>':`<span class="tag-unsel">${S.selected.length?'請選擇所屬需求':'先到「六大需求」選擇需求'}</span>`}</div>`;})():''}</div>`).join('');
+   return `<div class="tag-sel">↳ 所屬<select class="tag-pick" data-tag="${key}" data-i="${i}" style="background:${sel?GOALS[it.g].c:'#b9b6ae'}">${opts}</select>${sel?'':has?'<span class="tag-unsel" title="此項目所屬需求目前未選，不計入任何目標">未選需求・暫不計入</span>':`<span class="tag-unsel">${S.selected.length?'請選擇所屬需求':'先到「六大需求」選擇需求'}</span>`}</div>`;})():''}</div>`).join('');
 }
 function renderGT(){
   const G=GV(),RO=G!==S.gt,VS=viewSnap();
@@ -2920,20 +2923,21 @@ function renderGT(){
   <div class="gt-riskC gt-card cat"><div class="cat-top"><span>風險規劃</span><span class="p">10%</span></div><div class="cat-body">
     <div class="cat-line"><span class="l">合理</span><span class="v num" id="riskR"></span></div><div class="cat-line"><span class="l">實際</span><input type="number" class="num" data-gt="risk" value="${G.risk}"></div><span class="st" id="riskS"></span>
     <input class="cat-note" data-gt="riskNote" value="${esc(G.riskNote)}" placeholder="備註,例如年繳保費"></div></div>
-  <div class="gt-stock gt-card stock-box"><div><div class="lbl">存量・約</div><div class="stock-v num" id="stockV"></div></div>
-    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="stock" value="${G.stock??''}" placeholder="手動輸入存量" aria-label="存量金額（元）"><span class="lbl">元</span></div>
+  <div class="gt-stock gt-card stock-box"><div><div class="lbl">全部擁有的資產</div><div class="stock-v num" id="stockV"></div></div>
+    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="stock" value="${G.stock??''}" placeholder="金額" aria-label="全部擁有的資產（元）"><span class="lbl">元</span></div>
+    <div class="ref-hint">存款、投資、保單價值、不動產…（是否扣房貸由顧問自行決定）</div>
     <input class="cat-note" data-gt="emergNote" value="${esc(G.emergNote)}" placeholder="含緊急預備金備註"><hr style="border:0;border-top:1px solid var(--line);width:100%;margin:2px 0">
     <div><div class="lbl">流量・約</div><div class="flow-v num" id="flowV"></div></div>
-    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="flow" value="${G.flow??''}" placeholder="手動輸入流量" aria-label="流量金額（元）"><button class="btn sm" id="flowReset" title="把儲蓄合計帶入流量">重新加總</button></div>
+    <div class="sf-in edit-only"><input class="mini-in num" type="number" data-gt="flow" value="${G.flow??''}" placeholder="手動輸入流量" aria-label="流量金額（元）"><button class="btn sm" id="flowReset" title="把每月儲蓄成本合計帶入流量">重新加總</button></div>
     <div class="ref-hint" id="flowRef"></div></div>
-  <div class="gt-investC gt-card cat"><div class="cat-top"><span>儲蓄</span><span class="p">40%</span></div><div class="cat-body">
+  <div class="gt-investC gt-card cat"><div class="cat-top"><span>每月儲蓄成本</span><span class="p">40%</span></div><div class="cat-body">
     <div class="cat-line"><span class="l">合理</span><span class="v num" id="invR"></span></div><div class="cat-line"><span class="l">實際（自動加總）</span><span class="v num" id="invA"></span></div><span class="st" id="invS"></span>
     <div class="cs-note">＝【核心規劃】小計＋【衛星規劃】小計<span id="csSum"></span></div>
     <input class="cat-note" data-gt="investNote" value="${esc(G.investNote)}" placeholder="備註,例如定期定額標的"></div></div>
   <div class="gt-right">
     <div class="gt-card list-card"><div class="sec-t">固定支出<span style="font-weight:400;color:var(--muted)"> ・加總＝生活開銷實際</span></div>${listRows(G.fixed,'fixed',false)}<button class="add-btn edit-only" data-add="fixed">＋新增項目</button><div class="list-sum"><span>合計</span><b class="num" id="fixedSum"></b></div></div>
-    <div class="gt-card list-card"><div class="sec-t">【核心規劃】<span style="font-weight:400;color:var(--muted);font-size:11px"> 標記所屬需求 → 計入該目標「自己累積」</span></div>${listRows(G.core,'core',true)}<button class="add-btn edit-only" data-add="core">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="coreSum"></b></div></div>
-    <div class="gt-card list-card"><div class="sec-t">【衛星規劃】</div>${listRows(G.sat,'sat',true)}<button class="add-btn edit-only" data-add="sat">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="satSum"></b></div></div></div>
+    <div class="gt-card list-card"><div class="sec-t">【核心規劃】</div><div class="feed-note" style="font-weight:400;margin-top:0">${SAVE_HINT}</div>${listRows(G.core,'core',true)}<button class="add-btn edit-only" data-add="core">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="coreSum"></b></div></div>
+    <div class="gt-card list-card"><div class="sec-t">【衛星規劃】</div><div class="feed-note" style="font-weight:400;margin-top:0">${SAVE_HINT}</div>${listRows(G.sat,'sat',true)}<button class="add-btn edit-only" data-add="sat">＋新增項目</button><div class="list-sum"><span>小計</span><b class="num" id="satSum"></b></div></div></div>
   <div class="gt-notes gt-card" style="padding:14px"><div class="sec-t">備註</div><textarea data-gt="note" placeholder="可自由輸入任何備註內容…">${esc(G.note)}</textarea></div>`;
   const root=$('gt');root.classList.toggle('ro',RO);
   if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=useAsDraft;}
@@ -2944,7 +2948,7 @@ function renderGT(){
   decorateTools();
   root.querySelectorAll('[data-rm]').forEach(el=>el.onclick=()=>{S.gt[el.dataset.rm].splice(+el.dataset.i,1);renderGT();renderLinked();});
   root.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{const l=el.dataset.add;S.gt[l].push(l==='fixed'?{n:'',a:0}:{n:'',a:0,g:S.selected[0]||''});renderGT();});
-  $('flowReset').onclick=()=>{const G=S.gt;G.flow=coreSatSum(G);renderGT();renderLinked();toast('已將儲蓄合計帶入流量');};
+  $('flowReset').onclick=()=>{const G=S.gt;G.flow=coreSatSum(G);renderGT();renderLinked();toast('已將每月儲蓄成本合計帶入流量');};
   $('snapBtn').onclick=()=>{if(S.gt.view!=null)return;if(!(Number(S.gt.income)>0))return;const n=gtNow();n.label=S.gt.snaps.length?n.date.slice(0,6)+' 檢視':'初次會談';if(!S.gt.snaps.length&&BASE.date)n.date=BASE.date;n.needs=S.selected.slice();saveSnap(n);};
   updateGT();
 }
@@ -2964,7 +2968,7 @@ function updateGT(){
   {const e=$('csSum');if(e)e.textContent=` ・核心 ${G.core.length} 項／衛星 ${G.sat.length} 項`;}$('fixedSum').textContent=fmt(now.life)+'元';$('coreSum').textContent=fmt(core)+'元';$('satSum').textContent=fmt(sat)+'元';
   {const sv=G.stock;$('stockV').textContent=sv===''||sv==null||!isFinite(+sv)?'—':(Number(sv)/10000).toFixed(1)+'萬';}
   {const fv=G.flow,has=!(fv===''||fv==null||!isFinite(+fv)),flow=Number(fv)||0;$('flowV').textContent=has?(flow<0?'－':'')+fmt(Math.abs(flow))+'元':'—';$('flowV').classList.toggle('neg',has&&flow<0);
-   $('flowRef').textContent=(core+sat)?'儲蓄合計 '+fmt(core+sat)+'（參考）':'';}
+   $('flowRef').textContent=(core+sat)?'每月儲蓄成本合計 '+fmt(core+sat)+'（參考）':'';}
   $('triSvg').innerHTML=triSVG();
   const all=SG.snaps.concat([now]);
   $('tl').style.display=SG.snaps.length?'':'none';$('tlHint').style.display=SG.snaps.length?'none':'';$('snapBtn').disabled=!inc;$('snapBtn').textContent=SG.snaps.length?'＋ 存為本期金三角快照':'＋ 存為「初次會談」快照';
@@ -2988,7 +2992,7 @@ function updateGT(){
   const row=(n,k,ideal)=>{const a=A?A[k]:null,b=B?B[k]:null;let chg='<span class="rchg flat">—</span>';
     if(a!=null&&b!=null){const d=(b-a)*100;if(Math.abs(d)>=0.05){const toward=Math.abs(b-ideal)<Math.abs(a-ideal);chg=`<span class="rchg ${toward?'good':'bad'}" title="${toward?'更接近理想':'偏離理想'}">${d>0?'+':'−'}${Math.abs(d).toFixed(1)}pt</span>`;}}
     return `<tr data-k="${k}"><td style="text-align:left">${n}</td><td>${pct(ideal)}</td><td style="color:#7a4a6b">${a==null?'—':pct(a,1)}</td><td><b>${b==null?'—':pct(b,1)}</b></td><td>${chg}</td></tr>`;};
-  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(SG.view==null?'現在':now.label)}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('儲蓄','invest',.4);
+  $('ratioTbl').innerHTML=`<tr><th style="text-align:left">項目</th><th>理想</th><th>${esc(cmp.label)}</th><th>${esc(SG.view==null?'現在':now.label)}</th><th>變化</th></tr>`+row('生活','life',.5)+row('風險','risk',.1)+row('每月儲蓄成本','invest',.4);
   $('ratioLeg').innerHTML=`<span><i style="background:#2f7a63"></i>綠＝更接近理想</span><span><i style="background:#c8742e"></i>橙＝偏離理想</span><span><i style="background:#a8acb2"></i>—＝無變化</span><div class="rl-note">比例＝各項 ÷ 月收入（同為每月金額，年終不計入）${(A&&A.over)||(B&&B.over)?'；三項合計超過月收入時，以三項合計為 100% 計算':''}</div>`;
 }
 
@@ -3052,11 +3056,12 @@ function openModal(idx){
   const rn=r.needs||S.selected;const showK=KEYS.filter(k=>(rn.includes(k)&&(!isNew||needActive(k)))||r.alloc[k]>0);
   const prev=isNew?(last?last.netWorth:BASE.netWorth):(idx>0?S.rows[idx-1].netWorth:BASE.netWorth);const isFirst=(isNew&&!last)||idx===0;
   const cats=[...new Set(S.rows.map(x=>x.note).filter(Boolean))];
+  const theo0=theoIsSet(r)?Number(r.theo):theoSug(prev,r.income,r.ye,r.fixed,r.prem);
   $('modal').innerHTML=`<h3 class="serif">${isNew?'新增本期檢視':'編輯檢視紀錄・'+r.date}</h3><div class="lbl">${isNew?'已由「理財金三角」帶入收入／固定支出／儲蓄，可再調整。':'修改後，總覽、六大目標卡片與圖表會即時更新。'}</div>
    <div class="fgrid">
     ${isFirst?`<label>期初資產淨值（面談時）<input id="f_base" type="number" value="${BASE.netWorth||''}" placeholder="例 1000000"></label>`:''}<label>開始日（民國）<input id="f_date" value="${r.date}"></label><label>收入（月收入×月數）<input id="f_income" type="number" value="${r.income}"></label><label>年終（本期如有）<input id="f_ye" type="number" value="${r.ye||0}"></label><label>固定支出<input id="f_fixed" type="number" value="${r.fixed}"></label><label>保費<input id="f_prem" type="number" value="${r.prem||0}" title="預設取自保障頁年保費÷12"></label>
     <label>儲蓄<input id="f_invest" type="number" value="${(+r.invest||0)+(+r.save||0)}"></label><label>資產淨值（實際）<input id="f_nw" type="number" value="${r.netWorth}"></label><label>身價已累積<input id="f_face" type="number" value="${r.faceAccum!=null&&r.faceAccum!==''?r.faceAccum:(pvFaceOf(r).v==null?'':pvFaceOf(r).v)}"><span class="lbl">${(()=>{const f=pvFaceOf(Object.assign({},r,{faceAccum:null}));const p=f.protect==null?'—':fmt(f.protect),o=f.other==null?'—':fmt(f.other);return (r.faceAccum!=null&&r.faceAccum!==''?'手填合計。':'')+'保障型 '+p+' ＋ 其他規劃 '+o+'。可改合計，清空則改回自動加總。';})()}</span></label>
-    <label>理論淨值（自動）<div class="calc num" id="c_theo"></div></label><label>淨增長（自動）<div class="calc num" id="c_growth"></div></label><label>與實際差異（自動）<div class="calc num" id="c_extra" style="background:#f4f7dd"></div></label>
+    <label>理論淨值<input id="c_theo" class="num" type="number" value="${theo0}"></label><label>淨增長（自動）<div class="calc num" id="c_growth"></div></label><label>與實際差異（自動）<div class="calc num" id="c_extra" style="background:#f4f7dd"></div></label>
     <details class="theo-how m" style="grid-column:1/-1"><summary>怎麼算？</summary><div class="th-f">理論淨值 ＝ 上期淨值 ＋ 本期收入（月收入×月數＋年終）－ 固定支出 － 保費</div><div class="th-n num" id="c_how"></div></details><label>備註分類<input id="f_note" list="noteList" value="${esc(r.note)}" placeholder="例：旅遊、婚禮、機車"><datalist id="noteList">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></label></div>
    <div class="mod-sub">分配到已選需求 <span id="allocSum"></span><span>本期需求：${rn.map(k=>GOALS[k].label).join('、')}</span><button class="btn sm ghost" id="autoAlloc" style="margin-left:auto">依規劃比例自動分配</button></div>${isNew?allocNote(rn):''}
    <div class="fgrid">${showK.length?'':'<div class="lbl" style="grid-column:1/-1">尚未選擇需求・投資／儲蓄暫不分配（可先到「六大需求」點選）</div>'}${showK.map(k=>`<label><span><i class="dot" style="background:${GOALS[k].c}"></i>${GOALS[k].label}${rn.includes(k)?'':' <span class="tag-unsel">未選</span>'}</span><input type="number" data-al="${k}" value="${r.alloc[k]}"></label>`).join('')}</div>
@@ -3064,13 +3069,14 @@ function openModal(idx){
    <div class="fgrid">${showK.map(k=>`<label><span><i class="dot" style="background:${GOALS[k].c}"></i>${GOALS[k].toolShort}<span style="color:#b0b4ba"> · 預期 ${fmt(toolExp(GOALS[k],mIdx(r.date)))}</span></span><input type="number" data-tl="${k}" value="${r.tool[k]}"></label>`).join('')}</div>
    ${ctModalHTML(r)}${wdModalHTML(r)}<div class="mod-foot">${isNew?'':'<button class="btn" id="m_del" style="margin-right:auto;color:var(--bad)">刪除此期</button>'}<button class="btn" id="m_cancel">取消</button><button class="btn primary" id="m_save">儲存並更新</button></div>`;
   const val=id=>Number($(id).value)||0;
-  const calc=()=>{const P0=$('f_base')?val('f_base'):prev;const theo=P0+val('f_income')+val('f_ye')-val('f_fixed')-val('f_prem');{const h=$('c_how');if(h)h.textContent=`${fmt(P0)} ＋ ${fmt(val('f_income'))}${val('f_ye')?' ＋ 年終 '+fmt(val('f_ye')):''} － ${fmt(val('f_fixed'))} － 保費 ${fmt(val('f_prem'))} ＝ ${fmt(theo)}`;}$('c_theo').textContent=fmt(theo);$('c_growth').textContent=fmt(val('f_nw')-P0);$('c_extra').textContent=fmt(theo-val('f_nw'));
+  let theoEdited=theoIsSet(r),theoSync=false;
+  const calc=()=>{const P0=$('f_base')?val('f_base'):prev;const sug=theoSug(P0,val('f_income'),val('f_ye'),val('f_fixed'),val('f_prem'));if(!theoEdited){theoSync=true;$('c_theo').value=String(sug);theoSync=false;}const theo=val('c_theo');{const h=$('c_how');if(h)h.textContent=`${fmt(P0)} ＋ ${fmt(val('f_income'))}${val('f_ye')?' ＋ 年終 '+fmt(val('f_ye')):''} － ${fmt(val('f_fixed'))} － 保費 ${fmt(val('f_prem'))} ＝ ${fmt(sug)}`;}$('c_growth').textContent=fmt(val('f_nw')-P0);$('c_extra').textContent=fmt(theo-val('f_nw'));
     const s=[...document.querySelectorAll('[data-al]')].reduce((a,e)=>a+(Number(e.value)||0),0),t=val('f_invest');$('allocSum').innerHTML=`已分配 ${fmt(s)} / 儲蓄 ${fmt(t)} ${s===t?'<b style="color:var(--good)">✓</b>':'<b style="color:var(--warn)">差 '+fmt(t-s)+'</b>'}`;};
-  $('modal').querySelectorAll('input').forEach(e=>e.addEventListener('input',calc));calc();
+  $('modal').querySelectorAll('input').forEach(e=>{if(e.id==='c_theo')e.addEventListener('input',()=>{if(theoSync)return;theoEdited=true;calc();});else e.addEventListener('input',calc);});calc();
   $('autoAlloc').onclick=()=>{const a=(isNew?allocActive:defaultAlloc)(val('f_invest'),0,rn);document.querySelectorAll('[data-al]').forEach(e=>e.value=a[e.dataset.al]);calc();};
   wdWire(r);ctWire(r);$('m_cancel').onclick=closeModal;
   if(!isNew)$('m_del').onclick=()=>{S.rows.splice(idx,1);closeModal();renderAll();};
-  $('m_save').onclick=()=>{const o={date:$('f_date').value.trim(),income:val('f_income'),ye:val('f_ye'),fixed:val('f_fixed'),prem:val('f_prem'),invest:val('f_invest'),netWorth:val('f_nw'),note:$('f_note').value.trim(),alloc:Object.assign({},...KEYS.map(k=>({[k]:0}))),tool:Object.assign({},r.tool),needs:rn.slice()};if($('f_face')&&$('f_face').value!=='')o.faceAccum=Number($('f_face').value)||0;
+  $('m_save').onclick=()=>{const o={date:$('f_date').value.trim(),income:val('f_income'),ye:val('f_ye'),fixed:val('f_fixed'),prem:val('f_prem'),invest:val('f_invest'),netWorth:val('f_nw'),note:$('f_note').value.trim(),alloc:Object.assign({},...KEYS.map(k=>({[k]:0}))),tool:Object.assign({},r.tool),needs:rn.slice()};if(theoEdited)o.theo=val('c_theo');if($('f_face')&&$('f_face').value!=='')o.faceAccum=Number($('f_face').value)||0;
     document.querySelectorAll('[data-al]').forEach(e=>o.alloc[e.dataset.al]=Number(e.value)||0);document.querySelectorAll('[data-tl]').forEach(e=>o.tool[e.dataset.tl]=Number(e.value)||0);{const es=document.querySelectorAll('[data-eds]');if(es.length){o.eduSplit={};es.forEach(e=>o.eduSplit[e.dataset.eds]=Number(e.value)||0);}else if(r.eduSplit)o.eduSplit=r.eduSplit;const po=document.querySelectorAll('[data-po]');if(po.length){o.payout=Object.assign({},r.payout||{});po.forEach(e=>{const [id,f]=e.dataset.po.split('|');o.payout[id]=o.payout[id]||{p:'',d:''};o.payout[id][f]=e.value===''?'':Number(e.value);});}else if(r.payout)o.payout=r.payout;}
     if($('f_base'))BASE.netWorth=val('f_base');if(!BASE.date)BASE.date=o.date;{const W=wdCollect();if(W.length)o.wd=W;const CT=ctCollect();if(CT.length)o.contrib=CT;const ds=document.querySelectorAll('[data-dss]');if(ds.length){o.dsplit={};ds.forEach(e=>o.dsplit[e.dataset.dss]=Number(e.value)||0);}else if(r.dsplit)o.dsplit=r.dsplit;}if(isNew)S.rows.push(o);else S.rows[idx]=o;S.rows.sort((a,b)=>mIdx(a.date)-mIdx(b.date));closeModal();renderAll();};
   $('mb').classList.add('open');
@@ -3185,6 +3191,7 @@ function ftImportState(raw){
     document.body.classList.remove('present');
     const bm=document.getElementById('btnMode');if(bm)bm.textContent='切換為客戶簡報模式';
     renderAll();
+    if($('triSvg'))renderGT();
   }finally{UNDO.busy=false;window.__ftHydrating=prevH;}
   UNDO.st.length=0;UNDO.rd.length=0;UNDO.base=undoSnap();undoBtns();
   return true;
