@@ -203,9 +203,16 @@ svg text{font-family:"Noto Sans TC",sans-serif}
 .o-chip.is-new{color:#3f6b96;background:#f4f8fb;border-color:#d3e0ea}
 .list-row.tagged.has-o .o-chip{margin-left:10px}
 .origin-line{font-size:11px;color:#9a9ea4;text-align:center;line-height:1.45}
+.div-sum{margin-top:6px}
+.div-hint{text-align:center;margin:4px auto 0;max-width:46em;line-height:1.45}
 .gt-poster.ro .o-chip{pointer-events:none}
 .list-row input{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;min-width:0;color:var(--ink);background:#fff}
 .list-row input.amt{text-align:right}
+.amt-col{display:flex;flex-direction:column;gap:3px;min-width:0}
+.amt-col .amt{width:100%}
+.list-row input.div-in{width:100%;font-size:10.5px;font-weight:500;line-height:1.3;color:#8c929b;background:#fbfaf7;border-color:#efece4;padding:2px 4px;text-align:right;-moz-appearance:textfield;appearance:textfield}
+.list-row input.div-in::placeholder{color:#c4bfb6;font-weight:400}
+.list-row input.div-in::-webkit-outer-spin-button,.list-row input.div-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .list-row .rm{border:1px solid var(--line);background:#fff;border-radius:7px;height:26px;color:var(--muted);cursor:pointer}
 .tag-sel{grid-column:1/-1;display:flex;gap:6px;align-items:center;margin:-2px 0 6px;font-size:10.5px;color:var(--muted)}
 .tag-pick{border:0;border-radius:999px;color:#fff;font-size:11px;font-weight:600;padding:2px 8px;cursor:pointer;appearance:none;-webkit-appearance:none}
@@ -392,6 +399,8 @@ body.present .g-kpi .v.big{font-size:42px}
 body.present .kpi .v{font-size:36px}
 body.present .client-name{font-size:34px}
 body.present .gt-poster input{pointer-events:none;border-color:transparent!important;background:transparent}
+body.present .div-hint,.gt-poster.ro .div-hint,body.printing .div-hint,body.pdfm .div-hint{display:none!important}
+.gt-poster.ro .div-in:placeholder-shown,body.present .div-in:placeholder-shown,body.printing .div-in:placeholder-shown,body.pdfm .div-in:placeholder-shown{display:none}
 body.present .list-row .rm{display:none}
 body.present .list-row,body.present .list-row.tagged{grid-template-columns:1fr 92px}
 body.present .list-row.has-o,body.present .list-row.tagged.has-o{grid-template-columns:auto minmax(0,1fr) 84px}
@@ -404,6 +413,7 @@ body.present .o-chip{pointer-events:none}
 .gt-banner b{font-size:14.5px}.gt-banner .sp{flex:1}.gt-banner .btn{white-space:nowrap}
 .gt-poster.ro{position:relative}.gt-poster.ro .edit-only{display:none!important}
 .gt-poster.ro input:disabled,.gt-poster.ro textarea:disabled,.gt-poster.ro select:disabled{background:#f7f3f6!important;color:var(--ink)!important;opacity:1;cursor:default;-webkit-text-fill-color:var(--ink)}
+.gt-poster.ro input.div-in:disabled{color:#8c929b!important;-webkit-text-fill-color:#8c929b;background:#f6f3ee!important;border-color:#efece4!important}
 .gt-poster.ro .gt-card{box-shadow:0 0 0 1.5px #d9c3d2}
 .tl button.cur i{box-shadow:0 0 0 4px rgba(212,175,55,.45)}
 .tl button.cur{color:var(--navy)!important;font-weight:800}
@@ -452,7 +462,7 @@ body.present .o-chip{pointer-events:none}
 @keyframes stkTw{0%,100%{opacity:1}50%{opacity:.45}}
 .list-row.tagged{position:relative}
 .list-row.tagged .stk{top:-7px;left:-7px;width:18px;height:18px}
-.list-row.t-off > input{color:#9a968e;background:#f7f6f2}
+.list-row.t-off > input,.list-row.t-off .amt-col input{color:#9a968e;background:#f7f6f2}
 .t-st{font-size:10.5px;color:#8f8b83;background:#efede7;border-radius:999px;padding:1px 7px;margin-left:4px;white-space:nowrap}
 .t-st.since{color:#3f6b96;background:#e4ecf4}
 .stk-pop{position:absolute;z-index:80;background:#fff;border:1px solid var(--line-2,#ddd);border-radius:12px;box-shadow:0 10px 28px rgba(30,46,61,.18);padding:6px;display:flex;flex-direction:column;gap:2px;min-width:132px;animation:popIn .14s ease-out}
@@ -891,8 +901,9 @@ body.pdfm .pv-sel.pill{color:#fff;border-color:transparent}
 body.pdfm .pv-in{font-weight:600;color:var(--ink);min-width:1em}
 body.pdfm .pv-ta{display:block!important;white-space:pre-wrap;font-size:12.5px;line-height:1.6;color:var(--ink)}
 body.pdfm .pv-empty{color:#9a9ea4;font-weight:500}
+body.pdfm .pv-div{font-weight:500!important;color:#8c929b!important;font-size:10.5px!important}
 
-body.pdfm .topbar,body.pdfm .tabbar,body.pdfm .edit-only,body.pdfm #otherNeeds,body.pdfm #needPicker,body.pdfm #gtBanner,body.pdfm .tl-more,body.pdfm #snapBtn,body.pdfm .mb,body.pdfm #toast,body.pdfm .toast,body.pdfm .feed-bar,body.pdfm .edit-btn,body.pdfm .list-row .rm,body.pdfm .add-btn,body.pdfm #tlHint,body.pdfm .tri-hint,body.pdfm .btn,body.pdfm .ratio-leg .rl-note{display:none!important}
+body.pdfm .topbar,body.pdfm .tabbar,body.pdfm .edit-only,body.pdfm #otherNeeds,body.pdfm #needPicker,body.pdfm #gtBanner,body.pdfm .tl-more,body.pdfm #snapBtn,body.pdfm .mb,body.pdfm #toast,body.pdfm .toast,body.pdfm .feed-bar,body.pdfm .edit-btn,body.pdfm .list-row .rm,body.pdfm .add-btn,body.pdfm #tlHint,body.pdfm .tri-hint,body.pdfm .div-hint,body.pdfm .btn,body.pdfm .ratio-leg .rl-note{display:none!important}
 body.pdfm #otherNeeds.has-note{display:block!important}
 body.pdfm #otherNeeds .other-h,body.pdfm #otherNeeds .other-grid{display:none!important}
 body.pdfm #otherNeeds.has-note .other{border:0;background:transparent;margin-top:8px}
@@ -936,7 +947,7 @@ body.pdfm .footer{margin-top:10px!important;padding:6px 12px!important;font-size
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
   html,body{background:#fff!important}
 
-.topbar,.tabbar,.edit-only,#otherNeeds,#needPicker,#gtBanner,.tl-more,#snapBtn,.mb,#toast,.toast,.feed-bar,.edit-btn,.list-row .rm,.add-btn,#tlHint,.tri-hint,.btn,.ratio-leg .rl-note{display:none!important}
+.topbar,.tabbar,.edit-only,#otherNeeds,#needPicker,#gtBanner,.tl-more,#snapBtn,.mb,#toast,.toast,.feed-bar,.edit-btn,.list-row .rm,.add-btn,#tlHint,.tri-hint,.div-hint,.btn,.ratio-leg .rl-note{display:none!important}
 #otherNeeds.has-note{display:block!important}
 #otherNeeds .other-h,#otherNeeds .other-grid{display:none!important}
 #otherNeeds.has-note .other{border:0!important;background:transparent!important}
@@ -985,6 +996,7 @@ table.log td,table.log th{padding-top:5px!important;padding-bottom:5px!important
   .pv-in{font-weight:600;color:var(--ink);min-width:1em}
   .pv-ta{display:block!important;white-space:pre-wrap;font-size:12.5px;line-height:1.6;color:var(--ink)}
   .pv-empty{color:#9a9ea4;font-weight:500}
+  .pv-div{font-weight:500!important;color:#8c929b!important;font-size:10.5px!important}
   .tab-panel[data-panel="goals"],.tab-panel[data-panel="gt"],.tab-panel[data-panel="log"]{break-before:page}
   .card,.kpi,.gt-card,.chart-card,.client-card{break-inside:avoid}
   .card.log-card{break-inside:auto!important}
@@ -2844,9 +2856,12 @@ function snapRatios(s){const h=gtShares(s);return h?{life:h.life/0.5,risk:h.risk
 /* ---- snapshot full state ---- */
 function ST_F(){return ['income','yearEnd','fixed','risk','riskNote','invest','investNote','core','sat','emergNote','stock','assets','flow','note','gaps'];}
 function cloneSt(src){const o={};ST_F().forEach(f=>{const v=src[f];o[f]=v==null?'':JSON.parse(JSON.stringify(v));});return o;}
-function listAmt(arr){return (arr||[]).reduce((s,i)=>s+(Number(i.a)||0),0);}
+function listAmt(arr){return (arr||[]).reduce((s,i)=>s+(Number(i.a)||0),0);} // 只計金額 a，每月配息 d 不計入
 function coreSatSum(st){return listAmt(st&&st.core)+listAmt(st&&st.sat);}
 function originOf(it){return it&&it.o==='new'?'new':'old';}
+function divOf(it){const n=Number(it&&it.d);return isFinite(n)&&n>0?n:0;}
+function divSplit(items){let oldA=0,neu=0;(items||[]).forEach(it=>{const d=divOf(it);if(originOf(it)==='new')neu+=d;else oldA+=d;});return {old:oldA,neu:neu,total:oldA+neu};}
+function gtDivItems(st){const g=st||{};return [].concat(g.core||[],g.sat||[],Array.isArray(g.assets)?g.assets:[]);}
 function originText(items){let oldA=0,neu=0;(items||[]).forEach(it=>{const a=Number(it.a)||0;if(originOf(it)==='new')neu+=a;else oldA+=a;});return '原有 '+fmt(oldA)+'｜新規劃 '+fmt(neu);}
 function assetListOn(st){return Array.isArray(st&&st.assets);}
 function migrateLiveAssets(){const g=S.gt;if(!g)return;if(!Array.isArray(g.assets)){const stock=Number(g.stock);if(isFinite(stock)&&stock>0)g.assets=[{n:'既有資產（舊資料）',a:stock,o:'old'}];else g.assets=[];}g.stock=listAmt(g.assets);}
@@ -2914,12 +2929,15 @@ function finishReview(roc){
   return {ok:true,date:date,next:next};
 }
 const SAVE_HINT='只填每個月固定在存的錢（定期定額、每月存款、儲蓄型保費等），年繳請換算成每月；純保障型保費請放在「風險規劃」。已經存下的錢或躉繳、單筆投入，請記在下方『全部擁有的資產』清單';
+const DIV_HINT='配息請換算成每月，例如年配 3 萬填 2,500；配息再投入就不用填';
+function divInput(it,key,i){const n=divOf(it);return `<input class="div-in num" data-l="${key}" data-i="${i}" data-f="d" type="number" value="${n?n:''}" placeholder="每月配息" aria-label="每月配息" title="${DIV_HINT}">`;}
 function listRows(arr,key,tagged){
   const withO=key==='core'||key==='sat'||key==='assets';
   if(!arr.length)return `<div class="list-empty">${key==='fixed'?'尚無固定支出・點「＋新增項目」逐項輸入（房租、孝親費、伙食…）':'尚無項目・點「＋新增項目」'}</div>`;
-  return arr.map((it,i)=>`<div class="list-row ${tagged?'tagged':''}${withO?' has-o':''}">${withO?`<button type="button" class="o-chip ${originOf(it)==='new'?'is-new':'is-old'}" data-o="${key}" data-i="${i}" aria-label="${originOf(it)==='new'?'新':'原有'}">${originOf(it)==='new'?'新':'原有'}</button>`:''}<input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱"><input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="${tagged?SAVE_HINT:'金額'}"${tagged?` title="${SAVE_HINT}"`:''}><button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
+  return arr.map((it,i)=>{const amt=`<input class="amt num" data-l="${key}" data-i="${i}" data-f="a" type="number" value="${it.a||''}" placeholder="${tagged?SAVE_HINT:'金額'}"${tagged?` title="${SAVE_HINT}"`:''}>`;
+  return `<div class="list-row ${tagged?'tagged':''}${withO?' has-o':''}">${withO?`<button type="button" class="o-chip ${originOf(it)==='new'?'is-new':'is-old'}" data-o="${key}" data-i="${i}" aria-label="${originOf(it)==='new'?'新':'原有'}">${originOf(it)==='new'?'新':'原有'}</button>`:''}<input data-l="${key}" data-i="${i}" data-f="n" value="${esc(it.n)}" placeholder="項目名稱">${withO?`<div class="amt-col">${amt}${divInput(it,key,i)}</div>`:amt}<button class="rm edit-only" data-rm="${key}" data-i="${i}">×</button>
    ${tagged?(()=>{const sel=S.selected.includes(it.g);const has=!!GOALS[it.g];const opts=S.selected.map(k=>`<option value="${k}" ${it.g===k?'selected':''}>${GOALS[k].label}</option>`).join('')+(sel?'':has?`<option value="${it.g}" selected>${GOALS[it.g].label}（未選）</option>`:`<option value="" selected>未指定需求</option>`);
-   return `<div class="tag-sel">↳ 所屬<select class="tag-pick" data-tag="${key}" data-i="${i}" style="background:${sel?GOALS[it.g].c:'#b9b6ae'}">${opts}</select>${sel?'':has?'<span class="tag-unsel" title="此項目所屬需求目前未選，不計入任何目標">未選需求・暫不計入</span>':`<span class="tag-unsel">${S.selected.length?'請選擇所屬需求':'先到「六大需求」選擇需求'}</span>`}</div>`;})():''}</div>`).join('');
+   return `<div class="tag-sel">↳ 所屬<select class="tag-pick" data-tag="${key}" data-i="${i}" style="background:${sel?GOALS[it.g].c:'#b9b6ae'}">${opts}</select>${sel?'':has?'<span class="tag-unsel" title="此項目所屬需求目前未選，不計入任何目標">未選需求・暫不計入</span>':`<span class="tag-unsel">${S.selected.length?'請選擇所屬需求':'先到「六大需求」選擇需求'}</span>`}</div>`;})():''}</div>`;}).join('');
 }
 function renderGT(){
   if(!viewSnap())migrateLiveAssets();
@@ -2936,6 +2954,7 @@ function renderGT(){
   <div class="gt-tri"><div class="tri-host"><div id="triSvg"></div><div class="tri-center"><div class="t">總收入 100%</div>
      <div class="tri-in">月收入<input type="number" class="num" data-gt="income" value="${G.income}"></div><div class="tri-in">年終<input type="number" class="num" data-gt="yearEnd" value="${G.yearEnd}"></div><div class="tri-hint" id="triHint">↑ 輸入月收入開始建立金三角</div></div></div>
      <div class="legend" style="justify-content:center;margin-top:4px"><span><i class="sw" style="border-top:2px dashed #1E2E3D;height:0;background:none;opacity:.6"></i>理想 50/10/40</span><span><i class="sq" style="background:rgba(30,46,61,.18);outline:1.5px solid #1E2E3D"></i><span id="curName">現在</span></span><span><i class="sw" style="border-top:2px dashed #7a4a6b;height:0;background:none"></i>對照：<select id="cmpSel" class="cmp-sel" aria-label="對照快照"></select></span><span><i class="sq" style="background:#2f7a63;border-radius:50%"></i>合理</span><span><i class="sq" style="background:#55606e;border-radius:50%"></i>與合理有差</span></div>
+     <div class="origin-line div-sum" id="divSum" hidden></div><div class="feed-note div-hint">${DIV_HINT}</div>
      <div class="tl" id="tl"></div><label class="tl-pick is-off">檢視時間點 <select id="tlSel" aria-label="檢視時間點"></select></label><div class="tl-more" id="tlMore"></div><div class="tl-hint" id="tlHint">填好月收入與三大項目後，按下方按鈕存下第一個快照，作為之後比較的「初次會談」基準。</div>
      <div style="text-align:center;margin-top:8px" class="edit-only"><button class="btn sm ghost" id="snapBtn">＋ 存為本期金三角快照</button></div></div>
   <div class="gt-riskC gt-card cat"><div class="cat-top"><span>風險規劃</span><span class="p">10%</span></div><div class="cat-body">
@@ -2961,7 +2980,7 @@ function renderGT(){
   const root=$('gt');root.classList.toggle('ro',RO);
   if(RO){root.querySelectorAll('input,textarea,select').forEach(e=>{if(e.id!=='tlSel'&&e.id!=='cmpSel')e.disabled=true;});root.querySelectorAll('.o-chip').forEach(b=>b.setAttribute('aria-disabled','true'));$('gtBack').onclick=()=>setView(null);$('gtDraft').onclick=useAsDraft;}
   root.querySelectorAll('[data-gt]').forEach(el=>el.addEventListener('input',()=>{const f=el.dataset.gt;S.gt[f]=el.type==='number'?(el.value===''?'':Number(el.value)):el.value;updateGT();renderLinked();}));
-  root.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{const it=S.gt[el.dataset.l][+el.dataset.i];it[el.dataset.f]=el.dataset.f==='a'?Number(el.value)||0:el.value;if(el.dataset.l==='assets')S.gt.stock=listAmt(S.gt.assets);updateGT();renderLinked();}));
+  root.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{const it=S.gt[el.dataset.l][+el.dataset.i];if(!it)return;const f=el.dataset.f;if(f==='d'){const n=Number(el.value);if(el.value===''||!isFinite(n)||n<=0)delete it.d;else it.d=n;}else if(f==='a')it.a=Number(el.value)||0;else it[f]=el.value;if(el.dataset.l==='assets'&&f!=='d')S.gt.stock=listAmt(S.gt.assets);updateGT();renderLinked();}));
   root.querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>{if(RO||S.mode==='client'||document.body.classList.contains('printing'))return;const list=S.gt[el.dataset.o];const it=list&&list[+el.dataset.i];if(!it)return;it.o=originOf(it)==='new'?'old':'new';if(el.dataset.o==='assets')S.gt.stock=listAmt(S.gt.assets);renderGT();renderLinked();gtMarkDirty();});
   root.querySelectorAll('[data-gap]').forEach(el=>el.onchange=()=>{S.gt.gaps[+el.dataset.gap]=el.checked;renderLinked();});
   root.querySelectorAll('[data-tag]').forEach(el=>el.onchange=()=>{retag(S.gt[el.dataset.tag][+el.dataset.i],el.value);renderGT();renderLinked();});
@@ -2988,6 +3007,7 @@ function updateGT(){
   {const e=$('csSum');if(e)e.textContent=` ・核心 ${G.core.length} 項／衛星 ${G.sat.length} 項`;}$('fixedSum').textContent=fmt(now.life)+'元';$('coreSum').textContent=fmt(core)+'元';$('satSum').textContent=fmt(sat)+'元';
   if($('saveOrigin'))$('saveOrigin').textContent=originText([].concat(G.core||[],G.sat||[]));
   {const has=assetListOn(G);const sv=has?listAmt(G.assets):G.stock;$('stockV').textContent=!has&&(sv===''||sv==null||!isFinite(+sv))?'—':(Number(sv)/10000).toFixed(1)+'萬';if($('stockOrigin'))$('stockOrigin').textContent=originText(G.assets||[]);}
+  {const el=$('divSum');if(el){const sp=divSplit(gtDivItems(G));if(sp.total>0){el.hidden=false;el.textContent='每月配息合計 '+fmt(sp.total)+'（原有 '+fmt(sp.old)+'｜新規劃 '+fmt(sp.neu)+'）';}else{el.hidden=true;el.textContent='';}}}
   {const fv=G.flow,has=!(fv===''||fv==null||!isFinite(+fv)),flow=Number(fv)||0;$('flowV').textContent=has?(flow<0?'－':'')+fmt(Math.abs(flow))+'元':'—';$('flowV').classList.toggle('neg',has&&flow<0);
    $('flowRef').textContent=(core+sat)?'儲蓄合計 '+fmt(core+sat)+'（參考）':'';}
   $('triSvg').innerHTML=triSVG();
@@ -3137,12 +3157,12 @@ if($('ftReviewOk'))$('ftReviewOk').onclick=()=>{
 /* ---- PDF export (print stylesheet + window.print) ---- */
 function pdfName(){let n=(S.client&&S.client.name)||(document.querySelector('.client-name')||{}).textContent||'客戶';n=String(n).replace(/\s+/g,'').replace(/(小姐|先生|女士)$/,'')||'客戶';const d=new Date();const ds=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');return '財務規劃書_'+n.replace(/[\\/:*?"<>|]/g,'')+'_'+ds;}
 let _prevTitle=null;
-function mirrorControls(){unmirror();document.querySelectorAll('.wrap input,.wrap select,.wrap textarea').forEach(el=>{if(el.type==='hidden'||el.closest('.bd-pick'))return;if(!String(el.value||'').trim()&&el.closest('.client-sub')){el.classList.add('pv-src');return;}const sp=document.createElement('span');let cls='pv',html;
+function mirrorControls(){unmirror();document.querySelectorAll('.wrap input,.wrap select,.wrap textarea').forEach(el=>{if(el.type==='hidden'||el.closest('.bd-pick'))return;if(!String(el.value||'').trim()&&el.closest('.client-sub')){el.classList.add('pv-src');return;}if(el.classList.contains('div-in')&&!(Number(el.value)>0)){el.classList.add('pv-src');return;}const sp=document.createElement('span');let cls='pv',html;
   if(el.type==='checkbox'||el.type==='radio'){html=el.checked?'☑':'☐';cls+=' pv-chk '+(el.checked?'on':'off');}
   else if(el.tagName==='SELECT'){const o=el.options[el.selectedIndex];html=esc(o?o.text:'—');cls+=' pv-sel';if(el.style.background||el.style.backgroundColor){cls+=' pill';sp.style.background=el.style.background||el.style.backgroundColor;}}
   else{let v=String(el.value||'').trim();if(el.type==='number'&&v!==''&&isFinite(+v))v=Number(v).toLocaleString('en-US');
     if(v){html=esc(v);}else{html=el.matches('.client-name,[data-client="name"]')?'（未填）':'—';cls+=' pv-empty';}cls+=el.tagName==='TEXTAREA'?' pv-ta':' pv-in';}
-  sp.className=cls;sp.innerHTML=html;el.after(sp);el.classList.add('pv-src');});}
+  sp.className=cls;if(el.classList.contains('div-in'))sp.classList.add('pv-div');sp.innerHTML=html;el.after(sp);el.classList.add('pv-src');});}
 function unmirror(){document.querySelectorAll('.pv').forEach(e=>e.remove());document.querySelectorAll('.pv-src').forEach(e=>e.classList.remove('pv-src'));}
 function fitPrint(){document.querySelectorAll('#goals .print-brk').forEach(e=>e.remove());{const gs=[...document.querySelectorAll('#goals > .goal')];let cnt=0;const brk=e=>e.insertAdjacentHTML('afterend','<div class="print-brk"></div>');gs.forEach((g,i)=>{const last=i===gs.length-1;if(g.classList.contains('solo')){if(cnt%2===1)brk(gs[i-1]);cnt=0;if(!last)brk(g);}else{cnt++;if(cnt%2===0&&!last)brk(g);}});}const R=document.documentElement;const vs=['--z1','--zg','--zt','--zp'];vs.forEach(v=>R.style.setProperty(v,'1'));document.body.classList.add('pdfm');const H=716;
   const fit=(v,measure)=>{let z=1;for(let i=0;i<6;i++){R.style.setProperty(v,String(z));const h=measure();if(h<=H)break;z=z*H/h*0.99;}R.style.setProperty(v,Math.min(1,z).toFixed(3));};
