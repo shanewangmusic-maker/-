@@ -269,6 +269,8 @@ table.log td.inv{white-space:normal;vertical-align:top}
 .mb.open{display:flex}
 .modal{background:#fff;border-radius:18px;width:min(760px,100%);padding:24px 26px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .modal h3{font-size:19px;margin-bottom:4px}
+.modal .snap-in{color:var(--navy);font-weight:700;letter-spacing:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:13px;line-height:1.7}
+.modal .snap-in:hover,.modal .snap-in:focus-visible{color:var(--gold-ink)}
 .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 14px;margin-top:14px}
 .fgrid label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--muted)}
 .fgrid input,.fgrid select{border:1px solid var(--line-2);border-radius:9px;padding:8px 10px;font-size:14px;color:var(--ink)}
@@ -3139,8 +3141,59 @@ function renderLog(P){
 }
 
 /* ============ modal ============ */
+const REVIEW_NEW_HINT='每期只要確認收入、固定支出、儲蓄，再填這期的資產淨值，其他會自動算。';
+function reviewDateKey(d){const n=normRoc(d);return n||String(d==null?'':d).trim();}
+function reviewSnapState(s){return s&&s.state&&typeof s.state==='object'&&!Array.isArray(s.state)?s.state:null;}
+function reviewSnapIncome(s){const st=reviewSnapState(s);if(st&&st.income!=null&&st.income!=='')return Number(st.income)||0;if(s&&s.income!=null&&s.income!=='')return Number(s.income)||0;return null;}
+function reviewSnapFixed(s){const st=reviewSnapState(s);if(st&&Array.isArray(st.fixed))return listAmt(st.fixed);if(s&&Array.isArray(s.fixed))return listAmt(s.fixed);if(s&&s.life!=null&&s.life!==''&&isFinite(+s.life))return +s.life;return null;}
+function reviewList(s,key){const st=reviewSnapState(s);if(st&&Array.isArray(st[key]))return st[key];if(s&&Array.isArray(s[key]))return s[key];return null;}
+function reviewSnapInvest(s){
+  const st=reviewSnapState(s);
+  const core=reviewList(s,'core'),sat=reviewList(s,'sat');
+  if(core||sat){
+    const raw=[].concat(core||[],sat||[]);
+    const items=raw.filter(it=>it&&typeof it==='object').map(it=>({n:String(it.n||'').trim(),a:Number(it.a)||0,o:originOf(it)})).filter(it=>it.n||it.a);
+    return {total:raw.reduce((sum,it)=>sum+(Number(it&&it.a)||0),0),items};
+  }
+  if(st&&st.invest!=null&&st.invest!==''&&isFinite(+st.invest))return {total:+st.invest,items:null};
+  if(s&&s.invest!=null&&s.invest!==''&&isFinite(+s.invest))return {total:+s.invest,items:null};
+  return null;
+}
+function reviewSnapNw(s){const st=reviewSnapState(s);const assets=reviewList(s,'assets');if(assets)return listAmt(assets);if(st&&st.stock!=null&&st.stock!==''&&isFinite(+st.stock))return +st.stock;if(s&&s.stock!=null&&s.stock!==''&&isFinite(+s.stock))return +s.stock;return null;}
+function reviewSnapWhen(s){const iso=rocToISO(s&&s.date);return iso||reviewDateKey(s&&s.date);}
+function isBaseSnap(s,snaps){
+  if(!s)return true;
+  if(s.label==='初次會談')return true;
+  if((snaps||[]).some(x=>x&&x.label==='初次會談'))return false;
+  const ranked=(snaps||[]).filter(x=>x&&reviewDateKey(x.date)).slice().sort((a,b)=>snapKey(a.date)-snapKey(b.date));
+  return !ranked.length||ranked[0]===s;
+}
+function pendingReviewSnaps(){
+  const snaps=(S.gt&&Array.isArray(S.gt.snaps))?S.gt.snaps:[];
+  const used=new Set();
+  (S.rows||[]).forEach(r=>{const k=reviewDateKey(r&&r.date);if(k)used.add(k);});
+  return snaps.filter(s=>s&&!isBaseSnap(s,snaps)&&!used.has(reviewDateKey(s.date))&&reviewDateKey(s.date)).slice().sort((a,b)=>snapKey(b.date)-snapKey(a.date));
+}
+function reviewHintHTML(isNew){
+  if(!isNew)return '修改後，總覽、六大目標卡片與圖表會即時更新。';
+  const pend=pendingReviewSnaps();
+  if(!pend.length)return REVIEW_NEW_HINT;
+  const s=pend[0],when=reviewSnapWhen(s);
+  return `<a href="#" id="snapBring" class="snap-in" data-snap="${esc(reviewDateKey(s.date))}">要用 ${esc(when)} 檢視的快照帶入嗎？</a>`;
+}
+function applyReviewSnap(s){
+  if(!s)return;
+  const set=(id,v)=>{const el=$(id);if(!el||v==null)return;el.value=String(v);};
+  const key=reviewDateKey(s.date);
+  if(key)set('f_date',key);
+  const inc=reviewSnapIncome(s);if(inc!=null)set('f_income',inc);
+  const fix=reviewSnapFixed(s);if(fix!=null)set('f_fixed',fix);
+  const inv=reviewSnapInvest(s);
+  if(inv){const el=$('f_invest');if(el)el.value=(inv.items&&inv.items.length)?investItemsToText(inv.items):String(inv.total);}
+  const nw=reviewSnapNw(s);if(nw!=null)set('f_nw',nw);
+}
 function openModal(idx){
-  const isNew=idx<0;const last=S.rows[S.rows.length-1];const G=S.gt;const base0=reviewBase();
+  const isNew=idx==null||idx<0;const last=S.rows[S.rows.length-1];const G=S.gt;const base0=reviewBase();
   let r;
     if(isNew){const date=last?addMonths(last.date,1):(BASE.date||todayRoc());const m=mIdx(date);const DG=draftGt();let inv=DG.invest;const income=DG.income,fixed=DG.fixed,prem=premDefault(),ye=parseRoc(date).m===(Number(G.yeMonth)||2)?(Number(DG.yearEnd)||0):0;
     const tool={};KEYS.forEach(k=>{const g=GOALS[k];const ratio=last?(last.tool[k]||0)/(toolExp(g,mIdx(last.date))||1)||1:1;tool[k]=g.kind==='protect'?g.toolAct(m):Math.round(toolExp(g,m)*ratio/100)*100;});
@@ -3152,7 +3205,7 @@ function openModal(idx){
   const prev=isNew?(last?last.netWorth:base0):(idx>0?S.rows[idx-1].netWorth:BASE.netWorth);const isFirst=(isNew&&!last)||idx===0;
   const cats=[...new Set(S.rows.flatMap(x=>noteItems(x.note).map(it=>it.n).filter(Boolean)))];
   const theo0=theoIsSet(r)?Number(r.theo):theoSug(prev,r.income,r.ye,r.fixed,r.prem);
-  $('modal').innerHTML=`<h3 class="serif">${isNew?'新增本期檢視':'編輯檢視紀錄・'+r.date}</h3><div class="lbl">${isNew?'每期只要確認收入、固定支出、儲蓄，再填這期的資產淨值，其他會自動算。':'修改後，總覽、六大目標卡片與圖表會即時更新。'}</div>
+  $('modal').innerHTML=`<h3 class="serif">${isNew?'新增本期檢視':'編輯檢視紀錄・'+r.date}</h3><div class="lbl" id="modalHint">${reviewHintHTML(isNew)}</div>
    <div class="fgrid">
     <label>開始日<input id="f_date" value="${esc(r.date)}" placeholder="民國，例 115.03.01"></label><label>收入<input id="f_income" type="number" value="${r.income}"></label><label class="rv-adv">年終（本期如有）<input id="f_ye" type="number" value="${r.ye||0}"></label><label>固定支出<input id="f_fixed" type="number" value="${r.fixed}"></label><label class="rv-adv">保費<input id="f_prem" type="number" value="${r.prem||0}" title="預設取自保障頁年保費÷12"></label>
     <label>儲蓄<input id="f_invest" type="text" value="${esc(investShow)}" placeholder="例：定期定額 10000、新 儲蓄險 5000"><span class="fld-hint" id="investHint" hidden></span><span class="fld-err" id="investErr" hidden></span></label><label>資產淨值<input id="f_nw" type="number" value="${r.netWorth}"></label><label class="rv-adv">身價已累積<input id="f_face" type="number" value="${r.faceAccum!=null&&r.faceAccum!==''?r.faceAccum:(pvFaceOf(r).v==null?'':pvFaceOf(r).v)}"><span class="lbl">${(()=>{const f=pvFaceOf(Object.assign({},r,{faceAccum:null}));const p=f.protect==null?'—':fmt(f.protect),o=f.other==null?'—':fmt(f.other);return (r.faceAccum!=null&&r.faceAccum!==''?'手填合計。':'')+'保障型 '+p+' ＋ 其他規劃 '+o+'。可改合計，清空則改回自動加總。';})()}</span></label>
@@ -3171,6 +3224,7 @@ function openModal(idx){
     const nh=$('noteHint');if(nh){const its=noteItems($('f_note').value);if(!its.some(it=>it.a!=null)){nh.hidden=true;nh.textContent='';}else{const noted=its.reduce((s,it)=>s+(it.a||0),0);const d=r0(extra)-r0(noted);nh.hidden=false;nh.textContent=d===0?`已寫明細 ${fmt(noted)}／額外支出 ${fmt(extra)}，✓ 對上了`:`已寫明細 ${fmt(noted)}／額外支出 ${fmt(extra)}，差 ${fmt(Math.abs(d))}`;}}
     const s=[...document.querySelectorAll('[data-al]')].reduce((a,e)=>a+(Number(e.value)||0),0);const t=invP.ok?invP.total:0;if($('allocSum'))$('allocSum').innerHTML=`已分配 ${fmt(s)} / 儲蓄 ${invP.ok?fmt(t):'—'} ${invP.ok?(s===t?'<b style="color:var(--good)">✓</b>':'<b style="color:var(--warn)">差 '+fmt(t-s)+'</b>'):''}`;};
   $('modal').querySelectorAll('input').forEach(e=>{if(e.id==='c_theo')e.addEventListener('input',()=>{if(theoSync)return;theoEdited=true;calc();});else e.addEventListener('input',calc);});calc();
+  const bring=$('snapBring');if(bring)bring.onclick=e=>{e.preventDefault();const key=bring.getAttribute('data-snap');const list=pendingReviewSnaps();const p=list.find(s=>reviewDateKey(s.date)===key)||list[0];if(!p)return;applyReviewSnap(p);calc();};
   $('autoAlloc').onclick=()=>{const invP=parseInvest($('f_invest').value);const a=(isNew?allocActive:defaultAlloc)(invP.ok?invP.total:0,0,rn);document.querySelectorAll('[data-al]').forEach(e=>e.value=a[e.dataset.al]);calc();};
   wdWire(r);ctWire(r);$('m_cancel').onclick=closeModal;
   if(!isNew)$('m_del').onclick=()=>{S.rows.splice(idx,1);closeModal();renderAll();};
