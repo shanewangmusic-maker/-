@@ -192,9 +192,6 @@
                 <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-week"></i> 週行程
                 </button>
-                <a id="actionQuestLink" href="actionquest.html" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-chess-knight"></i> 行動闖關
-                </a>
                 <button onclick="switchMainTab('RECRUIT')" id="mainTab-RECRUIT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-user-tie"></i> 引薦招募庫
                 </button>
@@ -827,10 +824,6 @@
                                     <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-solid fa-comments text-[#D4AF37]"></i> 聯絡方式</label>
                                     <select id="historyMethod" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label>
-                                    <select id="historyAct" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select>
-                                </div>
                                 <div class="col-span-2 sm:col-span-1">
                                     <label class="block text-xs font-bold text-slate-500 mb-1"><i class="fa-regular fa-calendar-plus text-[#D4AF37]"></i> 結束日期 <span class="font-normal text-slate-400">(選填，跨多日才填)</span></label>
                                     <input type="date" id="historyEndDate" class="w-full px-3 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none">
@@ -960,7 +953,6 @@
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="lcMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">開始時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="lcEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
-                            <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="lcAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                             <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="lcEndDate" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></div>
                         </div>
                         <textarea autocomplete="off" id="lcContent" rows="4" placeholder="聯絡內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D]"></textarea>
@@ -1094,7 +1086,6 @@
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-start-2"><label class="block text-[11px] font-bold text-slate-500 mb-1">結束時間 <span class="font-normal text-slate-400">(選填)</span></label><input type="time" id="atAddEndTime" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">聯絡方式</label><select id="atAddMethod" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="Line" selected>Line</option><option value="電話">電話</option><option value="面談">面談</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="其他">其他</option></select></div>
-                        <div><label class="block text-[11px] font-bold text-slate-500 mb-1">這次做了什麼 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddAct" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="" selected>不選</option><option value="warm">暖關係</option><option value="call">約訪</option><option value="appt">取得約會</option><option value="need">發掘需求</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">標籤 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddVisit" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="經營訪">經營訪</option><option value="初訪">初訪</option><option value="關鍵訪">關鍵訪</option><option value="定期檢視">定期檢視</option></select></div>
                         <div><label class="block text-[11px] font-bold text-slate-500 mb-1">結束日期 <span class="font-normal text-slate-400">(跨日才填)</span></label><input type="date" id="atAddEnd" class="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1E2E3D] bg-white"></div>
                         <div class="col-span-2 sm:col-span-1"><label class="block text-[11px] font-bold text-slate-500 mb-1">分類 <span class="font-normal text-slate-400">(選填)</span></label><select id="atAddCat" class="w-full px-2.5 py-2 border border-slate-200 bg-white rounded-lg text-sm outline-none font-bold text-[#1E2E3D]"><option value="">（無）</option><option value="公事">公事（紅）</option><option value="客戶">客戶（藍）</option><option value="夥伴">夥伴（綠）</option><option value="個人">個人（黑）</option></select></div>
@@ -1671,137 +1662,21 @@
         // ================= 成員分頁權限 =================
         function myEmail() { return (window.currentUserEmail || '').toLowerCase(); }
 
-        // 行動闖關自動計入。起算日（台灣日期）之前的歷程不計。只加欄位、不改舊 id、不刪舊歷程。
-        // 舊列沒有 byEmail，計畫函式會直接略過。已寫出的自動事件不因還原而刪除。
-        const AQ_AUTO_START = '2026-10-17';
+        // 台灣日期。階段變更的歷程備註與約訪時間沿用這一天。
         function aqTwDate(d) {
             const dt = d instanceof Date ? d : new Date();
             const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(dt);
             const g = function (t) { const p = parts.find(function (x) { return x.type === t; }); return p ? p.value : ''; };
             return g('year') + '-' + g('month') + '-' + g('day');
         }
-        function aqNormDate(v) { const d = String(v || '').substring(0, 10); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : ''; }
         function aqByEmail() { return (window.currentUserEmail || '').toLowerCase(); }
         function aqStageLabel(cat, prog) {
             if (cat === 'WON') return '成交';
             const m = { HOLD: '待定', LOST: '流失', LEAD: '名單', NURTURE: '經營', FIRST_VISIT: '初訪', KEY_VISIT: '關鍵訪', R_CONTACT: '接觸/咖啡', R_INTERVIEW: '主管面談', R_ONBOARD: '考照/報聘' };
             return m[prog] || prog || '未標';
         }
-        function aqSideOf(c) {
-            let src = String((c && c.source) || '').trim();
-            if (!src && c && c.leadId) {
-                const L = customers.find(function (x) { return x && x.id === c.leadId; });
-                if (L) src = String(L.source || '').trim();
-            }
-            let tags = '';
-            if (c && Array.isArray(c.tags)) c.tags.forEach(function (id) {
-                const t = (customTags || []).find(function (x) { return x && x.id === id; });
-                if (t && t.name) tags += ' ' + t.name;
-            });
-            const blob = src + ' ' + tags;
-            if (/陌生/.test(blob)) return 'ds';
-            if (/緣故|轉介紹|家人|朋友|同學|同事/.test(blob)) return 'rf';
-            return 'ds';
-        }
-        function aqRoundOf(c) {
-            if (!c || c.category === 'RECRUIT' || c.progress === 'LEAD') return 0;
-            let L = null;
-            try { L = coreLeadOf(c); } catch (e) { L = null; }
-            if (!L) return 1;
-            const deals = leadDeals(L).slice().sort(function (a, b) {
-                return String(a.createdAt || '').localeCompare(String(b.createdAt || '')) || String(a.id).localeCompare(String(b.id));
-            });
-            const i = deals.findIndex(function (x) { return x.id === c.id; });
-            return (i < 0 ? 0 : i) + 1;
-        }
-        function aqFirstWon(c) {
-            let L = null;
-            try { L = coreLeadOf(c); } catch (e) { L = null; }
-            if (!L) return true;
-            return !leadDeals(L).some(function (d) { return d && d.id !== c.id && d.category === 'WON'; });
-        }
         function aqStamp(h) { if (h && aqByEmail()) h.byEmail = aqByEmail(); return h; }
         function aqActOf(v) { return (v === 'warm' || v === 'call' || v === 'appt' || v === 'need') ? v : ''; }
-        function aqPlanEvents(job, seen) {
-            seen = seen || [];
-            if (!job || !job.byEmail || !job.histId || !job.custId) return [];
-            if (job.sys || job.srcContactId || job.sales === false) return [];
-            const date0 = aqNormDate(job.date);
-            if (!date0 || date0 < AQ_AUTO_START) return [];
-            const act = aqActOf(job.act);
-            const visit = job.visitType || '';
-            let entering = '';
-            if (job.changed && job.stageTo && job.stageTo !== job.stageFrom) {
-                if (job.stageTo === 'WON') entering = 'deal';
-                else if (job.stageTo === 'KEY_VISIT') entering = 'prop';
-                else if (job.stageTo === 'FIRST_VISIT') entering = 'meet';
-            } else if (!job.changed) {
-                if (visit === '關鍵訪') entering = 'prop';
-                else if (visit === '初訪') entering = 'meet';
-            }
-            const round = job.round || 1;
-            const out = [];
-            const seenHit = function (action, date) {
-                return seen.some(function (e) {
-                    return e && e.custId === job.custId && e.action === action && ((e.round || 1) === round) && (!date || e.date === date);
-                });
-            };
-            const push = function (action, date) {
-                date = aqNormDate(date);
-                if (!action || !date || date < AQ_AUTO_START) return;
-                if (seen.some(function (e) { return e && e.custId === job.custId && e.histId === job.histId && e.action === action; })) return;
-                if (out.some(function (e) { return e.action === action && e.date === date; })) return;
-                if (seenHit(action, date)) return;
-                out.push({
-                    id: ('ae_' + job.custId + '_' + action + '_' + date).replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180),
-                    custId: job.custId, histId: job.histId, action: action, date: date,
-                    round: round, side: job.side === 'rf' ? 'rf' : 'ds',
-                    name: job.name || '（未命名）', leadId: job.leadId || '', email: job.byEmail
-                });
-            };
-            if (entering === 'meet') push('meet', date0);
-            if (entering === 'prop') { if (!seenHit('meet') && !out.some(function (e) { return e.action === 'meet'; })) push('meet', date0); push('prop', date0); }
-            if (entering === 'deal') {
-                const prefer = aqNormDate(job.dealDate);
-                const dDate = (prefer && prefer >= AQ_AUTO_START) ? prefer : date0;
-                if (!seenHit('meet') && !out.some(function (e) { return e.action === 'meet'; })) push('meet', dDate);
-                if (!seenHit('prop') && !out.some(function (e) { return e.action === 'prop'; })) push('prop', dDate);
-                push('deal', dDate);
-                if (job.firstWon) push('client', dDate);
-            }
-            if (act) push(act, date0);
-            return out;
-        }
-        function aqJob(c, h, opt) {
-            opt = opt || {};
-            return {
-                byEmail: (h && h.byEmail) || '',
-                sys: !!(h && h.sys),
-                srcContactId: (h && h.srcContactId) || '',
-                act: (h && h.act) || '',
-                visitType: (h && h.visitType) || '',
-                date: (h && h.date) || '',
-                histId: (h && h.id) || '',
-                custId: (c && c.id) || '',
-                name: String((c && c.name) || '').trim(),
-                agentName: c ? String(c.agentName || '').trim() : '',
-                side: c ? aqSideOf(c) : 'ds',
-                round: c ? (aqRoundOf(c) || 1) : 1,
-                leadId: (c && c.leadId) || '',
-                firstWon: c ? aqFirstWon(c) : true,
-                sales: !(c && (c.category === 'RECRUIT' || c.progress === 'LEAD')),
-                changed: !!opt.changed,
-                stageFrom: opt.stageFrom || '',
-                stageTo: opt.stageTo || '',
-                dealDate: opt.dealDate || ''
-            };
-        }
-        function aqEmit(c, h, opt) {
-            if (!c || !h) return;
-            const job = aqJob(c, h, opt);
-            if (window.aqWriteEvents) window.aqWriteEvents([job]);
-            else { window.__aqPending = window.__aqPending || []; window.__aqPending.push(job); }
-        }
         function aqLogStageEdit(c, prevCat, prevProg) {
             if (!c) return null;
             const before = prevCat === 'WON' ? 'WON' : (prevProg || '');
@@ -1815,13 +1690,8 @@
             });
             c.history = Array.isArray(c.history) ? c.history : [];
             c.history.push(h);
-            aqEmit(c, h, { changed: true, stageFrom: before, stageTo: after, dealDate: c.dealDate || '' });
             return h;
         }
-        window.aqPlanEvents = aqPlanEvents;
-        window.aqTwDate = aqTwDate;
-        window.aqJob = aqJob;
-        window.AQ_AUTO_START = AQ_AUTO_START;
         function findMember(email) {
             if (window.CrmAccess) return window.CrmAccess.findMemberByEmail(teamMembers, email);
             email = String(email || '').trim().toLowerCase();
@@ -2685,6 +2555,7 @@
             reader.onload = function(evt) {
                 try {
                     const imported = JSON.parse(evt.target.result);
+                    // actionquest 只留在備份檔。還原時不寫回客戶資料，也不改 Firestore。
                     if (imported.cust) {
                         customers = imported.cust;
                         if(imported.tags) customTags = imported.tags;
@@ -2698,10 +2569,21 @@
             reader.readAsText(file);
         }
 
-        function exportData() {
+        async function exportData() {
             const dataToExport = { cust: customers, tags: customTags, goals: annualGoals, per: customPeriods };
+            var questMiss = false;
+            try {
+                if (typeof window.collectActionQuestBackup === 'function') {
+                    const aq = await window.collectActionQuestBackup();
+                    if (aq) dataToExport.actionquest = aq;
+                }
+            } catch (err) {
+                console.warn('actionquest export', err);
+                questMiss = true;
+            }
             const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(dataToExport, null, 2));
-            a.download = `業務系統備份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast('已匯出備份');
+            a.download = `業務系統備份_${new Date().toISOString().slice(0,10)}.json`; a.click();
+            showToast(questMiss ? '客戶資料已匯出；闖關資料這次沒讀到' : '已匯出備份', questMiss ? 'error' : 'success');
         }
 
         // ===== 渲染防護：單筆卡片壞掉只變成一張提示卡，不影響其他、也不會整個 App 崩掉 =====
@@ -4125,7 +4007,6 @@
             document.getElementById('lcEndDate').value = ''; document.getElementById('lcTime').value = '';
             { const ee = document.getElementById('lcEndTime'); if (ee) ee.value = ''; }
             document.getElementById('lcContent').value = '';
-            const lcActEl = document.getElementById('lcAct'); if (lcActEl) lcActEl.value = '';
             document.getElementById('lcFormTitle').textContent = '新增聯絡紀錄';
             document.getElementById('lcSaveBtn').innerHTML = '<i class="fa-solid fa-plus"></i> 新增紀錄';
             document.getElementById('lcCancelEdit').classList.add('hidden');
@@ -4240,19 +4121,16 @@
                 if (deals.length === 1) C = deals[0];
                 else if (deals.length > 1) { const sv = document.getElementById('lcDeal').value; C = deals.find(function (d) { return d.id === sv; }) || leadDefaultDeal(c); }
                 let ct, arr;
-                const actEl = document.getElementById('lcAct');
-                const act = actEl ? aqActOf(actEl.value) : '';
                 if (C) {
                     arr = Array.isArray(C.history) ? C.history : (C.history = []);
                     const ids = new Set(arr.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
                     ct = { id: hid, date: date, content: content, progress: C.progress || '', method: method };
-                    aqStamp(ct); if (act) ct.act = act;
-                } else { arr = Array.isArray(c.contacts) ? c.contacts : (c.contacts = []); ct = { id: leadNewContactId(), date: date, method: method, content: content }; aqStamp(ct); if (act) ct.act = act; }
+                    aqStamp(ct);
+                } else { arr = Array.isArray(c.contacts) ? c.contacts : (c.contacts = []); ct = { id: leadNewContactId(), date: date, method: method, content: content }; aqStamp(ct); }
                 if (atParse(end) && end > date) ct.endDate = end;
                 if (time) ct.time = time;
                 if (savedEnd) ct.endTime = savedEnd;
                 arr.push(ct);
-                if (C) aqEmit(C, ct, { changed: false });
                 lcResetForm(); lcAfterChange('聯絡紀錄已新增' + (deals.length > 1 ? '（記在 ' + leadDealLabel(c, C) + '）' : ''));
             }
         }
@@ -4880,7 +4758,6 @@
             }
             atEnsureUndoBase();      // v14：第一次操作也能「還原」（新客戶＋一畝田名單一起還原）
             customers.push(nc); const _ls = leadAutoForCore(nc);      // v14：同時加入一畝田（雙向連結）
-            if (cat === 'WON' && nc.history.length) aqEmit(nc, nc.history[nc.history.length - 1], { changed: true, stageFrom: '', stageTo: 'WON', dealDate: nc.dealDate || '' });
             recordState(); renderApp(); closeModal('addCustomerModal'); showToast('資料已新增' + (_ls ? (_ls.mode === 'link' ? '，並已連結一畝田的同名名單' : '，並已同步加入一畝田') : ''));
         }
 
@@ -5077,10 +4954,9 @@
         }
 
         function quickAdvance(id, nextStage) {
-            const c = customers.find(x => x.id === id); const prev = c.progress; c.progress = nextStage; c.history = c.history || [];
+            const c = customers.find(x => x.id === id); c.progress = nextStage; c.history = c.history || [];
             const h = aqStamp({ id:'h-'+Date.now(), date:aqTwDate(), content: `推進至「${stageConfig[nextStage]?.label || nextStage}」`, progress:nextStage });
             c.history.push(h);
-            aqEmit(c, h, { changed: true, stageFrom: prev || '', stageTo: nextStage, dealDate: '' });
             if (nextStage !== 'KEY_VISIT') { c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = ''; }
             recordState(); renderApp(); showToast('已推進進度');
             stageTimeOpen(h);
@@ -5136,7 +5012,6 @@
 
         function handleQuickWon(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('quickWonId').value);
-            const prevStage = c.category === 'WON' ? 'WON' : (c.progress || '');
             c.category = 'WON'; c.progress = ''; nxtSet(c, ''); 
             c.policyName = document.getElementById('quickWonPolicyName').value; c.insuranceCompany = document.getElementById('quickWonInsuranceCompany').value; c.productType = document.getElementById('quickWonProductType').value;
             c.premium = document.getElementById('quickWonPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('quickWonFyc').value.replace(/,/g, '');
@@ -5147,7 +5022,6 @@
             c.history = c.history || [];
             const h = aqStamp({ id:'h-'+Date.now(), date:aqTwDate(), content:`成交(${c.productType} - ${c.policyName})`, progress:'WON' });
             c.history.push(h);
-            aqEmit(c, h, { changed: prevStage !== 'WON', stageFrom: prevStage, stageTo: 'WON', dealDate: c.dealDate || '' });
             recordState(); renderApp(); closeModal('quickWonModal'); showToast('案件已成交！', 'success');
             stageTimeOpen(h);
         }
@@ -5631,7 +5505,7 @@
             if ($('atAddEndTime')) $('atAddEndTime').value = '';
             $('atAddMethod').value = 'Line'; $('atAddCat').value = ''; $('atAddEnd').value = ''; $('atAddContent').value = '';
             if ($('atAddTitle')) $('atAddTitle').value = '';
-            if ($('atAddAct')) $('atAddAct').value = ''; if ($('atAddVisit')) $('atAddVisit').value = '';
+            if ($('atAddVisit')) $('atAddVisit').value = '';
             atAddRender();
             openModal('atAddModal');
             setTimeout(function () { try { $('atAddSearch').focus(); } catch (e) {} }, 30);
@@ -5669,7 +5543,6 @@
             if (c.progress === 'LEAD') {
                 const r = { id: leadNewContactId(), date: date, method: method, content: content };
                 aqStamp(r);
-                { const av = $('atAddAct'); if (av && aqActOf(av.value)) r.act = aqActOf(av.value); }
                 if (time) r.time = time; if (savedEnd) r.endTime = savedEnd; if (atParse(end) && end > date) r.endDate = end;
                 { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 if (!Array.isArray(c.contacts)) c.contacts = [];
@@ -5679,12 +5552,10 @@
                 const ids = new Set(c.history.map(function (h) { return h && h.id; })); let n = Date.now(), hid; do { hid = 'h-' + (n++); } while (ids.has(hid));
                 const r = { id: hid, date: date, content: content, progress: c.progress || '', method: method };
                 aqStamp(r);
-                { const av = $('atAddAct'); if (av && aqActOf(av.value)) r.act = aqActOf(av.value); }
                 { const vv = $('atAddVisit'); if (vv && atVisitOf({ visitType: vv.value })) r.visitType = vv.value; }
                 if (time) r.time = time; if (savedEnd) r.endTime = savedEnd; if (atParse(end) && end > date) r.endDate = end;
                 { const rc = $('atAddCat').value; if (atCatOf({ cat: rc })) r.cat = rc; }
                 c.history.push(r);
-                aqEmit(c, r, { changed: false });
             }
             closeModal('atAddModal'); atAddPick = null; atSaved('已新增 ' + c.name + ' 的' + (c.progress === 'LEAD' ? '聯絡紀錄' : '跟進紀錄'));
         }
@@ -6357,7 +6228,7 @@
                 const c0 = r.link ? customers.find(function (x) { return x.id === r.link; }) : null;
                 const c = (c0 && c0.progress === 'LEAD' && leadDefaultDeal(c0)) || c0;
                 if (c && c.progress === 'LEAD') { rec.content = r.title; rec.id = nid('lc-'); if (!Array.isArray(c.contacts)) c.contacts = []; c.contacts.push(rec); nLinked++; }
-                else if (c) { rec.content = r.title; rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); aqEmit(c, rec, { changed: false }); nLinked++; }
+                else if (c) { rec.content = r.title; rec.id = nid('h-'); rec.progress = c.progress || ''; if (!Array.isArray(c.history)) c.history = []; c.history.push(rec); nLinked++; }
                 else { rec.title = r.title; rec.id = 'pe-' + nid(''); rec.agent = atPlanAgentDefault(); rec.createdAt = new Date().toISOString(); if (!atPlanRaw()) { if (!annualGoals || typeof annualGoals !== 'object') annualGoals = {}; annualGoals.planEvents = []; } annualGoals.planEvents.push(rec); nSolo++; }
                 if (!minDate || r.date < minDate) minDate = r.date;
             });
@@ -6885,15 +6756,13 @@
         function handleAddHistory(e) {
             e.preventDefault(); const c = customers.find(x => x.id === document.getElementById('historyCustomerId').value);
             const pSel = document.getElementById('historyProgress').value;
-            const prevProg = c.progress, prevCat = c.category;
             const h = aqStamp({ id: 'h-'+Date.now(), date: document.getElementById('historyDate').value, content: normHistText(document.getElementById('historyContent').value), progress: pSel==='KEEP'?c.progress:pSel });
-            { // 選填新欄位（加法式）：聯絡方式 method、結束日期 endDate（需晚於起日才記錄）、這次做了什麼 act
+            { // 選填新欄位（加法式）：聯絡方式 method、結束日期 endDate（需晚於起日才記錄）
                 const mEl = document.getElementById('historyMethod'), eEl = document.getElementById('historyEndDate');
                 if (mEl && mEl.value) h.method = mEl.value;
                 if (eEl && eEl.value && h.date && eEl.value > h.date) h.endDate = eEl.value;
                 const tEl = document.getElementById('historyTime'); if (tEl && atValidTime(tEl.value)) h.time = atValidTime(tEl.value);
                 const teEl = document.getElementById('historyEndTime'); const savedEnd = atEndAfter(h.time, teEl && teEl.value); if (savedEnd) h.endTime = savedEnd;
-                const aEl = document.getElementById('historyAct'); if (aEl && aqActOf(aEl.value)) h.act = aqActOf(aEl.value);
             }
             nxtSet(c, document.getElementById('historyNextContact').value);
 
@@ -6916,9 +6785,6 @@
             } else if (pSel !== 'KEEP') { c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = ''; }
             if (pSel !== 'KEEP') c.progress = pSel;
             c.history = c.history || []; c.history.push(h);
-            const stageTo = pSel === 'KEEP' ? '' : pSel;
-            const changed = pSel !== 'KEEP' && stageTo !== (prevCat === 'WON' ? 'WON' : prevProg);
-            aqEmit(c, h, { changed: changed, stageFrom: prevCat === 'WON' ? 'WON' : (prevProg || ''), stageTo: changed ? stageTo : '', dealDate: c.dealDate || '' });
             recordState(); renderApp(); closeModal('followUpModal'); showToast('紀錄已新增');
         }
     </script>
@@ -6948,110 +6814,103 @@
         const db = getFirestore(app);
         const APP_ID = 'youtrend-crm';
 
-        // 行動闖關自動事件：只建在登入者自己的 auto 子集合，不讀 global_state，不刪已寫入的事件。
-        let aqSeenMem = [];
-        let aqQueue = [];
-        let aqPumping = false;
-        let aqRuleTold = false;
-        async function aqLoadSeen(teamId, uid) {
-            const col = collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'users', uid, 'auto');
-            const snap = await getDocs(col);
-            const list = [];
-            snap.forEach(function (d) { const x = d.data() || {}; if (!x.id) x.id = d.id; list.push(x); });
-            return list;
-        }
-        async function aqCreate(teamId, uid, email, ev) {
-            const id = String(ev.id || ('ae_' + ev.custId + '_' + ev.action + '_' + ev.date)).replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 180);
-            const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'users', uid, 'auto', id);
-            await runTransaction(db, async function (tx) {
-                const snap = await tx.get(ref);
-                if (snap.exists()) return;
-                tx.set(ref, {
-                    uid: uid, teamId: teamId, email: ev.email || email, byEmail: ev.byEmail || email,
-                    custId: ev.custId, histId: ev.histId, action: ev.action, date: ev.date,
-                    round: ev.round || 1, side: ev.side === 'rf' ? 'rf' : 'ds',
-                    name: ev.name || '', leadId: ev.leadId || '', createdAt: Date.now()
-                });
-            });
-        }
-        let aqTeamDoc = null;
-        let aqRoster = [];
-        let aqCtxLoaded = false;
-        async function aqLoadCtx(teamId) {
-            if (aqCtxLoaded) return;
-            aqCtxLoaded = true;
-            try {
-                const teamSnap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'meta', 'team'));
-                aqTeamDoc = teamSnap.exists() ? (teamSnap.data() || null) : null;
-            } catch (e) { console.warn('aq team', e); aqTeamDoc = null; }
-            try {
-                const snap = await getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'board'));
-                const list = [];
-                snap.forEach(function (d) {
-                    const x = d.data() || {};
-                    const em = String(x.email || '').toLowerCase();
-                    const id = String(x.uid || d.id || '');
-                    if (em && id) list.push({ email: em, uid: id });
-                });
-                aqRoster = list;
-            } catch (e) { console.warn('aq roster', e); }
-        }
-        async function aqPump() {
-            if (aqPumping) return;
-            const user = auth.currentUser;
-            const teamId = (localStorage.getItem('crm_team_id') || '').trim();
-            if (!user || user.isAnonymous || !user.uid || !teamId || !aqQueue.length) return;
-            aqPumping = true;
-            const writer = (user.email || '').toLowerCase();
-            try {
-                await aqLoadCtx(teamId);
-                const seenCache = {};
-                while (aqQueue.length) {
-                    const job = aqQueue.shift();
-                    const credit = window.CrmLink && window.CrmLink.creditFor
-                        ? window.CrmLink.creditFor(aqTeamDoc, aqRoster, job.agentName == null ? null : job.agentName, { email: writer, uid: user.uid })
-                        : { email: writer, uid: user.uid, fallback: false, note: '' };
-                    if (credit.fallback && credit.note && window.showToast) {
-                        const note = credit.note;
-                        setTimeout(function () { if (window.showToast) window.showToast(note, 'info'); }, 0);
-                    }
-                    let seen = seenCache[credit.uid];
-                    if (!seen) {
-                        seen = aqSeenMem.filter(function (e) { return e && (e.uid === credit.uid || (!e.uid && credit.uid === user.uid)); });
-                        if (credit.uid === user.uid) {
-                            try { (await aqLoadSeen(teamId, user.uid)).forEach(function (e) { seen.push(e); }); }
-                            catch (e) {
-                                console.warn('aq auto read', e);
-                                if (!aqRuleTold && window.showToast) { aqRuleTold = true; window.showToast('歷程已儲存。闖關自動計入需要更新 Firestore 規則後才寫得進去。', 'error'); }
-                            }
-                        }
-                        seenCache[credit.uid] = seen;
-                    }
-                    const evs = window.aqPlanEvents ? window.aqPlanEvents(job, seen) : [];
-                    for (let i = 0; i < evs.length; i++) {
-                        const ev = evs[i];
-                        ev.byEmail = writer;
-                        ev.email = credit.email || writer;
-                        ev.uid = credit.uid;
-                        seen.push(ev); aqSeenMem.push(ev);
-                        try { await aqCreate(teamId, credit.uid, credit.email || writer, ev); }
-                        catch (err) {
-                            console.warn('aq auto write', err);
-                            if (!aqRuleTold && window.showToast) { aqRuleTold = true; window.showToast('歷程已儲存。闖關自動計入需要更新 Firestore 規則後才寫得進去。', 'error'); }
-                        }
-                    }
-                }
-            } finally {
-                aqPumping = false;
+        // 匯出時只讀行動闖關，不寫入、不刪除。規則只允許讀自己的每日紀錄與自動事件，加上全員可讀的目標、成員設定，以及排行榜。
+        function aqPlain(v) {
+            if (v == null) return v;
+            if (typeof v.toDate === 'function') {
+                try { return v.toDate().toISOString(); } catch (e) { return null; }
             }
-            if (aqQueue.length) aqPump();
+            if (Array.isArray(v)) return v.map(aqPlain);
+            if (typeof v === 'object') {
+                var o = {};
+                Object.keys(v).forEach(function (k) { o[k] = aqPlain(v[k]); });
+                return o;
+            }
+            return v;
         }
-        window.aqWriteEvents = function (jobs) {
-            if (!jobs || !jobs.length) return;
-            aqQueue.push.apply(aqQueue, jobs);
-            aqPump();
-        };
-        if (window.__aqPending && window.__aqPending.length) window.aqWriteEvents(window.__aqPending.splice(0, window.__aqPending.length));
+        function aqAddDay(s, n) {
+            var d = new Date(s + 'T00:00:00');
+            d.setDate(d.getDate() + n);
+            var p = function (x) { return String(x).padStart(2, '0'); };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+        }
+        function aqDayTot(e, k) {
+            if (!e) return 0;
+            return (+(e.ds && e.ds[k]) || 0) + (+(e.rf && e.rf[k]) || 0);
+        }
+        function aqQuestDone(e) { return aqDayTot(e, 'call') >= 5 && aqDayTot(e, 'appt') >= 2; }
+        function aqStreakFromDays(days) {
+            days = days || {};
+            var today = (typeof aqTwDate === 'function') ? aqTwDate() : '';
+            var current = 0;
+            if (today) {
+                var d = aqQuestDone(days[today]) ? today : aqAddDay(today, -1);
+                var guard = 0;
+                while (aqQuestDone(days[d]) && guard < 4000) { current++; d = aqAddDay(d, -1); guard++; }
+            }
+            var keys = Object.keys(days).filter(function (k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }).sort();
+            var best = 0, cur = 0, prev = null;
+            keys.forEach(function (k) {
+                if (aqQuestDone(days[k])) {
+                    cur = (prev && aqAddDay(prev, 1) === k && cur) ? cur + 1 : 1;
+                    if (cur > best) best = cur;
+                } else cur = 0;
+                prev = k;
+            });
+            return { current: current, best: best };
+        }
+        async function collectActionQuestBackup() {
+            if (CRM_MOCK) {
+                var seeded = window.__CRM_TEST && window.__CRM_TEST.actionquest;
+                if (!seeded || typeof seeded !== 'object') return null;
+                var copy = JSON.parse(JSON.stringify(seeded));
+                copy.streak = aqStreakFromDays(copy.days || {});
+                return copy;
+            }
+            var user = auth.currentUser;
+            var teamId = (localStorage.getItem('crm_team_id') || '').trim();
+            if (!user || user.isAnonymous || !user.uid || !teamId) return null;
+            var uid = user.uid;
+            var out = {
+                teamId: teamId,
+                uid: uid,
+                email: (user.email || '').toLowerCase(),
+                user: null,
+                days: {},
+                auto: [],
+                goals: null,
+                team: null,
+                board: [],
+                partial: false
+            };
+            async function read(label, fn) {
+                try { return await fn(); }
+                catch (e) { console.warn('actionquest export ' + label, e); out.partial = true; return null; }
+            }
+            var userSnap = await read('user', function () { return getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'users', uid)); });
+            if (userSnap && userSnap.exists()) out.user = aqPlain(userSnap.data());
+            var daySnap = await read('days', function () { return getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'users', uid, 'days')); });
+            if (daySnap) daySnap.forEach(function (d) { out.days[d.id] = aqPlain(d.data()); });
+            var autoSnap = await read('auto', function () { return getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'users', uid, 'auto')); });
+            if (autoSnap) autoSnap.forEach(function (d) {
+                var x = aqPlain(d.data()) || {};
+                if (!x.id) x.id = d.id;
+                out.auto.push(x);
+            });
+            var goalsSnap = await read('goals', function () { return getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'meta', 'goals')); });
+            if (goalsSnap && goalsSnap.exists()) out.goals = aqPlain(goalsSnap.data());
+            var teamSnap = await read('team', function () { return getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'meta', 'team')); });
+            if (teamSnap && teamSnap.exists()) out.team = aqPlain(teamSnap.data());
+            var boardSnap = await read('board', function () { return getDocs(collection(db, 'artifacts', APP_ID, 'public', 'data', 'actionquest', teamId, 'board')); });
+            if (boardSnap) boardSnap.forEach(function (d) {
+                var x = aqPlain(d.data()) || {};
+                if (!x.uid) x.uid = d.id;
+                out.board.push(x);
+            });
+            out.streak = aqStreakFromDays(out.days);
+            return out;
+        }
+        window.collectActionQuestBackup = collectActionQuestBackup;
 
         // 記住「我們最後一次看到的雲端版本號」，用來偵測別人是否搶先寫入
         let lastSeenRev = 0;
@@ -7256,57 +7115,10 @@
                 if (lg) { lg.classList.add('hidden'); lg.classList.remove('flex'); }
                 window.__crmCloud = JSON.parse(JSON.stringify(window.__CRM_TEST.state || { cust: [] }));
                 window.syncFromCloud(window.__crmCloud);
-                function mockAutoKey(id) {
-                    const team = (localStorage.getItem('crm_team_id') || 'FISHTEAM').trim().toUpperCase();
-                    return 'aqmock:v1:' + team + ':' + id;
-                }
-                function mockReadAuto(id) {
-                    try {
-                        const bag = JSON.parse(sessionStorage.getItem(mockAutoKey(id)) || 'null') || {};
-                        return Array.isArray(bag.auto) ? bag.auto : [];
-                    } catch (e) { return []; }
-                }
-                function mockSaveAuto(id, ev) {
-                    const key = mockAutoKey(id);
-                    let bag = {};
-                    try { bag = JSON.parse(sessionStorage.getItem(key) || 'null') || {}; } catch (e) { bag = {}; }
-                    if (!bag || typeof bag !== 'object') bag = {};
-                    bag.auto = Array.isArray(bag.auto) ? bag.auto : [];
-                    const dup = bag.auto.some(function (e) {
-                        return e && (e.id === ev.id || (e.custId === ev.custId && e.action === ev.action && e.date === ev.date));
-                    });
-                    if (dup) return false;
-                    bag.auto.push(ev);
-                    sessionStorage.setItem(key, JSON.stringify(bag));
-                    return true;
-                }
-                window.__crmAuto = function (id) { return mockReadAuto(id); };
-                window.aqWriteEvents = function (jobs) {
-                    if (!jobs || !jobs.length) return;
-                    const writer = window.currentUserEmail;
-                    const self = { email: writer, uid: window.currentUserUid };
-                    const team = (window.__CRM_TEST && window.__CRM_TEST.team) || null;
-                    const roster = (window.__CRM_TEST && window.__CRM_TEST.roster) || [];
-                    jobs.forEach(function (job) {
-                        const credit = window.CrmLink.creditFor(team, roster, job.agentName == null ? null : job.agentName, self);
-                        if (credit.fallback && credit.note && window.showToast) {
-                            const note = credit.note;
-                            setTimeout(function () { if (window.showToast) window.showToast(note, 'info'); }, 0);
-                        }
-                        const seen = mockReadAuto(credit.uid);
-                        const evs = window.aqPlanEvents ? window.aqPlanEvents(job, seen) : [];
-                        evs.forEach(function (ev) {
-                            ev.byEmail = writer;
-                            ev.email = credit.email || writer;
-                            ev.uid = credit.uid;
-                            mockSaveAuto(credit.uid, ev);
-                        });
-                    });
-                };
-                if (window.__aqPending && window.__aqPending.length) window.aqWriteEvents(window.__aqPending.splice(0, window.__aqPending.length));
                 window.__crmTrySave = function (expectedRev, memoryPayload) {
                     return window.CrmLink.guardSave(expectedRev, window.__crmCloud, memoryPayload, true);
                 };
+                window.__zlkImport = zlk_import;
                 if (window.__CRM_TEST.tab && typeof switchMainTab === 'function') switchMainTab(window.__CRM_TEST.tab);
                 document.body.classList.add('crm-ready');
             };
@@ -7321,7 +7133,6 @@
             if (user && !user.isAnonymous) {
                 window.currentUserEmail = (user.email || '').toLowerCase();
                 window.currentUserUid = user.uid || '';
-                if (typeof aqPump === 'function') aqPump();
                 const teamId = localStorage.getItem('crm_team_id');
                 if (teamId) {
                     hideLogin();
