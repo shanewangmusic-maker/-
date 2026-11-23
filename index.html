@@ -854,27 +854,6 @@
                                 </div>
                             </div>
                             
-                            <!-- 歷程動態輸入 (WON) -->
-                            <div id="historyWonFields" class="hidden bg-emerald-50/40 rounded-xl p-4 border border-emerald-200 space-y-3">
-                                <p class="text-xs font-bold text-emerald-700 mb-1">成交與扣款明細：</p>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div class="col-span-2"><input autocomplete="off" type="text" id="historyPolicyName" placeholder="保單名稱" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyInsuranceCompany" placeholder="保險公司" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><select id="historyProductType" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"><option value="" disabled selected>商品種類</option><option value="醫療險">醫療險</option><option value="投資型保單">投資型保單</option><option value="分紅保單">分紅保單</option><option value="躉繳">躉繳</option><option value="其他">其他</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyPremium" oninput="calcComm('history')" placeholder="保費" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="number" step="0.1" id="historyCommissionRate" oninput="calcComm('history')" placeholder="代理率%" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none"></div>
-                                    <div class="col-span-2 sm:col-span-1"><input autocomplete="off" type="text" id="historyFyc" readonly placeholder="FYC" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-100 font-bold outline-none cursor-not-allowed"></div>
-                                    <div class="col-span-2 sm:col-span-1"><select id="historyRankRate" onchange="calcComm('history')" class="w-full px-3 py-1.5 border border-emerald-200 rounded-lg text-xs outline-none font-bold text-emerald-800"><option value="" disabled selected>職階</option><option value="78">副總 (78%)</option><option value="75">總監 (75%)</option><option value="73">高經 (73%)</option><option value="68">經理 (68%)</option><option value="58">襄理 (58%)</option><option value="48">專員 (48%)</option><option value="40">代表 (40%)</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input type="date" id="historyDeductionDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white" placeholder="扣款日"></div>
-                                    <div class="col-span-2 sm:col-span-1"><select id="historyDeductionFrequency" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white font-bold text-emerald-800"><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option><option value="一次性">一次性</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><input type="date" id="historyDividendDate" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white" placeholder="配息日"></div>
-                                    <div class="col-span-2 sm:col-span-1"><select id="historyDividendFrequency" class="w-full px-3 py-1 border border-violet-200 rounded-lg text-xs outline-none bg-white font-bold text-violet-800"><option value="">（無配息）</option><option value="每月">每月</option><option value="每季">每季</option><option value="半年">半年</option><option value="每年">每年</option></select></div>
-                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">成交日期</label><input type="date" id="historyDealDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
-                                    <div class="col-span-2 sm:col-span-1"><label class="block text-[9px] font-bold text-emerald-600 mb-0.5">送件日期</label><input type="date" id="historySubmitDate" class="w-full px-3 py-1 border border-emerald-200 rounded-lg text-xs outline-none bg-white"></div>
-                                    <div class="col-span-2 bg-white p-1 rounded border flex justify-between items-center"><span class="text-[10px] font-bold text-emerald-600">佣金</span><input autocomplete="off" type="text" id="historyCommission" readonly class="w-24 text-right bg-transparent text-xs font-black text-emerald-600 outline-none"></div>
-                                </div>
-                            </div>
-                            
                             <div><textarea autocomplete="off" id="historyContent" required rows="4" placeholder="紀錄內容…（按 Enter 換行）" onkeydown="if(event.key==='Enter')event.stopPropagation();" class="hist-text w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none bg-white"></textarea></div>
                             
                             <div class="flex justify-end pt-4"><button type="submit" class="px-5 py-2 bg-[#1E2E3D] hover:bg-[#2C3E50] text-white rounded-lg text-sm font-bold shadow-sm">送出紀錄</button></div>
@@ -1980,7 +1959,7 @@
             }
         };
 
-        // ---- CSV 解析 / 欄位轉換（供 handleCsvImport 使用；向下相容舊 4 欄範本） ----
+        // ---- CSV 解析 / 欄位轉換（匯入 Excel 的 .csv 與此共用；向下相容舊 4 欄範本） ----
         function leadParseCsv(text) {
             text = String(text || '').replace(/^\uFEFF/, '');
             const rows = []; let row = [], cur = '', q = false;
@@ -2031,78 +2010,6 @@
             if (mm >= 1 && mm <= 12) return { birthday: '', month: mm };
             return { birthday: '', month: 0 };
         }
-
-        function handleCsvImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const rows = leadParseCsv(evt.target.result);
-                if(rows.length <= 1) return showToast('CSV 格式錯誤或無資料', 'error');
-
-                // 依標題列對應欄位；若沒有「姓名」標題，退回舊版位置格式（姓名,電話,公司,備註）
-                const norm = s => String(s || '').replace(/[\s\u3000]/g, '');
-                const alias = {
-                    name: ['姓名', '名字'], phone: ['聯絡電話', '電話', '手機'], company: ['公司或職稱', '公司', '職稱'], notes: ['其他備註', '備註'],
-                    source: ['準客戶來源', '來源'], stage: ['一畝田階段', '一畝田', '階段'], region: ['地區'], birthday: ['生日'], bmonth: ['生日月'], cls: ['分類', '分類標籤']
-                };
-                const head = rows[0].map(norm);
-                const col = {};
-                Object.keys(alias).forEach(k => { const ix = head.findIndex(h => alias[k].indexOf(h) >= 0); if (ix >= 0) col[k] = ix; });
-                if (col.name === undefined) { col.name = 0; col.phone = 1; col.company = 2; col.notes = 3; }
-                const get = (cols, k) => (col[k] !== undefined ? (cols[col[k]] || '') : '').trim();
-
-                let count = 0;
-                const stamp = Date.now();
-                for(let i = 1; i < rows.length; i++) {
-                    const cols = rows[i];
-                    const name = get(cols, 'name');
-                    if(!name) continue;
-                    const bi = leadParseBirth(get(cols, 'birthday'), get(cols, 'bmonth'));
-                    const lead = {
-                        id: 'cust-' + stamp + '-' + i + '-' + Math.random().toString(36).slice(2, 7),
-                        name: name,
-                        phone: get(cols, 'phone'),
-                        company: get(cols, 'company'),
-                        notes: get(cols, 'notes'),
-                        agentName: '', // CSV 匯入預設為個人業績
-                        category: 'NEW',
-                        progress: 'LEAD',
-                        lastStage: 'NURTURE',
-                        createdAt: new Date().toISOString(),
-                        tags: [], history: [],
-                        // 一畝田新欄位（舊版 4 欄 CSV 時為預設值）
-                        acreStage: leadParseStage(get(cols, 'stage')) || 'SAPLING',
-                        source: get(cols, 'source'),
-                        region: get(cols, 'region'),
-                        birthday: bi.birthday,
-                        leadCls: leadParseCls(get(cols, 'cls'))
-                    };
-                    if (bi.month) lead.birthMonth = bi.month;
-                    customers.push(lead);
-                    count++;
-                }
-                recordState();
-                renderApp();
-                showToast(`成功匯入 ${count} 筆潛在名單！`, 'success');
-                e.target.value = '';
-            };
-            reader.readAsText(file, 'UTF-8');
-        }
-
-        function downloadCsvTemplate() {
-            // 前 4 欄與舊版範本相同（向下相容）；後 5 欄為一畝田新欄位。分類可填 A–F、F1–F5，多個以 ; 分隔
-            const csvContent = "\uFEFF姓名,聯絡電話,公司或職稱,其他備註,準客戶來源,一畝田階段,地區,生日,分類\n" +
-                "陳大明,0912345678,科技公司採購,活動問卷取得名單,朋友,03樹苗,台北,1985-10-12,A;B\n" +
-                "王小美,0987654321,自營商,名單來源B,轉介紹,02茁長的樹,台中,5/20,A;F;F1;F3\n" +
-                "李小華,,,,家人,01已結果的樹,新北,,E";
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "一畝田批次匯入範本.csv";
-            link.click();
-        }
-
 
         // =====================================================================
         // 匯入 Excel（我的一畝田）—— 瀏覽器端解析 → 預覽 → 確認後合併
@@ -3967,9 +3874,6 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" onclick="leadSetFilter('stage','ALL')" id="leadStageAll" class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ${allActive ? 'bg-[#1E2E3D] text-white border-[#1E2E3D]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">全部 <span id="leadTotalCount">${total}</span></button>
                         <button type="button" onclick="openLeadModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4AF37] hover:bg-[#C59B27] text-[#1E2E3D] shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-plus"></i> 新增名單</button>
-                        <button type="button" onclick="downloadCsvTemplate()" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition">下載 CSV 範本</button>
-                        <input type="file" id="csvInput" accept=".csv" class="hidden" onchange="handleCsvImport(event)">
-                        <button type="button" onclick="document.getElementById('csvInput').click()" class="px-3 py-1.5 bg-[#1E2E3D] text-white rounded-lg text-xs font-bold hover:bg-[#2C3E50] shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-import"></i> 批次匯入</button>
                         <button type="button" id="xlsTemplateBtn" onclick="xlsDownloadTemplate()" title="下載與「我的一畝田」表頭相同的 Excel 範本" class="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-50 transition">匯入範本</button>
                         <input type="file" id="xlsInput" accept=".xlsx,.xls,.csv" class="hidden" onchange="xlsHandleFile(event)">
                         <button type="button" id="xlsImportBtn" onclick="document.getElementById('xlsInput').click()" title="讀取「我的一畝田」Excel（或 .csv），先預覽再合併" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-excel"></i> 匯入 Excel</button>
@@ -4045,7 +3949,7 @@
 
             let listHtml;
             if (!scope.length) {
-                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-seedling text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">一畝田目前沒有名單</p><p class="text-sm mt-1">點「新增名單」或用 CSV 批次匯入。</p></div>`;
+                listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-seedling text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">一畝田目前沒有名單</p><p class="text-sm mt-1">點「新增名單」或用「匯入 Excel」。</p></div>`;
             } else if (!filtered.length) {
                 listHtml = `<div class="py-14 text-center text-slate-400"><i class="fa-solid fa-folder-open text-5xl mb-3 text-slate-300"></i><p class="font-bold text-slate-600 font-editorial">沒有符合條件的名單</p><p class="text-sm mt-1">請調整篩選條件。</p></div>`;
             } else {
@@ -4531,11 +4435,6 @@
                             <h3 class="font-bold text-indigo-900 flex items-center gap-1"><i class="fa-solid fa-address-book text-indigo-500"></i> 大量一畝田名單</h3>
                             <p class="text-xs text-indigo-700/70 mt-1">您可以利用上方過濾器按月份檢視名單。設定提醒時間後，將自動於指揮中心跳出待辦提示。</p>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="downloadCsvTemplate()" class="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-50 shadow-sm transition">下載 CSV 範本</button>
-                            <input type="file" id="csvInput" accept=".csv" class="hidden" onchange="handleCsvImport(event)">
-                            <button onclick="document.getElementById('csvInput').click()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1 transition"><i class="fa-solid fa-file-import"></i> 批次匯入</button>
-                        </div>
                     </div>
                     <div class="w-full overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200">
                         <table class="w-full text-left text-sm whitespace-nowrap">
@@ -4888,7 +4787,7 @@
 
         function syncCategoryAndFields(prefix) {
             let cat = document.getElementById(prefix + (prefix==='history'?'Progress':'Category')).value;
-            if(prefix==='history' && cat!=='WON' && cat!=='HOLD' && cat!=='LOST') cat = 'NEW';
+            if(prefix==='history' && cat!=='HOLD' && cat!=='LOST') cat = 'NEW';
             
             const btnProgress = document.getElementById(`${prefix}-btn-progress`);
             const btnWon = document.getElementById(`${prefix}-btn-won`);
@@ -6860,7 +6759,6 @@
                     <option value="KEY_VISIT">改為 ➔ 關鍵訪 🎯</option>
                     <option value="HOLD" class="text-amber-700 bg-amber-50">改為 ➔ ⏳ 待定 (暫停跟進)</option>
                     <option value="LOST" class="text-slate-500 bg-slate-100">改為 ➔ ❌ 流失 (無效/拒絕)</option>
-                    <option value="WON" class="text-emerald-700 bg-emerald-50">改為 ➔ 🏆 成交！</option>
                 `;
             }
             
@@ -6869,14 +6767,6 @@
             document.getElementById('historyPlannedPremium').value = c.plannedPremium ? Number(c.plannedPremium).toLocaleString() : ''; document.getElementById('historyPlannedCommissionRate').value = c.plannedCommissionRate || '';
             document.getElementById('historyPlannedFyc').value = c.plannedFyc ? Number(c.plannedFyc).toLocaleString() : ''; document.getElementById('historyPlannedRankRate').value = c.plannedRankRate || '';
             document.getElementById('historyPlannedCommission').value = c.plannedCommission ? Number(c.plannedCommission).toLocaleString() : ''; document.getElementById('historyPlannedOutline').value = c.plannedOutline || '';
-
-            if (c.category === 'WON') {
-                document.getElementById('historyPolicyName').value = c.policyName || ''; document.getElementById('historyInsuranceCompany').value = c.insuranceCompany || ''; document.getElementById('historyProductType').value = c.productType || '';
-                document.getElementById('historyPremium').value = c.premium ? Number(c.premium).toLocaleString() : ''; document.getElementById('historyCommissionRate').value = c.commissionRate || '';
-                document.getElementById('historyFyc').value = c.fyc ? Number(c.fyc).toLocaleString() : ''; document.getElementById('historyRankRate').value = c.rankRate || ''; document.getElementById('historyCommission').value = c.commission ? Number(c.commission).toLocaleString() : '';
-                document.getElementById('historyDeductionDate').value = c.deductionDate || ''; document.getElementById('historyDeductionFrequency').value = c.deductionFrequency || '每年'; if (document.getElementById('historyDividendDate')) document.getElementById('historyDividendDate').value = c.dividendDate || ''; if (document.getElementById('historyDividendFrequency')) document.getElementById('historyDividendFrequency').value = c.dividendFrequency || '';
-                document.getElementById('historyDealDate').value = c.dealDate || ''; document.getElementById('historySubmitDate').value = c.submitDate || '';
-            } else { document.getElementById('historyDealDate').value = ''; document.getElementById('historySubmitDate').value = ''; }
 
             tempSelectedTags = c.tags ? [...c.tags] : []; renderTagSelector('history'); syncCategoryAndFields('history');
             
@@ -7007,37 +6897,26 @@
             }
             nxtSet(c, document.getElementById('historyNextContact').value);
 
-            if (pSel === 'WON') {
-                c.category = 'WON'; c.progress = ''; nxtSet(c, ''); 
-                c.policyName = document.getElementById('historyPolicyName').value; c.insuranceCompany = document.getElementById('historyInsuranceCompany').value; c.productType = document.getElementById('historyProductType').value;
-                c.premium = document.getElementById('historyPremium').value.replace(/,/g, ''); c.fyc = document.getElementById('historyFyc').value.replace(/,/g, '');
-                c.commissionRate = document.getElementById('historyCommissionRate').value; c.rankRate = document.getElementById('historyRankRate').value; c.commission = document.getElementById('historyCommission').value.replace(/,/g, '');
-                c.deductionDate = document.getElementById('historyDeductionDate').value; c.deductionFrequency = document.getElementById('historyDeductionFrequency').value; c.dividendDate = (document.getElementById('historyDividendDate')||{}).value || ''; c.dividendFrequency = (document.getElementById('historyDividendFrequency')||{}).value || '';
-                c.dealDate = document.getElementById('historyDealDate').value; c.submitDate = document.getElementById('historySubmitDate').value;
-                c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = '';
-                h.content += ` (成交商品: ${c.productType}, 保單名稱: ${c.policyName})`;
-            } else {
-                const targetProg = pSel === 'KEEP' ? c.progress : pSel;
-                
-                // 若轉為待定/流失，自動快照當前停留階段 (招募或銷售)
-                if (pSel === 'HOLD' || pSel === 'LOST') {
-                    if (['NURTURE', 'FIRST_VISIT', 'KEY_VISIT', 'R_CONTACT', 'R_INTERVIEW', 'R_ONBOARD'].includes(c.progress)) {
-                        c.lastStage = c.progress; 
-                    }
-                }
+            const targetProg = pSel === 'KEEP' ? c.progress : pSel;
 
-                if (targetProg === 'KEY_VISIT') {
-                    c.csSupervisor = document.getElementById('historyCsSupervisor').value.trim(); c.plannedPolicyName = document.getElementById('historyPlannedPolicyName').value.trim();
-                    c.plannedInsuranceCompany = document.getElementById('historyPlannedInsuranceCompany').value.trim(); c.plannedProductType = document.getElementById('historyPlannedProductType').value;
-                    c.plannedPremium = document.getElementById('historyPlannedPremium').value.replace(/,/g, ''); c.plannedCommissionRate = document.getElementById('historyPlannedCommissionRate').value;
-                    c.plannedFyc = document.getElementById('historyPlannedFyc').value.replace(/,/g, ''); c.plannedRankRate = document.getElementById('historyPlannedRankRate').value;
-                    c.plannedCommission = document.getElementById('historyPlannedCommission').value.replace(/,/g, ''); c.plannedOutline = document.getElementById('historyPlannedOutline').value.trim();
-                    h.content += ` (關鍵訪規劃 - CS主管：${c.csSupervisor}, 預計保單：${c.plannedPolicyName})`;
-                } else if (pSel !== 'KEEP') { c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = ''; }
-                if (pSel !== 'KEEP') c.progress = pSel;
+            // 若轉為待定/流失，自動快照當前停留階段 (招募或銷售)
+            if (pSel === 'HOLD' || pSel === 'LOST') {
+                if (['NURTURE', 'FIRST_VISIT', 'KEY_VISIT', 'R_CONTACT', 'R_INTERVIEW', 'R_ONBOARD'].includes(c.progress)) {
+                    c.lastStage = c.progress;
+                }
             }
+
+            if (targetProg === 'KEY_VISIT') {
+                c.csSupervisor = document.getElementById('historyCsSupervisor').value.trim(); c.plannedPolicyName = document.getElementById('historyPlannedPolicyName').value.trim();
+                c.plannedInsuranceCompany = document.getElementById('historyPlannedInsuranceCompany').value.trim(); c.plannedProductType = document.getElementById('historyPlannedProductType').value;
+                c.plannedPremium = document.getElementById('historyPlannedPremium').value.replace(/,/g, ''); c.plannedCommissionRate = document.getElementById('historyPlannedCommissionRate').value;
+                c.plannedFyc = document.getElementById('historyPlannedFyc').value.replace(/,/g, ''); c.plannedRankRate = document.getElementById('historyPlannedRankRate').value;
+                c.plannedCommission = document.getElementById('historyPlannedCommission').value.replace(/,/g, ''); c.plannedOutline = document.getElementById('historyPlannedOutline').value.trim();
+                h.content += ` (關鍵訪規劃 - CS主管：${c.csSupervisor}, 預計保單：${c.plannedPolicyName})`;
+            } else if (pSel !== 'KEEP') { c.csSupervisor = ''; c.plannedPolicyName = ''; c.plannedInsuranceCompany = ''; c.plannedProductType = ''; c.plannedPremium = ''; c.plannedCommissionRate = ''; c.plannedFyc = ''; c.plannedRankRate = ''; c.plannedCommission = ''; c.plannedOutline = ''; }
+            if (pSel !== 'KEEP') c.progress = pSel;
             c.history = c.history || []; c.history.push(h);
-            const stageTo = pSel === 'WON' ? 'WON' : (pSel === 'KEEP' ? '' : pSel);
+            const stageTo = pSel === 'KEEP' ? '' : pSel;
             const changed = pSel !== 'KEEP' && stageTo !== (prevCat === 'WON' ? 'WON' : prevProg);
             aqEmit(c, h, { changed: changed, stageFrom: prevCat === 'WON' ? 'WON' : (prevProg || ''), stageTo: changed ? stageTo : '', dealDate: c.dealDate || '' });
             recordState(); renderApp(); closeModal('followUpModal'); showToast('紀錄已新增');
