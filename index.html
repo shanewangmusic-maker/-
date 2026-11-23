@@ -135,7 +135,7 @@
             <div class="hdr-row max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
                     <div class="flex items-center gap-3">
-                        <div class="bg-white/10 text-white p-2.5 rounded-xl border border-white/20 relative cursor-pointer hover:bg-white/20 transition" onclick="window.logoutTeam()" title="點擊登出 / 切換團隊">
+                        <div id="workspaceMark" class="bg-white/10 text-white p-2.5 rounded-xl border border-white/20 relative">
                             <i class="fa-solid fa-users-rectangle text-2xl relative z-10"></i>
                             <span class="absolute -top-1 -right-1 flex h-3 w-3" id="cloudPingIndicator" style="display:none;"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-[#1E2E3D]"></span></span>
                         </div>
@@ -144,8 +144,6 @@
                             <p id="cloudStatusText" class="text-[10px] text-slate-400 tracking-widest uppercase font-bold"><i class="fa-solid fa-link-slash"></i> 尚未連線</p>
                         </div>
                     </div>
-                    <!-- 手機版登出按鈕 -->
-                    <button onclick="window.logoutTeam()" class="md:hidden text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-1 rounded">切換團隊</button>
                 </div>
                 <div class="header-tools flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
                     <button id="undoBtn" onclick="undo()" class="bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white p-2.5 rounded-lg transition duration-200 disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 flex-shrink-0" title="返回上一步 (Undo)">
@@ -159,21 +157,16 @@
                         <i class="fa-solid fa-user-plus"></i> 新增
                     </button>
                     <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                    <button onclick="document.getElementById('importFile').click()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯入資料還原">
-                        <i class="fa-solid fa-file-import"></i>
-                    </button>
                     <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出資料備份">
                         <i class="fa-solid fa-file-export"></i>
-                    </button>
-                    <button onclick="exportMonthlyReport()" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="匯出業績月報（依上方選的期間，CSV 可用 Excel 開啟）">
-                        <i class="fa-solid fa-file-excel"></i>
                     </button>
                     <button id="memberAdminBtn" onclick="openMemberAdmin()" style="display:none" class="bg-white/5 hover:bg-white/10 text-slate-300 p-2.5 rounded-lg transition duration-200 border border-white/10 flex-shrink-0" title="成員權限設定（分配各業務員可用的分頁）">
                         <i class="fa-solid fa-users-gear"></i>
                     </button>
-                    <!-- 電腦版登出按鈕 -->
-                    <button onclick="window.logoutTeam()" class="hidden md:flex bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 p-2.5 rounded-lg transition duration-200 border border-rose-500/30 flex-shrink-0" title="登出 / 切換團隊">
+                    <!-- 唯一登出入口：電腦與手機都用這一顆 -->
+                    <button id="logoutBtn" type="button" onclick="window.logoutTeam()" class="flex items-center gap-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 p-2.5 rounded-lg transition duration-200 border border-rose-500/30 flex-shrink-0" title="登出">
                         <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="md:hidden text-xs font-bold">登出</span>
                     </button>
                 </div>
             </div>
@@ -181,7 +174,7 @@
 
         <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
             
-            <!-- 視角切換器：四視角切換 (包含招募) -->
+            <!-- 視角切換器：常用三頁留在列上；招募、待定與流失、月報、匯入收進「更多」 -->
             <div class="main-tabs flex gap-6 mb-4 border-b border-slate-200 overflow-x-auto pb-1">
                 <button onclick="switchMainTab('PIPELINE')" id="mainTab-PIPELINE" class="pb-3 font-bold text-[#1E2E3D] border-b-2 border-[#1E2E3D] transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-layer-group"></i> 核心業績看板
@@ -192,12 +185,28 @@
                 <button onclick="switchMainTab('AIRTABLE')" id="mainTab-AIRTABLE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
                     <i class="fa-solid fa-calendar-week"></i> 週行程
                 </button>
-                <button onclick="switchMainTab('RECRUIT')" id="mainTab-RECRUIT" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-user-tie"></i> 引薦招募庫
-                </button>
-                <button onclick="switchMainTab('ARCHIVE')" id="mainTab-ARCHIVE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-box-archive"></i> 待定與流失
-                </button>
+                <div class="relative flex-shrink-0" id="moreTabWrap">
+                    <button type="button" onclick="toggleMoreMenu(event)" id="mainTab-MORE" class="pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-ellipsis"></i> 更多
+                    </button>
+                    <div id="moreMenu" class="hidden absolute left-0 top-full mt-1 z-50 w-60 bg-white border border-slate-200 rounded-xl shadow-lg py-1 premium-shadow">
+                        <button type="button" id="moreItem-RECRUIT" onclick="openFoldedTab('RECRUIT')" class="w-full text-left px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+                            <i class="fa-solid fa-user-tie"></i> 引薦招募庫
+                        </button>
+                        <button type="button" id="moreItem-ARCHIVE" onclick="openFoldedTab('ARCHIVE')" class="w-full text-left px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+                            <i class="fa-solid fa-box-archive"></i> 待定與流失
+                        </button>
+                        <div id="moreDivider-views" class="border-t border-slate-100 my-1"></div>
+                        <button type="button" id="moreItem-REPORT" onclick="runMoreReport()" class="w-full text-left px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> 匯出業績月報
+                        </button>
+                        <div class="border-t border-slate-100 my-1"></div>
+                        <button type="button" id="moreItem-IMPORT" onclick="runMoreImport()" class="w-full text-left px-3 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+                            <i class="fa-solid fa-file-import"></i> 匯入資料還原
+                        </button>
+                        <p class="px-3 pb-2 text-[11px] leading-snug text-slate-400">會用這個檔案蓋過目前的資料。</p>
+                    </div>
+                </div>
             </div>
 
             <div id="crmBody">
@@ -1493,6 +1502,76 @@
                 else { localStorage.removeItem('crm_team_id'); location.reload(); }
             }
         };
+
+        // 「更多」只收起入口，不改分頁本身的名單與階段。
+        function closeMoreMenu() {
+            var m = document.getElementById('moreMenu');
+            if (m) m.classList.add('hidden');
+            var bar = document.querySelector('.main-tabs');
+            if (bar) bar.style.overflow = '';
+        }
+        function placeMoreMenu() {
+            var wrap = document.getElementById('moreTabWrap');
+            var m = document.getElementById('moreMenu');
+            if (!wrap || !m) return;
+            m.style.right = 'auto';
+            m.style.left = '0px';
+            var edge = 8;
+            var box = m.getBoundingClientRect();
+            if (box.right > window.innerWidth - edge) {
+                m.style.left = (window.innerWidth - edge - box.right) + 'px';
+            }
+            box = m.getBoundingClientRect();
+            if (box.left < edge) {
+                var wrapLeft = wrap.getBoundingClientRect().left;
+                m.style.left = (edge - wrapLeft) + 'px';
+            }
+        }
+        function toggleMoreMenu(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            var m = document.getElementById('moreMenu');
+            if (!m) return;
+            var willOpen = m.classList.contains('hidden');
+            m.classList.toggle('hidden');
+            var bar = document.querySelector('.main-tabs');
+            if (bar) bar.style.overflow = willOpen ? 'visible' : '';
+            if (willOpen) placeMoreMenu();
+        }
+        function openFoldedTab(tab) {
+            closeMoreMenu();
+            switchMainTab(tab);
+        }
+        function runMoreReport() {
+            closeMoreMenu();
+            exportMonthlyReport();
+        }
+        function runMoreImport() {
+            closeMoreMenu();
+            var input = document.getElementById('importFile');
+            if (input) input.click();
+        }
+        function paintMoreTab(tab) {
+            var moreEl = document.getElementById('mainTab-MORE');
+            if (moreEl) {
+                moreEl.className = (tab === 'RECRUIT' || tab === 'ARCHIVE')
+                    ? 'pb-3 font-bold text-[#1E2E3D] border-b-2 border-[#1E2E3D] transition flex items-center gap-2 whitespace-nowrap'
+                    : 'pb-3 font-bold text-slate-400 hover:text-slate-600 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap';
+            }
+            ['RECRUIT', 'ARCHIVE'].forEach(function (key) {
+                var item = document.getElementById('moreItem-' + key);
+                if (!item) return;
+                var on = tab === key;
+                item.className = 'w-full text-left px-3 py-2.5 text-sm font-bold flex items-center gap-2 ' + (on ? 'text-[#1E2E3D] bg-slate-50' : 'text-slate-600 hover:bg-slate-50');
+            });
+        }
+        function syncMoreMenuAccess(allowed) {
+            ['RECRUIT', 'ARCHIVE'].forEach(function (key) {
+                var item = document.getElementById('moreItem-' + key);
+                if (item) item.style.display = (allowed.indexOf(key) >= 0) ? '' : 'none';
+            });
+            var div = document.getElementById('moreDivider-views');
+            if (div) div.style.display = (allowed.indexOf('RECRUIT') >= 0 || allowed.indexOf('ARCHIVE') >= 0) ? '' : 'none';
+        }
         // -------------------------
 
         function switchMainTab(tab) {
@@ -1513,6 +1592,7 @@
                     }
                 }
             });
+            paintMoreTab(tab);
 
             if (crmBody) crmBody.style.display = 'block';
 
@@ -1645,6 +1725,7 @@
                 });
                 var adminBtn = document.getElementById('memberAdminBtn');
                 if (adminBtn) adminBtn.style.display = isAdmin() ? '' : 'none';
+                syncMoreMenuAccess(allowed);
                 if (allowed.length && allowed.indexOf(currentMainTab) < 0) switchMainTab(allowed[0]);
             } finally { _applyingPerms = false; }
         }
@@ -2571,6 +2652,11 @@
             const menu = document.getElementById('tagDropdownMenu');
             const wrapper = document.getElementById('tagDropdownWrapper');
             if (menu && wrapper && !wrapper.contains(e.target)) menu.classList.add('hidden');
+            const moreWrap = document.getElementById('moreTabWrap');
+            if (moreWrap && !moreWrap.contains(e.target)) closeMoreMenu();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeMoreMenu();
         });
 
         window.toggleTagDropdown = function(e) { e.stopPropagation(); document.getElementById('tagDropdownMenu').classList.toggle('hidden'); };
