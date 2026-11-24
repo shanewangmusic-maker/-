@@ -820,25 +820,18 @@ body.present .pol-card .gap-row span{height:auto}
 .pol-paste-link{display:inline;margin:0;padding:0;border:0;background:none;color:var(--navy);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:0;line-height:1.7;text-decoration:underline;text-underline-offset:3px;cursor:pointer;vertical-align:baseline}
 .g-title h3 .pol-paste-link{margin-left:10px}
 .pol-paste-link:hover,.pol-paste-link:focus-visible{color:var(--gold-ink)}
-.pol-paste{margin-top:12px;border:1px dashed var(--line);border-radius:10px;padding:8px 12px;background:#fbfaf6}
-.pol-paste textarea{width:100%;min-height:88px;box-sizing:border-box;margin-top:8px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;color:var(--ink);resize:vertical}
-.pol-paste-who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
-.pol-paste-who select{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);max-width:100%}
-.pol-paste-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
-#polPasteOk,#polPasteCancel,#polPasteGo{scroll-margin-bottom:76px}
-.pol-paste-row .pol-paste-link{margin-left:0}
-.pol-paste-err{margin-top:8px;font-size:13px;line-height:1.55;color:#9a3b2f}
-.pol-paste-note{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
-.pol-paste-t{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
-.pol-paste-t th{font-size:11px;color:var(--muted);font-weight:600;text-align:left;padding:4px;border-bottom:1px solid var(--line)}
-.pol-paste-t td{padding:6px 4px;border-bottom:1px dashed var(--line);vertical-align:top;word-break:break-word}
-.pol-paste-t tr.chg td{background:#fbf6ea}
-.pol-paste-sub td{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.06em;border-bottom:1px solid var(--line)}
-.pol-paste-it{display:flex;flex-direction:column;gap:1px;margin:0 0 6px}
-.pol-paste-it:last-child{margin-bottom:0}
-.pol-paste-it span{color:var(--ink-2)}
-.pol-paste-x{font-size:11px;color:var(--muted)}
-@media (max-width:640px){.g-title h3 .pol-paste-link{display:inline-block;margin:4px 0 0}}
+.pol-chart-row{display:flex;gap:10px;align-items:flex-start;overflow-x:auto;margin-top:10px;padding:8px 2px 2px;-webkit-overflow-scrolling:touch}
+.pol-chart-th{position:relative;margin:0;flex:0 0 auto}
+.pol-chart-open{display:block;padding:0;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;line-height:0}
+.pol-chart-open img{width:72px;height:54px;object-fit:cover;border-radius:7px;display:block}
+.pol-chart-x{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);background:#fff;color:var(--muted);font-size:14px;line-height:20px;padding:0;cursor:pointer}
+.pol-chart-x:hover,.pol-chart-x:focus-visible{color:#9a3b2f;border-color:#9a3b2f}
+.pol-chart-lb{position:fixed;inset:0;z-index:220;background:rgba(20,16,12,.86);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+.pol-chart-lb[hidden]{display:none!important}
+.pol-chart-lb img{max-width:100%;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);object-fit:contain;border-radius:8px;background:#fff}
+.pol-chart-lb .x{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--navy);font-size:22px;line-height:44px;padding:0;cursor:pointer}
+body.printing .pol-chart-row,body.pdfm .pol-chart-row,body.printing .pol-chart-lb,body.pdfm .pol-chart-lb{display:none!important}
+@media (max-width:640px){.g-title h3 .pol-paste-link{display:inline-block;margin:4px 0 0}.pol-chart-open img{width:64px;height:48px}.pol-chart-x{width:28px;height:28px;line-height:26px;font-size:16px}}
 /* policy value tables */
 .pv-board{margin:0 0 16px}
 .pv-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -1456,269 +1449,191 @@ function polShield(c,t){const cx=100,cy=106;const cov=POL_CELLS.map((x,ci)=>polN
   const segs=POL_CELLS.map((x,i)=>{const a0=i*60+5,a1=i*60+55,on=cov[i];const mid=(i*60+30-90)*Math.PI/180;const lx=cx+70*Math.cos(mid),ly=cy+70*Math.sin(mid)+4;
     return `<path d="${arcPath(cx,cy,50,a0,a1)}" fill="none" stroke="${on?c:'#cbbcb0'}" stroke-width="${on?13:7}" ${on?'':'stroke-dasharray="4 4"'} data-seg="${x[0]}" data-on="${on?1:0}"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="${on?c:'#ab9c90'}">${x[2]}</text>`;}).join('');
   return `<svg viewBox="0 0 200 216" class="pol-shield" data-cov="${pair.y}" data-cov-x="${pair.x}" data-cov-y="${pair.y}" aria-label="${esc(phrase)}"><title>${esc(phrase)}</title><path d="M100 6 L180 34 V104 C180 158 146 192 100 210 C54 192 20 158 20 104 V34 Z" fill="${t}" stroke="${c}" stroke-width="2" stroke-opacity=".6"/>${segs}<text x="${cx}" y="${cy-1}" text-anchor="middle" font-size="11" font-weight="800" fill="${c}">規劃前 ${pair.x}/6</text><text x="${cx}" y="${cy+15}" text-anchor="middle" font-size="11" font-weight="800" fill="${c}">→ 規劃後 ${pair.y}/6</text></svg>`;}
-/* 貼上規劃資料：只改所選的人的保單 cells／prem／versions */
-const POL_IMP={open:false,text:'',who:'self',err:'',note:'',patch:null};
-const POL_ITEM_KEYS=['g','n','b','a','term','pay'];
-const POL_PREM_KEYS=['by','bm','ay','am'];
-const POL_ITEM_LABEL={g:'分類',n:'項目',b:'規劃前',a:'規劃後',term:'年期',pay:'給付方式'};
-const POL_PREM_LABEL={by:'規劃前年保費',bm:'規劃前月保費',ay:'規劃後年保費',am:'規劃後月保費'};
-function polPastePeople(){
+/* 主附約圖：每位成員各自的圖片，不寫進保單 cells／prem／versions */
+const POL_CHARTS={items:[]};
+const POL_CHART_MAX=300*1024;
+function polChartLimit(){const n=window.__FT_TEST&&Number(window.__FT_TEST.chartMax);return n>0?n:POL_CHART_MAX;}
+function polChartSafeUrl(url){return typeof url==='string'&&url.indexOf('data:image/jpeg;base64,')===0&&url.length<=polChartLimit()&&!/["'<>\s]/.test(url);}
+function polChartPeopleIds(){
+  const ids=['self'];
   const members=S.family&&Array.isArray(S.family.members)?S.family.members:[];
-  const list=[];let hasSelf=false;
-  members.forEach(m=>{if(!m)return;if(m.role==='self'){hasSelf=true;list.push({id:'self',label:memCall(m)});}else list.push({id:m.id,label:memCall(m)});});
-  if(!hasSelf)list.unshift({id:'self',label:(S.client&&S.client.name)||'本人'});
-  return list;
+  members.forEach(m=>{if(!m||m.role==='self')return;if(m.id)ids.push(String(m.id));});
+  return ids;
 }
-function polPasteMember(id){
-  const key=id==null||id===''?'self':String(id);
-  const members=S.family&&Array.isArray(S.family.members)?S.family.members:[];
-  if(key==='me'||key==='self'){const m=members.find(x=>x&&x.role==='self')||{id:'self',role:'self'};return {ok:true,id:'self',member:m};}
-  const m=members.find(x=>x&&x.id===key);
-  if(!m)return {ok:false,error:'找不到編號「'+key+'」的家人。請在「寫入對象」改選本人或家人，或確認 memberId 與家人編號相同。'};
-  if(m.role==='self')return {ok:true,id:'self',member:m};
-  return {ok:true,id:m.id,member:m};
+function polChartsFor(member){member=member||'self';return POL_CHARTS.items.filter(x=>x&&x.member===member&&polChartSafeUrl(x.dataUrl));}
+function polChartLinkHTML(member){
+  if(document.body.classList.contains('printing')||document.body.classList.contains('pdfm')||S.mode==='client')return '';
+  return `<button type="button" class="pol-paste-link edit-only" data-chart-pick="${esc(member)}">主附約圖</button>`;
 }
-function polPasteTarget(who,create){
-  const hit=polPasteMember(who);if(!hit.ok)return hit;
-  let P;
-  if(hit.id==='self')P=create?POL():(S.policy||policyInit());
-  else if(create)P=memPol(hit.member);
-  else P=(hit.member&&hit.member.policy)||famEmptyPol();
-  return {ok:true,id:hit.id,member:hit.member,P:P,label:memCall(hit.member)||'本人'};
+function polChartRowHTML(member){
+  if(document.body.classList.contains('printing')||document.body.classList.contains('pdfm'))return '';
+  const items=polChartsFor(member);
+  if(!items.length)return '';
+  const canEdit=S.mode!=='client';
+  return `<div class="pol-chart-row" data-chart-row="${esc(member)}">`+items.map(it=>{
+    const name=String(it.name||'主附約圖');
+    return `<figure class="pol-chart-th"><button type="button" class="pol-chart-open" data-chart-open="${esc(it.id)}" aria-label="放大${esc(name)}"><img src="${it.dataUrl}" alt="${esc(name)}"></button>${canEdit?`<button type="button" class="pol-chart-x edit-only" data-chart-del="${esc(it.id)}" aria-label="刪除這張主附約圖">×</button>`:''}</figure>`;
+  }).join('')+'</div>';
 }
-function polParseItem(obj,where){
-  if(!obj||typeof obj!=='object'||Array.isArray(obj))return {error:where+'必須是一筆資料（用 { } 包起來）。'};
-  const item={};let any=false;
-  POL_ITEM_KEYS.forEach(k=>{
-    if(!Object.prototype.hasOwnProperty.call(obj,k)||obj[k]==null)return;
-    const v=obj[k];
-    if(typeof v==='object'||typeof v==='boolean'){any='bad';item._err=where+'的「'+POL_ITEM_LABEL[k]+'」必須是文字。';return;}
-    item[k]=String(v);any=true;
+function polChartLightbox(){
+  let el=document.getElementById('polChartLb');
+  if(el)return el;
+  el=document.createElement('div');
+  el.id='polChartLb';
+  el.className='pol-chart-lb';
+  el.hidden=true;
+  el.innerHTML='<button type="button" class="x" data-chart-close aria-label="關閉">×</button><img alt="主附約圖">';
+  el.addEventListener('click',function(e){if(e.target===el||(e.target.closest&&e.target.closest('[data-chart-close]')))polChartClose();});
+  document.body.appendChild(el);
+  return el;
+}
+function polChartOpen(id){
+  const it=POL_CHARTS.items.find(x=>x&&x.id===id);
+  if(!it||!polChartSafeUrl(it.dataUrl))return;
+  const el=polChartLightbox();
+  const img=el.querySelector('img');
+  img.src=it.dataUrl;
+  img.alt=String(it.name||'主附約圖');
+  el.dataset.open=id;
+  el.hidden=false;
+}
+function polChartClose(){
+  const el=document.getElementById('polChartLb');
+  if(!el)return;
+  el.hidden=true;
+  const img=el.querySelector('img');
+  if(img)img.removeAttribute('src');
+}
+function polChartFileInput(){
+  let el=document.getElementById('polChartFile');
+  if(el)return el;
+  el=document.createElement('input');
+  el.type='file';
+  el.id='polChartFile';
+  el.accept='image/*';
+  el.multiple=true;
+  el.hidden=true;
+  el.addEventListener('change',function(){
+    const member=el.dataset.member||'self';
+    const files=[].slice.call(el.files||[]);
+    el.value='';
+    polChartAddFiles(member,files);
   });
-  if(item._err)return {error:item._err};
-  return {item:any?item:null};
+  document.body.appendChild(el);
+  return el;
 }
-function polParseItemList(list,where){
-  if(!Array.isArray(list))return {error:where+'的項目必須是陣列。'};
-  const items=[];let any=false;
-  for(let i=0;i<list.length;i++){
-    const row=list[i];
-    if(row==null){items.push(null);continue;}
-    const r=polParseItem(row,where+'的第 '+(i+1)+' 項');
-    if(r.error)return r;
-    items.push(r.item);if(r.item)any=true;
-  }
-  return any?{cell:{items:items}}:{cell:null};
+function polChartName(file){
+  let n=String((file&&file.name)||'').replace(/[\u0000-\u001f]/g,'').trim();
+  if(!n)n='主附約圖.jpg';
+  if(n.length>80)n=n.slice(0,80);
+  return n;
 }
-function polParseCell(cell,ci){
-  const name=POL_CELLS[ci][1],where='第 '+(ci+1)+' 列（'+name+'）';
-  if(cell==null)return {cell:null};
-  if(Array.isArray(cell))return polParseItemList(cell,where);
-  if(typeof cell!=='object')return {error:where+'必須是一筆資料，例如 {"n":"主約","b":"100萬","a":"300萬"}。'};
-  if(Object.prototype.hasOwnProperty.call(cell,'items')){
-    if(!Array.isArray(cell.items))return {error:where+'的 items 必須是陣列。'};
-    return polParseItemList(cell.items,where);
-  }
-  const r=polParseItem(cell,where);if(r.error)return r;
-  if(!r.item)return {cell:null};
-  return {cell:{items:[r.item]}};
-}
-function polParseCells(cells){
-  if(cells==null)return {};
-  if(!Array.isArray(cells))return {error:'cells 必須是陣列，依序 6 列：壽險、意外、醫療、癌症、重大傷病／重大疾病、長照／失能。'};
-  if(cells.length>6)return {error:'六大險種只有 6 列（壽險、意外、醫療、癌症、重大傷病／重大疾病、長照／失能），這份資料有 '+cells.length+' 列。'};
-  const out=[null,null,null,null,null,null];let any=false;
-  for(let i=0;i<cells.length;i++){
-    const c=polParseCell(cells[i],i);if(c.error)return c;
-    if(c.cell){out[i]=c.cell;any=true;}
-  }
-  return any?{cells:out}:{cells:null};
-}
-function polParsePrem(prem){
-  if(prem==null)return {};
-  if(typeof prem!=='object'||Array.isArray(prem))return {error:'保費 prem 必須是一組數字，例如 {"by":36000,"bm":3000,"ay":24000,"am":2000}。'};
-  const out={};
-  for(let i=0;i<POL_PREM_KEYS.length;i++){
-    const k=POL_PREM_KEYS[i];
-    if(!Object.prototype.hasOwnProperty.call(prem,k)||prem[k]==null)continue;
-    const v=prem[k],label=POL_PREM_LABEL[k];
-    if(v===''){out[k]='';continue;}
-    if(typeof v==='number'){if(!isFinite(v))return {error:label+'必須是數字。'};out[k]=v;continue;}
-    if(typeof v==='string'){const s=v.replace(/[,，\s]/g,'');if(s===''){out[k]='';continue;}if(!/^-?\d+(\.\d+)?$/.test(s))return {error:label+'必須是數字。'};out[k]=Number(s);continue;}
-    return {error:label+'必須是數字。'};
-  }
-  return {prem:out};
-}
-function polParseVersions(arr){
-  if(arr==null)return {};
-  if(!Array.isArray(arr))return {error:'versions 必須是陣列。沒有要更新版本時，請不要寫這個欄位。'};
-  const versions=[];
-  for(let i=0;i<arr.length;i++){
-    const v=arr[i],where='第 '+(i+1)+' 筆版本';
-    if(v==null){versions.push(null);continue;}
-    if(typeof v!=='object'||Array.isArray(v))return {error:where+'必須是一筆資料。'};
-    const one={};
-    if(Object.prototype.hasOwnProperty.call(v,'label')&&v.label!=null){if(typeof v.label==='object')return {error:where+'的名稱必須是文字。'};one.label=String(v.label);}
-    if(Object.prototype.hasOwnProperty.call(v,'date')&&v.date!=null){if(typeof v.date==='object')return {error:where+'的日期必須是文字。'};one.date=String(v.date);}
-    if(Object.prototype.hasOwnProperty.call(v,'cells')){const c=polParseCells(v.cells);if(c.error)return {error:where+'：'+c.error};if(c.cells)one.cells=c.cells;}
-    if(Object.prototype.hasOwnProperty.call(v,'prem')){const p=polParsePrem(v.prem);if(p.error)return {error:where+'：'+p.error};if(p.prem&&Object.keys(p.prem).length)one.prem=p.prem;}
-    versions.push(Object.keys(one).length?one:null);
-  }
-  return {versions:versions};
-}
-function polPasteParse(text){
-  const raw=String(text==null?'':text).replace(/^\uFEFF/,'').trim();
-  if(!raw)return {ok:false,error:'請先貼上規劃資料。'};
-  let data;try{data=JSON.parse(raw);}catch(e){return {ok:false,error:'這不是有效的 JSON。請檢查括號、引號和逗號是否成對。'};}
-  if(!data||typeof data!=='object'||Array.isArray(data))return {ok:false,error:'規劃資料必須是一個物件，用 { } 包起來。'};
-  const patch={};
-  if(Object.prototype.hasOwnProperty.call(data,'memberId')&&data.memberId!=null&&String(data.memberId).trim()!==''){
-    if(typeof data.memberId==='object')return {ok:false,error:'memberId 必須是本人或家人的編號。'};
-    patch.memberId=String(data.memberId).trim();
-  }
-  if(Object.prototype.hasOwnProperty.call(data,'cells')){const c=polParseCells(data.cells);if(c.error)return {ok:false,error:c.error};if(c.cells)patch.cells=c.cells;}
-  if(Object.prototype.hasOwnProperty.call(data,'prem')){const p=polParsePrem(data.prem);if(p.error)return {ok:false,error:p.error};if(p.prem&&Object.keys(p.prem).length)patch.prem=p.prem;}
-  if(Object.prototype.hasOwnProperty.call(data,'versions')){const v=polParseVersions(data.versions);if(v.error)return {ok:false,error:v.error};if(v.versions&&v.versions.some(Boolean))patch.versions=v.versions;}
-  if(!patch.cells&&!patch.prem&&!patch.versions)return {ok:false,error:'這份資料沒有可更新的保單內容。請至少寫上六大險種 cells、保費 prem，或版本 versions。'};
-  return {ok:true,patch:patch};
-}
-function polApplyPatch(P,patch){
-  if(!P||!patch)return;
-  if(patch.cells){
-    if(!Array.isArray(P.cells))P.cells=POL_CELLS.map(()=>({items:[]}));
-    while(P.cells.length<6)P.cells.push({items:[]});
-    patch.cells.forEach((cell,ci)=>{
-      if(!cell)return;
-      if(!P.cells[ci]||typeof P.cells[ci]!=='object'||Array.isArray(P.cells[ci]))P.cells[ci]={items:[]};
-      if(!Array.isArray(P.cells[ci].items))P.cells[ci].items=[];
-      const items=P.cells[ci].items;
-      (cell.items||[]).forEach((src,i)=>{
-        if(!src)return;
-        if(!items[i]||typeof items[i]!=='object')items[i]={g:'',n:'',b:'',a:''};
-        POL_ITEM_KEYS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(src,k))items[i][k]=src[k];});
-      });
-    });
-  }
-  if(patch.prem){
-    if(!P.prem||typeof P.prem!=='object'||Array.isArray(P.prem))P.prem={by:'',bm:'',ay:'',am:''};
-    POL_PREM_KEYS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(patch.prem,k))P.prem[k]=patch.prem[k];});
-  }
-  if(patch.versions){
-    if(!Array.isArray(P.versions))P.versions=[];
-    patch.versions.forEach((src,i)=>{
-      if(!src)return;
-      if(!P.versions[i]||typeof P.versions[i]!=='object'||Array.isArray(P.versions[i]))P.versions[i]={label:'',date:'',cells:POL_CELLS.map(()=>({items:[]})),prem:{by:'',bm:'',ay:'',am:''}};
-      const V=P.versions[i];
-      if(Object.prototype.hasOwnProperty.call(src,'label'))V.label=src.label;
-      if(Object.prototype.hasOwnProperty.call(src,'date'))V.date=src.date;
-      const sub={};if(src.cells)sub.cells=src.cells;if(src.prem)sub.prem=src.prem;
-      if(sub.cells||sub.prem)polApplyPatch(V,sub);
-    });
-  }
-}
-function polSlice(P){return JSON.stringify({cells:(P&&P.cells)||[],prem:(P&&P.prem)||{},versions:(P&&P.versions)||[]});}
-function polPremText(v){if(v==null||v==='')return '—';if(typeof v==='number'&&isFinite(v))return fmt(v)+' 元';if(typeof v==='string'&&String(v).trim()&&isFinite(+v))return fmt(v)+' 元';return String(v);}
-function polItemsHTML(cell){
-  const items=cell&&Array.isArray(cell.items)?cell.items:[];
-  if(!items.length)return '<span class="pol-paste-x">（尚無）</span>';
-  return items.map(it=>{
-    it=it||{};
-    const g=String(it.g||'').trim(),n=String(it.n||'').trim();
-    const title=esc([g,n].filter(Boolean).join('・')||'（未填項目）');
-    const b=esc(String(it.b||'').trim()||'—'),a=esc(String(it.a||'').trim()||'—');
-    const bits=[];
-    if(String(it.term||'').trim())bits.push('年期 '+esc(String(it.term).trim()));
-    if(String(it.pay||'').trim())bits.push('給付 '+esc(String(it.pay).trim()));
-    const extra=bits.length?'<div class="pol-paste-x">'+bits.join('，')+'（表格尚未顯示）</div>':'';
-    return '<div class="pol-paste-it"><b>'+title+'</b><span>前 '+b+'</span><span>後 '+a+'</span>'+extra+'</div>';
-  }).join('');
-}
-function polVersionNote(P,patch){
-  if(!patch||!patch.versions)return '';
-  const bits=[];
-  patch.versions.forEach((src,i)=>{
-    if(!src)return;
-    const existed=P.versions&&P.versions[i];
-    const what=[];
-    if(Object.prototype.hasOwnProperty.call(src,'label'))what.push('名稱');
-    if(Object.prototype.hasOwnProperty.call(src,'date'))what.push('日期');
-    if(src.cells)what.push('險種');
-    if(src.prem)what.push('保費');
-    bits.push((existed?'第 '+(i+1)+' 筆版本會更新':'將新增第 '+(i+1)+' 筆版本')+(what.length?'（'+what.join('、')+'）':''));
+function compressChartFile(file){
+  const limit=polChartLimit();
+  return new Promise(function(resolve,reject){
+    if(!file||!file.size){reject(new Error('這張圖片無法讀取。請改用 JPG 或 PNG。'));return;}
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=function(){
+      URL.revokeObjectURL(url);
+      const nw=img.naturalWidth,nh=img.naturalHeight;
+      if(!nw||!nh){reject(new Error('這張圖片無法讀取。請改用 JPG 或 PNG。'));return;}
+      const canvas=document.createElement('canvas');
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(!ctx){reject(new Error('這台裝置無法壓縮圖片。'));return;}
+      function draw(tw,th){
+        canvas.width=tw;canvas.height=th;
+        ctx.fillStyle='#ffffff';
+        ctx.fillRect(0,0,tw,th);
+        ctx.drawImage(img,0,0,tw,th);
+      }
+      function tryQualities(tw,th){
+        draw(tw,th);
+        const qs=[0.82,0.7,0.58,0.46,0.36,0.28];
+        let best='';
+        for(let i=0;i<qs.length;i++){
+          best=canvas.toDataURL('image/jpeg',qs[i]);
+          if(best.length<=limit)return best;
+        }
+        return best;
+      }
+      const scale=Math.min(1,1600/Math.max(nw,nh));
+      let tw=Math.max(1,Math.round(nw*scale)),th=Math.max(1,Math.round(nh*scale));
+      let best=tryQualities(tw,th);
+      if(polChartSafeUrl(best)){resolve(best);return;}
+      for(let i=0;i<4;i++){
+        tw=Math.max(1,Math.round(tw*0.75));
+        th=Math.max(1,Math.round(th*0.75));
+        best=tryQualities(tw,th);
+        if(polChartSafeUrl(best)){resolve(best);return;}
+      }
+      resolve('');
+    };
+    img.onerror=function(){
+      URL.revokeObjectURL(url);
+      reject(new Error('這張圖片無法讀取。請改用 JPG 或 PNG。'));
+    };
+    img.src=url;
   });
-  if(!bits.length)return '';
-  return '<p class="pol-paste-note">'+esc(bits.join('；'))+'。沒寫到的版本保持原樣。</p>';
 }
-function polPastePreviewHTML(P,patch){
-  const next=polClone(P);polApplyPatch(next,patch);
-  const same=polSlice(P)===polSlice(next);
-  const rows=POL_CELLS.map((x,ci)=>{
-    const ch=JSON.stringify((P.cells&&P.cells[ci]&&P.cells[ci].items)||[])!==JSON.stringify((next.cells&&next.cells[ci]&&next.cells[ci].items)||[]);
-    return '<tr class="'+(ch?'chg':'')+'" data-ci="'+ci+'"><th>'+esc(x[1])+'</th><td>'+polItemsHTML(P.cells&&P.cells[ci])+'</td><td>'+polItemsHTML(next.cells&&next.cells[ci])+'</td></tr>';
-  }).join('');
-  const prems=POL_PREM_KEYS.map(k=>{
-    const av=P.prem?P.prem[k]:'',bv=next.prem?next.prem[k]:'';
-    const ch=String(av==null?'':av)!==String(bv==null?'':bv);
-    return '<tr class="'+(ch?'chg':'')+'" data-prem="'+k+'"><th>'+POL_PREM_LABEL[k]+'</th><td>'+esc(polPremText(av))+'</td><td>'+esc(polPremText(bv))+'</td></tr>';
-  }).join('');
-  const act=same?'<p class="pol-paste-note">內容與目前相同，沒有需要寫入的變更。</p><div class="pol-paste-row"><button type="button" class="pol-paste-link" id="polPasteCancel">取消</button></div>'
-    :'<div class="pol-paste-row"><button type="button" class="pol-paste-link" id="polPasteOk">確認寫入</button><button type="button" class="pol-paste-link" id="polPasteCancel">取消</button></div>';
-  return '<div class="pol-paste-prev" id="polPastePrev"><table class="pol-paste-t"><thead><tr><th>項目</th><th>目前</th><th>更新後</th></tr></thead><tbody>'+rows+'<tr class="pol-paste-sub"><td colspan="3">保費</td></tr>'+prems+'</tbody></table>'+polVersionNote(P,patch)+act+'</div>';
-}
-function polPasteBoxHTML(){
-  if(!POL_IMP.open||S.mode==='client'||document.body.classList.contains('printing'))return '';
-  const people=polPastePeople();
-  if(!people.some(p=>p.id===POL_IMP.who))POL_IMP.who='self';
-  const opts=people.map(p=>'<option value="'+esc(p.id)+'"'+(p.id===POL_IMP.who?' selected':'')+'>'+esc(p.label)+'</option>').join('');
-  let prev='';
-  if(POL_IMP.patch){
-    const hit=polPasteTarget(POL_IMP.who,false);
-    prev=hit.ok?polPastePreviewHTML(hit.P,POL_IMP.patch):'<div class="pol-paste-err" role="alert">'+esc(hit.error)+'</div>';
+async function polChartAddFiles(member,files){
+  if(!files||!files.length)return;
+  if(polChartPeopleIds().indexOf(member)<0){alert('找不到這位家人，請先在家庭保障加入後再上傳。');return;}
+  let changed=false;
+  for(let i=0;i<files.length;i++){
+    const file=files[i];
+    const name=polChartName(file);
+    if(file.type&&file.type.indexOf('image/')!==0){alert('「'+name+'」不是圖片，請改選 JPG 或 PNG。');continue;}
+    let dataUrl='';
+    try{dataUrl=await compressChartFile(file);}
+    catch(e){alert((e&&e.message)||'這張圖片無法讀取。請改用 JPG 或 PNG。');continue;}
+    if(!polChartSafeUrl(dataUrl)){alert('「'+name+'」壓縮後仍太大（超過約 300KB），請換一張較小的圖。');continue;}
+    const api=window.__ftChartStore;
+    if(!api||typeof api.add!=='function'){alert('尚未連上這位客戶的資料，請稍後再試。');break;}
+    try{
+      const rec=await api.add({member:member,dataUrl:dataUrl,name:name});
+      if(rec&&rec.id&&polChartSafeUrl(rec.dataUrl)){POL_CHARTS.items.push(rec);changed=true;}
+      else alert('這張圖沒有儲存成功，請稍後再試。');
+    }catch(e){console.error(e);alert('這張圖沒有儲存成功，請稍後再試。');}
   }
-  const err=POL_IMP.err?'<div class="pol-paste-err" id="polPasteErr" role="alert">'+esc(POL_IMP.err)+'</div>':'';
-  const note=POL_IMP.note?'<p class="pol-paste-note" id="polPasteNote">'+esc(POL_IMP.note)+'</p>':'';
-  return '<div class="pol-paste edit-only" id="polPasteBox" data-pol-import><label class="pol-paste-who">寫入對象 <select id="polPasteWho">'+opts+'</select></label><textarea id="polPasteTa" spellcheck="false" autocomplete="off" placeholder="把規劃資料貼在這裡。只會改上面選的這個人的保單，不會動到金三角或其他區塊。"></textarea><div class="pol-paste-row"><button type="button" class="pol-paste-link" id="polPasteGo">預覽</button><button type="button" class="pol-paste-link" id="polPasteShut">收合</button></div>'+err+note+prev+'</div>';
+  if(changed)renderAll();
 }
-function polRenderQuiet(){const prev=window.__ftHydrating;window.__ftHydrating=true;try{renderAll();}finally{window.__ftHydrating=prev;}}
-function polPastePreview(){
-  const ta=document.getElementById('polPasteTa');if(ta)POL_IMP.text=ta.value;
-  const r=polPasteParse(POL_IMP.text);
-  POL_IMP.patch=null;POL_IMP.note='';
-  if(!r.ok){POL_IMP.err=r.error;polRenderQuiet();return;}
-  if(r.patch.memberId){
-    const hit=polPasteMember(r.patch.memberId);
-    if(!hit.ok){POL_IMP.err=hit.error;polRenderQuiet();return;}
-    if(hit.id!==POL_IMP.who)POL_IMP.note='已依資料裡的 memberId，改寫入「'+(memCall(hit.member)||'本人')+'」。仍可改上方的對象。';
-    POL_IMP.who=hit.id;
-  }
-  POL_IMP.patch=r.patch;POL_IMP.err='';polRenderQuiet();
-}
-function polPasteConfirm(){
-  const patch=POL_IMP.patch;if(!patch)return;
-  const peek=polPasteTarget(POL_IMP.who,false);
-  if(!peek.ok){POL_IMP.err=peek.error;polRenderQuiet();return;}
-  const draft=polClone(peek.P);polApplyPatch(draft,patch);
-  if(polSlice(draft)===polSlice(peek.P)){POL_IMP.err='內容與目前相同，沒有寫入。';POL_IMP.patch=null;polRenderQuiet();return;}
-  const live=polPasteTarget(POL_IMP.who,true);
-  if(!live.ok){POL_IMP.err=live.error;polRenderQuiet();return;}
-  polApplyPatch(live.P,patch);
-  POL_IMP.patch=null;POL_IMP.err='';POL_IMP.note='';POL_IMP.text='';
-  toast('已寫入'+(live.label||'這個人')+'的保單規劃。');
+async function polChartDelete(id){
+  const it=POL_CHARTS.items.find(x=>x&&x.id===id);
+  if(!it)return;
+  if(!confirm('要刪除這張主附約圖嗎？'))return;
+  const api=window.__ftChartStore;
+  if(!api||typeof api.remove!=='function'){alert('尚未連上這位客戶的資料，請稍後再試。');return;}
+  try{await api.remove(id);}
+  catch(e){console.error(e);alert('沒有刪除成功，請稍後再試。');return;}
+  POL_CHARTS.items=POL_CHARTS.items.filter(x=>x&&x.id!==id);
+  const lb=document.getElementById('polChartLb');
+  if(lb&&!lb.hidden&&lb.dataset.open===id)polChartClose();
   renderAll();
 }
-function wirePolPaste(){
-  const link=document.getElementById('polPasteLink');
-  if(link)link.onclick=e=>{e.preventDefault();e.stopPropagation();POL_IMP.open=!POL_IMP.open;if(!POL_IMP.open){POL_IMP.patch=null;POL_IMP.err='';POL_IMP.note='';}polRenderQuiet();if(POL_IMP.open){const ta=document.getElementById('polPasteTa');if(ta)ta.focus();}};
-  const box=document.getElementById('polPasteBox');if(!box)return;
-  box.onclick=e=>e.stopPropagation();
-  const who=document.getElementById('polPasteWho');
-  if(who)who.onchange=()=>{POL_IMP.who=who.value;POL_IMP.note='';polRenderQuiet();const s=document.getElementById('polPasteWho');if(s)s.focus();};
-  const ta=document.getElementById('polPasteTa');
-  if(ta){ta.value=POL_IMP.text;ta.oninput=()=>{POL_IMP.text=ta.value;};}
-  const go=document.getElementById('polPasteGo');if(go)go.onclick=e=>{e.preventDefault();e.stopPropagation();polPastePreview();};
-  const shut=document.getElementById('polPasteShut');if(shut)shut.onclick=e=>{e.preventDefault();e.stopPropagation();POL_IMP.open=false;POL_IMP.patch=null;POL_IMP.err='';POL_IMP.note='';polRenderQuiet();};
-  const ok=document.getElementById('polPasteOk');if(ok)ok.onclick=e=>{e.preventDefault();e.stopPropagation();polPasteConfirm();};
-  const cancel=document.getElementById('polPasteCancel');if(cancel)cancel.onclick=e=>{e.preventDefault();e.stopPropagation();POL_IMP.patch=null;POL_IMP.err='';POL_IMP.note='';polRenderQuiet();};
+function wirePolCharts(){
+  document.querySelectorAll('[data-chart-pick]').forEach(btn=>{
+    btn.onclick=function(e){
+      e.preventDefault();e.stopPropagation();
+      const inp=polChartFileInput();
+      inp.dataset.member=btn.getAttribute('data-chart-pick')||'self';
+      inp.value='';
+      inp.click();
+    };
+  });
+  document.querySelectorAll('[data-chart-open]').forEach(btn=>{
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();polChartOpen(btn.getAttribute('data-chart-open'));};
+  });
+  document.querySelectorAll('[data-chart-del]').forEach(btn=>{
+    btn.onclick=function(e){e.preventDefault();e.stopPropagation();polChartDelete(btn.getAttribute('data-chart-del'));};
+  });
+}
+function applyPolCharts(items){
+  const next=Array.isArray(items)?items.filter(x=>x&&x.id&&polChartSafeUrl(x.dataUrl)):[];
+  const prev=POL_CHARTS.items.map(x=>x.id).join('\n');
+  POL_CHARTS.items=next;
+  if(prev===next.map(x=>x.id).join('\n'))return;
+  renderAll();
 }
 function policyCard(g,rank){const P=POL();const printing=document.body.classList.contains('printing');const ed=P.edit&&S.mode!=='client'&&!printing;const view=printing?'cmp':P.view;const c=g.c;
   const pair=polCovPair(),covB=pair.x,covA=pair.y,phrase=polCovPhrase(covB,covA);let addN=0,upN=0,downN=0;
@@ -1728,13 +1643,13 @@ function policyCard(g,rank){const P=POL();const printing=document.body.classList
   const miss=GAP_ITEMS.filter((n,i)=>!S.gt.gaps[i]);
   const ins=empty?'先在六個險種填入客戶現有保單（規劃前）與建議內容（規劃後），即可逐項比較差異與保費。':`${phrase}${addN?`，新增 ${addN} 項`:''}${upN?`、提高 ${upN} 項`:''}${downN?`；${downN} 項降低或移除，請與客戶確認`:''}${pr.dy>0?`；年保費減少 ${fmt(pr.dy)} 元`:pr.dy<0?`；年保費增加 ${fmt(-pr.dy)} 元`:''}${miss.length?`；檢查表尚缺「${miss.join('、')}」`:'；保障缺口檢查表六項皆已勾選'}。`;
   const kp=`<div class="pol-kpis" data-cov-x="${covB}" data-cov-y="${covA}" data-cov-phrase="${esc(phrase)}"><div class="g-kpi"><div class="lbl">完成度</div><div class="v big num" style="color:${c}">${pct(covA/6)}</div><div class="s pol-covphrase">${phrase}</div></div><div class="g-kpi"><div class="lbl">涵蓋險種</div><div class="v num pol-covphrase">${phrase}</div><div class="s">${esc(bl)} → 規劃後</div></div><div class="g-kpi"><div class="lbl">保障調整</div><div class="v num">${addN}<small> 新增</small> ${upN}<small> 提高</small></div><div class="s">${downN} 項降低／移除</div></div><div class="g-kpi"><div class="lbl">年保費差額</div><div class="v num">${pr.dy==null?'—':(pr.dy>=0?'省 ':'多 ')+fmt(Math.abs(pr.dy))}</div><div class="s">${pr.dm==null?'':'月 '+f(pr.bm)+' → '+f(pr.am)}</div></div></div><div class="pol-note">完成度＝規劃後有保障的險種數 ÷ 6；空白沿用規劃前（壽險、意外、醫療、癌症、重大傷病／疾病、長照／失能）</div>`;
-  const pasteLink=(!printing&&S.mode!=='client')?`<button type="button" class="pol-paste-link edit-only" id="polPasteLink" aria-expanded="${POL_IMP.open?'true':'false'}" aria-controls="polPasteBox">貼上規劃資料</button>`:'';
+  const chartLink=polChartLinkHTML('self');
   return `<article class="card goal pol-card solo" style="--c:${g.c};--t:${g.t}" data-k="personal"><div class="goal-top"></div><div class="goal-in">
-    <div class="g-head"><div class="g-icon">${icon(g.icon)}<span class="g-rank">${rank+1}</span></div><div class="g-title"><div class="k">${g.en} · ${g.sw}</div><h3>${g.label}｜保單規劃前後對照${pasteLink}</h3><p>六大險種逐項比較規劃前後的保障內容與保費。</p></div>
+    <div class="g-head"><div class="g-icon">${icon(g.icon)}<span class="g-rank">${rank+1}</span></div><div class="g-title"><div class="k">${g.en} · ${g.sw}</div><h3>${g.label}｜保單規劃前後對照${chartLink}</h3><p>六大險種逐項比較規劃前後的保障內容與保費。</p></div>
       <div class="g-deltas"><span class="cap">規劃後 vs ${esc(bl)}</span>${chip((covA-covB)/6,'pt')}<div class="g-move edit-only"><button data-mv="-1" title="優先順序上移">▲</button><button data-mv="1" title="優先順序下移">▼</button></div></div></div>
-    ${polPasteBoxHTML()}
     <div class="pol-hero">${polShield(g.c,g.t)}<div>${kp}</div></div>
     ${polSection(P,{ed,view,base:true,editBtn:true,main:true,sid:'me'})}
+    ${polChartRowHTML('self')}
     ${gapChips([0,1,2,3,4,5])}<div class="insight">${icon('bulb',16)}<span>${ins}</span></div></div></article>`;}
 let POLX=null;
 function withPol(P,fn){const o=POLX;POLX=P;try{return fn();}finally{POLX=o;}}
@@ -1775,7 +1690,7 @@ function wirePol(root,P){if(!root)return;
   const pb=root.querySelector('[data-cov-pastebtn]');if(pb)pb.onclick=e=>{e.stopPropagation();covPaste=!covPaste;renderAll();const ta=document.querySelector('[data-cov-paste]');if(ta)ta.focus();};
   const cx=root.querySelector('[data-cov-x]');if(cx)cx.onclick=e=>{e.stopPropagation();covBring=null;covPaste=false;renderAll();};
   const preview=root.querySelector('[data-cov-preview]');if(preview)preview.onclick=e=>{e.stopPropagation();const ta=root.querySelector('[data-cov-paste]');const items=covParseText(ta?ta.value:'');if(!items.length){toast('沒有讀到保障項目。一行一項，或用 Tab 分隔項目、保額、年繳保費。');return;}covOpenPreview(bring?bring.dataset.covBring:covBring,items,0);};}
-function wirePolicy(){wirePv();wirePol(document.querySelector('#goals .pol-card'),POL());wirePolPaste();wireFamily();wireEdu();wireStage();wireEstate();document.querySelectorAll('#goals [data-pv-from]').forEach(b=>b.onclick=()=>pvOpenBring());simplifyUI();}
+function wirePolicy(){wirePv();wirePol(document.querySelector('#goals .pol-card'),POL());wirePolCharts();wireFamily();wireEdu();wireStage();wireEstate();document.querySelectorAll('#goals [data-pv-from]').forEach(b=>b.onclick=()=>pvOpenBring());simplifyUI();}
 function policyInit(){return {view:'cmp',base:'before',edit:true,cells:POL_CELLS.map(()=>({items:[]})),prem:{by:'',bm:'',ay:'',am:''},versions:[]};}
 
 /* ===== 保單價值表：新欄位，舊快照沒有時視為空表 ===== */
@@ -2296,10 +2211,11 @@ function familyCard(g,rank){const V=famView(),F=V.F,printing=document.body.class
    <div class="fam-sec-t">全家保障一覽表</div>${famHeatHTML(F,ed)}
    <div class="fam-sec-t">優先補強建議 <small>紅色優先、其次黃色（附差額）；長輩重長照／醫療、孩子重醫療／癌症（規則僅供參考）</small></div>
    ${sug.length?`<ol class="fam-sug">${sug.map((x,i)=>`<li class="lv-${x.lv}" data-mem="${x.m.id}"><span class="no">${i+1}</span>${esc(x.txt)}<span class="tg">${FLV[x.lv]}</span></li>`).join('')}</ol>`:`<div class="fam-sug-empty">${F.members.some(m=>[0,1,2,3,4,5].some(ci=>cellVal(m,ci).v>0))?'目前沒有紅色或黃色缺口':'填入家人的保額後，這裡會列出最需要優先補強的 3 項。'}</div>`}
-   ${om?`<div class="fam-open" data-memopen="${om.id}"><div class="fo-h"><span class="fn-av">${esc(memAv(om))}</span><b>${esc(memCall(om))}</b><span class="fo-a">${memAge(om)==null?'':memAge(om)+' 歲'}</span>
+   ${om?`<div class="fam-open" data-memopen="${om.id}"><div class="fo-h"><span class="fn-av">${esc(memAv(om))}</span><b>${esc(memCall(om))}</b><span class="fo-a">${memAge(om)==null?'':memAge(om)+' 歲'}</span>${polChartLinkHTML(om.role==='self'?'self':om.id)}
       ${ed&&om.role!=='self'?`<input class="fo-in" data-mf="name" value="${esc(om.name||'')}" placeholder="姓名"><input class="fo-in" data-mf="birth" value="${esc(om.birth||'')}" placeholder="出生年月日">`:''}<span class="sp"></span><button class="btn sm" id="famClose">收合 ▲</button></div>
       ${om.role==='self'?'<div class="fo-note">本人保單與「個人保障」為同一份資料，修改會同步。</div>':''}
-      ${polSection(memPol(om),{ed:!!memPol(om).edit&&!ro,view:printing?'cmp':memPol(om).view,base:false,editBtn:!ro,main:false,sid:'fm-'+om.id})}</div>`:'<div class="fam-hint">點選家庭樹或表格中的家人，展開他的六大險種規劃前／後保單。</div>'}
+      ${polSection(memPol(om),{ed:!!memPol(om).edit&&!ro,view:printing?'cmp':memPol(om).view,base:false,editBtn:!ro,main:false,sid:'fm-'+om.id})}
+      ${polChartRowHTML(om.role==='self'?'self':om.id)}</div>`:'<div class="fam-hint">點選家庭樹或表格中的家人，展開他的六大險種規劃前／後保單。</div>'}
    <div class="pol-bar fam-bar"><div class="pb-c"><span class="l">全家年保費</span><span>規劃前 <b>${f(pr.by)}</b> 元</span><span class="pb-arrow">→</span><span>規劃後 <b>${f(pr.ay)}</b> 元</span></div>${share}<div class="pb-d ${dy>0?'save':dy<0?'more':''}">${dy==null?'—':dy>0?`每年省 <b>${fmt(dy)}</b> 元`:dy<0?`每年多 <b>${fmt(-dy)}</b> 元`:'保費不變'}</div></div>
    <div class="pol-note">完成度＝（綠格×1＋黃格×0.5）÷ 需要保障的格數（灰色不要求的格不計）。顏色依保障標準自動判定：達標準＝綠、未達＝黃、沒有＝紅。</div>
    <div class="insight">${icon('bulb',16)}<span>${ins}</span></div></div></article>`;}
@@ -3660,7 +3576,7 @@ function ftSeedClient(name,birth){
   if(ch){const prevH=window.__ftHydrating;window.__ftHydrating=true;try{renderAll();}finally{window.__ftHydrating=prevH;}}
   return ch;
 }
-window.__fintrack={ftExportState,ftImportState,ftSeedClient,reviewDates:reviewDatesISO,finishReview,toast,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,importPolicyTable:obj=>window.FT.importPolicyTable(obj),pvSum,pvFaceOf,pvLifeValue,get S(){return S;},renderAll,openModal,setTab,parseInvest,noteItems,investItemsToText};
+window.__fintrack={ftExportState,ftImportState,ftSeedClient,applyCharts:applyPolCharts,reviewDates:reviewDatesISO,finishReview,toast,expandAll,UIX,simplifyUI,ESI,esCalc,esComp,esTax,undo,redo,UNDO,STG,stageCard,gvDream:(id,i)=>{const d=STG().dreams.list.find(x=>x.id===id);return gvDream(d,i==null?S.rows.length-1:i);},drAdd,ctSum,ctList,csSplit,wdCum,wdList,kidPayStat:id=>kidPayStat(id),EDU:()=>EDU(),eduKids:()=>eduView().kids.map(k=>k.id),gvKid:(id,i)=>{EDU_CUR=id;try{return gv('edu',i);}finally{EDU_CUR=null;}},eduAddKid,eduRemoveKid,get FSTD(){return FSTD;},setStd:(g,ci,v)=>{FSTD[g][ci]=v;saveStd();renderAll();},resetStd:()=>{FSTD=JSON.parse(JSON.stringify(STD_DEF));saveStd();renderAll();},cellLv:(id,ci)=>{const m=FAM().members.find(x=>x.id===id);return cellLv(m,ci);},FAM:()=>FAM(),famComp:()=>famComp(),famSuggest:()=>famSuggest().map(x=>x.txt),famSugAll:()=>famSuggest(null,99).map(x=>x.txt),drawFamLines,saveSnapNow:()=>{const n=gtNow();n.label='測試';n.needs=S.selected.slice();saveSnap(n);},gvRaw:(k,i)=>gvRaw(k,i),gv:(k,i)=>gv(k,i),markAchieved,setGoalStat,setItemStat,retag,activeNeeds,celebrateGoal,gvP:i=>gv('personal',i).comp,preparePrint,endPrint,pdfName,setView,parseBirth,ageOn,clientAge,clientA0,importPolicyTable:obj=>window.FT.importPolicyTable(obj),pvSum,pvFaceOf,pvLifeValue,get S(){return S;},renderAll,openModal,setTab,parseInvest,noteItems,investItemsToText};
 setTab(TAB,false);renderAll();
 })();
 </script>
@@ -3671,6 +3587,9 @@ setTab(TAB,false);renderAll();
    URL: fintrack.html?client={clickedRowId}&plan={planId}
    Permission uses the clicked row. A link without &plan still reads fintrack/{client}.
    Versions: .../fintrack/{planId}/versions/{id}  (newest 20)
+   Charts:  .../fintrack/{planId}/charts/{imageId}
+   Each chart is its own document {clientId, member, dataUrl, name, createdAt, by}.
+   Images are not written onto the fintrack state document. Firebase Storage is not used.
    Test seam: window.__FT_TEST = { mock:true, ... } uses sessionStorage and never calls Firebase.
    Snapshots are stored as a snapJson string. Firestore rejects nested arrays, and the
    exported state contains them (estate rate brackets, family parts, tax steps).
@@ -4080,7 +3999,7 @@ setTab(TAB,false);renderAll();
   }
 
   document.addEventListener('input', function (e) {
-    if (e.target && e.target.closest && e.target.closest('#ftGate,#ftVerPanel,[data-pol-import]')) return;
+    if (e.target && e.target.closest && e.target.closest('#ftGate,#ftVerPanel')) return;
     scheduleSave();
   }, true);
   document.addEventListener('click', function (e) {
@@ -4375,9 +4294,11 @@ setTab(TAB,false);renderAll();
         injectRemote: function (extra) { return store.injectRemote(teamId, clientId, extra); },
         localUnsaved: readLocal,
         loadedRev: function () { return loadedRev; },
-        sessionId: function () { return mySession; }
+        sessionId: function () { return mySession; },
+        listCharts: function () { return store.listCharts(teamId, clientId); }
       };
     }
+    await loadCharts();
   }
 
   function syncExportBtn() {
@@ -4468,6 +4389,14 @@ setTab(TAB,false);renderAll();
   function sessionStore() {
     const watchers = [];
     function key(tid, cid) { return 'ftmock:v1:' + tid + ':' + cid; }
+    function chartKey(tid, cid) { return 'ftmock:charts:v1:' + tid + ':' + cid; }
+    function readCharts(tid, cid) {
+      try {
+        const rows = JSON.parse(sessionStorage.getItem(chartKey(tid, cid)) || '[]');
+        return Array.isArray(rows) ? rows : [];
+      } catch (e) { return []; }
+    }
+    function writeCharts(tid, cid, rows) { sessionStorage.setItem(chartKey(tid, cid), JSON.stringify(rows)); }
     function read(tid, cid) {
       try { return JSON.parse(sessionStorage.getItem(key(tid, cid)) || 'null') || { doc: null, versions: [] }; }
       catch (e) { return { doc: null, versions: [] }; }
@@ -4531,6 +4460,27 @@ setTab(TAB,false);renderAll();
             if (watchers[i].cb === cb) watchers.splice(i, 1);
           }
         };
+      },
+      listCharts: async function (tid, cid) {
+        return readCharts(tid, cid).slice().sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+      },
+      addChart: async function (tid, cid, chart) {
+        const rows = readCharts(tid, cid);
+        const id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        rows.push({
+          id: id,
+          clientId: cid,
+          member: String(chart.member || 'self'),
+          dataUrl: String(chart.dataUrl || ''),
+          name: String(chart.name || ''),
+          createdAt: Number(chart.createdAt) || Date.now(),
+          by: String(chart.by || '')
+        });
+        writeCharts(tid, cid, rows);
+        return id;
+      },
+      deleteChart: async function (tid, cid, id) {
+        writeCharts(tid, cid, readCharts(tid, cid).filter(function (r) { return r.id !== id; }));
       },
       injectRemote: function (tid, cid, extra) {
         extra = extra || {};
@@ -4606,6 +4556,23 @@ setTab(TAB,false);renderAll();
     function verCol(tid, cid) {
       return fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack', cid, 'versions');
     }
+    /* Sibling of versions. PR #15 rules only name the versions subcollection, so charts
+       needs the same parentAgent allow block before the console will accept it. */
+    function chartCol(tid, cid) {
+      return fs.collection(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack', cid, 'charts');
+    }
+    function chartRow(id, cid, data) {
+      data = data || {};
+      return {
+        id: id,
+        clientId: data.clientId || cid,
+        member: data.member || 'self',
+        dataUrl: data.dataUrl || '',
+        name: data.name || '',
+        createdAt: data.createdAt || 0,
+        by: data.by || ''
+      };
+    }
     return {
       loadCrm: async function (tid) {
         const snap = await fs.getDoc(crmRef(tid));
@@ -4650,12 +4617,86 @@ setTab(TAB,false);renderAll();
       deleteVersion: async function (tid, cid, id) {
         await fs.deleteDoc(fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack', cid, 'versions', id));
       },
+      listCharts: async function (tid, cid) {
+        const snap = await fs.getDocs(chartCol(tid, cid));
+        const rows = [];
+        snap.forEach(function (d) { rows.push(chartRow(d.id, cid, d.data())); });
+        rows.sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+        return rows;
+      },
+      addChart: async function (tid, cid, chart) {
+        const ref = fs.doc(chartCol(tid, cid));
+        const data = {
+          clientId: cid,
+          member: String(chart.member || 'self'),
+          dataUrl: String(chart.dataUrl || ''),
+          name: String(chart.name || '').slice(0, 80),
+          createdAt: Number(chart.createdAt) || Date.now(),
+          by: String(chart.by || '')
+        };
+        assertNoNestedArrays(data, false);
+        await fs.setDoc(ref, data);
+        return ref.id;
+      },
+      deleteChart: async function (tid, cid, id) {
+        await fs.deleteDoc(fs.doc(db, 'artifacts', APP_ID, 'public', 'data', 'global_state', tid, 'fintrack', cid, 'charts', id));
+      },
       watchDoc: function (tid, cid, cb) {
         return fs.onSnapshot(finRef(tid, cid), function (snap) {
           cb(snap.exists() ? unpackStored(snap.data()) : null);
         }, function () {});
       }
     };
+  }
+
+  const CHART_MAX = 300 * 1024;
+  function chartPayload(chart) {
+    const dataUrl = String(chart && chart.dataUrl || '');
+    if (dataUrl.indexOf('data:image/jpeg;base64,') !== 0 || dataUrl.length > CHART_MAX || /["'<>\s]/.test(dataUrl)) {
+      const err = new Error('圖片太大');
+      err.code = 'invalid-argument';
+      throw err;
+    }
+    return {
+      clientId: clientId,
+      member: String(chart.member || 'self').slice(0, 80),
+      dataUrl: dataUrl,
+      name: String(chart.name || '主附約圖').replace(/[\u0000-\u001f]/g, '').slice(0, 80) || '主附約圖',
+      createdAt: Date.now(),
+      by: email
+    };
+  }
+  window.__ftChartStore = {
+    add: async function (chart) {
+      if (!booted || !store || !mayWriteCurrent()) throw new Error('沒有寫入權限');
+      let parent = await store.loadDoc(teamId, clientId);
+      if (!parent) {
+        const held = lastJson;
+        lastJson = '';
+        await saveNow();
+        parent = await store.loadDoc(teamId, clientId);
+        if (!parent) {
+          if (!lastJson) lastJson = held;
+          throw new Error('尚未建立這位客戶的規劃');
+        }
+      }
+      const rec = chartPayload(chart);
+      const id = await store.addChart(teamId, clientId, rec);
+      return Object.assign({ id: id }, rec);
+    },
+    remove: async function (id) {
+      if (!booted || !store || !mayWriteCurrent()) throw new Error('沒有寫入權限');
+      await store.deleteChart(teamId, clientId, id);
+    }
+  };
+  async function loadCharts() {
+    if (!booted || !store || !store.listCharts || !clientId || !accessGrant) return;
+    try {
+      const rows = await store.listCharts(teamId, clientId);
+      if (window.__fintrack && window.__fintrack.applyCharts) window.__fintrack.applyCharts(rows);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   wireChrome();
