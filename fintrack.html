@@ -4669,6 +4669,17 @@ setTab(TAB,false);renderAll();
   window.__ftChartStore = {
     add: async function (chart) {
       if (!booted || !store || !mayWriteCurrent()) throw new Error('沒有寫入權限');
+      let parent = await store.loadDoc(teamId, clientId);
+      if (!parent) {
+        const held = lastJson;
+        lastJson = '';
+        await saveNow();
+        parent = await store.loadDoc(teamId, clientId);
+        if (!parent) {
+          if (!lastJson) lastJson = held;
+          throw new Error('尚未建立這位客戶的規劃');
+        }
+      }
       const rec = chartPayload(chart);
       const id = await store.addChart(teamId, clientId, rec);
       return Object.assign({ id: id }, rec);
