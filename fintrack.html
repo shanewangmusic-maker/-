@@ -1803,9 +1803,10 @@ function polTone(items,after){
 function polFmtOne(raw,unit){
   const s=polCovText(raw);
   if(!s||!polHas(s))return unit==='yuan'?'-元':'-萬';
-  const n=parseAmt(s);
-  if(/萬/.test(s)&&!isNaN(n))return fmtW(n);
-  if(polYuan(s)&&!isNaN(n))return fmt(n)+'元';
+  const bare=s.replace(/,(?=\d)/g,'');
+  const n=parseAmt(bare);
+  if(/萬/.test(bare)&&!isNaN(n))return fmtW(n);
+  if(polYuan(bare)&&!isNaN(n))return fmt(n)+'元';
   if(!isNaN(n)&&n>=10000)return fmtW(n);
   if(!isNaN(n)&&unit==='yuan')return fmt(n)+'元';
   return s;
@@ -1845,14 +1846,14 @@ function polBucket(ci,it){
     return 'x';
   }
   if(ci===2){
-    if(/實支|雜費/.test(t))return 'real';
-    if(/日額/.test(t))return 'day';
-    if(/定額|手術|住院/.test(t))return 'fix';
+    if(/日額|定額/.test(t))return 'fix';
+    if(/門診手術|病房|雜費|實支/.test(t))return 'real';
+    if(/住院|手術/.test(t))return 'fix';
     return 'x';
   }
   if(ci===3){
-    if(/療程|標靶|化療|放療|門診/.test(t))return 'course';
-    if(/一次/.test(t))return 'lump';
+    if(/療程|標靶|化療|放療|門診|日額|手術|住院/.test(t))return 'course';
+    if(/一次|輕度|重度|初期|原位/.test(t))return 'lump';
     return 'x';
   }
   if(ci===4){
@@ -1867,8 +1868,14 @@ function polBucket(ci,it){
   return 'all';
 }
 function polUnitOf(items,fallback,after){
+  if((items||[]).some(it=>polYuan(it.a)||polYuan(it.b)||polYuan(it.bv)||/日額/.test(polKeyText(it))))return 'yuan';
   if((items||[]).some(it=>polYuan(polSideRaw(it,after))))return 'yuan';
   return fallback==='yuan'?'yuan':'wan';
+}
+function polItemLabel(it){
+  const g=String((it&&it.g)||'').trim(),n=String((it&&it.n)||'').trim();
+  if(g&&n&&n.indexOf(g)<0)return g+' '+n;
+  return n||g||'—';
 }
 function polLn(label,value,tone,only){
   const cls='pc-ln'+(tone?' '+tone:'')+(only?' only':'');
@@ -1900,20 +1907,12 @@ function polExtraLines(list,after){
 function polSplitCol(title,list,after){
   let hot=false,body='';
   if(!list.length)body=polLn(null,'-萬','',true);
-  else if(list.length===1){
-    const unit=polUnitOf(list,'wan',after);
-    const tone=polTone(list,after);
+  else body=list.map(it=>{
+    const tone=polTone([it],after);
     if(tone==='hot')hot=true;
-    body=polLn(null,polSlotValue(list,after,unit),tone,true);
-  }else{
-    body=list.map(it=>{
-      const tone=polTone([it],after);
-      if(tone==='hot')hot=true;
-      const lab=String(it.n||it.g||'').trim()||'—';
-      const unit=polUnitOf([it],'wan',after);
-      return polLn(lab,polSlotValue([it],after,unit),tone,false);
-    }).join('');
-  }
+    const unit=polUnitOf([it],'wan',after);
+    return polLn(polItemLabel(it)+'：',polFmtOne(polSideRaw(it,after),unit),tone,false);
+  }).join('');
   return {hot,html:`<div class="pc-col"><div class="pc-sub">${esc(title)}</div>${body}</div>`};
 }
 function polCellFace(ci,rows,after){
