@@ -768,6 +768,7 @@ body.present .pol-card .gap-row span{height:auto}
 .pol-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .pol-kpis .g-kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px}
 .pol-kpis .v small{font-size:12px;color:var(--muted);font-weight:500}
+.pol-kpis .pol-covphrase{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:11px;font-weight:700;line-height:1.35;letter-spacing:0;white-space:nowrap}
 .pol-note{font-size:11px;color:var(--muted);margin-top:10px}
 .pol-tb{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 8px}
 .pol-tb .sp{flex:1}
@@ -1414,8 +1415,10 @@ function polItems(rows){return rows.map(r=>({g:r[0]||'',n:r[1]||'',b:r[2]||'',a:
 function POL(){if(POLX)return POLX;if(!S.policy)S.policy=policyInit();return S.policy;}
 function polClone(o){return JSON.parse(JSON.stringify(o));}
 function parseAmt(s){s=String(s==null?'':s).trim();if(!s||/^[-—–－0\s]+(元)?$/.test(s))return 0;const ns=[...s.matchAll(/(\d+(?:\.\d+)?)\s*(萬)?/g)].map(m=>parseFloat(m[1])*(m[2]?10000:1));if(!ns.length)return NaN;return /[~～至]/.test(s)?Math.max(...ns):ns[0];}
+function polUnfilled(s){return String(s==null?'':s).trim()==='';}
 function polHas(s){const v=parseAmt(s);return v>0||(isNaN(v)&&String(s||'').trim()!=='');}
-function polCmp(b,a){const hb=polHas(b),ha=polHas(a);if(!hb&&!ha)return 'none';if(!hb)return 'new';if(!ha)return 'rm';const vb=parseAmt(b),va=parseAmt(a);if(!isNaN(vb)&&!isNaN(va)){if(va>vb)return 'up';if(va<vb)return 'down';return 'same';}return String(b).trim()===String(a).trim()?'same':'chg';}
+function polCmp(b,a){if(polUnfilled(a))return polHas(b)?'blank':'none';const hb=polHas(b),ha=polHas(a);if(!hb&&!ha)return 'none';if(!hb)return 'new';if(!ha)return 'rm';const vb=parseAmt(b),va=parseAmt(a);if(!isNaN(vb)&&!isNaN(va)){if(va>vb)return 'up';if(va<vb)return 'down';return 'same';}return String(b).trim()===String(a).trim()?'same':'chg';}
+function polMark(r){if(r&&r.i<0&&polUnfilled(r.a))return polHas(r.bv)?'rm':'none';return polCmp(r?r.bv:'',r?r.a:'');}
 function polBaseV(){const P=POL();return P.base!=='before'&&P.versions[P.base]?P.versions[P.base]:null;}
 function polBaseLabel(){const V=polBaseV();return V?V.label:'規劃前';}
 function polRows(ci){const P=POL(),cur=P.cells[ci].items,V=polBaseV();
@@ -1424,6 +1427,18 @@ function polRows(ci){const P=POL(),cur=P.cells[ci].items,V=polBaseV();
   const rows=cur.map((it,i)=>{const j=VI.findIndex((x,jj)=>!used.has(jj)&&key(x)===key(it));if(j>=0)used.add(j);return Object.assign({},it,{i,bv:j>=0?VI[j].a:''});});
   VI.forEach((x,j)=>{if(!used.has(j)&&polHas(x.a))rows.push({g:x.g,n:x.n,b:'',a:'',i:-1,bv:x.a});});return rows;}
 function polCov(side){return POL_CELLS.filter((x,ci)=>polRows(ci).some(r=>polHas(side==='a'?r.a:r.bv))).length;}
+function polCur(rows){return (rows||[]).filter(r=>!(r&&r.i<0));}
+function polNeedX(rows){return (rows||[]).some(r=>polHas(r.bv));}
+function polNeedY(rows){const cur=polCur(rows),ex=cur.filter(r=>!polUnfilled(r.a));if(cur.length&&!ex.length)return polNeedX(rows);if(!cur.length)return false;return ex.some(r=>polHas(r.a));}
+function polCovPair(){let x=0,y=0;POL_CELLS.forEach((n,ci)=>{const rows=polRows(ci);if(polNeedX(rows))x++;if(polNeedY(rows))y++;});return {x:x,y:y};}
+function polCovPhrase(x,y){return '規劃前 '+x+'/6 → 規劃後 '+y+'/6';}
+function polCellBadge(rows){const cur=polCur(rows),ex=cur.filter(r=>!polUnfilled(r.a)),hasA=ex.some(r=>polHas(r.a)),hasB=polNeedX(rows);
+  if(hasA&&!hasB)return '<span class="pc-st new">新增保障</span>';
+  if(hasA)return '<span class="pc-st ok">已涵蓋</span>';
+  if(!cur.length&&hasB)return '<span class="pc-st rm">規劃後無</span>';
+  if(cur.length&&!ex.length&&hasB)return '<span class="pc-st none">未填</span>';
+  if(hasB)return '<span class="pc-st rm">規劃後無</span>';
+  return '<span class="pc-st none">尚未投保</span>';}
 function polPrem(){const P=POL(),p=P.prem,V=polBaseV();const n=x=>x===''||x==null||!isFinite(+x)?null:Number(x);
   const by=V?n(V.prem.ay):n(p.by),bm0=V?n(V.prem.am):n(p.bm),ay=n(p.ay),am0=n(p.am);
   const bm=bm0!=null?bm0:(by!=null?Math.floor(by/12):null),am=am0!=null?am0:(ay!=null?Math.floor(ay/12):null);
@@ -1436,12 +1451,11 @@ function polSuggest(){const P=POL();const any=(ci,f)=>P.cells[ci].items.some(it=
 function renderGapSug(){const el=document.getElementById('gapSug');if(!el)return;if(S.gt.view!=null){el.innerHTML='';return;}const s=polSuggest();const add=GAP_ITEMS.filter((n,i)=>s[i]&&!S.gt.gaps[i]);
   el.innerHTML=add.length?`<div class="gap-sug edit-only">依「個人保障」保單建議勾選：<b>${add.join('、')}</b><button class="btn sm" id="gapSugGo">套用建議</button></div>`:'';
   const b=document.getElementById('gapSugGo');if(b)b.onclick=()=>{s.forEach((v,i)=>{if(v)S.gt.gaps[i]=true;});renderGT();renderLinked();};}
-const POLB={up:'<span class="pb up" title="保障提高">▲</span>',down:'<span class="pb down" title="保障降低">▼</span>',new:'<span class="pb new">新增</span>',rm:'<span class="pb rm">移除</span>',chg:'<span class="pb chg">變更</span>',same:'',none:''};
-function polShield(c,t){const cx=100,cy=106;const cov=POL_CELLS.map((x,ci)=>polRows(ci).some(r=>polHas(r.a)));
+const POLB={up:'<span class="pb up" title="保障提高">▲</span>',down:'<span class="pb down" title="保障降低">▼</span>',new:'<span class="pb new">新增</span>',rm:'<span class="pb rm">移除</span>',chg:'<span class="pb chg">變更</span>',blank:'<span class="pb chg" title="規劃後未填">未填</span>',same:'',none:''};
+function polShield(c,t){const cx=100,cy=106;const cov=POL_CELLS.map((x,ci)=>polNeedY(polRows(ci)));const pair=polCovPair(),phrase=polCovPhrase(pair.x,pair.y);
   const segs=POL_CELLS.map((x,i)=>{const a0=i*60+5,a1=i*60+55,on=cov[i];const mid=(i*60+30-90)*Math.PI/180;const lx=cx+70*Math.cos(mid),ly=cy+70*Math.sin(mid)+4;
     return `<path d="${arcPath(cx,cy,50,a0,a1)}" fill="none" stroke="${on?c:'#cbbcb0'}" stroke-width="${on?13:7}" ${on?'':'stroke-dasharray="4 4"'} data-seg="${x[0]}" data-on="${on?1:0}"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="${on?c:'#ab9c90'}">${x[2]}</text>`;}).join('');
-  const n=cov.filter(Boolean).length;
-  return `<svg viewBox="0 0 200 216" class="pol-shield" data-cov="${n}"><path d="M100 6 L180 34 V104 C180 158 146 192 100 210 C54 192 20 158 20 104 V34 Z" fill="${t}" stroke="${c}" stroke-width="2" stroke-opacity=".6"/>${segs}<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="27" font-weight="800" fill="${c}" font-family="Noto Serif TC,serif">${n}/6</text><text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="10.5" fill="#7b6a5e">險種已涵蓋</text></svg>`;}
+  return `<svg viewBox="0 0 200 216" class="pol-shield" data-cov="${pair.y}" data-cov-x="${pair.x}" data-cov-y="${pair.y}" aria-label="${esc(phrase)}"><title>${esc(phrase)}</title><path d="M100 6 L180 34 V104 C180 158 146 192 100 210 C54 192 20 158 20 104 V34 Z" fill="${t}" stroke="${c}" stroke-width="2" stroke-opacity=".6"/>${segs}<text x="${cx}" y="${cy-1}" text-anchor="middle" font-size="11" font-weight="800" fill="${c}">規劃前 ${pair.x}/6</text><text x="${cx}" y="${cy+15}" text-anchor="middle" font-size="11" font-weight="800" fill="${c}">→ 規劃後 ${pair.y}/6</text></svg>`;}
 /* 貼上規劃資料：只改所選的人的保單 cells／prem／versions */
 const POL_IMP={open:false,text:'',who:'self',err:'',note:'',patch:null};
 const POL_ITEM_KEYS=['g','n','b','a','term','pay'];
@@ -1707,13 +1721,13 @@ function wirePolPaste(){
   const cancel=document.getElementById('polPasteCancel');if(cancel)cancel.onclick=e=>{e.preventDefault();e.stopPropagation();POL_IMP.patch=null;POL_IMP.err='';POL_IMP.note='';polRenderQuiet();};
 }
 function policyCard(g,rank){const P=POL();const printing=document.body.classList.contains('printing');const ed=P.edit&&S.mode!=='client'&&!printing;const view=printing?'cmp':P.view;const c=g.c;
-  const covA=polCov('a'),covB=polCov('b');let addN=0,upN=0,downN=0;
-  POL_CELLS.forEach((x,ci)=>polRows(ci).forEach(r=>{const k=polCmp(r.bv,r.a);if(k==='new')addN++;else if(k==='up')upN++;else if(k==='down'||k==='rm')downN++;}));
+  const pair=polCovPair(),covB=pair.x,covA=pair.y,phrase=polCovPhrase(covB,covA);let addN=0,upN=0,downN=0;
+  POL_CELLS.forEach((x,ci)=>polRows(ci).forEach(r=>{const k=polMark(r);if(k==='new')addN++;else if(k==='up')upN++;else if(k==='down'||k==='rm')downN++;}));
   const pr=polPrem(),bl=polBaseLabel(),f=v=>v==null?'—':fmt(v);
   const empty=!P.cells.some(cc=>cc.items.length);
   const miss=GAP_ITEMS.filter((n,i)=>!S.gt.gaps[i]);
-  const ins=empty?'先在六個險種填入客戶現有保單（規劃前）與建議內容（規劃後），即可逐項比較差異與保費。':`規劃後 ${covA}/6 險種有保障${addN?`，新增 ${addN} 項`:''}${upN?`、提高 ${upN} 項`:''}${downN?`；${downN} 項降低或移除，請與客戶確認`:''}${pr.dy>0?`；年保費減少 ${fmt(pr.dy)} 元`:pr.dy<0?`；年保費增加 ${fmt(-pr.dy)} 元`:''}${miss.length?`；檢查表尚缺「${miss.join('、')}」`:'；保障缺口檢查表六項皆已勾選'}。`;
-  const kp=`<div class="pol-kpis"><div class="g-kpi"><div class="lbl">完成度</div><div class="v big num" style="color:${c}">${pct(covA/6)}</div><div class="s">規劃後 ${covA}/6 險種</div></div><div class="g-kpi"><div class="lbl">涵蓋險種</div><div class="v num">${covB} → ${covA}<small> / 6</small></div><div class="s">${esc(bl)} → 規劃後</div></div><div class="g-kpi"><div class="lbl">保障調整</div><div class="v num">${addN}<small> 新增</small> ${upN}<small> 提高</small></div><div class="s">${downN} 項降低／移除</div></div><div class="g-kpi"><div class="lbl">年保費差額</div><div class="v num">${pr.dy==null?'—':(pr.dy>=0?'省 ':'多 ')+fmt(Math.abs(pr.dy))}</div><div class="s">${pr.dm==null?'':'月 '+f(pr.bm)+' → '+f(pr.am)}</div></div></div><div class="pol-note">完成度＝規劃後有保障的險種數 ÷ 6（壽險、意外、醫療、癌症、重大傷病／疾病、長照／失能）</div>`;
+  const ins=empty?'先在六個險種填入客戶現有保單（規劃前）與建議內容（規劃後），即可逐項比較差異與保費。':`${phrase}${addN?`，新增 ${addN} 項`:''}${upN?`、提高 ${upN} 項`:''}${downN?`；${downN} 項降低或移除，請與客戶確認`:''}${pr.dy>0?`；年保費減少 ${fmt(pr.dy)} 元`:pr.dy<0?`；年保費增加 ${fmt(-pr.dy)} 元`:''}${miss.length?`；檢查表尚缺「${miss.join('、')}」`:'；保障缺口檢查表六項皆已勾選'}。`;
+  const kp=`<div class="pol-kpis" data-cov-x="${covB}" data-cov-y="${covA}" data-cov-phrase="${esc(phrase)}"><div class="g-kpi"><div class="lbl">完成度</div><div class="v big num" style="color:${c}">${pct(covA/6)}</div><div class="s pol-covphrase">${phrase}</div></div><div class="g-kpi"><div class="lbl">涵蓋險種</div><div class="v num pol-covphrase">${phrase}</div><div class="s">${esc(bl)} → 規劃後</div></div><div class="g-kpi"><div class="lbl">保障調整</div><div class="v num">${addN}<small> 新增</small> ${upN}<small> 提高</small></div><div class="s">${downN} 項降低／移除</div></div><div class="g-kpi"><div class="lbl">年保費差額</div><div class="v num">${pr.dy==null?'—':(pr.dy>=0?'省 ':'多 ')+fmt(Math.abs(pr.dy))}</div><div class="s">${pr.dm==null?'':'月 '+f(pr.bm)+' → '+f(pr.am)}</div></div></div><div class="pol-note">完成度＝規劃後有保障的險種數 ÷ 6；空白沿用規劃前（壽險、意外、醫療、癌症、重大傷病／疾病、長照／失能）</div>`;
   const pasteLink=(!printing&&S.mode!=='client')?`<button type="button" class="pol-paste-link edit-only" id="polPasteLink" aria-expanded="${POL_IMP.open?'true':'false'}" aria-controls="polPasteBox">貼上規劃資料</button>`:'';
   return `<article class="card goal pol-card solo" style="--c:${g.c};--t:${g.t}" data-k="personal"><div class="goal-top"></div><div class="goal-in">
     <div class="g-head"><div class="g-icon">${icon(g.icon)}<span class="g-rank">${rank+1}</span></div><div class="g-title"><div class="k">${g.en} · ${g.sw}</div><h3>${g.label}｜保單規劃前後對照${pasteLink}</h3><p>六大險種逐項比較規劃前後的保障內容與保費。</p></div>
@@ -1725,14 +1739,15 @@ function policyCard(g,rank){const P=POL();const printing=document.body.classList
 let POLX=null;
 function withPol(P,fn){const o=POLX;POLX=P;try{return fn();}finally{POLX=o;}}
 function polSection(P,o){return withPol(P,()=>{const ed=o.ed,view=o.view,bl=polBaseLabel(),pr=polPrem(),f=v=>v==null?'—':fmt(v);
-  const cellH=(x,ci)=>{const rows=polRows(ci);const hasA=rows.some(r=>polHas(r.a)),hasB=rows.some(r=>polHas(r.bv));
-    const st=hasA&&!hasB?'<span class="pc-st new">新增保障</span>':hasA?'<span class="pc-st ok">已涵蓋</span>':hasB?'<span class="pc-st rm">規劃後無</span>':'<span class="pc-st none">尚未投保</span>';
+  const cellH=(x,ci)=>{const rows=polRows(ci);
+    const st=polCellBadge(rows);
     let body='';
     if(ed){body=P.cells[ci].items.map((it,i)=>`<div class="pe-row"><input data-pol="${ci}|${i}|g" value="${esc(it.g)}" placeholder="分類"><input data-pol="${ci}|${i}|n" value="${esc(it.n)}" placeholder="項目"><input data-pol="${ci}|${i}|b" value="${esc(it.b)}" placeholder="規劃前"><input data-pol="${ci}|${i}|a" value="${esc(it.a)}" placeholder="規劃後"><button class="rm" data-pol-rm="${ci}|${i}" title="刪除此項">×</button></div>`).join('')+`<button class="add-btn" data-pol-add="${ci}">＋新增項目</button>`;}
-    else{let lastG=null,out='';rows.forEach(r=>{const k=polCmp(r.bv,r.a);const val=view==='a'?r.a:r.bv;if(view!=='cmp'&&!polHas(val)&&!String(val||'').trim())return;
+    else{let lastG=null,out='';rows.forEach(r=>{const k=polMark(r);const val=view==='a'?r.a:r.bv;if(view!=='cmp'&&polUnfilled(val)){if(!(view==='a'&&!(r.i<0)&&polHas(r.bv)))return;}
         if(r.g&&r.g!==lastG)out+=`<tr class="pc-g"><td colspan="4">${esc(r.g)}</td></tr>`;lastG=r.g;
-        out+=view==='cmp'?`<tr class="pc-r ${k}"><td class="n">${esc(r.n)||'—'}</td><td class="v b">${esc(r.bv)||'—'}</td><td class="v a">${esc(r.a)||'—'}</td><td class="m">${POLB[k]}</td></tr>`
-          :`<tr class="pc-r one ${view==='a'?k:''}"><td class="n">${esc(r.n)}</td><td class="v one" colspan="2">${esc(val)}</td><td class="m">${view==='a'?POLB[k]:''}</td></tr>`;});
+        const aTxt=!(r.i<0)&&polUnfilled(r.a)?'未填':(esc(r.a)||'—');
+        out+=view==='cmp'?`<tr class="pc-r ${k}"><td class="n">${esc(r.n)||'—'}</td><td class="v b">${esc(r.bv)||'—'}</td><td class="v a">${aTxt}</td><td class="m">${POLB[k]||''}</td></tr>`
+          :`<tr class="pc-r one ${view==='a'?k:''}"><td class="n">${esc(r.n)}</td><td class="v one" colspan="2">${view==='a'?aTxt:esc(val)}</td><td class="m">${view==='a'?(POLB[k]||''):''}</td></tr>`;});
       body=out?`<table class="pc-t">${view==='cmp'?`<tr class="pc-h"><th></th><th>${esc(bl)}</th><th>規劃後</th><th></th></tr>`:''}${out}</table>`:`<div class="pc-empty">${rows.length?'—':'尚無資料'}</div>`;}
     return `<div class="pc" data-cell="${x[0]}"><div class="pc-head"><b>${x[1]}</b>${st}</div><div class="pc-body">${body}</div></div>`;};
   const M=o.main;
