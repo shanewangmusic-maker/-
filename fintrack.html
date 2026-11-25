@@ -788,15 +788,15 @@ body.present .pol-card .gap-row span{height:auto}
 .pc-body{padding:14px 16px 16px;flex:1;min-width:0;color:#333}
 .pc-life{min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center}
 .pc-big{font-family:"Noto Serif TC",serif;font-size:clamp(36px,4.3cqw,52px);font-weight:700;letter-spacing:.02em;color:#333;line-height:1.1}
-.pc-big.hot,.pc-ln.hot,.pc-ln.hot b,.pc-part.hot{color:#b84a4a}
-.pc-big.life,.pc-ln.life,.pc-ln.life b,.pc-part.life{color:#3f6fa8}
+.pc-big.hot,.pc-ln.hot,.pc-ln.hot b{color:#b84a4a}
+.pc-big.life,.pc-ln.life,.pc-ln.life b{color:#3f6fa8}
 .pc-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .pc-col{min-width:0}
 .pc-sub{text-align:center;font-size:clamp(13px,1.46cqw,18px);letter-spacing:.04em;color:#333;margin:0 0 8px;padding-bottom:3px;border-bottom:1px dashed #5a5550}
 .pc-ln{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:clamp(16px,1.9cqw,24px);line-height:1.45;color:#333;padding:2px 0}
 .pc-ln span{min-width:0;overflow-wrap:break-word;word-break:keep-all}
 .pc-ln b{font-weight:700;text-align:right;white-space:nowrap;flex:none}
-.pc-col .pc-ln{justify-content:flex-start;flex-wrap:wrap;align-items:baseline;gap:0;font-size:clamp(15px,1.45cqw,17px)}
+.pc-col .pc-ln{justify-content:flex-start;flex-wrap:nowrap;gap:0;font-size:clamp(15px,1.45cqw,17px)}
 .pc-col .pc-ln span{white-space:nowrap}
 .pc-col .pc-ln b{text-align:left}
 .pc-ln.only{justify-content:center}
@@ -1850,7 +1850,7 @@ function polBucket(ci,it){
   }
   if(ci===2){
     if(/日額|定額/.test(t))return 'fix';
-    if(/原額度|自負額|門診手術|病房|雜費|實支/.test(t))return 'real';
+    if(/門診手術|病房|雜費|實支/.test(t))return 'real';
     if(/住院|手術/.test(t))return 'fix';
     return 'x';
   }
@@ -1936,53 +1936,6 @@ function polSplitCol(title,list,after){
   }).join('');
   return {hot,html:`<div class="pc-col"><div class="pc-sub">${esc(title)}</div>${body}</div>`};
 }
-function polDeductBaseName(face){
-  face=String(face||'');
-  if(face.indexOf('自負額')!==0)return null;
-  return face.slice(3).replace(/^[\s　:：/／·・\-]+/,'').trim();
-}
-function polBaseAlike(a,b){
-  if(!a||!b)return false;
-  if(a===b)return true;
-  return a+'費'===b||b+'費'===a;
-}
-function polPart(text,tone){return `<span class="pc-part${tone?' '+tone:''}">${esc(text)}</span>`;}
-function polAmtTxt(it,after){return polFmtOne(polSideRaw(it,after),polUnitOf([it],'wan',after));}
-function polRealHost(rows,i,baseName){
-  const plain=row=>!row.isDed;
-  if(baseName){
-    for(let j=i-1;j>=0;j--) if(plain(rows[j])&&rows[j].face===baseName) return rows[j];
-    for(let j=i+1;j<rows.length;j++) if(plain(rows[j])&&rows[j].face===baseName) return rows[j];
-    for(let j=i-1;j>=0;j--) if(plain(rows[j])&&polBaseAlike(rows[j].face,baseName)) return rows[j];
-    for(let j=i+1;j<rows.length;j++) if(plain(rows[j])&&polBaseAlike(rows[j].face,baseName)) return rows[j];
-  }
-  for(let j=i-1;j>=0;j--) if(!rows[j].taken) return rows[j];
-  return null;
-}
-function polRealCol(title,list,after){
-  const rows=(list||[]).map(it=>{
-    const face=polFaceName(polItemLabel(it));
-    const base=polDeductBaseName(face);
-    return {it,face,isDed:base!==null,deds:[],taken:false};
-  });
-  rows.forEach((row,i)=>{
-    if(!row.isDed)return;
-    const baseName=polDeductBaseName(row.face);
-    const host=polRealHost(rows,i,baseName);
-    if(host){host.deds.push(row.it);row.taken=true;}
-  });
-  const shown=rows.filter(r=>!r.taken);
-  let hot=false;
-  const body=!shown.length?polLn(null,'-萬','',true):shown.map(g=>{
-    const tone=polTone([g.it],after);
-    if(tone==='hot')hot=true;
-    g.deds.forEach(d=>{if(polTone([d],after)==='hot')hot=true;});
-    if(!g.deds.length)return polLn(g.face+'：',polAmtTxt(g.it,after),tone,false);
-    const parts=[polPart(g.face+'：'+polAmtTxt(g.it,after),tone)].concat(g.deds.map(d=>polPart('＋自負額 '+polAmtTxt(d,after),polTone([d],after))));
-    return `<div class="pc-ln">${parts.join('')}</div>`;
-  }).join('');
-  return {hot,html:`<div class="pc-col"><div class="pc-sub">${esc(title)}</div>${body}</div>`};
-}
 function polCellFace(ci,rows,after){
   rows=rows||[];
   if(ci===0){
@@ -1995,7 +1948,7 @@ function polCellFace(ci,rows,after){
     return {hot:main.hot||extra.hot,html:main.html+extra.html};
   }
   if(ci===2){
-    const L=polRealCol('實支實付',rows.filter(it=>polBucket(2,it)==='real'),after);
+    const L=polSplitCol('實支實付',rows.filter(it=>polBucket(2,it)==='real'),after);
     const R=polSplitCol('定額給付',rows.filter(it=>polBucket(2,it)!=='real'),after);
     return {hot:L.hot||R.hot,html:`<div class="pc-split">${L.html}${R.html}</div>`};
   }
