@@ -765,6 +765,76 @@ body.present .pol-card .gap-row span{height:auto}
 .pc-t .v.one{word-break:keep-all}
 .pol-hero{display:grid;grid-template-columns:190px minmax(0,1fr);gap:24px;align-items:center;margin-top:14px}
 .pol-shield{width:180px;height:auto;display:block}
+.pol-shield .pol-arc{fill:transparent;stroke:#cbbcb0;stroke-width:13;fill-opacity:0}
+.pol-shield .pol-lab{font-size:12px;font-weight:700;fill:#ab9c90;text-anchor:middle}
+.pol-shield .pol-tx{font-size:13px;font-weight:800;text-anchor:middle}
+.pol-shield .pol-tx-b{fill:#7b6a5e}
+.pol-shield .pol-cap{font-size:10px;font-weight:700;fill:#7b6a5e;text-anchor:middle;display:none}
+.pol-shield .pol-seg[data-b="1"] .pol-arc{stroke:#8a847c;fill:#8a847c;fill-opacity:.42}
+.pol-shield .pol-seg[data-b="1"] .pol-lab{fill:#7b6a5e}
+.pol-shield[data-view="a"] .pol-seg[data-a="off"] .pol-arc{stroke:#cbbcb0;fill:transparent;fill-opacity:0}
+.pol-shield[data-view="a"] .pol-seg[data-a="off"] .pol-lab{fill:#ab9c90}
+.pol-shield[data-view="a"] .pol-seg[data-a="cov"] .pol-arc{stroke:#8a847c;fill:#8a847c;fill-opacity:.42}
+.pol-shield[data-view="a"] .pol-seg[data-a="cov"] .pol-lab{fill:#7b6a5e}
+.pol-shield[data-view="a"] .pol-seg[data-a="boost"] .pol-arc{stroke:#b84a4a;fill:#b84a4a;fill-opacity:.42}
+.pol-shield[data-view="a"] .pol-seg[data-a="boost"] .pol-lab{fill:#b84a4a}
+.pol-shield[data-view="b"] .pol-tx-a,.pol-shield[data-view="a"] .pol-tx-b{display:none}
+.pol-shield[data-view="cmp"]{cursor:pointer}
+.pol-shield[data-view="cmp"]:focus-visible{outline:2px solid #b84a4a;outline-offset:3px}
+.pol-shield[data-view="cmp"] .pol-cap{display:inline}
+.pol-shield[data-view="cmp"] .pol-tx-a,.pol-shield[data-view="cmp"] .pol-cap-a{opacity:0}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="0"][data-a="boost"] .pol-arc{animation:shArcER 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="1"][data-a="boost"] .pol-arc{animation:shArcGR 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="1"][data-a="off"] .pol-arc{animation:shArcGE 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="0"][data-a="cov"] .pol-arc{animation:shArcEG 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="0"][data-a="boost"] .pol-lab{animation:shLabPR 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="1"][data-a="boost"] .pol-lab{animation:shLabGR 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="1"][data-a="off"] .pol-lab{animation:shLabGP 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-seg[data-b="0"][data-a="cov"] .pol-lab{animation:shLabPG 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-tx-b,.pol-shield[data-view="cmp"].is-play .pol-cap-b{animation:shOut 4.3s linear infinite}
+.pol-shield[data-view="cmp"].is-play .pol-tx-a,.pol-shield[data-view="cmp"].is-play .pol-cap-a{animation:shIn 4.3s linear infinite}
+@keyframes shArcER{0%,27.91%{stroke:#cbbcb0;fill:transparent;fill-opacity:0}41.86%,100%{stroke:#b84a4a;fill:#b84a4a;fill-opacity:.42}}
+@keyframes shArcGR{0%,27.91%{stroke:#8a847c;fill:#8a847c;fill-opacity:.42}41.86%,100%{stroke:#b84a4a;fill:#b84a4a;fill-opacity:.42}}
+@keyframes shArcGE{0%,27.91%{stroke:#8a847c;fill:#8a847c;fill-opacity:.42}41.86%,100%{stroke:#cbbcb0;fill:transparent;fill-opacity:0}}
+@keyframes shArcEG{0%,27.91%{stroke:#cbbcb0;fill:transparent;fill-opacity:0}41.86%,100%{stroke:#8a847c;fill:#8a847c;fill-opacity:.42}}
+@keyframes shLabPR{0%,27.91%{fill:#ab9c90}41.86%,100%{fill:#b84a4a}}
+@keyframes shLabGR{0%,27.91%{fill:#7b6a5e}41.86%,100%{fill:#b84a4a}}
+@keyframes shLabGP{0%,27.91%{fill:#7b6a5e}41.86%,100%{fill:#ab9c90}}
+@keyframes shLabPG{0%,27.91%{fill:#ab9c90}41.86%,100%{fill:#7b6a5e}}
+@keyframes shOut{0%,27.91%{opacity:1}41.86%,100%{opacity:0}}
+@keyframes shIn{0%,27.91%{opacity:0}41.86%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .pol-shield[data-view="cmp"]{cursor:default}
+  .pol-shield[data-view="cmp"] .pol-arc,.pol-shield[data-view="cmp"] .pol-lab,.pol-shield[data-view="cmp"] .pol-tx,.pol-shield[data-view="cmp"] .pol-cap{animation:none!important}
+  .pol-shield[data-view="cmp"] .pol-cap,.pol-shield[data-view="cmp"] .pol-tx-b{display:none!important}
+  .pol-shield[data-view="cmp"] .pol-tx-a{opacity:1!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="off"] .pol-arc{stroke:#cbbcb0!important;fill:transparent!important;fill-opacity:0!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="off"] .pol-lab{fill:#ab9c90!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="cov"] .pol-arc{stroke:#8a847c!important;fill:#8a847c!important;fill-opacity:.42!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="cov"] .pol-lab{fill:#7b6a5e!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="boost"] .pol-arc{stroke:#b84a4a!important;fill:#b84a4a!important;fill-opacity:.42!important}
+  .pol-shield[data-view="cmp"] .pol-seg[data-a="boost"] .pol-lab{fill:#b84a4a!important}
+}
+body.printing .pol-shield .pol-arc,body.printing .pol-shield .pol-lab,body.printing .pol-shield .pol-tx,body.printing .pol-shield .pol-cap,body.pdfm .pol-shield .pol-arc,body.pdfm .pol-shield .pol-lab,body.pdfm .pol-shield .pol-tx,body.pdfm .pol-shield .pol-cap{animation:none!important}
+body.printing .pol-shield .pol-cap,body.printing .pol-shield .pol-tx-b,body.pdfm .pol-shield .pol-cap,body.pdfm .pol-shield .pol-tx-b{display:none!important}
+body.printing .pol-shield .pol-tx-a,body.pdfm .pol-shield .pol-tx-a{display:inline!important;opacity:1!important}
+body.printing .pol-shield .pol-seg[data-a="off"] .pol-arc,body.pdfm .pol-shield .pol-seg[data-a="off"] .pol-arc{stroke:#cbbcb0!important;fill:transparent!important;fill-opacity:0!important}
+body.printing .pol-shield .pol-seg[data-a="off"] .pol-lab,body.pdfm .pol-shield .pol-seg[data-a="off"] .pol-lab{fill:#ab9c90!important}
+body.printing .pol-shield .pol-seg[data-a="cov"] .pol-arc,body.pdfm .pol-shield .pol-seg[data-a="cov"] .pol-arc{stroke:#8a847c!important;fill:#8a847c!important;fill-opacity:.42!important}
+body.printing .pol-shield .pol-seg[data-a="cov"] .pol-lab,body.pdfm .pol-shield .pol-seg[data-a="cov"] .pol-lab{fill:#7b6a5e!important}
+body.printing .pol-shield .pol-seg[data-a="boost"] .pol-arc,body.pdfm .pol-shield .pol-seg[data-a="boost"] .pol-arc{stroke:#b84a4a!important;fill:#b84a4a!important;fill-opacity:.42!important}
+body.printing .pol-shield .pol-seg[data-a="boost"] .pol-lab,body.pdfm .pol-shield .pol-seg[data-a="boost"] .pol-lab{fill:#b84a4a!important}
+@media print{
+  .pol-shield .pol-arc,.pol-shield .pol-lab,.pol-shield .pol-tx,.pol-shield .pol-cap{animation:none!important}
+  .pol-shield .pol-cap,.pol-shield .pol-tx-b{display:none!important}
+  .pol-shield .pol-tx-a{display:inline!important;opacity:1!important}
+  .pol-shield .pol-seg[data-a="off"] .pol-arc{stroke:#cbbcb0!important;fill:transparent!important;fill-opacity:0!important}
+  .pol-shield .pol-seg[data-a="off"] .pol-lab{fill:#ab9c90!important}
+  .pol-shield .pol-seg[data-a="cov"] .pol-arc{stroke:#8a847c!important;fill:#8a847c!important;fill-opacity:.42!important}
+  .pol-shield .pol-seg[data-a="cov"] .pol-lab{fill:#7b6a5e!important}
+  .pol-shield .pol-seg[data-a="boost"] .pol-arc{stroke:#b84a4a!important;fill:#b84a4a!important;fill-opacity:.42!important}
+  .pol-shield .pol-seg[data-a="boost"] .pol-lab{fill:#b84a4a!important}
+}
 .pol-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .pol-kpis .g-kpi .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
 .pol-kpis .v small{font-size:12px;color:var(--muted);font-weight:500}
@@ -1500,10 +1570,15 @@ function renderGapSug(){const el=document.getElementById('gapSug');if(!el)return
 const POLB={up:'<span class="pb up" title="保障提高">▲</span>',down:'<span class="pb down" title="保障降低">▼</span>',new:'<span class="pb new">新增</span>',rm:'<span class="pb rm">移除</span>',chg:'<span class="pb chg">變更</span>',blank:'<span class="pb chg" title="規劃後未填">未填</span>',same:'',none:''};
 const POL_BOOST_NAME=['壽險','意外','醫療','癌症','重大傷病','長照'];
 function polBoostInfo(){const on=[];POL_CELLS.forEach((x,ci)=>{if(polCellFace(ci,polRows(ci),true,true).hot)on.push(ci);});const names=on.map(i=>POL_BOOST_NAME[i]);return {n:on.length,on:on,names:names,list:names.join('、'),center:'補強 '+on.length+'/6 種'};}
-function polShield(c,t){const cx=100,cy=106,info=polBoostInfo(),lit='#b84a4a',pale='#cbbcb0',paleLab='#ab9c90';const pair=polCovPair(),label=info.center;
-  const segs=POL_CELLS.map((x,i)=>{const a0=i*60+5,a1=i*60+55,on=info.on.indexOf(i)>=0;const mid=(i*60+30-90)*Math.PI/180;const lx=cx+70*Math.cos(mid),ly=cy+70*Math.sin(mid)+4;
-    return `<path d="${arcPath(cx,cy,50,a0,a1)}" fill="${on?lit:'none'}" fill-opacity="${on?'.42':'1'}" stroke="${on?lit:pale}" stroke-width="13" data-seg="${x[0]}" data-on="${on?1:0}" data-boost="${on?1:0}"/><text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="${on?lit:paleLab}">${x[2]}</text>`;}).join('');
-  return `<svg viewBox="0 0 200 216" class="pol-shield" data-cov="${pair.y}" data-cov-x="${pair.x}" data-cov-y="${pair.y}" data-boost="${info.n}" aria-label="${esc(label)}"><title>${esc(label)}</title><path d="M100 6 L180 34 V104 C180 158 146 192 100 210 C54 192 20 158 20 104 V34 Z" fill="${t}" stroke="${c}" stroke-width="2" stroke-opacity=".6"/>${segs}<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="13" font-weight="800" fill="${info.n?lit:'#7b6a5e'}">${esc(label)}</text></svg>`;}
+function polShieldState(ci){const rows=polRows(ci);const before=polNeedX(rows)?1:0;const boost=polCellFace(ci,rows,true,true).hot?1:0;const after=boost?'boost':polNeedY(rows)?'cov':'off';return {before,boost,after};}
+function polShield(c,t){const cx=100,cy=106,info=polBoostInfo(),pair=polCovPair(),P=POL();const view=P.view==='b'||P.view==='a'?P.view:'cmp';
+  const bLabel='涵蓋 '+pair.x+'/6 種',aLabel=info.center,aFill=info.n?'#b84a4a':'#7b6a5e';
+  const segs=POL_CELLS.map((x,i)=>{const st=polShieldState(i);const a0=i*60+5,a1=i*60+55;const mid=(i*60+30-90)*Math.PI/180;const lx=cx+70*Math.cos(mid),ly=cy+70*Math.sin(mid)+4;
+    return `<g class="pol-seg" data-seg="${x[0]}" data-b="${st.before}" data-a="${st.after}" data-on="${st.boost}" data-boost="${st.boost}"><path class="pol-arc" d="${arcPath(cx,cy,50,a0,a1)}"/><text class="pol-lab" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${x[2]}</text></g>`;}).join('');
+  const label=view==='b'?bLabel:view==='a'?aLabel:(bLabel+'，'+aLabel);
+  const tip=view==='cmp'?label+'。點一下從規劃前重播':label;
+  return `<svg viewBox="0 0 200 216" class="pol-shield${view==='cmp'?' is-play':''}" data-view="${view}" data-cov="${pair.y}" data-cov-x="${pair.x}" data-cov-y="${pair.y}" data-boost="${info.n}" data-before="${pair.x}" aria-label="${esc(label)}"${view==='cmp'?' tabindex="0"':''}><title>${esc(tip)}</title><path d="M100 6 L180 34 V104 C180 158 146 192 100 210 C54 192 20 158 20 104 V34 Z" fill="${t}" stroke="${c}" stroke-width="2" stroke-opacity=".6"/>${segs}<text class="pol-tx pol-tx-b" x="${cx}" y="${cy+6}">${esc(bLabel)}</text><text class="pol-tx pol-tx-a" x="${cx}" y="${cy+6}" fill="${aFill}">${esc(aLabel)}</text><text class="pol-cap pol-cap-b" x="${cx}" y="${cy+23}">規劃前</text><text class="pol-cap pol-cap-a" x="${cx}" y="${cy+23}">規劃後</text></svg>`;}
+function polShieldReplay(svg){if(!svg||svg.getAttribute('data-view')!=='cmp')return;if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;svg.classList.remove('is-play');void svg.offsetWidth;svg.classList.add('is-play');}
 /* 貼上規劃資料：只改所選的人的保單 cells／prem／versions */
 const POL_IMP={open:false,text:'',who:'self',err:'',note:'',patch:null};
 const POL_ITEM_KEYS=['g','n','b','a','term','pay','span','mark'];
@@ -1783,7 +1858,7 @@ function policyCard(g,rank){const P=POL();const printing=document.body.classList
   const miss=GAP_ITEMS.filter((n,i)=>!S.gt.gaps[i]);
   const boost=polBoostInfo();
   const ins=empty?'先在六個險種填入客戶現有保單（規劃前）與建議內容（規劃後），即可逐項比較差異與保費。':`補強 ${boost.n} 種${addN?`，新增 ${addN} 項`:''}${upN?`、提高 ${upN} 項`:''}${downN?`；${downN} 項降低或移除，請與客戶確認`:''}${pr.dy>0?`；年保費減少 ${fmt(pr.dy)} 元`:pr.dy<0?`；年保費增加 ${fmt(-pr.dy)} 元`:''}${miss.length?`；檢查表尚缺「${miss.join('、')}」`:'；保障缺口檢查表六項皆已勾選'}。`;
-  const kp=`<div class="pol-kpis" data-cov-x="${covB}" data-cov-y="${covA}" data-cov-phrase="${esc(phrase)}" data-boost="${boost.n}" data-boost-list="${esc(boost.list)}"><div class="g-kpi"><div class="lbl">補強險種</div><div class="v big num" style="color:${c}">${boost.n}/6</div><div class="s">${boost.n?esc(boost.list):'尚未補強'}</div></div><div class="g-kpi"><div class="lbl">涵蓋險種</div><div class="v num pol-covphrase">${phrase}</div><div class="s">${esc(bl)} → 規劃後</div></div><div class="g-kpi"><div class="lbl">保障調整</div><div class="v num">${addN}<small> 新增</small> ${upN}<small> 提高</small></div><div class="s">${downN} 項降低／移除</div></div><div class="g-kpi"><div class="lbl">年保費差額</div><div class="v num">${pr.dy==null?'—':(pr.dy>=0?'省 ':'多 ')+fmt(Math.abs(pr.dy))}</div><div class="s">${pr.dm==null?'':'月 '+f(pr.bm)+' → '+f(pr.am)}</div></div></div><div class="pol-note">紅色＝規劃後有補強的險種；涵蓋險種＝有保障的險種數。空白沿用規劃前。</div>`;
+  const kp=`<div class="pol-kpis" data-cov-x="${covB}" data-cov-y="${covA}" data-cov-phrase="${esc(phrase)}" data-boost="${boost.n}" data-boost-list="${esc(boost.list)}"><div class="g-kpi"><div class="lbl">補強險種</div><div class="v big num" style="color:${c}">${boost.n}/6</div><div class="s">${boost.n?esc(boost.list):'尚未補強'}</div></div><div class="g-kpi"><div class="lbl">涵蓋險種</div><div class="v num pol-covphrase">${phrase}</div><div class="s">${esc(bl)} → 規劃後</div></div><div class="g-kpi"><div class="lbl">保障調整</div><div class="v num">${addN}<small> 新增</small> ${upN}<small> 提高</small></div><div class="s">${downN} 項降低／移除</div></div><div class="g-kpi"><div class="lbl">年保費差額</div><div class="v num">${pr.dy==null?'—':(pr.dy>=0?'省 ':'多 ')+fmt(Math.abs(pr.dy))}</div><div class="s">${pr.dm==null?'':'月 '+f(pr.bm)+' → '+f(pr.am)}</div></div></div><div class="pol-note">紅色＝規劃後有補強的險種；涵蓋險種＝有保障的險種數。空白沿用規劃前。前後對照時，盾牌在規劃前↔規劃後之間切換。</div>`;
   const pasteLink=(!printing&&S.mode!=='client')?`<button type="button" class="pol-paste-link edit-only" id="polPasteLink" aria-expanded="${POL_IMP.open?'true':'false'}" aria-controls="polPasteBox">貼上規劃資料</button>`:'';
   return `<article class="card goal pol-card solo" style="--c:${g.c};--t:${g.t}" data-k="personal"><div class="goal-top"></div><div class="goal-in">
     <div class="g-head"><div class="g-icon">${icon(g.icon)}<span class="g-rank">${rank+1}</span></div><div class="g-title"><div class="k">${g.en} · ${g.sw}</div><h3>${g.label}｜保單規劃前後對照${pasteLink}</h3><p>六大險種逐項比較規劃前後的保障內容與保費。</p></div>
@@ -2137,6 +2212,8 @@ window.addEventListener('resize',()=>{clearTimeout(window._polFit);window._polFi
 if(window.matchMedia){const mq=window.matchMedia('print');const on=()=>polFitCmp();if(mq.addEventListener)mq.addEventListener('change',on);else if(mq.addListener)mq.addListener(on);}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>polFitCmp());
 function wirePol(root,P){if(!root)return;
+  const sh=root.querySelector('.pol-shield');
+  if(sh){sh.onclick=e=>{e.stopPropagation();polShieldReplay(sh);};sh.onkeydown=e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();e.stopPropagation();polShieldReplay(sh);};}
   root.querySelectorAll('[data-pol-view]').forEach(b=>b.onclick=e=>{e.stopPropagation();P.view=b.dataset.polView;renderAll();});
   const bs=root.querySelector('.pol-base-s');if(bs)bs.onchange=()=>{P.base=bs.value==='before'?'before':+bs.value;renderAll();};
   const pe=root.querySelector('.pol-edit-b');if(pe)pe.onclick=e=>{e.stopPropagation();P.edit=!P.edit;renderAll();};
