@@ -816,6 +816,9 @@ body.present .pol-card .gap-row span{height:auto}
 .pol-sheet[data-side="cmp"] .pc-ln:not(.only)>b span{white-space:nowrap;overflow-wrap:normal;word-break:normal}
 .pol-sheet[data-side="cmp"] .pc-col .pc-ln{display:flex;font-size:clamp(13px,1.25cqw,16px);line-height:1.4}
 .pol-sheet[data-side="cmp"] .pc-col .pc-ln:not(.only)>b{display:block;font-weight:700;text-align:right}
+.pol-sheet[data-side="cmp"] .pc-stack>.pc-ln:not(.only){flex-direction:column;flex-wrap:nowrap;align-items:flex-start;justify-content:flex-start;gap:0}
+.pol-sheet[data-side="cmp"] .pc-stack>.pc-ln:not(.only)>span{margin-right:0;text-align:left}
+.pol-sheet[data-side="cmp"] .pc-stack>.pc-ln:not(.only)>b{display:block;text-align:left;align-self:flex-start;margin:0;padding:0;white-space:nowrap}
 .pol-sheet[data-side="cmp"] .pol-foot .pf-m{white-space:normal}
 .pol-foot{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;background:#4a4744;color:#f7f4ee;padding:14px 18px;font-size:clamp(16px,2.54cqw,30px)}
 .pol-foot .pf-who{font-family:"Noto Serif TC",serif;letter-spacing:.06em}
@@ -2067,6 +2070,72 @@ function polSection(P,o){return withPol(P,()=>{const ed=o.ed,view=o.view,bl=polB
   return bring+`<div class="pol-sec" data-polsec="${o.sid}">${tb}<div class="pol-legend"><span><b class="lg-hot">紅字</b> 規劃後有補強</span><span><b class="lg-life">藍字</b> 終身</span><span>黑體 定期</span></div>
     <div class="pol-sheet" data-side="${cmp?'cmp':(after?'a':'b')}"><div class="pol-grid">${POL_CELLS.map(cellH).join('')}</div>${foot}</div>${bar}</div>`;});}
 function polRerender(){const a=document.activeElement;let key=null;if(a&&a.dataset&&(a.dataset.pol||a.dataset.prem)){const sec=a.closest('[data-polsec]');key=(sec?`[data-polsec="${sec.dataset.polsec}"] `:'')+(a.dataset.pol?'[data-pol="'+a.dataset.pol+'"]':'[data-prem="'+a.dataset.prem+'"]');}renderAll();if(key){const e=document.querySelector(key);if(e)e.focus();}}
+function polTextWidth(el){
+  const probe=el.cloneNode(true);
+  probe.setAttribute('data-pol-probe','1');
+  probe.style.cssText='position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;width:max-content;max-width:none;height:auto;padding:0;margin:0;border:0;display:inline-block;pointer-events:none;';
+  const host=el.parentNode||document.body;
+  host.appendChild(probe);
+  try{return probe.getBoundingClientRect().width;}finally{probe.remove();}
+}
+function polLnNeedsStack(ln){
+  const name=ln.querySelector(':scope>span'),val=ln.querySelector(':scope>b');
+  if(!name||!val)return false;
+  const cs=getComputedStyle(ln);
+  const pad=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+  const avail=ln.clientWidth-pad;
+  if(!(avail>1))return false;
+  const gapN=parseFloat(cs.columnGap),gap=isFinite(gapN)?gapN:0;
+  if(polTextWidth(name)+gap+polTextWidth(val)>avail+1)return true;
+  const nr=name.getBoundingClientRect(),vr=val.getBoundingClientRect();
+  if(nr.height>1&&vr.height>1){
+    const overlap=Math.min(nr.bottom,vr.bottom)-Math.max(nr.top,vr.top);
+    if(overlap<Math.min(nr.height,vr.height)*0.45)return true;
+  }
+  return false;
+}
+function polCmpGroups(sheet){
+  const out=[];
+  sheet.querySelectorAll('.pc-body').forEach(body=>{
+    if(body.querySelector('.pc-life'))return;
+    const cols=body.querySelectorAll(':scope>.pc-split>.pc-col');
+    if(cols.length){cols.forEach(c=>out.push(c));return;}
+    if(body.querySelector(':scope>.pc-ln:not(.only)'))out.push(body);
+  });
+  return out;
+}
+let polFitLock=false;
+function polFitCmp(root){
+  if(polFitLock)return;
+  polFitLock=true;
+  try{
+    const scope=root&&root.classList&&root.matches?root:document;
+    const sheets=scope!==document&&scope.matches('.pol-sheet[data-side="cmp"]')?[scope]:[...scope.querySelectorAll('.pol-sheet[data-side="cmp"]')];
+    sheets.forEach(sheet=>{
+      const groups=polCmpGroups(sheet);
+      groups.forEach(g=>g.classList.remove('pc-stack'));
+      groups.forEach(g=>{
+        if(!(g.clientWidth>1))return;
+        const lines=[...g.querySelectorAll(':scope>.pc-ln:not(.only)')];
+        if(lines.some(polLnNeedsStack))g.classList.add('pc-stack');
+      });
+      if(!sheet._polRO&&typeof ResizeObserver==='function'){
+        let lastW=-1;
+        const ro=new ResizeObserver(ents=>{
+          const w=Math.round(ents[0].contentRect.width);
+          if(Math.abs(w-lastW)<2)return;
+          lastW=w;
+          polFitCmp(sheet);
+        });
+        ro.observe(sheet);
+        sheet._polRO=ro;
+      }
+    });
+  }finally{polFitLock=false;}
+}
+window.addEventListener('resize',()=>{clearTimeout(window._polFit);window._polFit=setTimeout(polFitCmp,80);});
+if(window.matchMedia){const mq=window.matchMedia('print');const on=()=>polFitCmp();if(mq.addEventListener)mq.addEventListener('change',on);else if(mq.addListener)mq.addListener(on);}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>polFitCmp());
 function wirePol(root,P){if(!root)return;
   root.querySelectorAll('[data-pol-view]').forEach(b=>b.onclick=e=>{e.stopPropagation();P.view=b.dataset.polView;renderAll();});
   const bs=root.querySelector('.pol-base-s');if(bs)bs.onchange=()=>{P.base=bs.value==='before'?'before':+bs.value;renderAll();};
@@ -3055,6 +3124,7 @@ function simplifyUI(){const B=document.body;B.classList.toggle('adv-off',!UIX.ad
     let b=gi.querySelector(':scope>.simple-more');if(!b){b=document.createElement('button');b.type='button';b.className='btn sm ghost sg-more-btn simple-more';const ins=gi.querySelector(':scope>.insight');gi.insertBefore(b,ins||null);b.onclick=()=>{UIX.more[k]=!UIX.more[k];simplifyUI();};}
     b.textContent=open?'收合 ▲':'看更多 ▼';});
   document.querySelectorAll('.sec-head').forEach(h=>{if(h.querySelector('.help-q')||!h.querySelector('p'))return;const q=document.createElement('button');q.className='help-q';q.type='button';q.title='說明';q.textContent='？';q.onclick=()=>h.classList.toggle('help-open');h.appendChild(q);});
+  polFitCmp();
   const np=document.querySelector('#needPicker .np-grid');if(np&&!document.getElementById('npMore')){const hid=np.querySelectorAll('.np-btn:not(.on)').length;if(hid){const m=document.createElement('button');m.id='npMore';m.type='button';m.className='btn sm ghost np-more edit-only';m.textContent=UIX.npAll?'收合其他需求':'＋ 其他需求（'+hid+'）';m.onclick=()=>{UIX.npAll=!UIX.npAll;renderAll();};np.after(m);}}
 }
 function expandAll(){UIX.adv=true;UIX.npAll=true;KEYS.forEach(k=>UIX.more[k]=true);renderAll();}
@@ -3867,7 +3937,7 @@ function syncTbH(){document.documentElement.style.setProperty('--tb-h',document.
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab,true));
 window.addEventListener('resize',syncTbH);
 /* ============ wiring ============ */
-function renderLinked(){const P=periods();renderHeader();renderKPIs(P);renderNW(P);renderRank();renderGoals(P);renderLog(P);if($('tbGoals')&&$('triSvg'))tabBadges();}
+function renderLinked(){const P=periods();renderHeader();renderKPIs(P);renderNW(P);renderRank();renderGoals(P);renderLog(P);if($('tbGoals')&&$('triSvg'))tabBadges();polFitCmp();}
 function renderAll(){renderLinked();if(!$('triSvg'))renderGT();else updateGT();renderGapSug();tabBadges();syncTbH();if(window.__ftAfterRender)window.__ftAfterRender();}
 $('btnAdd').onclick=()=>openModal(-1);
 $('btnMode').onclick=()=>{S.mode=S.mode==='advisor'?'client':'advisor';document.body.classList.toggle('present',S.mode==='client');$('btnMode').textContent=S.mode==='client'?'切換為顧問編輯模式':'切換為客戶簡報模式';const dlg=$('ftReviewDlg');if(dlg&&S.mode!=='advisor')dlg.hidden=true;renderAll();};
@@ -3898,9 +3968,9 @@ function fitPrint(){document.querySelectorAll('#goals .print-brk').forEach(e=>e.
   fit('--z1',()=>span([$('printHead'),$('clientCard'),$('secOverview')]));
   const gs=[...document.querySelectorAll('#goals > .goal:not(.solo)')],gh=document.querySelector('#secGoals .sec-head');const pc=document.querySelector('#goals > .pol-card');
   fit('--zg',()=>{let m=0;for(let i=0;i<gs.length;i+=2)m=Math.max(m,gs[i].getBoundingClientRect().height,gs[i+1]?gs[i+1].getBoundingClientRect().height:0);return m+(gh?gh.getBoundingClientRect().height+12:0);});
-  {const first=document.querySelector('#goals > .goal');document.querySelectorAll('#goals > .goal.solo').forEach(c=>{c.style.setProperty('--zs','1');});drawFamLines();document.querySelectorAll('#goals > .goal.solo').forEach(c=>{let z=1;for(let i=0;i<6;i++){c.style.setProperty('--zs',String(z));const h=c.getBoundingClientRect().height+(c===first&&gh?gh.getBoundingClientRect().height+12:0);if(h<=H)break;z=z*H/h*0.99;}c.style.setProperty('--zs',Math.min(1,z).toFixed(3));});}
+  {const first=document.querySelector('#goals > .goal');document.querySelectorAll('#goals > .goal.solo').forEach(c=>{c.style.setProperty('--zs','1');});drawFamLines();polFitCmp();document.querySelectorAll('#goals > .goal.solo').forEach(c=>{let z=1;for(let i=0;i<6;i++){c.style.setProperty('--zs',String(z));const h=c.getBoundingClientRect().height+(c===first&&gh?gh.getBoundingClientRect().height+12:0);if(h<=H)break;z=z*H/h*0.99;}c.style.setProperty('--zs',Math.min(1,z).toFixed(3));});polFitCmp();}
   fit('--zt',()=>span([$('secGT')]));
-  document.body.classList.remove('pdfm');}
+  document.body.classList.remove('pdfm');polFitCmp();}
 function preparePrint(){document.body.classList.add('printing');renderLinked();if(S.gt.view!=null)setView(null);const d=new Date();const roc=(d.getFullYear()-1911)+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
   const nm=((S.client&&S.client.name)||((document.querySelector('.client-name')||{}).textContent)||'').trim()||'（未填）';
   $('printHead').innerHTML=`<div><h1>財務規劃書</h1><div style="font-size:12px;margin-top:4px">客戶：<b>${esc(nm)}</b>${clientBirth()?`（${bdRoc(clientBirth())}｜${clientAge()} 歲）`:''}　・　已選需求 ${S.selected.length} 項</div></div><div class="m">製表日期 ${roc}<br>顧問 王盛嶢・御謙VIP菁英會<br>本報告僅供規劃參考</div>`;
