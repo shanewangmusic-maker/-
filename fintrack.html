@@ -801,6 +801,9 @@ body.present .pol-card .gap-row span{height:auto}
 .pc-col .pc-ln b{text-align:left}
 .pc-ln.only{justify-content:center}
 .pc-ln.only b{font-family:"Noto Serif TC",serif;font-size:18px;text-align:center}
+.pc-ln.mute,.pc-ln.mute b{color:#a99a8e;font-weight:500}
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln.mute{display:block;text-align:center}
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln.mute b{color:#a99a8e;font-weight:500}
 .pc-was,.pc-was-big{color:#8a847c;font-weight:500}
 .pc-arr,.pc-arr-big{color:#5a5550;font-weight:500}
 .pc-now.hot{color:#b84a4a}
@@ -1913,6 +1916,14 @@ function polFaceName(label){
   return s||orig;
 }
 function polBlankish(s){return s==='-元'||s==='-萬'||s==='-'||String(s==null?'':s).trim()==='';}
+function polFaceEmpty(s){
+  const t=String(s==null?'':s).replace(/[\s,，]/g,'');
+  if(!t||polBlankish(t))return true;
+  if(/^[-—–－0０.．]*$/.test(t))return true;
+  if(/^[-—–－0０.．]*[萬元]+$/.test(t))return true;
+  return false;
+}
+function polMutedDash(){return '<div class="pc-ln only mute"><b>-</b></div>';}
 function polPairHTML(beforeText,afterText,hot){
   if(String(beforeText)===String(afterText))return '';
   const b=polBlankish(beforeText)?'-':beforeText;
@@ -1927,8 +1938,9 @@ function polLn(label,value,tone,only,pairHtml){
   return `<div class="${cls}"><span>${esc(label)}</span><b>${val}</b></div>`;
 }
 function polViewLn(label,tone,only,cmp,after,textAt){
-  if(!cmp)return polLn(label,textAt(!!after),tone,!!only);
   const bv=textAt(false),av=textAt(true);
+  if(polFaceEmpty(bv)&&polFaceEmpty(av))return '';
+  if(!cmp)return polLn(label,after?av:bv,tone,!!only);
   const pair=polPairHTML(bv,av,tone==='hot');
   if(!pair)return polLn(label,av,tone,!!only);
   return polLn(label,av,'',!!only,pair);
@@ -1939,8 +1951,10 @@ function polSlotLines(slots,rows,ci,after,cmp){
     const list=rows.filter(it=>polBucket(ci,it)===slot[0]);
     const unit=polUnitOf(list,slot[2]||'wan',after);
     const tone=polTone(list,after);
+    const line=polViewLn(polFaceName(slot[1]),tone,false,cmp,after,side=>polSlotValue(list,side,unit));
+    if(!line)return '';
     if(tone==='hot')hot=true;
-    return polViewLn(polFaceName(slot[1]),tone,false,cmp,after,side=>polSlotValue(list,side,unit));
+    return line;
   }).join('');
   return {hot,html};
 }
@@ -1948,23 +1962,32 @@ function polExtraLines(list,after,cmp){
   let hot=false;
   const html=(list||[]).map(it=>{
     const tone=polTone([it],after);
-    if(tone==='hot')hot=true;
     const lab=polFaceName(polItemLabel(it))||'其他';
     const unit=polUnitOf([it],'wan',after);
-    return polViewLn(lab,tone,false,cmp,after,side=>polSlotValue([it],side,unit));
+    const line=polViewLn(lab,tone,false,cmp,after,side=>polSlotValue([it],side,unit));
+    if(!line)return '';
+    if(tone==='hot')hot=true;
+    return line;
   }).join('');
   return {hot,html};
 }
 function polSplitCol(title,list,after,cmp){
-  let hot=false,body='';
-  if(!list.length)body=polLn(null,'-萬','',true);
-  else body=list.map(it=>{
+  let hot=false;
+  const lines=(list||[]).map(it=>{
     const tone=polTone([it],after);
-    if(tone==='hot')hot=true;
     const unit=polUnitOf([it],'wan',after);
-    return polViewLn(polFaceName(polItemLabel(it))+'：',tone,false,cmp,after,side=>polFmtOne(polSideRaw(it,side),unit));
-  }).join('');
+    const line=polViewLn(polFaceName(polItemLabel(it))+'：',tone,false,cmp,after,side=>polFmtOne(polSideRaw(it,side),unit));
+    if(!line)return '';
+    if(tone==='hot')hot=true;
+    return line;
+  }).filter(Boolean);
+  const body=lines.length?lines.join(''):polMutedDash();
   return {hot,html:`<div class="pc-col"><div class="pc-sub">${esc(title)}</div>${body}</div>`};
+}
+function polFaceOrDash(parts){
+  const html=parts.map(p=>p.html).join('');
+  if(!String(html).trim())return {hot:false,html:polMutedDash()};
+  return {hot:parts.some(p=>p.hot),html};
 }
 function polCellFace(ci,rows,after,cmp){
   rows=rows||[];
@@ -1983,7 +2006,7 @@ function polCellFace(ci,rows,after,cmp){
   if(ci===1){
     const main=polSlotLines([['death','意外身故/失能'],['hosp','意外住院'],['real','意外實支'],['mo','意外失能月給付']],rows,1,after,cmp);
     const extra=polExtraLines(rows.filter(it=>polBucket(1,it)==='x'),after,cmp);
-    return {hot:main.hot||extra.hot,html:main.html+extra.html};
+    return polFaceOrDash([main,extra]);
   }
   if(ci===2){
     const L=polSplitCol('實支實付',rows.filter(it=>polBucket(2,it)==='real'),after,cmp);
@@ -1997,10 +2020,10 @@ function polCellFace(ci,rows,after,cmp){
   }
   if(ci===4){
     const main=polSlotLines([['ci','重大傷病一次金：'],['dd','重大疾病一次金：']],rows,4,after,cmp);
-    return {hot:main.hot,html:main.html};
+    return polFaceOrDash([main]);
   }
   const main=polSlotLines([['full','完全失能/長照'],['lump','一次金'],['mo','月給付']],rows,5,after,cmp);
-  return {hot:main.hot,html:main.html};
+  return polFaceOrDash([main]);
 }
 function polFootHTML(sid,after,pr,cmp){
   const who=polCardName(sid);
