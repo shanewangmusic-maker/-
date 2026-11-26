@@ -801,6 +801,20 @@ body.present .pol-card .gap-row span{height:auto}
 .pc-col .pc-ln b{text-align:left}
 .pc-ln.only{justify-content:center}
 .pc-ln.only b{font-family:"Noto Serif TC",serif;font-size:18px;text-align:center}
+.pc-was,.pc-was-big{color:#8a847c;font-weight:500}
+.pc-arr,.pc-arr-big{color:#5a5550;font-weight:500}
+.pc-now.hot{color:#b84a4a}
+.pc-was-big{font-family:"Noto Serif TC",serif;font-size:clamp(20px,2.3cqw,30px);letter-spacing:.02em;line-height:1.1}
+.pc-arr-big{font-size:clamp(18px,2cqw,26px)}
+.pc-life.cmp{flex-wrap:wrap;gap:4px 8px}
+.pol-sheet[data-side="cmp"] .pc-ln:not(.only){flex-wrap:wrap}
+.pol-sheet[data-side="cmp"] .pc-ln:not(.only) b{white-space:normal;flex:1 1 0;min-width:0;text-align:right}
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln{display:block;font-size:clamp(13px,1.25cqw,16px);line-height:1.4}
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln > span,
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln b,
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln b span{white-space:normal;overflow-wrap:anywhere}
+.pol-sheet[data-side="cmp"] .pc-col .pc-ln b{display:inline;font-weight:700;text-align:left}
+.pol-sheet[data-side="cmp"] .pol-foot .pf-m{white-space:normal}
 .pol-foot{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;background:#4a4744;color:#f7f4ee;padding:14px 18px;font-size:clamp(16px,2.54cqw,30px)}
 .pol-foot .pf-who{font-family:"Noto Serif TC",serif;letter-spacing:.06em}
 .pol-foot .pf-m{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1080,8 +1094,8 @@ table.log td,table.log th{padding-top:5px!important;padding-bottom:5px!important
 .ratio-leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
 .ratio-leg .rl-note{flex-basis:100%;font-size:10px;color:#9a9ea4}
 .rchg{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.rchg.good{color:#2f7a63}.rchg.bad{color:#c8742e}.rchg.flat{color:#a8acb2}
-body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body.pdfm .pc{border-right:1px solid #5a5550!important;border-bottom:1px solid #5a5550!important}body.pdfm .pc:nth-child(3n){border-right:0!important}body.pdfm .pc:nth-child(n+4){border-bottom:0!important}body.pdfm .pol-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}body.pdfm .pol-hero{grid-template-columns:190px minmax(0,1fr)!important}body.pdfm .pol-foot,body.pdfm .pc-head,body.pdfm .pc-big.hot,body.pdfm .pc-ln.hot,body.pdfm .pc.hot .pc-head b{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-@media print{.pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.pc{border-right:1px solid #5a5550!important;border-bottom:1px solid #5a5550!important}.pc:nth-child(3n){border-right:0!important}.pc:nth-child(n+4){border-bottom:0!important}.pc-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.pol-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}.pol-hero{grid-template-columns:190px minmax(0,1fr)!important}.pol-foot,.pc-head,.pc-big.hot,.pc-ln.hot,.pc.hot .pc-head b{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+body.pdfm .pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}body.pdfm .pc{border-right:1px solid #5a5550!important;border-bottom:1px solid #5a5550!important}body.pdfm .pc:nth-child(3n){border-right:0!important}body.pdfm .pc:nth-child(n+4){border-bottom:0!important}body.pdfm .pol-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}body.pdfm .pol-hero{grid-template-columns:190px minmax(0,1fr)!important}body.pdfm .pol-foot,body.pdfm .pc-head,body.pdfm .pc-big.hot,body.pdfm .pc-ln.hot,body.pdfm .pc-now.hot,body.pdfm .pc-was,body.pdfm .pc-was-big,body.pdfm .pc.hot .pc-head b{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+@media print{.pol-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.pc{border-right:1px solid #5a5550!important;border-bottom:1px solid #5a5550!important}.pc:nth-child(3n){border-right:0!important}.pc:nth-child(n+4){border-bottom:0!important}.pc-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}.pol-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}.pol-hero{grid-template-columns:190px minmax(0,1fr)!important}.pol-foot,.pc-head,.pc-big.hot,.pc-ln.hot,.pc-now.hot,.pc-was,.pc-was-big,.pc.hot .pc-head b{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 
 #ftGate{position:fixed;inset:0;z-index:200;background:rgba(30,46,61,.94);display:flex;align-items:center;justify-content:center;padding:24px}
 #ftGate[hidden]{display:none!important}
@@ -1898,74 +1912,105 @@ function polFaceName(label){
   }
   return s||orig;
 }
-function polLn(label,value,tone,only){
-  const cls='pc-ln'+(tone?' '+tone:'')+(only?' only':'');
-  if(label==null)return `<div class="${cls}"><b>${esc(value)}</b></div>`;
-  return `<div class="${cls}"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
+function polBlankish(s){return s==='-元'||s==='-萬'||s==='-'||String(s==null?'':s).trim()==='';}
+function polPairHTML(beforeText,afterText,hot){
+  if(String(beforeText)===String(afterText))return '';
+  const b=polBlankish(beforeText)?'-':beforeText;
+  const a=polBlankish(afterText)?'-':afterText;
+  if(b===a)return '';
+  return `<span class="pc-was">${esc(b)}</span><span class="pc-arr"> → </span><span class="pc-now${hot?' hot':''}">${esc(a)}</span>`;
 }
-function polSlotLines(slots,rows,ci,after){
+function polLn(label,value,tone,only,pairHtml){
+  const cls='pc-ln'+(tone?' '+tone:'')+(only?' only':'');
+  const val=pairHtml?pairHtml:esc(value);
+  if(label==null)return `<div class="${cls}"><b>${val}</b></div>`;
+  return `<div class="${cls}"><span>${esc(label)}</span><b>${val}</b></div>`;
+}
+function polViewLn(label,tone,only,cmp,after,textAt){
+  if(!cmp)return polLn(label,textAt(!!after),tone,!!only);
+  const bv=textAt(false),av=textAt(true);
+  const pair=polPairHTML(bv,av,tone==='hot');
+  if(!pair)return polLn(label,av,tone,!!only);
+  return polLn(label,av,'',!!only,pair);
+}
+function polSlotLines(slots,rows,ci,after,cmp){
   let hot=false;
   const html=slots.map(slot=>{
     const list=rows.filter(it=>polBucket(ci,it)===slot[0]);
     const unit=polUnitOf(list,slot[2]||'wan',after);
     const tone=polTone(list,after);
     if(tone==='hot')hot=true;
-    return polLn(polFaceName(slot[1]),polSlotValue(list,after,unit),tone,false);
+    return polViewLn(polFaceName(slot[1]),tone,false,cmp,after,side=>polSlotValue(list,side,unit));
   }).join('');
   return {hot,html};
 }
-function polExtraLines(list,after){
+function polExtraLines(list,after,cmp){
   let hot=false;
   const html=(list||[]).map(it=>{
     const tone=polTone([it],after);
     if(tone==='hot')hot=true;
     const lab=polFaceName(polItemLabel(it))||'其他';
     const unit=polUnitOf([it],'wan',after);
-    return polLn(lab,polSlotValue([it],after,unit),tone,false);
+    return polViewLn(lab,tone,false,cmp,after,side=>polSlotValue([it],side,unit));
   }).join('');
   return {hot,html};
 }
-function polSplitCol(title,list,after){
+function polSplitCol(title,list,after,cmp){
   let hot=false,body='';
   if(!list.length)body=polLn(null,'-萬','',true);
   else body=list.map(it=>{
     const tone=polTone([it],after);
     if(tone==='hot')hot=true;
     const unit=polUnitOf([it],'wan',after);
-    return polLn(polFaceName(polItemLabel(it))+'：',polFmtOne(polSideRaw(it,after),unit),tone,false);
+    return polViewLn(polFaceName(polItemLabel(it))+'：',tone,false,cmp,after,side=>polFmtOne(polSideRaw(it,side),unit));
   }).join('');
   return {hot,html:`<div class="pc-col"><div class="pc-sub">${esc(title)}</div>${body}</div>`};
 }
-function polCellFace(ci,rows,after){
+function polCellFace(ci,rows,after,cmp){
   rows=rows||[];
   if(ci===0){
     const tone=polTone(rows,after);
-    return {hot:tone==='hot',html:`<div class="pc-life"><b class="pc-big${tone?' '+tone:''}">${esc(polLifeTotal(rows,after))}</b></div>`};
+    const one=`<div class="pc-life"><b class="pc-big${tone?' '+tone:''}">${esc(polLifeTotal(rows,after))}</b></div>`;
+    if(!cmp)return {hot:tone==='hot',html:one};
+    const bv=polLifeTotal(rows,false),av=polLifeTotal(rows,true);
+    const hot=tone==='hot';
+    const same=String(bv)===String(av)||(polBlankish(bv)&&polBlankish(av));
+    if(same)return {hot,html:`<div class="pc-life"><b class="pc-big${tone?' '+tone:''}">${esc(av)}</b></div>`};
+    const b=polBlankish(bv)?'-':bv,a=polBlankish(av)?'-':av;
+    if(b===a)return {hot,html:`<div class="pc-life"><b class="pc-big${tone?' '+tone:''}">${esc(av)}</b></div>`};
+    return {hot,html:`<div class="pc-life cmp"><span class="pc-was-big">${esc(b)}</span><span class="pc-arr-big"> → </span><b class="pc-big${hot?' hot':''}">${esc(a)}</b></div>`};
   }
   if(ci===1){
-    const main=polSlotLines([['death','意外身故/失能'],['hosp','意外住院'],['real','意外實支'],['mo','意外失能月給付']],rows,1,after);
-    const extra=polExtraLines(rows.filter(it=>polBucket(1,it)==='x'),after);
+    const main=polSlotLines([['death','意外身故/失能'],['hosp','意外住院'],['real','意外實支'],['mo','意外失能月給付']],rows,1,after,cmp);
+    const extra=polExtraLines(rows.filter(it=>polBucket(1,it)==='x'),after,cmp);
     return {hot:main.hot||extra.hot,html:main.html+extra.html};
   }
   if(ci===2){
-    const L=polSplitCol('實支實付',rows.filter(it=>polBucket(2,it)==='real'),after);
-    const R=polSplitCol('定額給付',rows.filter(it=>polBucket(2,it)!=='real'),after);
+    const L=polSplitCol('實支實付',rows.filter(it=>polBucket(2,it)==='real'),after,cmp);
+    const R=polSplitCol('定額給付',rows.filter(it=>polBucket(2,it)!=='real'),after,cmp);
     return {hot:L.hot||R.hot,html:`<div class="pc-split">${L.html}${R.html}</div>`};
   }
   if(ci===3){
-    const L=polSplitCol('一次金',rows.filter(it=>{const id=polBucket(3,it);return id==='lump'||id==='x';}),after);
-    const R=polSplitCol('療程型',rows.filter(it=>polBucket(3,it)==='course'),after);
+    const L=polSplitCol('一次金',rows.filter(it=>{const id=polBucket(3,it);return id==='lump'||id==='x';}),after,cmp);
+    const R=polSplitCol('療程型',rows.filter(it=>polBucket(3,it)==='course'),after,cmp);
     return {hot:L.hot||R.hot,html:`<div class="pc-split">${L.html}${R.html}</div>`};
   }
   if(ci===4){
-    const main=polSlotLines([['ci','重大傷病一次金：'],['dd','重大疾病一次金：']],rows,4,after);
+    const main=polSlotLines([['ci','重大傷病一次金：'],['dd','重大疾病一次金：']],rows,4,after,cmp);
     return {hot:main.hot,html:main.html};
   }
-  const main=polSlotLines([['full','完全失能/長照'],['lump','一次金'],['mo','月給付']],rows,5,after);
+  const main=polSlotLines([['full','完全失能/長照'],['lump','一次金'],['mo','月給付']],rows,5,after,cmp);
   return {hot:main.hot,html:main.html};
 }
-function polFootHTML(sid,after,pr){
+function polFootHTML(sid,after,pr,cmp){
   const who=polCardName(sid);
+  if(cmp){
+    const bits=year=>{if(year==null||!isFinite(+year))return {y:'-',m:'-'};const yi=Math.round(+year);return {y:fmt(yi),m:fmt(Math.round(yi/12))};};
+    const B=bits(pr.by),A=bits(pr.ay);
+    const y=B.y===A.y?B.y:(B.y+' → '+A.y);
+    const m=B.m===A.m?('約 '+B.m):('約 '+B.m+' → 約 '+A.m);
+    return `<div class="pol-foot"><span class="pf-who">${esc(who)}　保單規劃前後</span><span class="pf-m">年保費：${y}</span><span class="pf-m">月保費：${m}</span></div>`;
+  }
   const when=after?'保單規劃後':'保單規劃前';
   const year=after?pr.ay:pr.by;
   let y='-',m='-';
@@ -1981,20 +2026,21 @@ function polTogs(ci,i,it){
 }
 function polSection(P,o){return withPol(P,()=>{const ed=o.ed,view=o.view,bl=polBaseLabel(),pr=polPrem();
   const after=view!=='b';
+  const cmp=!ed&&view==='cmp';
   const cellH=(x,ci)=>{const rows=polRows(ci);
     let body='',hot=false;
     if(ed){body=P.cells[ci].items.map((it,i)=>`<div class="pe-row"><input data-pol="${ci}|${i}|g" value="${esc(it.g)}" placeholder="分類"><input data-pol="${ci}|${i}|n" value="${esc(it.n)}" placeholder="項目">${polTogs(ci,i,it)}<input data-pol="${ci}|${i}|b" value="${esc(it.b)}" placeholder="規劃前"><input data-pol="${ci}|${i}|a" value="${esc(it.a)}" placeholder="規劃後"><button class="rm" data-pol-rm="${ci}|${i}" title="刪除此項">×</button></div>`).join('')+`<button class="add-btn" data-pol-add="${ci}">＋新增項目</button>`;}
-    else{const face=polCellFace(ci,rows,after);body=face.html;hot=face.hot;}
+    else{const face=polCellFace(ci,rows,after,cmp);body=face.html;hot=face.hot;}
     return `<div class="pc${hot?' hot':''}" data-cell="${x[0]}"><div class="pc-head"><b>${esc(POL_CARD_TITLES[ci])}</b></div><div class="pc-body">${body}</div></div>`;};
   const M=o.main;
   const tb=`<div class="pol-tb"><div class="seg">${[['cmp','前後對照'],['b',bl],['a','規劃後']].map(([k,l])=>`<button data-pol-view="${k}" class="${view===k?'on':''}">${esc(l)}</button>`).join('')}</div>
     ${o.base?`<label class="pol-base">比較基準 <select class="pol-base-s" ${M?'id="polBase"':''}><option value="before" ${P.base==='before'?'selected':''}>本版規劃前</option>${P.versions.map((v,i)=>`<option value="${i}" ${String(P.base)===String(i)?'selected':''}>${esc(v.label)}</option>`).join('')}</select></label>`:''}
     <span class="sp"></span>${o.editBtn?`<button class="btn sm edit-only pol-edit-b ${ed?'primary':''}" ${M?'id="polEdit"':''}>${ed?'✓ 完成編輯':'✎ 編輯保單'}</button>`:''}${o.base?`<button class="btn sm edit-only pol-save-b" ${M?'id="polSave"':''} title="保存目前保單內容，之後可選為比較基準">存為新版本</button>`:''}</div>`;
   const bar=ed?`<div class="pol-bar edit"><div class="pb-c"><span class="l">規劃前</span><label>年保費 <input type="number" data-prem="by" value="${P.prem.by}" placeholder="年保費"></label><label>月保費 <input type="number" data-prem="bm" value="${P.prem.bm}" placeholder="${P.prem.by?Math.floor(P.prem.by/12):'自動'}"></label></div><div class="pb-arrow">→</div><div class="pb-c"><span class="l">規劃後</span><label>年保費 <input type="number" data-prem="ay" value="${P.prem.ay}" placeholder="年保費"></label><label>月保費 <input type="number" data-prem="am" value="${P.prem.am}" placeholder="${P.prem.ay?Math.floor(P.prem.ay/12):'自動'}"></label></div></div>`:'';
-  const foot=ed?'':polFootHTML(o.sid,after,pr);
+  const foot=ed?'':polFootHTML(o.sid,after,pr,cmp);
   const bring=o.editBtn?`<div class="cov-bring edit-only"><button type="button" class="btn sm" data-cov-bring="${esc(o.sid)}">帶入資料</button>${covBring===o.sid?covChooserHTML():''}</div>`:'';
   return bring+`<div class="pol-sec" data-polsec="${o.sid}">${tb}<div class="pol-legend"><span><b class="lg-hot">紅字</b> 規劃後有補強</span><span><b class="lg-life">藍字</b> 終身</span><span>黑體 定期</span></div>
-    <div class="pol-sheet" data-side="${after?'a':'b'}"><div class="pol-grid">${POL_CELLS.map(cellH).join('')}</div>${foot}</div>${bar}</div>`;});}
+    <div class="pol-sheet" data-side="${cmp?'cmp':(after?'a':'b')}"><div class="pol-grid">${POL_CELLS.map(cellH).join('')}</div>${foot}</div>${bar}</div>`;});}
 function polRerender(){const a=document.activeElement;let key=null;if(a&&a.dataset&&(a.dataset.pol||a.dataset.prem)){const sec=a.closest('[data-polsec]');key=(sec?`[data-polsec="${sec.dataset.polsec}"] `:'')+(a.dataset.pol?'[data-pol="'+a.dataset.pol+'"]':'[data-prem="'+a.dataset.prem+'"]');}renderAll();if(key){const e=document.querySelector(key);if(e)e.focus();}}
 function wirePol(root,P){if(!root)return;
   root.querySelectorAll('[data-pol-view]').forEach(b=>b.onclick=e=>{e.stopPropagation();P.view=b.dataset.polView;renderAll();});
